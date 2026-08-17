@@ -175,13 +175,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Populate points around centers
     for (let i = 0; i < numPoints; i++) {
       const center = centers[Math.floor(Math.random() * centers.length)];
-      // Box-Muller transform for gaussian distribution
+      // Box-Muller transform for circular 2D Gaussian distribution
       const u1 = Math.random() || 0.0001;
       const u2 = Math.random() || 0.0001;
-      const randStd = Math.sqrt(-2.0 * Math.log(u1)) * Math.cos(2.0 * Math.PI * u2);
+      const r = Math.sqrt(-2.0 * Math.log(u1));
+      const theta = 2.0 * Math.PI * u2;
+      const randX = r * Math.cos(theta);
+      const randY = r * Math.sin(theta);
 
-      const x = Math.max(0.02, Math.min(0.98, center.x + randStd * center.std));
-      const y = Math.max(0.02, Math.min(0.98, center.y + randStd * center.std));
+      const x = Math.max(0.02, Math.min(0.98, center.x + randX * center.std));
+      const y = Math.max(0.02, Math.min(0.98, center.y + randY * center.std));
 
       state.points.push({
         x: x,
