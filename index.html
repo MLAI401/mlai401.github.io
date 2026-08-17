@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MLAI401 - Foundational Artificial Intelligence & Machine Learning</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="MLAI401 is a premium curation of resources, projects, and hands-on labs focused on foundational Artificial Intelligence and Machine Learning. Discover core ML theory, deep learning models, and reinforcement learning.">
+  <meta name="keywords" content="Machine Learning, Artificial Intelligence, Deep Learning, Reinforcement Learning, K-Means Clustering, Neural Networks, Python, PyTorch, Jupyter Labs">
+  
+  <!-- Open Graph -->
+  <meta property="og:title" content="MLAI401 - Foundational AI & ML Projects">
+  <meta property="og:description" content="Explore teaching materials, interactive labs, and foundational AI/ML implementations at MLAI401.">
+  <meta property="og:type" content="website">
+  
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  
+  <!-- Navigation Header -->
+  <header class="navbar" id="navbar-header">
+    <div class="container nav-container">
+      <a href="#" class="logo" id="logo-link">
+        <span class="logo-icon">M</span>
+        MLAI401
+      </a>
+      
+      <button class="menu-toggle" id="menu-toggle-btn" aria-label="Toggle Navigation Menu">
+        <i data-lucide="menu"></i>
+      </button>
+      
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="#" class="nav-link active" id="nav-home">Home</a></li>
+        <li><a href="#curriculum" class="nav-link" id="nav-curr">Curriculum</a></li>
+        <li><a href="#playground" class="nav-link" id="nav-play">Playground</a></li>
+        <li><a href="#resources" class="nav-link" id="nav-res">Resources</a></li>
+      </ul>
+      
+      <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="nav-btn" id="nav-github-btn">
+        <i data-lucide="github"></i> GitHub Profile
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero" id="home">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <div class="hero-badge" id="hero-badge-tag">
+          <i data-lucide="sparkles"></i> Foundational AI & ML Repository
+        </div>
+        <h1 class="hero-title" id="main-headline">
+          Master the Core of <br>Intelligence
+        </h1>
+        <p class="hero-description" id="sub-headline">
+          MLAI401 is a curated collection of repositories and projects focused on foundational Artificial Intelligence and Machine Learning. We bring together teaching materials, hands-on labs, example applications, and projects covering core AI/ML concepts and their practical implementations.
+        </p>
+        <div class="hero-actions">
+          <a href="#playground" class="btn btn-primary" id="btn-cta-explore">
+            <i data-lucide="play-circle"></i> Try Playground
+          </a>
+          <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" id="btn-cta-labs">
+            GitHub Profile <i data-lucide="github"></i>
+          </a>
+        </div>
+      </div>
+      
+      <div class="hero-art-container" id="hero-art">
+        <div class="hero-glow-blob"></div>
+        <div class="mesh-grid">
+          <div class="node-center"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Banner -->
+  <section class="container" id="stats">
+    <div class="stats-grid">
+      <div class="stat-card glass-panel" id="stat-topics">
+        <div class="stat-number">4+</div>
+        <div class="stat-label">Core Pillars</div>
+        <div class="stat-desc">From statistics to GenAI</div>
+      </div>
+      <div class="stat-card glass-panel" id="stat-labs">
+        <div class="stat-number">20+</div>
+        <div class="stat-label">Hands-on Labs</div>
+        <div class="stat-desc">Jupyter Notebooks & scripts</div>
+      </div>
+      <div class="stat-card glass-panel" id="stat-apps">
+        <div class="stat-number">100%</div>
+        <div class="stat-label">Practical Code</div>
+        <div class="stat-desc">Zero-dependency core engines</div>
+      </div>
+      <div class="stat-card glass-panel" id="stat-stars">
+        <div class="stat-number">Open</div>
+        <div class="stat-label">Source</div>
+        <div class="stat-desc">MIT Licensed repositories</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Curriculum / Core Pillars Section -->
+  <section class="section" id="curriculum">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-subtitle">Structure</span>
+        <h2 id="curriculum-title">The MLAI401 Curriculum</h2>
+        <p>A systematic progression designed to develop deep intuition for both the mathematical foundations and code-level details of modern AI systems.</p>
+      </div>
+      
+      <div class="curriculum-grid">
+        <div class="curriculum-card glass-panel" id="card-foundational">
+          <div class="curriculum-icon"><i data-lucide="bar-chart-2"></i></div>
+          <h3>Foundational ML</h3>
+          <p>Classical statistical models and machine learning fundamentals that form the core toolkit of data science.</p>
+          <ul class="curriculum-list">
+            <li>Linear & Logistic Regression</li>
+            <li>Support Vector Machines (SVMs)</li>
+            <li>Unsupervised K-Means & PCA</li>
+            <li>Validation & Metric Analysis</li>
+          </ul>
+        </div>
+        
+        <div class="curriculum-card glass-panel" id="card-deep-learning">
+          <div class="curriculum-icon"><i data-lucide="layers"></i></div>
+          <h3>Deep Learning</h3>
+          <p>Multi-layer representations, computational graphs, and training optimizations for high-dimensional data.</p>
+          <ul class="curriculum-list">
+            <li>Multi-Layer Perceptrons (MLPs)</li>
+            <li>CNNs & Computer Vision</li>
+            <li>RNNs & Sequence Modeling</li>
+            <li>Adam & SGD Optimization</li>
+          </ul>
+        </div>
+        
+        <div class="curriculum-card glass-panel" id="card-reinforcement">
+          <div class="curriculum-icon"><i data-lucide="target"></i></div>
+          <h3>Reinforcement Learning</h3>
+          <p>Decision-making paradigms where agents learn optimized sequences of actions via environment interactions.</p>
+          <ul class="curriculum-list">
+            <li>Markov Decision Processes (MDP)</li>
+            <li>Q-Learning & SARSA</li>
+            <li>Policy Gradients & REINFORCE</li>
+            <li>Actor-Critic Frameworks</li>
+          </ul>
+        </div>
+        
+        <div class="curriculum-card glass-panel" id="card-generative">
+          <div class="curriculum-icon"><i data-lucide="wand2"></i></div>
+          <h3>Generative AI & LLMs</h3>
+          <p>Foundational architectures powering the generative revolution, from tokenization to custom text synthesis.</p>
+          <ul class="curriculum-list">
+            <li>Autoencoders & GANs</li>
+            <li>Transformer Architectures</li>
+            <li>LLM Fine-tuning & LoRA</li>
+            <li>Retrieval-Augmented Gen (RAG)</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Interactive Playground Section -->
+  <section class="section" id="playground" style="background: rgba(241, 245, 249, 0.5);">
+    <div class="ambient-glow-green"></div>
+    <div class="container">
+      <div class="section-header">
+        <span class="section-subtitle">Interactive Demo</span>
+        <h2 id="playground-title">AI Playground: K-Means Clustering</h2>
+        <p>Interactive algorithm visualizer. Click on the grid to add custom 2D points, choose the number of clusters, and step through the algorithm to watch centroids converge.</p>
+      </div>
+      
+      <div class="playground-grid">
+        <!-- Visualizer Canvas -->
+        <div class="canvas-container" id="visualizer-canvas-container">
+          <canvas id="kmeans-canvas"></canvas>
+          <div class="canvas-overlay" id="visualizer-overlay-info">
+            <div>Mode: <span style="color: var(--accent);" id="overlay-mode">Click grid to add points</span></div>
+            <div>Iteration: <span style="color: var(--accent);" id="overlay-iter">0</span></div>
+            <div>Points: <span style="color: var(--accent);" id="overlay-points-count">0</span></div>
+          </div>
+        </div>
+        
+        <!-- Controls Panel -->
+        <div class="playground-controls glass-panel" id="controls-panel">
+          <div class="controls-group">
+            <div class="control-label">
+              <span>Number of Clusters (K)</span>
+              <span class="slider-val" id="k-value-display">3</span>
+            </div>
+            <div class="control-slider-container">
+              <input type="range" id="k-slider" min="2" max="6" value="3" step="1">
+            </div>
+          </div>
+          
+          <div class="controls-group">
+            <div class="btn-group">
+              <button class="btn-ctrl btn-ctrl-primary" id="btn-kmeans-run">
+                <i data-lucide="play"></i> Auto Run
+              </button>
+              <button class="btn-ctrl" id="btn-kmeans-step">
+                <i data-lucide="skip-forward"></i> Step Algorithm
+              </button>
+              <button class="btn-ctrl" id="btn-kmeans-random">
+                <i data-lucide="shuffle"></i> Gen Points
+              </button>
+              <button class="btn-ctrl" id="btn-kmeans-reset">
+                <i data-lucide="rotate-ccw"></i> Reset
+              </button>
+            </div>
+          </div>
+          
+          <div class="playground-stats" id="stats-panel">
+            <div class="pg-stat-row">
+              <span>Status:</span>
+              <span class="pg-stat-val" id="status-text" style="color: var(--accent);">Waiting for points</span>
+            </div>
+            <div class="pg-stat-row">
+              <span>Centroids Placed:</span>
+              <span class="pg-stat-val" id="centroids-placed-val">0 / 3</span>
+            </div>
+            <div class="pg-stat-row">
+              <span>Converged:</span>
+              <span class="pg-stat-val" id="converged-val">No</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
+  <!-- Resources Section -->
+  <section class="section" id="resources" style="background: rgba(241, 245, 249, 0.3);">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-subtitle">Reference</span>
+        <h2 id="resources-title">Additional Materials & Books</h2>
+        <p>Curated list of standard textbooks and learning resources recommended alongside the MLAI401 labs.</p>
+      </div>
+      
+      <div class="resources-grid">
+        <a href="https://web.stanford.edu/~hastie/ElemStatLearn/" target="_blank" rel="noopener noreferrer" class="resource-card glass-panel" id="res-esl">
+          <div class="resource-icon"><i data-lucide="book-open"></i></div>
+          <div class="resource-info">
+            <h3>Elements of Statistical Learning</h3>
+            <p>Hastie, Tibshirani, and Friedman. The gold standard for statistical ML foundations.</p>
+          </div>
+        </a>
+        
+        <a href="https://www.deeplearningbook.org/" target="_blank" rel="noopener noreferrer" class="resource-card glass-panel" id="res-dlbook">
+          <div class="resource-icon"><i data-lucide="book-open"></i></div>
+          <div class="resource-info">
+            <h3>Deep Learning Book</h3>
+            <p>Goodfellow, Bengio, and Courville. Textbook for neural networks and mathematical optimization.</p>
+          </div>
+        </a>
+        
+        <a href="http://incompleteideas.net/book/the-book-2nd.html" target="_blank" rel="noopener noreferrer" class="resource-card glass-panel" id="res-rlbook">
+          <div class="resource-icon"><i data-lucide="book-open"></i></div>
+          <div class="resource-info">
+            <h3>Reinforcement Learning: An Intro</h3>
+            <p>Sutton and Barto. Comprehensive introduction to tabular and deep reinforcement learning.</p>
+          </div>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="footer-section">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#" class="logo" id="footer-logo">
+            <span class="logo-icon">M</span>
+            MLAI401
+          </a>
+          <p>Educational framework and resources for foundational Artificial Intelligence & Machine Learning. Engineered for UIC CS411.</p>
+        </div>
+        
+        <div class="footer-col">
+          <h4>Syllabus Sections</h4>
+          <ul class="footer-links">
+            <li><a href="#curriculum">Foundational ML</a></li>
+            <li><a href="#curriculum">Deep Learning</a></li>
+            <li><a href="#curriculum">Reinforcement Learning</a></li>
+            <li><a href="#curriculum">Generative AI</a></li>
+          </ul>
+        </div>
+        
+        <div class="footer-col">
+          <h4>Interactive</h4>
+          <ul class="footer-links">
+            <li><a href="#playground">K-Means Canvas</a></li>
+            <li><a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer">GitHub Profile</a></li>
+            <li><a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer">Organization Homepage</a></li>
+          </ul>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <div>&copy; 2026 MLAI401. All rights reserved. Built for educational and research purposes.</div>
+        <div class="social-links">
+          <a href="https://github.com/MLAI401" class="social-link" aria-label="GitHub Profile" target="_blank" rel="noopener noreferrer">
+            <i data-lucide="github"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+  <!-- Application JS -->
+  <script src="main.js"></script>
+</body>
+</html>
