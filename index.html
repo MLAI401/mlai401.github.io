@@ -254,19 +254,19 @@
           </div>
           <div class="flow-step" data-step="1">
             <span class="flow-step-num">2</span>
-            <span class="flow-step-name">4T State Space</span>
+            <span class="flow-step-name">4K State Space</span>
           </div>
           <div class="flow-step" data-step="2">
             <span class="flow-step-num">3</span>
-            <span class="flow-step-name">Decision Points</span>
+            <span class="flow-step-name">4T State Space</span>
           </div>
           <div class="flow-step" data-step="3">
             <span class="flow-step-num">4</span>
-            <span class="flow-step-name">Abstract Graph</span>
+            <span class="flow-step-name">T State Space</span>
           </div>
           <div class="flow-step" data-step="4">
             <span class="flow-step-num">5</span>
-            <span class="flow-step-name">Search Demo</span>
+            <span class="flow-step-name">Abstract Graph</span>
           </div>
         </div>
 
@@ -296,6 +296,10 @@
                     <span class="summary-label">Total Grid Cells:</span>
                     <span class="summary-val">165 cells</span>
                   </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Traversable Cells (K):</span>
+                    <span class="summary-val" id="stat-k-cells">70</span>
+                  </div>
                 </div>
                 
                 <div class="teaching-tip">
@@ -304,19 +308,19 @@
                 </div>
               </div>
 
-              <!-- Panel 2: 4T State Space -->
+              <!-- Panel 2: 4K State Space -->
               <div class="teaching-panel" id="panel-step-1">
-                <h3>2. Low-level State Space (4T)</h3>
-                <p>In a standard problem formulation, a physical agent must track both its location and its current orientation (facing North, East, South, or West):</p>
+                <h3>2. Low-level State Space (4K)</h3>
+                <p>At the grid-cell level, a robot navigating the maze must track both its precise grid position and its current orientation (facing North, East, South, or West):</p>
                 
                 <div class="formula-box">
-                  State = (Location, Orientation)
+                  State = (Grid Point, Orientation)
                 </div>
                 
                 <div class="stat-summary-box">
                   <div class="summary-item">
-                    <span class="summary-label">Traversable Cells (T):</span>
-                    <span class="summary-val">70 cells</span>
+                    <span class="summary-label">Grid Points (K):</span>
+                    <span class="summary-val" id="stat-k-cells-p2">70</span>
                   </div>
                   <div class="summary-item">
                     <span class="summary-label">Orientations:</span>
@@ -324,7 +328,7 @@
                   </div>
                   <div class="summary-item">
                     <span class="summary-label">State Space Size:</span>
-                    <span class="summary-val">|S| = 4T = 280</span>
+                    <span class="summary-val" id="stat-4k-size">280</span>
                   </div>
                 </div>
 
@@ -343,131 +347,103 @@
                 </div>
               </div>
 
-              <!-- Panel 3: Decision Points -->
+              <!-- Panel 3: 4T State Space -->
               <div class="teaching-panel" id="panel-step-2">
-                <h3>3. Abstracting the State Space</h3>
-                <p>To reduce states, we define a key abstraction: decisions are only necessary at intersections, turning points (corners), dead-ends, the start (S), and the goal (G).</p>
+                <h3>3. First Abstraction — 4T State Space</h3>
+                <p>A navigation decision is only needed at turning points, corners, dead-ends, the start (S), or the goal (G). Intermediate grid cells along straight corridors are abstracted away.</p>
                 
+                <div class="formula-box">
+                  State = (Turning Point, Orientation)
+                </div>
+
                 <div class="stat-summary-box">
                   <div class="summary-item">
-                    <span class="summary-label">Decision Points (J):</span>
-                    <span class="summary-val">17 nodes</span>
+                    <span class="summary-label">Turning Points (T):</span>
+                    <span class="summary-val" id="stat-t-points-p3">25</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Orientations:</span>
+                    <span class="summary-val">4</span>
                   </div>
                   <div class="summary-item">
                     <span class="summary-label">State Space Size:</span>
-                    <span class="summary-val">|S| = J = 17</span>
+                    <span class="summary-val" id="stat-4t-size">100</span>
                   </div>
                 </div>
 
-                <table class="comparison-table">
-                  <thead>
-                    <tr>
-                      <th>Dimension</th>
-                      <th>Initial Representation</th>
-                      <th>Abstract Representation</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td><strong>State Space Size</strong></td>
-                      <td>4T = 280 states</td>
-                      <td style="color: var(--accent); font-weight: 700;">J = 17 states (94% reduction)</td>
-                    </tr>
-                    <tr>
-                      <td><strong>State Variable</strong></td>
-                      <td>(Location, Orientation)</td>
-                      <td>Decision Node</td>
-                    </tr>
-                    <tr>
-                      <td><strong>Low-level Actions</strong></td>
-                      <td>Forward, TurnLeft, TurnRight</td>
-                      <td>Move North, East, South, West</td>
-                    </tr>
-                    <tr>
-                      <td><strong>Transitions</strong></td>
-                      <td>Move 1 cell / rotate</td>
-                      <td>Macro jump to next node</td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div class="teaching-tip">
+                  <i data-lucide="info"></i>
+                  <span>State space is reduced from 4K (<span id="stat-k-4k">280</span>) to 4T (<span id="stat-t-4t">100</span>) states. We have removed intermediate grid points, but we still retain orientation because it affects steering.</span>
+                </div>
               </div>
 
-              <!-- Panel 4: Abstract Graph -->
+              <!-- Panel 4: T State Space -->
               <div class="teaching-panel" id="panel-step-3">
-                <h3>4. Building the Abstract Graph</h3>
-                <p>We connect adjacent decision points by tracing corridors. The agent can select abstract actions like <strong>"Move East"</strong> to traverse directly from node A to node B.</p>
+                <h3>4. Second Abstraction — T State Space</h3>
+                <p>Instead of low-level steering, we allow abstract actions to move directly from one turning point to the next. Orientation is implicitly handled by the actions and removed from the state.</p>
                 
+                <div class="formula-box">
+                  State = Turning Point
+                </div>
+
+                <div class="stat-summary-box">
+                  <div class="summary-item">
+                    <span class="summary-label">Turning Points (T):</span>
+                    <span class="summary-val" id="stat-t-points-p4">25</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">State Space Size:</span>
+                    <span class="summary-val" id="stat-t-size">25</span>
+                  </div>
+                </div>
+
+                <div class="manual-robot-tester">
+                  <div class="tester-header">Test Abstract Action Transitions:</div>
+                  <div class="tester-btn-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; max-width: 250px; margin: 0 auto;">
+                    <div></div>
+                    <button class="btn-ctrl" id="btn-abs-north" title="Move North"><i data-lucide="arrow-up"></i> North</button>
+                    <div></div>
+                    <button class="btn-ctrl" id="btn-abs-west" title="Move West"><i data-lucide="arrow-left"></i> West</button>
+                    <div style="display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem; color: var(--primary);" id="abs-current-node">S</div>
+                    <button class="btn-ctrl" id="btn-abs-east" title="Move East"><i data-lucide="arrow-right"></i> East</button>
+                    <div></div>
+                    <button class="btn-ctrl" id="btn-abs-south" title="Move South"><i data-lucide="arrow-down"></i> South</button>
+                    <div></div>
+                  </div>
+                  <div class="manual-log-box" style="margin-top: 10px;">
+                    <div class="manual-log-title">Abstract Transition Log:</div>
+                    <div id="abs-log" class="manual-log-content"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Panel 5: Abstract Graph -->
+              <div class="teaching-panel" id="panel-step-4">
+                <h3>5. Abstract Graph Construction</h3>
+                <p>We connect turning points by tracing the corridors. Each abstract action represents a direct path between nodes, with the cell distance as the transition cost.</p>
+                
+                <div class="stat-summary-box">
+                  <div class="summary-item">
+                    <span class="summary-label">Original Space:</span>
+                    <span class="summary-val" id="stat-orig-space">280 states</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Abstract Space:</span>
+                    <span class="summary-val" id="stat-final-space">25 states</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Total Reduction:</span>
+                    <span class="summary-val" id="stat-pct-reduction">91%</span>
+                  </div>
+                </div>
+
                 <div class="teaching-tip">
                   <i data-lucide="git-commit"></i>
-                  <span>The abstract graph consists of:
-                    <br>• <strong>Nodes:</strong> Decision points (Start, Goal, Corners, Intersections).
+                  <span>The dynamically derived abstract graph consists of:
+                    <br>• <strong>Nodes:</strong> Turning points (Start, Goal, Corners, Intersections).
                     <br>• <strong>Edges:</strong> Corridors between nodes.
                     <br>• <strong>Cost:</strong> Cell distance along each corridor (edge weight).
                   </span>
-                </div>
-                
-                <p style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--text-secondary);">By storing corridor cell distance as edge weights, search algorithms like UCS will find the physically shortest route, while BFS finds the route with the fewest corridor segments.</p>
-              </div>
-
-              <!-- Panel 5: Search Demo -->
-              <div class="teaching-panel" id="panel-step-4">
-                <h3>5. Running Search Algorithms</h3>
-                <p>Apply classic search algorithms to find the optimal path from Start (S) to Goal (G) on the abstract graph.</p>
-
-                <div class="search-controls-container">
-                  <div class="control-row">
-                    <label for="maze-algo-select" class="ctrl-label">Algorithm:</label>
-                    <select id="maze-algo-select" class="select-input">
-                      <option value="BFS">Breadth-First Search (BFS)</option>
-                      <option value="DFS">Depth-First Search (DFS)</option>
-                      <option value="UCS">Uniform Cost Search (UCS)</option>
-                      <option value="IDS">Iterative Deepening (IDS)</option>
-                    </select>
-                  </div>
-                  
-                  <div class="control-row">
-                    <label for="maze-speed-slider" class="ctrl-label">Run Speed:</label>
-                    <div class="slider-wrapper">
-                      <input type="range" id="maze-speed-slider" min="1" max="5" value="3">
-                    </div>
-                  </div>
-
-                  <div class="btn-group">
-                    <button class="btn-ctrl btn-ctrl-primary" id="btn-maze-run">
-                      <i data-lucide="play"></i> Run
-                    </button>
-                    <button class="btn-ctrl" id="btn-maze-step">
-                      <i data-lucide="skip-forward"></i> Next Step
-                    </button>
-                    <button class="btn-ctrl" id="btn-maze-reset">
-                      <i data-lucide="rotate-ccw"></i> Reset
-                    </button>
-                  </div>
-                </div>
-
-                <div class="live-search-stats">
-                  <div class="stats-mini-row">
-                    <div class="mini-stat-card">
-                      <span class="mini-stat-label">Nodes Expanded:</span>
-                      <span class="mini-stat-val" id="stat-nodes-expanded">0</span>
-                    </div>
-                    <div class="mini-stat-card">
-                      <span class="mini-stat-label">Path Cost:</span>
-                      <span class="mini-stat-val" id="stat-path-cost">-</span>
-                    </div>
-                  </div>
-                  
-                  <div class="search-status-banner" id="stat-search-status">Ready to search.</div>
-                  
-                  <div class="search-list-wrapper">
-                    <div class="search-list-title">Frontier (Queue/Stack/PQ):</div>
-                    <div class="search-list-content scrollable-list-box" id="frontier-list">Empty</div>
-                  </div>
-                  
-                  <div class="search-list-wrapper">
-                    <div class="search-list-title">Reached Set:</div>
-                    <div class="search-list-content scrollable-list-box" id="reached-list">Empty</div>
-                  </div>
                 </div>
               </div>
 
@@ -576,7 +552,6 @@
   <!-- Maze Search Demo JS -->
   <script src="maze_demo/maze.js"></script>
   <script src="maze_demo/abstraction.js"></script>
-  <script src="maze_demo/search.js"></script>
   <script src="maze_demo/ui.js"></script>
   <!-- Application JS -->
   <script src="main.js"></script>

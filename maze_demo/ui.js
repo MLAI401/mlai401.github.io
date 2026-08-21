@@ -33,37 +33,29 @@ class MazeDemoUI {
     this.btnPrev = document.getElementById('btn-maze-prev');
     this.btnNext = document.getElementById('btn-maze-next');
     
-    // State Space Manual Controls
+    // Low-level State Space Controls (Step 2)
     this.btnMvForward = document.getElementById('btn-mv-forward');
     this.btnMvLeft = document.getElementById('btn-mv-left');
     this.btnMvRight = document.getElementById('btn-mv-right');
     this.manualLog = document.getElementById('manual-log');
     
-    // Search Controls
-    this.algoSelect = document.getElementById('maze-algo-select');
-    this.btnSearchRun = document.getElementById('btn-maze-run');
-    this.btnSearchStep = document.getElementById('btn-maze-step');
-    this.btnSearchReset = document.getElementById('btn-maze-reset');
-    this.speedSlider = document.getElementById('maze-speed-slider');
-    
-    // Search Stats Panel
-    this.statNodesExpanded = document.getElementById('stat-nodes-expanded');
-    this.statPathCost = document.getElementById('stat-path-cost');
-    this.statSearchStatus = document.getElementById('stat-search-status');
-    this.frontierList = document.getElementById('frontier-list');
-    this.reachedList = document.getElementById('reached-list');
+    // Abstract State Space Controls (Step 4)
+    this.btnAbsNorth = document.getElementById('btn-abs-north');
+    this.btnAbsEast = document.getElementById('btn-abs-east');
+    this.btnAbsSouth = document.getElementById('btn-abs-south');
+    this.btnAbsWest = document.getElementById('btn-abs-west');
+    this.absCurrentNode = document.getElementById('abs-current-node');
+    this.absLog = document.getElementById('abs-log');
 
     // UI State
     this.currentTeachingStep = 0; // 0 to 4
     this.robotState = new RobotState(this.maze.start.x, this.maze.start.y, 'E');
-    
-    // Search Execution State
-    this.searchSteps = [];
-    this.searchStepIndex = -1;
-    this.searchRunning = false;
-    this.searchInterval = null;
+    this.abstractRobotState = 'S'; // Start label
+    this.activeAbstractPath = null; // Last traversed abstract corridor coordinates
+    this.clearPathTimeout = null;
 
     this.init();
+    this.initStats();
   }
 
   init() {
@@ -79,39 +71,82 @@ class MazeDemoUI {
       ind.addEventListener('click', () => this.setTeachingStep(index));
     });
 
-    // Manual robot controls
-    this.btnMvForward.addEventListener('click', () => this.handleManualMove('Forward'));
-    this.btnMvLeft.addEventListener('click', () => this.handleManualMove('Turn Left'));
-    this.btnMvRight.addEventListener('click', () => this.handleManualMove('Turn Right'));
+    // Manual low-level robot controls
+    if (this.btnMvForward && this.btnMvLeft && this.btnMvRight) {
+      this.btnMvForward.addEventListener('click', () => this.handleManualMove('Forward'));
+      this.btnMvLeft.addEventListener('click', () => this.handleManualMove('Turn Left'));
+      this.btnMvRight.addEventListener('click', () => this.handleManualMove('Turn Right'));
+    }
 
+    // Keyboard controls for both low-level and abstract modes
     window.addEventListener('keydown', (e) => {
-      if (this.currentTeachingStep !== 1) return; // Only capture keys on Step 2 (4T manual state)
-      if (['ArrowUp', 'KeyW'].includes(e.code)) {
-        e.preventDefault();
-        this.handleManualMove('Forward');
-      } else if (['ArrowLeft', 'KeyA'].includes(e.code)) {
-        e.preventDefault();
-        this.handleManualMove('Turn Left');
-      } else if (['ArrowRight', 'KeyD'].includes(e.code)) {
-        e.preventDefault();
-        this.handleManualMove('Turn Right');
+      // Step 2: Low-level Manual Space
+      if (this.currentTeachingStep === 1) {
+        if (['ArrowUp', 'KeyW'].includes(e.code)) {
+          e.preventDefault();
+          this.handleManualMove('Forward');
+        } else if (['ArrowLeft', 'KeyA'].includes(e.code)) {
+          e.preventDefault();
+          this.handleManualMove('Turn Left');
+        } else if (['ArrowRight', 'KeyD'].includes(e.code)) {
+          e.preventDefault();
+          this.handleManualMove('Turn Right');
+        }
+      }
+      // Step 4: Abstract T Space
+      else if (this.currentTeachingStep === 3) {
+        if (['ArrowUp', 'KeyW'].includes(e.code)) {
+          e.preventDefault();
+          this.handleAbstractMove('Move North');
+        } else if (['ArrowRight', 'KeyD'].includes(e.code)) {
+          e.preventDefault();
+          this.handleAbstractMove('Move East');
+        } else if (['ArrowDown', 'KeyS'].includes(e.code)) {
+          e.preventDefault();
+          this.handleAbstractMove('Move South');
+        } else if (['ArrowLeft', 'KeyA'].includes(e.code)) {
+          e.preventDefault();
+          this.handleAbstractMove('Move West');
+        }
       }
     });
 
-    // Search event listeners
-    this.algoSelect.addEventListener('change', () => this.resetSearch());
-    this.btnSearchReset.addEventListener('click', () => this.resetSearch());
-    this.btnSearchStep.addEventListener('click', () => this.stepSearch());
-    this.btnSearchRun.addEventListener('click', () => {
-      if (this.searchRunning) {
-        this.pauseSearch();
-      } else {
-        this.startSearch();
-      }
-    });
+    // Abstract action button event listeners
+    if (this.btnAbsNorth && this.btnAbsEast && this.btnAbsSouth && this.btnAbsWest) {
+      this.btnAbsNorth.addEventListener('click', () => this.handleAbstractMove('Move North'));
+      this.btnAbsEast.addEventListener('click', () => this.handleAbstractMove('Move East'));
+      this.btnAbsSouth.addEventListener('click', () => this.handleAbstractMove('Move South'));
+      this.btnAbsWest.addEventListener('click', () => this.handleAbstractMove('Move West'));
+    }
 
     // Initial draw
     this.setTeachingStep(0);
+  }
+
+  initStats() {
+    const traversableCount = this.maze.getTraversableCells().length;
+    const turningPointsCount = this.decisionPoints.length;
+
+    // Update dynamically derived stats in Panel elements
+    const setSafeText = (id, text) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    };
+
+    setSafeText('stat-k-cells', traversableCount);
+    setSafeText('stat-k-cells-p2', traversableCount);
+    setSafeText('stat-4k-size', traversableCount * 4);
+    setSafeText('stat-t-points-p3', turningPointsCount);
+    setSafeText('stat-4t-size', turningPointsCount * 4);
+    setSafeText('stat-k-4k', traversableCount * 4);
+    setSafeText('stat-t-4t', turningPointsCount * 4);
+    setSafeText('stat-t-points-p4', turningPointsCount);
+    setSafeText('stat-t-size', turningPointsCount);
+    setSafeText('stat-orig-space', `${traversableCount * 4} states`);
+    setSafeText('stat-final-space', `${turningPointsCount} states`);
+    
+    const pct = Math.round((1 - (turningPointsCount / (traversableCount * 4))) * 100);
+    setSafeText('stat-pct-reduction', `${pct}%`);
   }
 
   resizeCanvas() {
@@ -142,18 +177,23 @@ class MazeDemoUI {
     // Nav buttons status
     this.btnPrev.disabled = step === 0;
     this.btnNext.textContent = step === 4 ? "Finished" : "Next Step";
-    if (step === 4) {
-      this.btnNext.disabled = true;
-    } else {
-      this.btnNext.disabled = false;
-    }
+    this.btnNext.disabled = step === 4;
 
     // Reset components depending on step
     if (step === 1) {
       this.robotState = new RobotState(this.maze.start.x, this.maze.start.y, 'E');
-      this.manualLog.innerHTML = `<div class="log-entry">Robot placed at Initial State: <strong>${this.robotState.toString()}</strong></div>`;
-    } else if (step === 4) {
-      this.resetSearch();
+      if (this.manualLog) {
+        this.manualLog.innerHTML = `<div class="log-entry">Robot placed at Initial State: <strong>${this.robotState.toString()}</strong></div>`;
+      }
+    } else if (step === 3) {
+      this.abstractRobotState = 'S';
+      this.activeAbstractPath = null;
+      if (this.absCurrentNode) {
+        this.absCurrentNode.textContent = this.abstractRobotState;
+      }
+      if (this.absLog) {
+        this.absLog.innerHTML = `<div class="log-entry">Robot placed at node: <strong>${this.abstractRobotState}</strong></div>`;
+      }
     }
 
     this.draw();
@@ -167,140 +207,58 @@ class MazeDemoUI {
     this.draw();
 
     // Log the low level transition
-    const logDiv = document.createElement('div');
-    logDiv.className = 'log-entry';
-    logDiv.innerHTML = `RESULT(${prevState.toString()}, <span>${action}</span>) = <strong>${nextState.toString()}</strong>`;
-    
-    this.manualLog.appendChild(logDiv);
-    this.manualLog.scrollTop = this.manualLog.scrollHeight;
+    if (this.manualLog) {
+      const logDiv = document.createElement('div');
+      logDiv.className = 'log-entry';
+      logDiv.innerHTML = `RESULT(${prevState.toString()}, <span>${action}</span>) = <strong>${nextState.toString()}</strong>`;
+      this.manualLog.appendChild(logDiv);
+      this.manualLog.scrollTop = this.manualLog.scrollHeight;
+    }
   }
 
-  resetSearch() {
-    this.pauseSearch();
-    
-    const algo = this.algoSelect.value;
-    const start = 'S';
-    const goal = 'G';
-    
-    if (algo === 'BFS') {
-      this.searchSteps = Search.runBFS(this.graph, start, goal);
-    } else if (algo === 'DFS') {
-      this.searchSteps = Search.runDFS(this.graph, start, goal);
-    } else if (algo === 'UCS') {
-      this.searchSteps = Search.runUCS(this.graph, start, goal);
-    } else if (algo === 'IDS') {
-      this.searchSteps = Search.runIDS(this.graph, start, goal);
-    }
+  handleAbstractMove(action) {
+    const fromNode = this.abstractRobotState;
+    const edges = this.graph[fromNode] || [];
+    const matchedEdge = edges.find(edge => edge.action === action);
 
-    this.searchStepIndex = 0;
-    this.updateSearchUI();
-    this.draw();
-  }
+    if (matchedEdge) {
+      const toNode = matchedEdge.to;
+      this.abstractRobotState = toNode;
+      this.activeAbstractPath = matchedEdge.path;
 
-  startSearch() {
-    if (this.searchSteps.length === 0 || this.searchStepIndex >= this.searchSteps.length - 1) {
-      this.resetSearch();
-    }
-
-    this.searchRunning = true;
-    this.btnSearchRun.innerHTML = '<i data-lucide="pause"></i> Pause';
-    lucide.createIcons();
-    
-    this.btnSearchStep.disabled = true;
-    this.algoSelect.disabled = true;
-
-    const runLoop = () => {
-      this.stepSearch();
-      if (this.searchStepIndex >= this.searchSteps.length - 1 || !this.searchRunning) {
-        this.pauseSearch();
-      } else {
-        const speed = parseInt(this.speedSlider.value);
-        // speed values: 1 to 5 (maps to 1200ms down to 150ms)
-        const delay = 1350 - (speed * 250); 
-        this.searchInterval = setTimeout(runLoop, delay);
+      // Update Center Label
+      if (this.absCurrentNode) {
+        this.absCurrentNode.textContent = toNode;
       }
-    };
 
-    runLoop();
-  }
+      // Log the abstract transition
+      if (this.absLog) {
+        const logDiv = document.createElement('div');
+        logDiv.className = 'log-entry';
+        logDiv.innerHTML = `RESULT(${fromNode}, <span>${action}</span>) = <strong>${toNode}</strong> <small>(cost: ${matchedEdge.cost})</small>`;
+        this.absLog.appendChild(logDiv);
+        this.absLog.scrollTop = this.absLog.scrollHeight;
+      }
 
-  pauseSearch() {
-    this.searchRunning = false;
-    this.btnSearchRun.innerHTML = '<i data-lucide="play"></i> Run';
-    lucide.createIcons();
-    this.btnSearchStep.disabled = false;
-    this.algoSelect.disabled = false;
+      // Clear highlighted corridor path after a short time
+      if (this.clearPathTimeout) {
+        clearTimeout(this.clearPathTimeout);
+      }
+      this.clearPathTimeout = setTimeout(() => {
+        this.activeAbstractPath = null;
+        this.draw();
+      }, 1200);
 
-    if (this.searchInterval) {
-      clearTimeout(this.searchInterval);
-      this.searchInterval = null;
-    }
-  }
-
-  stepSearch() {
-    if (this.searchStepIndex < this.searchSteps.length - 1) {
-      this.searchStepIndex++;
-      this.updateSearchUI();
       this.draw();
     } else {
-      this.pauseSearch();
-    }
-  }
-
-  updateSearchUI() {
-    if (this.searchStepIndex < 0 || this.searchStepIndex >= this.searchSteps.length) return;
-    
-    const step = this.searchSteps[this.searchStepIndex];
-    
-    // Update labels
-    this.statNodesExpanded.textContent = step.expanded.length;
-    
-    // Status text
-    if (step.status) {
-      this.statSearchStatus.innerHTML = `<span style="color: var(--primary); font-weight: 600;">${step.status}</span>`;
-    } else if (step.solutionPath) {
-      this.statSearchStatus.innerHTML = '<span style="color: #10b981; font-weight: 600;">Goal Reached! Solution found.</span>';
-    } else if (step.failed) {
-      this.statSearchStatus.innerHTML = '<span style="color: #ef4444; font-weight: 600;">Search failed. Goal unreachable.</span>';
-    } else if (step.currentNode) {
-      this.statSearchStatus.innerHTML = `Expanding Node: <strong style="color: var(--accent);">${step.currentNode.state}</strong> (Depth: ${step.currentNode.depth})`;
-    } else {
-      this.statSearchStatus.textContent = 'Searching...';
-    }
-
-    // Path cost
-    if (step.solutionPath) {
-      // Find final path cost
-      const finalNode = step.currentNode;
-      this.statPathCost.textContent = finalNode ? finalNode.pathCost : 'N/A';
-    } else {
-      this.statPathCost.textContent = '-';
-    }
-
-    // Render Frontier Queue/Stack List
-    this.frontierList.innerHTML = '';
-    if (step.frontier.length === 0) {
-      this.frontierList.innerHTML = '<span class="empty-list">Empty</span>';
-    } else {
-      step.frontier.forEach(item => {
-        const span = document.createElement('span');
-        span.className = 'frontier-node-badge';
-        span.innerHTML = `${item.state} <small>c=${item.cost},d=${item.depth}</small>`;
-        this.frontierList.appendChild(span);
-      });
-    }
-
-    // Render Reached Set List
-    this.reachedList.innerHTML = '';
-    if (step.reached.length === 0) {
-      this.reachedList.innerHTML = '<span class="empty-list">Empty</span>';
-    } else {
-      step.reached.forEach(state => {
-        const span = document.createElement('span');
-        span.className = 'reached-node-badge';
-        span.textContent = state;
-        this.reachedList.appendChild(span);
-      });
+      // Invalid abstract move (blocked by wall)
+      if (this.absLog) {
+        const logDiv = document.createElement('div');
+        logDiv.className = 'log-entry error';
+        logDiv.innerHTML = `<span style="color: #ef4444;">Blocked: Cannot go North/East/South/West from node ${fromNode}</span>`;
+        this.absLog.appendChild(logDiv);
+        this.absLog.scrollTop = this.absLog.scrollHeight;
+      }
     }
   }
 
@@ -352,7 +310,7 @@ class MazeDemoUI {
           this.ctx.strokeRect(cx, cy, cellSize, cellSize);
           
           // Special highlights for start/goal (when in Step 1 or 2)
-          if (this.currentTeachingStep <= 1) {
+          if (this.currentTeachingStep === 0 || this.currentTeachingStep === 1) {
             if (char === 'S') {
               this.ctx.fillStyle = 'rgba(16, 185, 129, 0.15)'; // Green glow
               this.ctx.fillRect(cx, cy, cellSize, cellSize);
@@ -366,7 +324,15 @@ class MazeDemoUI {
     }
 
     // 2. Step Specific Drawings
-    if (this.currentTeachingStep === 1) {
+    if (this.currentTeachingStep === 0) {
+      // Step 1: Highlight all traversable grid cells
+      this.ctx.fillStyle = 'rgba(79, 70, 229, 0.04)';
+      const traversable = this.maze.getTraversableCells();
+      traversable.forEach(cell => {
+        this.ctx.fillRect(cell.x * cellSize, cell.y * cellSize, cellSize, cellSize);
+      });
+    }
+    else if (this.currentTeachingStep === 1) {
       // Step 2: Highlight T state space (all traversable cells glow slightly)
       this.ctx.fillStyle = 'rgba(79, 70, 229, 0.08)'; // Indigo glow
       const traversable = this.maze.getTraversableCells();
@@ -375,20 +341,49 @@ class MazeDemoUI {
       });
       
       // Draw Robot (location + orientation)
-      this.drawRobot(this.robotState, cellSize);
+      this.drawRobot(this.robotState, cellSize, true);
     } 
-    else if (this.currentTeachingStep === 2 || this.currentTeachingStep === 3) {
-      // Step 3 (Decision Points) and Step 4 (Graph Construction)
+    else if (this.currentTeachingStep === 2) {
+      // Step 3 (Decision Points) - Highlight nodes only
       this.drawDecisionPoints(cellSize);
-      
-      if (this.currentTeachingStep === 3) {
-        // Step 4: Draw Graph Edges connecting decision points
-        this.drawGraphEdges(cellSize);
+    }
+    else if (this.currentTeachingStep === 3) {
+      // Step 4 (T State Space - Abstract movement)
+      // Draw Graph Edges connection corridors faintly
+      this.drawGraphEdges(cellSize, true); // true for faint representation
+      this.drawDecisionPoints(cellSize);
+
+      // Highlight active corridor traversal in neon emerald green
+      if (this.activeAbstractPath) {
+        this.ctx.save();
+        this.ctx.lineWidth = 4;
+        this.ctx.lineCap = 'round';
+        this.ctx.lineJoin = 'round';
+        this.ctx.strokeStyle = '#10b981'; // Emerald Green
+        this.ctx.shadowColor = '#10b981';
+        this.ctx.shadowBlur = 6;
+
+        this.ctx.beginPath();
+        this.activeAbstractPath.forEach((p, idx) => {
+          const px = (p.x + 0.5) * cellSize;
+          const py = (p.y + 0.5) * cellSize;
+          if (idx === 0) this.ctx.moveTo(px, py);
+          else this.ctx.lineTo(px, py);
+        });
+        this.ctx.stroke();
+        this.ctx.restore();
+      }
+
+      // Draw Abstract Robot at current node (no orientation)
+      const currentDP = this.decisionPoints.find(d => d.label === this.abstractRobotState);
+      if (currentDP) {
+        this.drawRobot({ x: currentDP.x, y: currentDP.y }, cellSize, false);
       }
     }
     else if (this.currentTeachingStep === 4) {
-      // Step 5: Search Algorithm Visualizer
-      this.drawSearchState(cellSize);
+      // Step 5 (Abstract Graph) - Draw nodes and full graph edges
+      this.drawGraphEdges(cellSize, false);
+      this.drawDecisionPoints(cellSize);
     }
 
     // Render Start (S) and Goal (G) text overlays
@@ -397,7 +392,7 @@ class MazeDemoUI {
     this.ctx.restore();
   }
 
-  drawRobot(state, cellSize) {
+  drawRobot(state, cellSize, showOrientation) {
     const rx = (state.x + 0.5) * cellSize;
     const ry = (state.y + 0.5) * cellSize;
     const radius = cellSize * 0.35;
@@ -418,26 +413,28 @@ class MazeDemoUI {
     this.ctx.stroke();
 
     // Arrow pointer
-    let angle = 0;
-    if (state.orientation === 'N') angle = -Math.PI / 2;
-    else if (state.orientation === 'E') angle = 0;
-    else if (state.orientation === 'S') angle = Math.PI / 2;
-    else if (state.orientation === 'W') angle = Math.PI;
+    if (showOrientation) {
+      let angle = 0;
+      if (state.orientation === 'N') angle = -Math.PI / 2;
+      else if (state.orientation === 'E') angle = 0;
+      else if (state.orientation === 'S') angle = Math.PI / 2;
+      else if (state.orientation === 'W') angle = Math.PI;
 
-    this.ctx.save();
-    this.ctx.translate(rx, ry);
-    this.ctx.rotate(angle);
+      this.ctx.save();
+      this.ctx.translate(rx, ry);
+      this.ctx.rotate(angle);
 
-    this.ctx.beginPath();
-    this.ctx.moveTo(radius * 0.4, 0);
-    this.ctx.lineTo(-radius * 0.3, -radius * 0.35);
-    this.ctx.lineTo(-radius * 0.1, 0);
-    this.ctx.lineTo(-radius * 0.3, radius * 0.35);
-    this.ctx.closePath();
-    this.ctx.fillStyle = '#ffffff';
-    this.ctx.fill();
+      this.ctx.beginPath();
+      this.ctx.moveTo(radius * 0.4, 0);
+      this.ctx.lineTo(-radius * 0.3, -radius * 0.35);
+      this.ctx.lineTo(-radius * 0.1, 0);
+      this.ctx.lineTo(-radius * 0.3, radius * 0.35);
+      this.ctx.closePath();
+      this.ctx.fillStyle = '#ffffff';
+      this.ctx.fill();
 
-    this.ctx.restore();
+      this.ctx.restore();
+    }
   }
 
   drawDecisionPoints(cellSize) {
@@ -495,16 +492,16 @@ class MazeDemoUI {
     });
   }
 
-  drawGraphEdges(cellSize) {
+  drawGraphEdges(cellSize, faint = false) {
     this.ctx.save();
     
     // Draw all lines first
-    this.ctx.lineWidth = 3;
+    this.ctx.lineWidth = faint ? 1.5 : 3;
     this.ctx.lineCap = 'round';
     this.ctx.lineJoin = 'round';
     
-    // Color for graph lines - Semi transparent indigo
-    this.ctx.strokeStyle = 'rgba(79, 70, 229, 0.5)';
+    // Color for graph lines
+    this.ctx.strokeStyle = faint ? 'rgba(79, 70, 229, 0.15)' : 'rgba(79, 70, 229, 0.5)';
 
     const drawnEdges = new Set();
 
@@ -529,8 +526,8 @@ class MazeDemoUI {
         });
         this.ctx.stroke();
 
-        // Draw path cost weight label at the center cell of the path
-        if (edge.path.length > 2) {
+        // Draw path cost weight label at the center cell of the path (unless faint)
+        if (!faint && edge.path.length > 2) {
           const midIdx = Math.floor(edge.path.length / 2);
           const midPt = edge.path[midIdx];
           const mx = (midPt.x + 0.5) * cellSize;
@@ -556,136 +553,6 @@ class MazeDemoUI {
     });
 
     this.ctx.restore();
-  }
-
-  drawSearchState(cellSize) {
-    if (this.searchStepIndex < 0 || this.searchStepIndex >= this.searchSteps.length) {
-      // Draw graph idle
-      this.drawGraphEdges(cellSize);
-      this.drawDecisionPoints(cellSize);
-      return;
-    }
-
-    const step = this.searchSteps[this.searchStepIndex];
-    
-    // Draw all abstract graph lines with lower opacity
-    this.ctx.save();
-    this.ctx.lineWidth = 2;
-    this.ctx.strokeStyle = 'rgba(79, 70, 229, 0.15)';
-    this.decisionPoints.forEach(dp => {
-      const connections = this.graph[dp.label] || [];
-      connections.forEach(edge => {
-        this.ctx.beginPath();
-        edge.path.forEach((p, idx) => {
-          const px = (p.x + 0.5) * cellSize;
-          const py = (p.y + 0.5) * cellSize;
-          if (idx === 0) this.ctx.moveTo(px, py);
-          else this.ctx.lineTo(px, py);
-        });
-        this.ctx.stroke();
-      });
-    });
-    this.ctx.restore();
-
-    // Reached set cells - Draw light blue background
-    this.ctx.save();
-    step.reached.forEach(label => {
-      const dp = this.decisionPoints.find(d => d.label === label);
-      if (dp) {
-        this.ctx.fillStyle = 'rgba(34, 211, 238, 0.1)'; // Cyan glow
-        this.ctx.fillRect(dp.x * cellSize, dp.y * cellSize, cellSize, cellSize);
-      }
-    });
-    this.ctx.restore();
-
-    // Draw active decision point nodes with colors matching search states
-    this.decisionPoints.forEach(dp => {
-      const cx = (dp.x + 0.5) * cellSize;
-      const cy = (dp.y + 0.5) * cellSize;
-      const radius = cellSize * 0.35;
-
-      let isCurrent = step.currentNode && step.currentNode.state === dp.label;
-      let isFrontier = step.frontier.some(n => n.state === dp.label);
-      let isReached = step.reached.includes(dp.label);
-      let isExpanded = step.expanded.includes(dp.label);
-
-      // Determine node fill color
-      let fillColor = '#64748b'; // Slate (Unvisited)
-      let glowColor = null;
-
-      if (isCurrent) {
-        fillColor = '#db2777'; // Pink 600 (Current Node being expanded)
-        glowColor = 'rgba(219, 39, 119, 0.4)';
-      } else if (isFrontier) {
-        fillColor = '#eab308'; // Yellow 550 (Frontier)
-        glowColor = 'rgba(234, 179, 8, 0.35)';
-      } else if (isExpanded) {
-        fillColor = '#3b82f6'; // Blue 500 (Expanded/Closed)
-        glowColor = 'rgba(59, 130, 246, 0.2)';
-      } else if (isReached) {
-        fillColor = '#0891b2'; // Cyan (Reached/Open)
-        glowColor = 'rgba(8, 145, 178, 0.2)';
-      }
-
-      // Draw glows
-      if (glowColor) {
-        this.ctx.beginPath();
-        this.ctx.arc(cx, cy, radius + (isCurrent ? 6 : 3), 0, 2 * Math.PI);
-        this.ctx.fillStyle = glowColor;
-        this.ctx.fill();
-      }
-
-      // Draw circle
-      this.ctx.beginPath();
-      this.ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
-      this.ctx.fillStyle = fillColor;
-      this.ctx.fill();
-      
-      this.ctx.strokeStyle = isCurrent ? '#ffffff' : 'rgba(255,255,255,0.8)';
-      this.ctx.lineWidth = isCurrent ? 3 : 1.5;
-      this.ctx.stroke();
-
-      // Label text
-      this.ctx.fillStyle = '#ffffff';
-      this.ctx.font = `bold ${Math.round(cellSize * 0.4)}px Outfit, sans-serif`;
-      this.ctx.textAlign = 'center';
-      this.ctx.textBaseline = 'middle';
-      this.ctx.fillText(dp.label, cx, cy);
-    });
-
-    // Draw active connections inside expanded/solution paths
-    // If a solution path is found, highlight the corridor coordinates in neon green!
-    if (step.solutionPath) {
-      this.ctx.save();
-      this.ctx.lineWidth = 5;
-      this.ctx.lineCap = 'round';
-      this.ctx.lineJoin = 'round';
-      this.ctx.strokeStyle = '#10b981'; // Emerald Green
-      this.ctx.shadowColor = '#10b981';
-      this.ctx.shadowBlur = 10;
-
-      this.ctx.beginPath();
-      for (let i = 0; i < step.solutionPath.length - 1; i++) {
-        const fromLabel = step.solutionPath[i];
-        const toLabel = step.solutionPath[i+1];
-        
-        // Find edge pathway
-        const edge = this.graph[fromLabel].find(e => e.to === toLabel);
-        if (edge) {
-          edge.path.forEach((p, idx) => {
-            const px = (p.x + 0.5) * cellSize;
-            const py = (p.y + 0.5) * cellSize;
-            if (i === 0 && idx === 0) {
-              this.ctx.moveTo(px, py);
-            } else {
-              this.ctx.lineTo(px, py);
-            }
-          });
-        }
-      }
-      this.ctx.stroke();
-      this.ctx.restore();
-    }
   }
 }
 

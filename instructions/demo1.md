@@ -25,22 +25,23 @@ Use a maze large enough to clearly demonstrate the effect of abstraction.
 The same maze must be used throughout all demonstrations.
 
 ⸻
+Yes. The terminology should make it explicit that orientation is still retained in Step 3, so the reduction is from 4K to 4T.
 
-2. Initial Representation — 4T State Space
+2. Initial Representation — 4K State Space
 
-First show the maze using the lower-level representation.
+First, represent the maze at the grid-cell level.
 
 Let:
 
-T = \text{number of traversable locations/cells}
+K = \text{number of traversable grid points/cells in the maze}
 
-The robot has four possible orientations:
+At each grid point, the robot can have four possible orientations:
 
 N,\ E,\ S,\ W
 
 Therefore, define a state as:
 
-State=(Location,Orientation)
+\boxed{State=(Grid\ Point,\ Orientation)}
 
 For example:
 
@@ -48,13 +49,13 @@ For example:
 
 Display:
 
-* Number of traversable locations T
-* Number of possible orientations = 4
+* Number of traversable grid points: K
+* Number of possible orientations: 4
 * State-space size:
 
-\boxed{|S|=4T}
+\boxed{|S|=4K}
 
-The visualization should allow students to see the robot’s current location and orientation.
+The visualization should show both the robot’s current grid position and orientation.
 
 Actions
 
@@ -64,74 +65,135 @@ Use low-level actions such as:
 * Turn Left
 * Turn Right
 
-Example transition:
+For example:
 
 RESULT((A,N),Forward)=(B,N)
 
 RESULT((A,N),TurnRight)=(A,E)
 
-Clearly show:
+Clearly visualize:
 
-Current State → Action → New State
+\boxed{Current\ State \rightarrow Action \rightarrow New\ State}
 
 ⸻
 
-3. Abstraction — Decision Points
+3. First Abstraction — Turning Points: 4T State Space
 
-Next introduce the key abstraction:
+Now introduce the first abstraction:
 
-Decisions are needed only at intersections and turning points.
+A navigation decision is needed only at a turning point or intersection.
 
-Identify and visually mark all relevant decision points in the maze.
+Instead of representing every traversable grid point, identify only the locations where the robot may need to make a navigation decision.
 
-Examples:
+Let:
+
+T = \text{number of relevant turning points/intersections}
+
+For example:
 
 A -------- B
            |
            |
            C
 
-Positions inside a straight corridor should no longer be represented as individual search states.
+Here, the intermediate grid points along the straight corridor do not need to be represented as separate locations in the search problem.
 
-Assign labels such as:
+Assign labels to the relevant turning points:
 
 A, B, C, D, E, ...
 
-to the decision points.
+However, orientation still matters at this level of abstraction.
 
-Display the number of decision points:
+Therefore, a state is:
 
-J = \text{number of relevant turning/intersection points}
+\boxed{State=(Turning\ Point,\ Orientation)}
 
-Then show the reduced state-space size.
+For example, at turning point B:
 
+(B,N),\quad(B,E),\quad(B,S),\quad(B,W)
+
+Since there are T turning points and four possible orientations at each point:
+
+\boxed{|S|=4T}
+
+The visualization should explicitly show the reduction:
+
+\boxed{4K \rightarrow 4T}
+
+where typically:
+
+T \ll K
+
+The important idea for students is that we have not yet removed orientation. We have only removed unnecessary locations along straight corridors.
+
+So the conceptual change is:
+
+\underbrace{(Grid\ Point,\ Orientation)}_{4K}
+\quad\longrightarrow\quad
+\underbrace{(Turning\ Point,\ Orientation)}_{4T}
+
+This makes Step 3 a clear example of state-space abstraction: retain information relevant to making decisions while eliminating unnecessary intermediate positions.
 ⸻
 
-4. Abstract Actions
+4. Second Abstraction — Abstract Actions: T State Space
 
-In the abstract representation, allow the robot to move directly from one decision point to the next.
+In this representation, allow the robot to move directly from one turning point to the next.
 
 Actions should be:
 
-Move North
-Move East
-Move South
-Move West
+* Move North
+* Move East
+* Move South
+* Move West
 
 For example:
 
 RESULT(A,MoveNorth)=B
 
-One abstract action may therefore represent many physical movements through a corridor.
+At this level, the robot’s orientation no longer needs to be represented separately. The action itself specifies the direction of movement.
 
-Visually demonstrate the difference:
+Therefore:
+
+\boxed{State = Turning\ Point}
+
+rather than:
+
+State=(Turning\ Point,Orientation)
+
+If there are T turning points/intersections, then:
+
+\boxed{|S|=T}
+
+One abstract action may represent many lower-level movements through a corridor.
 
 Lower-level representation:
 A → x → x → x → B
 Abstract representation:
 A ─────────────→ B
 
-Students should be able to see that the intermediate corridor positions have been removed from the search representation.
+The visualization should show the progression:
+
+\boxed{4K \rightarrow 4T \rightarrow T}
+
+where:
+
+K=\text{number of traversable grid points}
+
+and
+
+T=\text{number of relevant turning points/intersections}
+
+The key idea is:
+
+Step 3 removes unnecessary positions along corridors. Step 4 removes unnecessary orientation information by using directional abstract actions.
+
+So the state representation changes as follows:
+
+(Grid\ Point,Orientation)
+\rightarrow
+(Turning\ Point,Orientation)
+\rightarrow
+Turning\ Point
 
 ⸻
 
@@ -184,160 +246,51 @@ The visualization should make the reduction in state space obvious.
 
 ⸻
 
-7. Search Demo
+7. Teaching Flow
 
-After abstraction, allow students to run search algorithms on the abstract graph.
-
-Implement at least:
-
-* BFS
-* DFS
-* UCS
-* IDS
-
-For each algorithm, visualize:
-
-* Current node being expanded
-* Frontier
-* Reached set
-* Expansion order
-* Final solution path
-* Number of nodes expanded
-* Path cost, where applicable
-
-Use AIMA 4th-edition terminology, especially:
-
-State
-Action
-Transition Model / RESULT
-Initial State
-Goal State
-Frontier
-Reached
-Node
-Expand
-Solution Path
-Path Cost
-
-⸻
-
-8. Step Mode
-
-Do not only provide a Run button.
-
-Provide:
-
-Reset
-Next Step
-Run
-
-Next Step is important for teaching.
-
-At every step, show something similar to:
-
-Current State: B
-Expanded Node: B
-Frontier: [C, D]
-Reached: {A, B, C, D}
-
-Highlight the corresponding locations directly on the maze.
-
-⸻
-
-9. Teaching Flow
-
-The demo should support this sequence during a lecture:
+The demo should support the following sequence during a lecture:
 
 Physical Maze
       ↓
-Initial State Representation
+Identify Traversable Grid Points (K)
       ↓
-State = (Location, Orientation)
+Initial State Representation
+State = (Grid Point, Orientation)
+      ↓
+State Space = 4K
+      ↓
+First Abstraction
+Keep Only Turning Points / Intersections
+      ↓
+State = (Turning Point, Orientation)
       ↓
 State Space = 4T
       ↓
-Introduce Abstraction
+Second Abstraction
+Use Abstract Actions: Move N / E / S / W
       ↓
-Keep only relevant decision points
+Remove Orientation from State
+      ↓
+State = Turning Point
+      ↓
+State Space = T
       ↓
 Create Abstract Maze Graph
-      ↓
-State = Decision Point
-      ↓
-Smaller State Space
-      ↓
-Apply Search Algorithm
-      ↓
-Find Solution
 
-The purpose is not simply to create a maze-solving application.
+The visualization should emphasize the progressive reduction:
 
-The primary purpose is to visually teach:
+\boxed{4K \rightarrow 4T \rightarrow T}
 
-How we formulate and abstract a real problem before applying a search algorithm.
+where:
+
+K=\text{number of traversable grid points}
+
+T=\text{number of relevant turning points/intersections}
+
+The purpose of the demo is to show students how abstraction changes the state representation and reduces the state space, rather than to demonstrate search algorithms.
 
 ⸻
-
-10. Code Organization
-
-Keep the teaching concepts separate from the user interface.
-
-Suggested structure:
-
-maze_demo/
-├── app.py
-├── maze.py
-├── abstraction.py
-├── search.py
-├── templates/
-│   └── index.html
-├── static/
-│   ├── css/
-│   │   └── style.css
-│   └── js/
-│       └── maze.js
-├── tests/
-│   ├── test_maze.py
-│   ├── test_abstraction.py
-│   └── test_search.py
-└── README.md
-
-maze.py
-
-Responsible for:
-
-* Maze representation
-* Traversable locations
-* Robot position
-* Robot orientation
-* Initial 4T state representation
-* Low-level transition model
-
-abstraction.py
-
-Responsible for:
-
-* Detecting turning points
-* Detecting intersections
-* Detecting dead ends where relevant
-* Keeping start and goal
-* Connecting neighboring decision points
-* Creating the abstract graph
-
-search.py
-
-Implement:
-
-BFS
-DFS
-UCS
-IDS
-
-Keep search implementations independent from the visualization.
-
-⸻
-
-11. Important Requirement
+8. Important Requirement
 
 Do not hard-code the abstract graph.
 
@@ -362,14 +315,12 @@ This is important because students need to see that:
 \text{Abstraction}
 \rightarrow
 \text{Graph}
-\rightarrow
-\text{Search}
 
 rather than being given an unrelated pre-built graph.
 
 ⸻
 
-12. Final Deliverable
+9. Final Deliverable
 
 The completed demo should allow an instructor to:
 
@@ -382,8 +333,5 @@ The completed demo should allow an instructor to:
 7. Highlight intersections/turning points.
 8. Automatically construct the abstract graph.
 9. Compare the initial and abstract state spaces.
-10. Run BFS, DFS, UCS, and IDS.
-11. Step through the search using frontier and reached.
-12. Highlight the final solution path.
 
 Keep the interface simple and instructional. Prioritize conceptual clarity over visual complexity.

@@ -57,10 +57,6 @@ document.addEventListener('DOMContentLoaded', () => {
       if (targetId !== 'view-kmeans' && typeof stopAutoRun === 'function') {
         stopAutoRun();
       }
-      // Stop Maze Search running loop if switching away
-      if (targetId !== 'view-maze' && window.mazeDemo && window.mazeDemo.searchRunning) {
-        window.mazeDemo.pauseSearch();
-      }
 
       tabs.forEach(t => t.classList.remove('active'));
       views.forEach(v => v.classList.remove('active'));
