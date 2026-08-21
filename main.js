@@ -45,9 +45,47 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
+  // --- Playground Tabs ---
+  const tabs = document.querySelectorAll('.playground-tab');
+  const views = document.querySelectorAll('.playground-view');
 
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const targetId = tab.getAttribute('data-target');
+      
+      // Stop K-Means running loop if switching away
+      if (targetId !== 'view-kmeans' && typeof stopAutoRun === 'function') {
+        stopAutoRun();
+      }
+      // Stop Maze Search running loop if switching away
+      if (targetId !== 'view-maze' && window.mazeDemo && window.mazeDemo.searchRunning) {
+        window.mazeDemo.pauseSearch();
+      }
 
-  // --- K-Means Clustering Visualizer Engine ---
+      tabs.forEach(t => t.classList.remove('active'));
+      views.forEach(v => v.classList.remove('active'));
+
+      tab.classList.add('active');
+      const targetView = document.getElementById(targetId);
+      if (targetView) {
+        targetView.classList.add('active');
+      }
+
+      // Initialize or resize Maze visualizer
+      if (targetId === 'view-maze') {
+        if (!window.mazeDemo) {
+          window.mazeDemo = new MazeDemoUI();
+        } else {
+          window.mazeDemo.resizeCanvas();
+        }
+      } else if (targetId === 'view-kmeans') {
+        // Resize K-Means canvas
+        if (typeof resizeCanvas === 'function') {
+          resizeCanvas();
+        }
+      }
+    });
+  });
   const canvas = document.getElementById('kmeans-canvas');
   const ctx = canvas.getContext('2d');
   const kSlider = document.getElementById('k-slider');

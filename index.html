@@ -164,68 +164,325 @@
   </section>
 
   <!-- Interactive Playground Section -->
-  <section class="section" id="playground" style="background: rgba(241, 245, 249, 0.5);">
+  <section class="section" id="playground" style="background: rgba(241, 245, 249, 0.5); position: relative;">
     <div class="ambient-glow-green"></div>
     <div class="container">
       <div class="section-header">
-        <span class="section-subtitle">Interactive Demo</span>
-        <h2 id="playground-title">AI Playground: K-Means Clustering</h2>
-        <p>Interactive algorithm visualizer. Click on the grid to add custom 2D points, choose the number of clusters, and step through the algorithm to watch centroids converge.</p>
+        <span class="section-subtitle">Interactive Demos</span>
+        <h2 id="playground-title">AI Playground</h2>
+        <p>Explore foundational AI and ML concepts in action. Toggle between the interactive visualizers below.</p>
+        
+        <!-- Playground Tab Navigation -->
+        <div class="playground-tabs">
+          <button class="playground-tab active" data-target="view-kmeans">
+            <i data-lucide="bar-chart-2"></i> K-Means Clustering
+          </button>
+          <button class="playground-tab" data-target="view-maze">
+            <i data-lucide="grid"></i> Maze Search & Abstraction
+          </button>
+        </div>
       </div>
       
-      <div class="playground-grid">
-        <!-- Visualizer Canvas -->
-        <div class="canvas-container" id="visualizer-canvas-container">
-          <canvas id="kmeans-canvas"></canvas>
-          <div class="canvas-overlay" id="visualizer-overlay-info">
-            <div>Mode: <span style="color: var(--accent);" id="overlay-mode">Click grid to add points</span></div>
-            <div>Iteration: <span style="color: var(--accent);" id="overlay-iter">0</span></div>
-            <div>Points: <span style="color: var(--accent);" id="overlay-points-count">0</span></div>
+      <!-- Tab 1: K-Means Clustering View -->
+      <div class="playground-view active" id="view-kmeans">
+        <div class="playground-grid">
+          <!-- Visualizer Canvas -->
+          <div class="canvas-container" id="visualizer-canvas-container">
+            <canvas id="kmeans-canvas"></canvas>
+            <div class="canvas-overlay" id="visualizer-overlay-info">
+              <div>Mode: <span style="color: var(--accent);" id="overlay-mode">Click grid to add points</span></div>
+              <div>Iteration: <span style="color: var(--accent);" id="overlay-iter">0</span></div>
+              <div>Points: <span style="color: var(--accent);" id="overlay-points-count">0</span></div>
+            </div>
+          </div>
+          
+          <!-- Controls Panel -->
+          <div class="playground-controls glass-panel" id="controls-panel">
+            <div class="controls-group">
+              <div class="control-label">
+                <span>Number of Clusters (K)</span>
+                <span class="slider-val" id="k-value-display">3</span>
+              </div>
+              <div class="control-slider-container">
+                <input type="range" id="k-slider" min="2" max="6" value="3" step="1">
+              </div>
+            </div>
+            
+            <div class="controls-group">
+              <div class="btn-group">
+                <button class="btn-ctrl btn-ctrl-primary" id="btn-kmeans-run">
+                  <i data-lucide="play"></i> Auto Run
+                </button>
+                <button class="btn-ctrl" id="btn-kmeans-step">
+                  <i data-lucide="skip-forward"></i> Step Algorithm
+                </button>
+                <button class="btn-ctrl" id="btn-kmeans-random">
+                  <i data-lucide="shuffle"></i> Gen Points
+                </button>
+                <button class="btn-ctrl" id="btn-kmeans-reset">
+                  <i data-lucide="rotate-ccw"></i> Reset
+                </button>
+              </div>
+            </div>
+            
+            <div class="playground-stats" id="stats-panel">
+              <div class="pg-stat-row">
+                <span>Status:</span>
+                <span class="pg-stat-val" id="status-text" style="color: var(--accent);">Waiting for points</span>
+              </div>
+              <div class="pg-stat-row">
+                <span>Centroids Placed:</span>
+                <span class="pg-stat-val" id="centroids-placed-val">0 / 3</span>
+              </div>
+              <div class="pg-stat-row">
+                <span>Converged:</span>
+                <span class="pg-stat-val" id="converged-val">No</span>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+
+      <!-- Tab 2: Maze Search & Abstraction View -->
+      <div class="playground-view" id="view-maze">
         
-        <!-- Controls Panel -->
-        <div class="playground-controls glass-panel" id="controls-panel">
-          <div class="controls-group">
-            <div class="control-label">
-              <span>Number of Clusters (K)</span>
-              <span class="slider-val" id="k-value-display">3</span>
-            </div>
-            <div class="control-slider-container">
-              <input type="range" id="k-slider" min="2" max="6" value="3" step="1">
-            </div>
+        <!-- Teaching Flow Progress Indicator -->
+        <div class="flow-progress-bar">
+          <div class="flow-step active" data-step="0">
+            <span class="flow-step-num">1</span>
+            <span class="flow-step-name">Physical Maze</span>
+          </div>
+          <div class="flow-step" data-step="1">
+            <span class="flow-step-num">2</span>
+            <span class="flow-step-name">4T State Space</span>
+          </div>
+          <div class="flow-step" data-step="2">
+            <span class="flow-step-num">3</span>
+            <span class="flow-step-name">Decision Points</span>
+          </div>
+          <div class="flow-step" data-step="3">
+            <span class="flow-step-num">4</span>
+            <span class="flow-step-name">Abstract Graph</span>
+          </div>
+          <div class="flow-step" data-step="4">
+            <span class="flow-step-num">5</span>
+            <span class="flow-step-name">Search Demo</span>
+          </div>
+        </div>
+
+        <div class="playground-grid">
+          <!-- Visualizer Canvas -->
+          <div class="canvas-container" id="maze-canvas-container">
+            <canvas id="maze-canvas"></canvas>
           </div>
           
-          <div class="controls-group">
-            <div class="btn-group">
-              <button class="btn-ctrl btn-ctrl-primary" id="btn-kmeans-run">
-                <i data-lucide="play"></i> Auto Run
+          <!-- Controls Panel -->
+          <div class="playground-controls glass-panel" id="maze-controls-panel">
+            
+            <!-- Step-specific details pane -->
+            <div class="teaching-panels-container">
+              
+              <!-- Panel 1: Physical Maze -->
+              <div class="teaching-panel active" id="panel-step-0">
+                <h3>1. Physical Maze Grid</h3>
+                <p>We begin with a physical grid representation of the environment. The maze contains traversable corridor cells, black wall obstacles, a starting location <span class="badge-s">S</span>, and a goal location <span class="badge-g">G</span>.</p>
+                
+                <div class="stat-summary-box">
+                  <div class="summary-item">
+                    <span class="summary-label">Grid Size:</span>
+                    <span class="summary-val">15 &times; 11</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Total Grid Cells:</span>
+                    <span class="summary-val">165 cells</span>
+                  </div>
+                </div>
+                
+                <div class="teaching-tip">
+                  <i data-lucide="info"></i>
+                  <span>In a physical grid, search algorithms must explore cell-by-cell. For large grids, this creates a massive search space. Can we abstract this environment?</span>
+                </div>
+              </div>
+
+              <!-- Panel 2: 4T State Space -->
+              <div class="teaching-panel" id="panel-step-1">
+                <h3>2. Low-level State Space (4T)</h3>
+                <p>In a standard problem formulation, a physical agent must track both its location and its current orientation (facing North, East, South, or West):</p>
+                
+                <div class="formula-box">
+                  State = (Location, Orientation)
+                </div>
+                
+                <div class="stat-summary-box">
+                  <div class="summary-item">
+                    <span class="summary-label">Traversable Cells (T):</span>
+                    <span class="summary-val">70 cells</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Orientations:</span>
+                    <span class="summary-val">4 (N, E, S, W)</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">State Space Size:</span>
+                    <span class="summary-val">|S| = 4T = 280</span>
+                  </div>
+                </div>
+
+                <div class="manual-robot-tester">
+                  <div class="tester-header">Test Low-Level Transitions:</div>
+                  <div class="tester-btn-group">
+                    <button class="btn-ctrl" id="btn-mv-left" title="Turn Left"><i data-lucide="rotate-ccw"></i> Left</button>
+                    <button class="btn-ctrl btn-ctrl-primary" id="btn-mv-forward" title="Forward"><i data-lucide="arrow-up"></i> Forward</button>
+                    <button class="btn-ctrl" id="btn-mv-right" title="Turn Right"><i data-lucide="rotate-cw"></i> Right</button>
+                  </div>
+                  <div class="manual-log-box">
+                    <div class="manual-log-title">State-Action Transition Log:</div>
+                    <div id="manual-log" class="manual-log-content"></div>
+                  </div>
+                  <div class="tester-footer-tip">You can also use <kbd>W</kbd>, <kbd>A</kbd>, <kbd>D</kbd> or <kbd>↑</kbd>, <kbd>←</kbd>, <kbd>→</kbd> on your keyboard.</div>
+                </div>
+              </div>
+
+              <!-- Panel 3: Decision Points -->
+              <div class="teaching-panel" id="panel-step-2">
+                <h3>3. Abstracting the State Space</h3>
+                <p>To reduce states, we define a key abstraction: decisions are only necessary at intersections, turning points (corners), dead-ends, the start (S), and the goal (G).</p>
+                
+                <div class="stat-summary-box">
+                  <div class="summary-item">
+                    <span class="summary-label">Decision Points (J):</span>
+                    <span class="summary-val">17 nodes</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">State Space Size:</span>
+                    <span class="summary-val">|S| = J = 17</span>
+                  </div>
+                </div>
+
+                <table class="comparison-table">
+                  <thead>
+                    <tr>
+                      <th>Dimension</th>
+                      <th>Initial Representation</th>
+                      <th>Abstract Representation</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>State Space Size</strong></td>
+                      <td>4T = 280 states</td>
+                      <td style="color: var(--accent); font-weight: 700;">J = 17 states (94% reduction)</td>
+                    </tr>
+                    <tr>
+                      <td><strong>State Variable</strong></td>
+                      <td>(Location, Orientation)</td>
+                      <td>Decision Node</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Low-level Actions</strong></td>
+                      <td>Forward, TurnLeft, TurnRight</td>
+                      <td>Move North, East, South, West</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Transitions</strong></td>
+                      <td>Move 1 cell / rotate</td>
+                      <td>Macro jump to next node</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Panel 4: Abstract Graph -->
+              <div class="teaching-panel" id="panel-step-3">
+                <h3>4. Building the Abstract Graph</h3>
+                <p>We connect adjacent decision points by tracing corridors. The agent can select abstract actions like <strong>"Move East"</strong> to traverse directly from node A to node B.</p>
+                
+                <div class="teaching-tip">
+                  <i data-lucide="git-commit"></i>
+                  <span>The abstract graph consists of:
+                    <br>• <strong>Nodes:</strong> Decision points (Start, Goal, Corners, Intersections).
+                    <br>• <strong>Edges:</strong> Corridors between nodes.
+                    <br>• <strong>Cost:</strong> Cell distance along each corridor (edge weight).
+                  </span>
+                </div>
+                
+                <p style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--text-secondary);">By storing corridor cell distance as edge weights, search algorithms like UCS will find the physically shortest route, while BFS finds the route with the fewest corridor segments.</p>
+              </div>
+
+              <!-- Panel 5: Search Demo -->
+              <div class="teaching-panel" id="panel-step-4">
+                <h3>5. Running Search Algorithms</h3>
+                <p>Apply classic search algorithms to find the optimal path from Start (S) to Goal (G) on the abstract graph.</p>
+
+                <div class="search-controls-container">
+                  <div class="control-row">
+                    <label for="maze-algo-select" class="ctrl-label">Algorithm:</label>
+                    <select id="maze-algo-select" class="select-input">
+                      <option value="BFS">Breadth-First Search (BFS)</option>
+                      <option value="DFS">Depth-First Search (DFS)</option>
+                      <option value="UCS">Uniform Cost Search (UCS)</option>
+                      <option value="IDS">Iterative Deepening (IDS)</option>
+                    </select>
+                  </div>
+                  
+                  <div class="control-row">
+                    <label for="maze-speed-slider" class="ctrl-label">Run Speed:</label>
+                    <div class="slider-wrapper">
+                      <input type="range" id="maze-speed-slider" min="1" max="5" value="3">
+                    </div>
+                  </div>
+
+                  <div class="btn-group">
+                    <button class="btn-ctrl btn-ctrl-primary" id="btn-maze-run">
+                      <i data-lucide="play"></i> Run
+                    </button>
+                    <button class="btn-ctrl" id="btn-maze-step">
+                      <i data-lucide="skip-forward"></i> Next Step
+                    </button>
+                    <button class="btn-ctrl" id="btn-maze-reset">
+                      <i data-lucide="rotate-ccw"></i> Reset
+                    </button>
+                  </div>
+                </div>
+
+                <div class="live-search-stats">
+                  <div class="stats-mini-row">
+                    <div class="mini-stat-card">
+                      <span class="mini-stat-label">Nodes Expanded:</span>
+                      <span class="mini-stat-val" id="stat-nodes-expanded">0</span>
+                    </div>
+                    <div class="mini-stat-card">
+                      <span class="mini-stat-label">Path Cost:</span>
+                      <span class="mini-stat-val" id="stat-path-cost">-</span>
+                    </div>
+                  </div>
+                  
+                  <div class="search-status-banner" id="stat-search-status">Ready to search.</div>
+                  
+                  <div class="search-list-wrapper">
+                    <div class="search-list-title">Frontier (Queue/Stack/PQ):</div>
+                    <div class="search-list-content scrollable-list-box" id="frontier-list">Empty</div>
+                  </div>
+                  
+                  <div class="search-list-wrapper">
+                    <div class="search-list-title">Reached Set:</div>
+                    <div class="search-list-content scrollable-list-box" id="reached-list">Empty</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Stepped Flow Navigation Buttons -->
+            <div class="step-nav-footer">
+              <button class="btn-ctrl" id="btn-maze-prev" disabled>
+                <i data-lucide="chevron-left"></i> Back
               </button>
-              <button class="btn-ctrl" id="btn-kmeans-step">
-                <i data-lucide="skip-forward"></i> Step Algorithm
-              </button>
-              <button class="btn-ctrl" id="btn-kmeans-random">
-                <i data-lucide="shuffle"></i> Gen Points
-              </button>
-              <button class="btn-ctrl" id="btn-kmeans-reset">
-                <i data-lucide="rotate-ccw"></i> Reset
+              <button class="btn-ctrl btn-ctrl-primary" id="btn-maze-next">
+                Next Step <i data-lucide="chevron-right"></i>
               </button>
             </div>
-          </div>
-          
-          <div class="playground-stats" id="stats-panel">
-            <div class="pg-stat-row">
-              <span>Status:</span>
-              <span class="pg-stat-val" id="status-text" style="color: var(--accent);">Waiting for points</span>
-            </div>
-            <div class="pg-stat-row">
-              <span>Centroids Placed:</span>
-              <span class="pg-stat-val" id="centroids-placed-val">0 / 3</span>
-            </div>
-            <div class="pg-stat-row">
-              <span>Converged:</span>
-              <span class="pg-stat-val" id="converged-val">No</span>
-            </div>
+
           </div>
         </div>
       </div>
@@ -316,6 +573,11 @@
 
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+  <!-- Maze Search Demo JS -->
+  <script src="maze_demo/maze.js"></script>
+  <script src="maze_demo/abstraction.js"></script>
+  <script src="maze_demo/search.js"></script>
+  <script src="maze_demo/ui.js"></script>
   <!-- Application JS -->
   <script src="main.js"></script>
 </body>
