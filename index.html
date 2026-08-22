@@ -268,6 +268,10 @@
             <span class="flow-step-num">5</span>
             <span class="flow-step-name">Abstract Graph</span>
           </div>
+          <div class="flow-step" data-step="5">
+            <span class="flow-step-num">6</span>
+            <span class="flow-step-name">Comparison</span>
+          </div>
         </div>
 
         <div class="playground-grid">
@@ -447,6 +451,54 @@
                 </div>
               </div>
 
+              <!-- Panel 6: Side-by-Side Comparison -->
+              <div class="teaching-panel" id="panel-step-5">
+                <h3>6. Side-by-Side Comparison</h3>
+                <p>Compare the initial representation and state space with the abstracted representation.</p>
+                
+                <div class="comparison-table-wrapper" style="margin-top: 10px;">
+                  <table class="comparison-table">
+                    <thead>
+                      <tr>
+                        <th>Initial Representation</th>
+                        <th>Abstract Representation</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>Every traversable location matters</strong></td>
+                        <td><strong>Decision points matter</strong></td>
+                      </tr>
+                      <tr>
+                        <td>State = location + orientation</td>
+                        <td>State = decision point</td>
+                      </tr>
+                      <tr>
+                        <td>Forward / Turn Left / Turn Right</td>
+                        <td>Move N / E / S / W</td>
+                      </tr>
+                      <tr>
+                        <td><span id="compare-initial-size">280</span> states <br><small>(4T or 4K states)</small></td>
+                        <td><span id="compare-abstract-size">25</span> states <br><small>(T or J states)</small></td>
+                      </tr>
+                      <tr>
+                        <td>Many small transitions</td>
+                        <td>One transition between decision points</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="comparison-visual-box" style="margin-top: 15px;">
+                  <div class="comparison-stat-bar">
+                    <span class="bar-label" style="font-size: 0.75rem; font-weight: 500; display: block; margin-bottom: 5px;">State Space Size Reduction:</span>
+                    <div class="bar-container" style="background: rgba(15, 23, 42, 0.05); border-radius: 4px; overflow: hidden; height: 18px; position: relative;">
+                      <div class="bar-fill" id="compare-bar-fill" style="background: linear-gradient(90deg, var(--primary), #10b981); height: 100%; transition: width 0.5s ease; width: 0%; font-size: 0.7rem; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">0%</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
             </div>
 
             <!-- Stepped Flow Navigation Buttons -->
@@ -550,10 +602,10 @@
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
   <!-- Maze Search Demo JS -->
-  <script src="maze_demo/maze.js"></script>
-  <script src="maze_demo/abstraction.js"></script>
-  <script src="maze_demo/ui.js"></script>
+  <script src="maze_demo/maze.js?v=2"></script>
+  <script src="maze_demo/abstraction.js?v=2"></script>
+  <script src="maze_demo/ui.js?v=2"></script>
   <!-- Application JS -->
-  <script src="main.js"></script>
+  <script src="main.js?v=2"></script>
 </body>
 </html>

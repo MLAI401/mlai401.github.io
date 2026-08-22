@@ -48,7 +48,7 @@ class MazeDemoUI {
     this.absLog = document.getElementById('abs-log');
 
     // UI State
-    this.currentTeachingStep = 0; // 0 to 4
+    this.currentTeachingStep = 0; // 0 to 5
     this.robotState = new RobotState(this.maze.start.x, this.maze.start.y, 'E');
     this.abstractRobotState = 'S'; // Start label
     this.activeAbstractPath = null; // Last traversed abstract corridor coordinates
@@ -147,6 +147,15 @@ class MazeDemoUI {
     
     const pct = Math.round((1 - (turningPointsCount / (traversableCount * 4))) * 100);
     setSafeText('stat-pct-reduction', `${pct}%`);
+
+    // Comparison step dynamic stats
+    setSafeText('compare-initial-size', traversableCount * 4);
+    setSafeText('compare-abstract-size', turningPointsCount);
+    const compareBarFill = document.getElementById('compare-bar-fill');
+    if (compareBarFill) {
+      compareBarFill.style.width = `${pct}%`;
+      compareBarFill.textContent = `${pct}% Reduction`;
+    }
   }
 
   resizeCanvas() {
@@ -159,7 +168,7 @@ class MazeDemoUI {
   }
 
   setTeachingStep(step) {
-    if (step < 0 || step > 4) return;
+    if (step < 0 || step > 5) return;
     
     this.currentTeachingStep = step;
     
@@ -176,8 +185,8 @@ class MazeDemoUI {
 
     // Nav buttons status
     this.btnPrev.disabled = step === 0;
-    this.btnNext.textContent = step === 4 ? "Finished" : "Next Step";
-    this.btnNext.disabled = step === 4;
+    this.btnNext.textContent = step === 5 ? "Finished" : "Next Step";
+    this.btnNext.disabled = step === 5;
 
     // Reset components depending on step
     if (step === 1) {
@@ -262,28 +271,9 @@ class MazeDemoUI {
     }
   }
 
-  draw() {
-    const w = this.canvas.width / (window.devicePixelRatio || 1);
-    const h = this.canvas.height / (window.devicePixelRatio || 1);
-    
-    this.ctx.clearRect(0, 0, w, h);
-
+  drawSubMaze(cellSize) {
     const cols = this.maze.width;
     const rows = this.maze.height;
-    
-    // Cell Dimensions
-    const cellWidth = w / cols;
-    const cellHeight = h / rows;
-    const cellSize = Math.min(cellWidth, cellHeight);
-    
-    // Offset to center the maze in the canvas
-    const offsetX = (w - cellSize * cols) / 2;
-    const offsetY = (h - cellSize * rows) / 2;
-
-    this.ctx.save();
-    this.ctx.translate(offsetX, offsetY);
-
-    // 1. Draw Grid Cells (Physical Maze)
     for (let y = 0; y < rows; y++) {
       for (let x = 0; x < cols; x++) {
         const char = this.grid[y][x];
@@ -308,16 +298,117 @@ class MazeDemoUI {
           this.ctx.strokeStyle = 'rgba(15, 23, 42, 0.04)';
           this.ctx.lineWidth = 0.5;
           this.ctx.strokeRect(cx, cy, cellSize, cellSize);
-          
-          // Special highlights for start/goal (when in Step 1 or 2)
-          if (this.currentTeachingStep === 0 || this.currentTeachingStep === 1) {
-            if (char === 'S') {
-              this.ctx.fillStyle = 'rgba(16, 185, 129, 0.15)'; // Green glow
-              this.ctx.fillRect(cx, cy, cellSize, cellSize);
-            } else if (char === 'G') {
-              this.ctx.fillStyle = 'rgba(239, 68, 68, 0.15)'; // Red glow
-              this.ctx.fillRect(cx, cy, cellSize, cellSize);
-            }
+        }
+      }
+    }
+  }
+
+  draw() {
+    const w = this.canvas.width / (window.devicePixelRatio || 1);
+    const h = this.canvas.height / (window.devicePixelRatio || 1);
+    
+    this.ctx.clearRect(0, 0, w, h);
+
+    const cols = this.maze.width;
+    const rows = this.maze.height;
+
+    if (this.currentTeachingStep === 5) {
+      // Step 6: Comparison (Side-by-Side Split View)
+      const halfW = w / 2;
+      
+      // Calculate cell size for a single half
+      const cellWidth = (halfW - 20) / cols;
+      const cellHeight = (h - 40) / rows;
+      const cellSize = Math.min(cellWidth, cellHeight);
+      
+      // Left offset and Right offset
+      const leftOffsetX = (halfW - cellSize * cols) / 2;
+      const rightOffsetX = halfW + (halfW - cellSize * cols) / 2;
+      const offsetY = (h - cellSize * rows) / 2;
+
+      // Draw Left Viewport: Initial Space (4K / 4T)
+      this.ctx.save();
+      this.ctx.translate(leftOffsetX, offsetY);
+      this.drawSubMaze(cellSize);
+      
+      // Highlight all traversable grid cells
+      this.ctx.fillStyle = 'rgba(79, 70, 229, 0.08)'; // Indigo glow
+      const traversable = this.maze.getTraversableCells();
+      traversable.forEach(cell => {
+        this.ctx.fillRect(cell.x * cellSize, cell.y * cellSize, cellSize, cellSize);
+      });
+      
+      // Draw low-level robot with orientation
+      this.drawRobot(this.robotState, cellSize, true);
+      this.drawStartGoalText(cellSize);
+      this.ctx.restore();
+
+      // Label Left Side
+      this.ctx.fillStyle = '#64748b'; // Slate 500
+      this.ctx.font = 'bold 11px Outfit, sans-serif';
+      this.ctx.textAlign = 'center';
+      this.ctx.fillText("Initial Space (4K / 4T states)", halfW / 2, h - 10);
+
+      // Draw Right Viewport: Abstract Space (T / J)
+      this.ctx.save();
+      this.ctx.translate(rightOffsetX, offsetY);
+      this.drawSubMaze(cellSize);
+      this.drawGraphEdges(cellSize, false);
+      this.drawDecisionPoints(cellSize);
+      
+      // Draw Abstract robot without orientation at current node
+      const currentDP = this.decisionPoints.find(d => d.label === this.abstractRobotState);
+      if (currentDP) {
+        this.drawRobot({ x: currentDP.x, y: currentDP.y }, cellSize, false);
+      }
+      this.drawStartGoalText(cellSize);
+      this.ctx.restore();
+
+      // Label Right Side
+      this.ctx.fillStyle = '#64748b'; // Slate 500
+      this.ctx.font = 'bold 11px Outfit, sans-serif';
+      this.ctx.textAlign = 'center';
+      this.ctx.fillText("Abstract Space (T / J states)", halfW + halfW / 2, h - 10);
+
+      // Draw Divider Line
+      this.ctx.strokeStyle = 'rgba(15, 23, 42, 0.1)';
+      this.ctx.lineWidth = 1;
+      this.ctx.beginPath();
+      this.ctx.moveTo(halfW, 0);
+      this.ctx.lineTo(halfW, h);
+      this.ctx.stroke();
+
+      return;
+    }
+    
+    // Cell Dimensions
+    const cellWidth = w / cols;
+    const cellHeight = h / rows;
+    const cellSize = Math.min(cellWidth, cellHeight);
+    
+    // Offset to center the maze in the canvas
+    const offsetX = (w - cellSize * cols) / 2;
+    const offsetY = (h - cellSize * rows) / 2;
+
+    this.ctx.save();
+    this.ctx.translate(offsetX, offsetY);
+
+    // Draw Grid Cells
+    this.drawSubMaze(cellSize);
+
+    // Special highlights for start/goal (when in Step 1 or 2)
+    if (this.currentTeachingStep === 0 || this.currentTeachingStep === 1) {
+      for (let y = 0; y < rows; y++) {
+        for (let x = 0; x < cols; x++) {
+          const char = this.grid[y][x];
+          const cx = x * cellSize;
+          const cy = y * cellSize;
+          if (char === 'S') {
+            this.ctx.fillStyle = 'rgba(16, 185, 129, 0.15)'; // Green glow
+            this.ctx.fillRect(cx, cy, cellSize, cellSize);
+          } else if (char === 'G') {
+            this.ctx.fillStyle = 'rgba(239, 68, 68, 0.15)'; // Red glow
+            this.ctx.fillRect(cx, cy, cellSize, cellSize);
           }
         }
       }
