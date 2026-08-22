@@ -511,11 +511,34 @@
 
               <!-- Panel 7: Search Algorithms Complexity -->
               <div class="teaching-panel" id="panel-step-6">
-                <h3>7. Search Algorithms Complexity</h3>
-                <p>When searching for a path on the abstract graph, different algorithms manage the search frontier differently, leading to distinct time (computation) and space (memory) complexity bounds:</p>
+                <h3>7. Search Algorithms Complexity & Cost</h3>
+                <p>Compare the search performance of different algorithms on the derived abstract graph for this specific maze from <strong>S</strong> to <strong>G</strong>:</p>
                 
-                <div class="comparison-table-wrapper" style="margin-top: 5px; max-height: 250px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 6px;">
+                <div class="comparison-table-wrapper" style="margin-top: 5px; max-height: 180px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 6px;">
                   <table class="comparison-table" style="font-size: 0.7rem; box-shadow: none;">
+                    <thead>
+                      <tr>
+                        <th>Algorithm</th>
+                        <th>Path Cost</th>
+                        <th>Expanded Nodes</th>
+                        <th>Optimal?</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody id="maze-search-complexity-body">
+                      <!-- Computed dynamically -->
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="teaching-tip" style="padding: 0.5rem 0.75rem; margin-top: 8px;">
+                  <i data-lucide="info"></i>
+                  <span id="maze-search-explanation">Click "Visualize" above to trace the path and see how each algorithm explores the state space.</span>
+                </div>
+                
+                <p style="margin-top: 10px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Theoretical Complexity Bounds Reference:</p>
+                <div class="comparison-table-wrapper" style="margin-top: 5px; max-height: 150px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 6px;">
+                  <table class="comparison-table" style="font-size: 0.65rem; box-shadow: none;">
                     <thead>
                       <tr>
                         <th>Algorithm</th>
@@ -571,13 +594,7 @@
                     </tbody>
                   </table>
                 </div>
-
-                <div class="teaching-tip" style="padding: 0.5rem 0.75rem;">
-                  <i data-lucide="info"></i>
-                  <span>Here, <strong>b</strong> is the branching factor, <strong>d</strong> is the solution depth, <strong>m</strong> is the max tree depth, <strong>C*</strong> is the optimal cost, and <strong>ε</strong> is the minimum step cost. *BFS/IDS are optimal only if step costs are equal.</span>
-                </div>
               </div>
-
             </div>
 
             <!-- Stepped Flow Navigation Buttons -->
@@ -1178,6 +1195,7 @@
   <!-- Maze Search Demo JS -->
   <script src="maze_demo/maze.js?v=2"></script>
   <script src="maze_demo/abstraction.js?v=2"></script>
+  <script src="maze_demo/search.js?v=2"></script>
   <script src="maze_demo/ui.js?v=2"></script>
   <!-- 8-Puzzle State-Space Demo JS -->
   <script src="puzzle_demo/puzzle.js?v=2"></script>

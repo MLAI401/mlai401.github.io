@@ -20,6 +20,8 @@ class MazeDemoUI {
     this.maze = new Maze(this.grid);
     this.decisionPoints = Abstraction.findDecisionPoints(this.maze);
     this.graph = Abstraction.buildAbstractGraph(this.maze, this.decisionPoints);
+    this.searchComplexityResults = this.computeSearchComplexity();
+    this.selectedComplexityAlgorithm = 'A*';
 
     // DOM Elements
     this.canvas = document.getElementById('maze-canvas');
@@ -202,6 +204,14 @@ class MazeDemoUI {
       }
       if (this.absLog) {
         this.absLog.innerHTML = `<div class="log-entry">Robot placed at node: <strong>${this.abstractRobotState}</strong></div>`;
+      }
+    } else if (step === 6) {
+      this.renderSearchComplexityTable();
+      const expEl = document.getElementById('maze-search-explanation');
+      if (expEl && this.selectedComplexityAlgorithm) {
+        const alg = this.selectedComplexityAlgorithm;
+        const res = this.searchComplexityResults[alg];
+        expEl.innerHTML = `<strong>${alg} Search path:</strong> ${res.path.join(' → ')} <br><strong>Expanded Nodes Order:</strong> ${res.expandedOrder.join(', ') || 'None'}`;
       }
     }
 
@@ -477,8 +487,9 @@ class MazeDemoUI {
       this.drawDecisionPoints(cellSize);
     }
     else if (this.currentTeachingStep === 6) {
-      // Step 7 (Complexity) - Draw abstract graph with optimal path highlighted
-      const path = this.findOptimalPath();
+      // Step 7 (Complexity) - Draw abstract graph with selected algorithm's path highlighted
+      const algRes = this.searchComplexityResults[this.selectedComplexityAlgorithm];
+      const path = algRes ? algRes.path : this.findOptimalPath();
       this.drawGraphEdges(cellSize, false, path);
       this.drawDecisionPoints(cellSize, path);
     }
@@ -717,6 +728,74 @@ class MazeDemoUI {
     });
 
     this.ctx.restore();
+  }
+
+  computeSearchComplexity() {
+    const start = 'S';
+    const goal = 'G';
+    const results = {};
+
+    results['BFS'] = window.mazeBFS(this.graph, start, goal);
+    results['DFS'] = window.mazeDFS(this.graph, start, goal);
+    results['IDS'] = window.mazeIDS(this.graph, start, goal);
+    results['UCS'] = window.mazeUCS(this.graph, start, goal);
+    results['A*'] = window.mazeAStar(this.graph, start, goal, this.decisionPoints);
+    results['Greedy'] = window.mazeGreedy(this.graph, start, goal, this.decisionPoints);
+
+    return results;
+  }
+
+  renderSearchComplexityTable() {
+    const tbody = document.getElementById('maze-search-complexity-body');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    const algs = ['BFS', 'DFS', 'IDS', 'UCS', 'A*', 'Greedy'];
+    const isOptimal = {
+      'BFS': 'No (optimal only for unit costs)',
+      'DFS': 'No',
+      'IDS': 'No (optimal only for unit costs)',
+      'UCS': 'Yes (optimal for general costs)',
+      'A*': 'Yes (optimal with consistent h)',
+      'Greedy': 'No'
+    };
+
+    algs.forEach(alg => {
+      const res = this.searchComplexityResults[alg];
+      const row = document.createElement('tr');
+      
+      const isCurrent = this.selectedComplexityAlgorithm === alg;
+      
+      row.innerHTML = `
+        <td><strong>${alg}</strong></td>
+        <td>${res.cost === Infinity ? 'Unreachable' : res.cost}</td>
+        <td>${res.expandedCount}</td>
+        <td><small>${isOptimal[alg]}</small></td>
+        <td>
+          <button class="btn-action-sm ${isCurrent ? 'active' : ''}" data-alg="${alg}">
+            ${isCurrent ? 'Active' : 'Visualize'}
+          </button>
+        </td>
+      `;
+
+      tbody.appendChild(row);
+    });
+
+    tbody.querySelectorAll('.btn-action-sm').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const alg = e.target.getAttribute('data-alg');
+        this.selectedComplexityAlgorithm = alg;
+        
+        const expEl = document.getElementById('maze-search-explanation');
+        if (expEl) {
+          const res = this.searchComplexityResults[alg];
+          expEl.innerHTML = `<strong>${alg} Search path:</strong> ${res.path.join(' → ')} <br><strong>Expanded Nodes Order:</strong> ${res.expandedOrder.join(', ') || 'None'}`;
+        }
+
+        this.renderSearchComplexityTable();
+        this.draw();
+      });
+    });
   }
 }
 
