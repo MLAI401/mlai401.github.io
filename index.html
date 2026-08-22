@@ -174,11 +174,14 @@
         
         <!-- Playground Tab Navigation -->
         <div class="playground-tabs">
-          <button class="playground-tab active" data-target="view-kmeans">
+          <button class="playground-tab" data-target="view-kmeans">
             <i data-lucide="bar-chart-2"></i> K-Means Clustering
           </button>
           <button class="playground-tab" data-target="view-maze">
             <i data-lucide="grid"></i> Maze Search & Abstraction
+          </button>
+          <button class="playground-tab" data-target="view-puzzle">
+            <i data-lucide="puzzle"></i> 8-Puzzle State-Space
           </button>
         </div>
       </div>
@@ -514,6 +517,292 @@
           </div>
         </div>
       </div>
+
+      <!-- Tab 3: 8-Puzzle State-Space Demo View -->
+      <div class="playground-view" id="view-puzzle">
+        
+        <!-- Teaching Flow Progress Indicator -->
+        <div class="puzzle-flow-progress-bar">
+          <div class="puzzle-flow-step active" data-step="0">
+            <span class="flow-step-num">1</span>
+            <span class="flow-step-name">Puzzle Setup</span>
+          </div>
+          <div class="puzzle-flow-step" data-step="1">
+            <span class="flow-step-num">2</span>
+            <span class="flow-step-name">State Representation</span>
+          </div>
+          <div class="puzzle-flow-step" data-step="2">
+            <span class="flow-step-num">3</span>
+            <span class="flow-step-name">Actions & RESULT</span>
+          </div>
+          <div class="puzzle-flow-step" data-step="3">
+            <span class="flow-step-num">4</span>
+            <span class="flow-step-name">State Space Size</span>
+          </div>
+          <div class="puzzle-flow-step" data-step="4">
+            <span class="flow-step-num">5</span>
+            <span class="flow-step-name">Solvability Presets</span>
+          </div>
+          <div class="puzzle-flow-step" data-step="5">
+            <span class="flow-step-num">6</span>
+            <span class="flow-step-name">Interactive Explore</span>
+          </div>
+          <div class="puzzle-flow-step" data-step="6">
+            <span class="flow-step-num">7</span>
+            <span class="flow-step-name">Reachability Tree</span>
+          </div>
+          <div class="puzzle-flow-step" data-step="7">
+            <span class="flow-step-num">8</span>
+            <span class="flow-step-name">Concept Summary</span>
+          </div>
+        </div>
+
+        <div class="playground-grid">
+          <!-- Visualizer Canvas -->
+          <div class="canvas-container" id="puzzle-canvas-container">
+            <canvas id="puzzle-canvas"></canvas>
+          </div>
+          
+          <!-- Controls Panel -->
+          <div class="playground-controls glass-panel" id="puzzle-controls-panel">
+            
+            <!-- Step-specific details pane -->
+            <div class="teaching-panels-container">
+              
+              <!-- Step 0: Puzzle Setup -->
+              <div class="puzzle-teaching-panel active" id="puzzle-panel-step-0">
+                <h3>1. 8-Puzzle Setup</h3>
+                <p>The standard 8-puzzle contains 8 numbered tiles and 1 empty position (blank space '_') on a 3 &times; 3 grid. The target is to rearrange the tiles from their initial arrangement to the goal arrangement.</p>
+                
+                <div class="stat-summary-box">
+                  <div class="summary-item">
+                    <span class="summary-label">Grid Size:</span>
+                    <span class="summary-val">3 &times; 3</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Tiles:</span>
+                    <span class="summary-val">1 - 8</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Blank Position:</span>
+                    <span class="summary-val">1</span>
+                  </div>
+                </div>
+                
+                <div class="teaching-tip">
+                  <i data-lucide="info"></i>
+                  <span>A <strong>state</strong> in the 8-puzzle is a single, complete configuration of tiles and the blank. Moving a tile changes the puzzle state.</span>
+                </div>
+              </div>
+
+              <!-- Step 1: State Representation -->
+              <div class="puzzle-teaching-panel" id="puzzle-panel-step-1">
+                <h3>2. State Representation</h3>
+                <p>To store the board state in computer memory, we represent it as a simple, immutable 9-element list or tuple: <code>(7, 2, 4, 5, 0, 6, 8, 3, 1)</code>, where <code>0</code> denotes the blank position.</p>
+                
+                <div class="formula-box">
+                  state = (7, 2, 4, 5, 0, 6, 8, 3, 1)
+                </div>
+
+                <div class="teaching-tip">
+                  <i data-lucide="info"></i>
+                  <span>Any two boards with tiles in different positions represent different states. For example, <code>(7,2,4,5,0,6,8,3,1) ≠ (7,2,4,5,3,6,8,0,1)</code>. Complete board arrangements define unique states.</span>
+                </div>
+              </div>
+
+              <!-- Step 2: Actions & Transitions -->
+              <div class="puzzle-teaching-panel" id="puzzle-panel-step-2">
+                <h3>3. Actions & Transition Model</h3>
+                <p>The transition model defines which actions are possible in a state, and the resulting state after applying an action: <code>RESULT(s, a) = s'</code>. In this puzzle, we define actions from the perspective of moving the blank space.</p>
+                
+                <div class="manual-robot-tester">
+                  <div class="tester-header">Move Blank Action Model:</div>
+                  <div class="tester-btn-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; max-width: 250px; margin: 0 auto;">
+                    <div></div>
+                    <button class="btn-ctrl" id="btn-puz-up" title="Move Up"><i data-lucide="arrow-up"></i> Up</button>
+                    <div></div>
+                    <button class="btn-ctrl" id="btn-puz-left" title="Move Left"><i data-lucide="arrow-left"></i> Left</button>
+                    <div style="display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; color: var(--primary);">Blank</div>
+                    <button class="btn-ctrl" id="btn-puz-right" title="Move Right"><i data-lucide="arrow-right"></i> Right</button>
+                    <div></div>
+                    <button class="btn-ctrl" id="btn-puz-down" title="Move Down"><i data-lucide="arrow-down"></i> Down</button>
+                    <div></div>
+                  </div>
+                  
+                  <div class="manual-log-box" style="margin-top: 10px;">
+                    <div class="manual-log-title">Transition Log RESULT(s, a):</div>
+                    <div id="puz-manual-log" class="manual-log-content"></div>
+                  </div>
+                  <div class="tester-footer-tip">You can also use <kbd>W</kbd>, <kbd>A</kbd>, <kbd>S</kbd>, <kbd>D</kbd> or arrow keys on your keyboard.</div>
+                </div>
+              </div>
+
+              <!-- Step 3: State Space Size -->
+              <div class="puzzle-teaching-panel" id="puzzle-panel-step-3">
+                <h3>4. Possible Configurations Size</h3>
+                <p>How many total arrangements of the 8 tiles and blank are mathematically possible? Since there are 9 slots, there are 9 factorial total arrangements:</p>
+                
+                <div class="formula-box" style="font-size: 1.1rem;">
+                  9! = 362,880 possible arrangements
+                </div>
+
+                <div class="teaching-tip">
+                  <i data-lucide="help-circle"></i>
+                  <span>But are all of these 362,880 arrangements actually reachable from our initial configuration? Let's analyze reachability next.</span>
+                </div>
+              </div>
+
+              <!-- Step 4: Solvability Presets -->
+              <div class="puzzle-teaching-panel" id="puzzle-panel-step-4">
+                <h3>5. Parity & Solvability Presets</h3>
+                <p>The 362,880 arrangements form two completely disconnected components (parity classes) of size 181,440. You can only move within your group; legal moves cannot cross the parity divide.</p>
+                
+                <div class="btn-group" style="grid-template-columns: 1fr; gap: 6px; margin-top: 5px;">
+                  <button class="btn-ctrl" id="btn-puz-goal-solvable"><i data-lucide="check-circle"></i> Load Solvable Goal</button>
+                  <button class="btn-ctrl" id="btn-puz-goal-unsolvable"><i data-lucide="alert-triangle"></i> Load Unsolvable Goal</button>
+                  <button class="btn-ctrl btn-ctrl-primary" id="btn-puz-goal-swap"><i data-lucide="shuffle"></i> Swap Goal Tiles 7 & 8</button>
+                </div>
+                
+                <div class="search-status-banner" id="puz-goal-status" style="margin-top: 8px; padding: 0.6rem;"></div>
+              </div>
+
+              <!-- Step 5: Interactive Explore -->
+              <div class="puzzle-teaching-panel" id="puzzle-panel-step-5">
+                <h3>6. Exploration & Duplicates</h3>
+                <p>Try moving tiles to explore the state space. Notice that moving blank in a loop (e.g. Left, Right, Left) returns to a state you have already visited. A search tree tracks duplicate states to avoid looping infinitely.</p>
+                
+                <div class="manual-robot-tester">
+                  <div class="tester-header">Current Run Details:</div>
+                  <div class="stat-summary-box" style="grid-template-columns: 1fr 1fr; margin-bottom: 5px;">
+                    <div class="summary-item">
+                      <span class="summary-label">Move Counter:</span>
+                      <span class="summary-val" id="puz-explore-moves">0</span>
+                    </div>
+                    <div class="summary-item">
+                      <span class="summary-label">Control Mode:</span>
+                      <span class="summary-val" style="color:var(--primary); font-size:0.85rem;">Keyboard Active</span>
+                    </div>
+                  </div>
+
+                  <div class="tester-btn-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; max-width: 250px; margin: 0 auto;">
+                    <div></div>
+                    <button class="btn-ctrl" id="btn-play-up" title="Move Up"><i data-lucide="arrow-up"></i> Up</button>
+                    <div></div>
+                    <button class="btn-ctrl" id="btn-play-left" title="Move Left"><i data-lucide="arrow-left"></i> Left</button>
+                    <div style="display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; color: var(--primary);">Play</div>
+                    <button class="btn-ctrl" id="btn-play-right" title="Move Right"><i data-lucide="arrow-right"></i> Right</button>
+                    <div></div>
+                    <button class="btn-ctrl" id="btn-play-down" title="Move Down"><i data-lucide="arrow-down"></i> Down</button>
+                    <div></div>
+                  </div>
+                  
+                  <div class="btn-group" style="margin-top: 5px;">
+                    <button class="btn-ctrl" id="btn-puz-explore-dup"><i data-lucide="rotate-ccw"></i> Auto Loop Demo</button>
+                    <button class="btn-ctrl" id="btn-puz-explore-reset"><i data-lucide="refresh-cw"></i> Reset Puzzle</button>
+                  </div>
+
+                  <div class="manual-log-box" style="margin-top: 5px;">
+                    <div class="manual-log-title">State Visitation Log:</div>
+                    <div id="puz-explore-log" class="manual-log-content"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 6: Reachability Tree -->
+              <div class="puzzle-teaching-panel" id="puzzle-panel-step-6">
+                <h3>7. Reachability Tree Growth</h3>
+                <p>We expand the state space step-by-step using Breadth-First Search (BFS). This generates a search tree. Slide to choose depth and watch the tree grow from the initial state:</p>
+                
+                <div class="controls-group" style="gap: 5px;">
+                  <div class="control-label">
+                    <span>BFS Tree Depth (d)</span>
+                    <span class="slider-val" id="puz-depth-val">1</span>
+                  </div>
+                  <div class="control-slider-container">
+                    <input type="range" id="puz-depth-slider" min="0" max="3" value="1" step="1">
+                  </div>
+                </div>
+
+                <div class="live-search-stats" style="margin-top: 8px;">
+                  <div class="stats-mini-row">
+                    <div class="mini-stat-card">
+                      <span class="mini-stat-label">Total Tree Nodes:</span>
+                      <span class="mini-stat-val" id="puz-tree-nodes-total">0</span>
+                    </div>
+                    <div class="mini-stat-card">
+                      <span class="mini-stat-label">Unique States:</span>
+                      <span class="mini-stat-val" id="puz-tree-nodes-unique" style="color:var(--accent);">0</span>
+                    </div>
+                  </div>
+                  <div class="teaching-tip" style="padding: 0.5rem 0.75rem;">
+                    <i data-lucide="info"></i>
+                    <span>Notice that <strong>Total Tree Nodes</strong> grows faster than <strong>Unique States</strong> because of duplicate configurations (paths returning to visited layouts).</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 7: Summary View -->
+              <div class="puzzle-teaching-panel" id="puzzle-panel-step-7">
+                <h3>8. Concept Summary</h3>
+                <p>A quick-reference guide of core AI Search concepts taught by the 8-puzzle demo:</p>
+                
+                <div class="comparison-table-wrapper" style="margin-top: 5px; max-height: 230px; overflow-y: auto;">
+                  <table class="comparison-table">
+                    <thead>
+                      <tr>
+                        <th>Question</th>
+                        <th>Concept / Answer</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>What is a state?</strong></td>
+                        <td>One unique board arrangement of tiles & blank</td>
+                      </tr>
+                      <tr>
+                        <td><strong>What is a state space?</strong></td>
+                        <td>Set of all theoretically possible configurations (9! = 362,880)</td>
+                      </tr>
+                      <tr>
+                        <td><strong>What are actions?</strong></td>
+                        <td>Moves of blank space (Up, Down, Left, Right)</td>
+                      </tr>
+                      <tr>
+                        <td><strong>What is the transition model?</strong></td>
+                        <td>RESULT(s, a) yielding a new state s'</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Are all states reachable?</strong></td>
+                        <td>No, parity constraints divide permutations into 2 disconnected groups</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Reachable state space?</strong></td>
+                        <td>Set of states obtainable from initial state (size: 9!/2 = 181,440)</td>
+                      </tr>
+                      <tr>
+                        <td><strong>What is a goal state?</strong></td>
+                        <td>A target configuration (which must share the initial state's parity)</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Stepped Flow Navigation Buttons -->
+            <div class="step-nav-footer">
+              <button class="btn-ctrl" id="btn-puzzle-prev" disabled>
+                <i data-lucide="chevron-left"></i> Back
+              </button>
+              <button class="btn-ctrl btn-ctrl-primary" id="btn-puzzle-next">
+                Next Step <i data-lucide="chevron-right"></i>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -605,6 +894,10 @@
   <script src="maze_demo/maze.js?v=2"></script>
   <script src="maze_demo/abstraction.js?v=2"></script>
   <script src="maze_demo/ui.js?v=2"></script>
+  <!-- 8-Puzzle State-Space Demo JS -->
+  <script src="puzzle_demo/puzzle.js?v=2"></script>
+  <script src="puzzle_demo/reachability.js?v=2"></script>
+  <script src="puzzle_demo/ui.js?v=2"></script>
   <!-- Application JS -->
   <script src="main.js?v=2"></script>
 </body>

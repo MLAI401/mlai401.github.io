@@ -74,6 +74,12 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           window.mazeDemo.resizeCanvas();
         }
+      } else if (targetId === 'view-puzzle') {
+        if (!window.puzzleDemo) {
+          window.puzzleDemo = new PuzzleDemoUI();
+        } else {
+          window.puzzleDemo.resizeCanvas();
+        }
       } else if (targetId === 'view-kmeans') {
         // Resize K-Means canvas
         if (typeof resizeCanvas === 'function') {
