@@ -183,6 +183,9 @@
           <button class="playground-tab" data-target="view-puzzle">
             <i data-lucide="puzzle"></i> 8-Puzzle State-Space
           </button>
+          <button class="playground-tab" data-target="view-search">
+            <i data-lucide="git-commit"></i> Graph Search Algorithms
+          </button>
         </div>
       </div>
       
@@ -803,6 +806,215 @@
           </div>
         </div>
       </div>
+
+      <!-- Tab 4: Graph Search Algorithms Demo View -->
+      <div class="playground-view" id="view-search">
+        
+        <!-- Search Cycle Diagram -->
+        <div class="search-cycle-diagram">
+          <div class="cycle-step cs-frontier">
+            <span class="cycle-step-num"><i data-lucide="layers"></i></span>
+            <span class="cycle-step-name">1. Frontier</span>
+          </div>
+          <div class="cycle-arrow"><i data-lucide="chevron-right"></i></div>
+          <div class="cycle-step cs-select">
+            <span class="cycle-step-num"><i data-lucide="crosshair"></i></span>
+            <span class="cycle-step-name">2. Select Node</span>
+          </div>
+          <div class="cycle-arrow"><i data-lucide="chevron-right"></i></div>
+          <div class="cycle-step cs-goal-test">
+            <span class="cycle-step-num"><i data-lucide="check-square"></i></span>
+            <span class="cycle-step-name">3. Goal Test</span>
+          </div>
+          <div class="cycle-arrow"><i data-lucide="chevron-right"></i></div>
+          <div class="cycle-step cs-expand">
+            <span class="cycle-step-num"><i data-lucide="git-branch"></i></span>
+            <span class="cycle-step-name">4. Expand</span>
+          </div>
+          <div class="cycle-arrow"><i data-lucide="chevron-right"></i></div>
+          <div class="cycle-step cs-update">
+            <span class="cycle-step-num"><i data-lucide="plus-circle"></i></span>
+            <span class="cycle-step-name">5. Update Frontier</span>
+          </div>
+        </div>
+
+        <!-- Algorithm Select Tabs -->
+        <div class="search-tabs-container">
+          <button class="search-tab active" data-alg="BFS">
+            <i data-lucide="git-merge"></i> Breadth-First (BFS)
+          </button>
+          <button class="search-tab" data-alg="DFS">
+            <i data-lucide="git-pull-request"></i> Depth-First (DFS)
+          </button>
+          <button class="search-tab" data-alg="UCS">
+            <i data-lucide="trending-up"></i> Uniform-Cost (UCS)
+          </button>
+          <button class="search-tab" data-alg="IDS">
+            <i data-lucide="refresh-cw"></i> Iterative Deepening (IDS)
+          </button>
+        </div>
+
+        <div class="playground-grid">
+          <!-- Visualizer Canvas -->
+          <div class="canvas-container" id="search-canvas-container">
+            <canvas id="search-canvas"></canvas>
+          </div>
+          
+          <!-- Controls Panel -->
+          <div class="playground-controls glass-panel" id="search-controls-panel">
+            
+            <div class="teaching-panels-container">
+              <div class="teaching-panel active" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                <h3>Graph Search Mechanics</h3>
+                
+                <!-- Start/Goal selections -->
+                <div class="search-controls-container">
+                  <div class="control-row">
+                    <span class="ctrl-label">Start State:</span>
+                    <select id="select-search-start" class="select-input">
+                      <option value="A" selected>A</option>
+                      <option value="B">B</option>
+                      <option value="C">C</option>
+                      <option value="D">D</option>
+                      <option value="E">E</option>
+                      <option value="F">F</option>
+                      <option value="G">G</option>
+                      <option value="H">H</option>
+                    </select>
+                  </div>
+                  <div class="control-row">
+                    <span class="ctrl-label">Goal State:</span>
+                    <select id="select-search-goal" class="select-input">
+                      <option value="A">A</option>
+                      <option value="B">B</option>
+                      <option value="C">C</option>
+                      <option value="D">D</option>
+                      <option value="E">E</option>
+                      <option value="F">F</option>
+                      <option value="G" selected>G</option>
+                      <option value="H">H</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Explanation banner -->
+                <div class="formula-box" id="search-explanation-text" style="font-size: 0.8rem; text-align: left; font-family: sans-serif; min-height: 58px; font-weight: normal; line-height: 1.4;">
+                  Initialize search...
+                </div>
+
+                <!-- Step Controls -->
+                <div class="btn-group" style="grid-template-columns: repeat(3, 1fr); gap: 5px;">
+                  <button class="btn-ctrl" id="btn-search-prev" title="Previous step"><i data-lucide="skip-back"></i> Prev</button>
+                  <button class="btn-ctrl btn-ctrl-primary" id="btn-search-play" title="Run automatically"><i data-lucide="play"></i> Auto</button>
+                  <button class="btn-ctrl" id="btn-search-pause" disabled title="Pause run"><i data-lucide="pause"></i> Pause</button>
+                  <button class="btn-ctrl" id="btn-search-next" title="Next step" style="grid-column: span 2;"><i data-lucide="skip-forward"></i> Next Step</button>
+                  <button class="btn-ctrl" id="btn-search-reset" title="Reset state"><i data-lucide="rotate-ccw"></i> Reset</button>
+                </div>
+
+                <!-- Speed slider -->
+                <div class="controls-group" style="gap: 2px;">
+                  <div class="control-label">
+                    <span>Auto Play Speed</span>
+                  </div>
+                  <div class="control-slider-container">
+                    <input type="range" id="search-speed-slider" min="1" max="5" value="3" step="1">
+                  </div>
+                </div>
+
+                <!-- Status mini stats -->
+                <div class="live-search-stats" style="margin-top: 5px;">
+                  <div class="stats-mini-row">
+                    <div class="mini-stat-card">
+                      <span class="mini-stat-label">Selected Node:</span>
+                      <span class="mini-stat-val" id="search-status-selected">-</span>
+                    </div>
+                    <div class="mini-stat-card" id="search-ucs-cost-panel" style="display: none;">
+                      <span class="mini-stat-label">g(n) Cost:</span>
+                      <span class="mini-stat-val" id="search-status-cost" style="color: var(--accent);">0</span>
+                    </div>
+                    <div class="mini-stat-card" id="search-ids-depth-panel" style="display: none; grid-column: span 2; display: flex; justify-content: space-between;">
+                      <div>
+                        <span class="mini-stat-label">Limit:</span>
+                        <span class="mini-stat-val" id="search-status-ids-limit">0</span>
+                      </div>
+                      <div>
+                        <span class="mini-stat-label">Depth:</span>
+                        <span class="mini-stat-val" id="search-status-ids-depth" style="color: var(--accent);">0</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="mini-stat-card" style="margin-top: 4px; display: flex; flex-direction: column; align-items: stretch; gap: 2px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
+                      <span class="mini-stat-label">Frontier:</span>
+                      <span class="mini-stat-val" id="search-status-frontier" style="font-family: monospace; font-size: 0.75rem;">Empty</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; border-top: 1px solid rgba(15,23,42,0.05); padding-top: 2px;">
+                      <span class="mini-stat-label">Reached Set:</span>
+                      <span class="mini-stat-val" id="search-status-reached" style="font-family: monospace; font-size: 0.75rem;">None</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; border-top: 1px solid rgba(15,23,42,0.05); padding-top: 2px;">
+                      <span class="mini-stat-label">Expanded Order:</span>
+                      <span class="mini-stat-val" id="search-status-expanded" style="font-family: monospace; font-size: 0.75rem;">None</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Dynamic Step Table -->
+                <div class="comparison-table-wrapper" style="max-height: 140px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 6px;">
+                  <table class="comparison-table" style="font-size: 0.7rem; box-shadow: none;">
+                    <thead>
+                      <tr>
+                        <th>Step</th>
+                        <th>Selected</th>
+                        <th>Expanded?</th>
+                        <th>Frontier</th>
+                        <th>Reached</th>
+                      </tr>
+                    </thead>
+                    <tbody id="search-step-table-body">
+                    </tbody>
+                  </table>
+                </div>
+
+                <!-- Comparison history table -->
+                <div class="comparison-table-wrapper" style="border: 1px solid var(--border-light); border-radius: 6px; margin-top: 5px;">
+                  <table class="comparison-table" style="font-size: 0.65rem; box-shadow: none;">
+                    <thead>
+                      <tr>
+                        <th>Alg</th>
+                        <th>Expanded Node Order</th>
+                        <th>Solution Path</th>
+                        <th>Cost</th>
+                        <th>Exp#</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr id="comp-row-bfs">
+                        <td><strong>BFS</strong></td>
+                        <td colspan="4" style="color: var(--text-muted); font-style: italic; text-align: center;">Run BFS to see results</td>
+                      </tr>
+                      <tr id="comp-row-dfs">
+                        <td><strong>DFS</strong></td>
+                        <td colspan="4" style="color: var(--text-muted); font-style: italic; text-align: center;">Run DFS to see results</td>
+                      </tr>
+                      <tr id="comp-row-ucs">
+                        <td><strong>UCS</strong></td>
+                        <td colspan="4" style="color: var(--text-muted); font-style: italic; text-align: center;">Run UCS to see results</td>
+                      </tr>
+                      <tr id="comp-row-ids">
+                        <td><strong>IDS</strong></td>
+                        <td colspan="4" style="color: var(--text-muted); font-style: italic; text-align: center;">Run IDS to see results</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -898,6 +1110,9 @@
   <script src="puzzle_demo/puzzle.js?v=2"></script>
   <script src="puzzle_demo/reachability.js?v=2"></script>
   <script src="puzzle_demo/ui.js?v=2"></script>
+  <!-- Graph Search Demo JS -->
+  <script src="search_demo/graph.js?v=2"></script>
+  <script src="search_demo/ui.js?v=2"></script>
   <!-- Application JS -->
   <script src="main.js?v=2"></script>
 </body>

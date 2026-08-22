@@ -1684,4 +1684,111 @@ kbd {
   cursor: default;
 }
 
+/* --- Graph Search Algorithms Demo Styles --- */
+.search-cycle-diagram {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--bg-surface);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 0.6rem 1rem;
+  margin-bottom: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  overflow-x: auto;
+  gap: 0.5rem;
+}
+
+.cycle-step {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  opacity: 0.3;
+  transition: var(--transition-normal);
+  white-space: nowrap;
+}
+
+.cycle-step.active {
+  opacity: 1;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.cycle-step.active .cycle-step-num {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 0 10px rgba(79, 70, 229, 0.3);
+}
+
+.cycle-step-num {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(15, 23, 42, 0.05);
+  display: grid;
+  place-items: center;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  transition: var(--transition-normal);
+}
+
+.cycle-step-name {
+  font-size: 0.75rem;
+  font-family: 'Outfit', sans-serif;
+}
+
+.cycle-arrow {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  opacity: 0.4;
+}
+
+.cycle-arrow i {
+  width: 14px;
+  height: 14px;
+}
+
+.search-tabs-container {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.search-tab {
+  padding: 0.45rem 1.1rem;
+  border-radius: 100px;
+  border: 1px solid var(--border-light);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text-secondary);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.search-tab:hover {
+  color: var(--text-primary);
+  background: rgba(15, 23, 42, 0.03);
+}
+
+.search-tab.active {
+  background: var(--gradient-main);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.15);
+}
+
+#search-canvas {
+  cursor: default;
+}
+
+
 

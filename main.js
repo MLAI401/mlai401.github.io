@@ -80,6 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           window.puzzleDemo.resizeCanvas();
         }
+      } else if (targetId === 'view-search') {
+        if (!window.searchDemo) {
+          window.searchDemo = new SearchDemoUI();
+        } else {
+          window.searchDemo.resizeCanvas();
+        }
       } else if (targetId === 'view-kmeans') {
         // Resize K-Means canvas
         if (typeof resizeCanvas === 'function') {
