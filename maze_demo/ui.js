@@ -48,7 +48,7 @@ class MazeDemoUI {
     this.absLog = document.getElementById('abs-log');
 
     // UI State
-    this.currentTeachingStep = 0; // 0 to 5
+    this.currentTeachingStep = 0; // 0 to 6
     this.robotState = new RobotState(this.maze.start.x, this.maze.start.y, 'E');
     this.abstractRobotState = 'S'; // Start label
     this.activeAbstractPath = null; // Last traversed abstract corridor coordinates
@@ -168,7 +168,7 @@ class MazeDemoUI {
   }
 
   setTeachingStep(step) {
-    if (step < 0 || step > 5) return;
+    if (step < 0 || step > 6) return;
     
     this.currentTeachingStep = step;
     
@@ -185,8 +185,8 @@ class MazeDemoUI {
 
     // Nav buttons status
     this.btnPrev.disabled = step === 0;
-    this.btnNext.textContent = step === 5 ? "Finished" : "Next Step";
-    this.btnNext.disabled = step === 5;
+    this.btnNext.textContent = step === 6 ? "Finished" : "Next Step";
+    this.btnNext.disabled = step === 6;
 
     // Reset components depending on step
     if (step === 1) {
@@ -476,6 +476,12 @@ class MazeDemoUI {
       this.drawGraphEdges(cellSize, false);
       this.drawDecisionPoints(cellSize);
     }
+    else if (this.currentTeachingStep === 6) {
+      // Step 7 (Complexity) - Draw abstract graph with optimal path highlighted
+      const path = this.findOptimalPath();
+      this.drawGraphEdges(cellSize, false, path);
+      this.drawDecisionPoints(cellSize, path);
+    }
 
     // Render Start (S) and Goal (G) text overlays
     this.drawStartGoalText(cellSize);
@@ -528,26 +534,77 @@ class MazeDemoUI {
     }
   }
 
-  drawDecisionPoints(cellSize) {
+  findOptimalPath() {
+    // Dijkstra algorithm on this.graph from 'S' to 'G'
+    const dist = {};
+    const prev = {};
+    const queue = [];
+
+    this.decisionPoints.forEach(dp => {
+      dist[dp.label] = Infinity;
+      prev[dp.label] = null;
+      queue.push(dp.label);
+    });
+
+    dist['S'] = 0;
+
+    while (queue.length > 0) {
+      queue.sort((a, b) => dist[a] - dist[b]);
+      const u = queue.shift();
+
+      if (u === 'G' || dist[u] === Infinity) break;
+
+      const edges = this.graph[u] || [];
+      edges.forEach(edge => {
+        const alt = dist[u] + edge.cost;
+        if (alt < dist[edge.to]) {
+          dist[edge.to] = alt;
+          prev[edge.to] = u;
+        }
+      });
+    }
+
+    const path = [];
+    let curr = 'G';
+    if (prev[curr] || curr === 'S') {
+      while (curr) {
+        path.push(curr);
+        curr = prev[curr];
+      }
+    }
+    return path.reverse();
+  }
+
+  drawDecisionPoints(cellSize, highlightedPath = null) {
     this.decisionPoints.forEach(dp => {
       const cx = (dp.x + 0.5) * cellSize;
       const cy = (dp.y + 0.5) * cellSize;
       const radius = cellSize * 0.35;
+      
+      const isOnPath = highlightedPath && highlightedPath.includes(dp.label);
 
       // Glow circle
       this.ctx.beginPath();
       this.ctx.arc(cx, cy, radius + 4, 0, 2 * Math.PI);
-      this.ctx.fillStyle = dp.type === 'start' 
-        ? 'rgba(16, 185, 129, 0.2)' 
-        : (dp.type === 'goal' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(8, 145, 178, 0.2)');
+      if (isOnPath) {
+        this.ctx.fillStyle = 'rgba(16, 185, 129, 0.3)';
+      } else {
+        this.ctx.fillStyle = dp.type === 'start' 
+          ? 'rgba(16, 185, 129, 0.2)' 
+          : (dp.type === 'goal' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(8, 145, 178, 0.2)');
+      }
       this.ctx.fill();
 
       // Node circle
       this.ctx.beginPath();
       this.ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
-      this.ctx.fillStyle = dp.type === 'start' 
-        ? '#10b981' // Green
-        : (dp.type === 'goal' ? '#ef4444' : '#0891b2'); // Cyan
+      if (isOnPath) {
+        this.ctx.fillStyle = '#10b981';
+      } else {
+        this.ctx.fillStyle = dp.type === 'start' 
+          ? '#10b981' // Green
+          : (dp.type === 'goal' ? '#ef4444' : '#0891b2'); // Cyan
+      }
       this.ctx.fill();
       this.ctx.strokeStyle = '#ffffff';
       this.ctx.lineWidth = 2;
@@ -583,16 +640,11 @@ class MazeDemoUI {
     });
   }
 
-  drawGraphEdges(cellSize, faint = false) {
+  drawGraphEdges(cellSize, faint = false, highlightedPath = null) {
     this.ctx.save();
     
-    // Draw all lines first
-    this.ctx.lineWidth = faint ? 1.5 : 3;
     this.ctx.lineCap = 'round';
     this.ctx.lineJoin = 'round';
-    
-    // Color for graph lines
-    this.ctx.strokeStyle = faint ? 'rgba(79, 70, 229, 0.15)' : 'rgba(79, 70, 229, 0.5)';
 
     const drawnEdges = new Set();
 
@@ -603,6 +655,26 @@ class MazeDemoUI {
         const key = [dp.label, edge.to].sort().join('-');
         if (drawnEdges.has(key)) return;
         drawnEdges.add(key);
+
+        let isHighlighted = false;
+        if (highlightedPath) {
+          const idx1 = highlightedPath.indexOf(dp.label);
+          const idx2 = highlightedPath.indexOf(edge.to);
+          if (idx1 !== -1 && idx2 !== -1 && Math.abs(idx1 - idx2) === 1) {
+            isHighlighted = true;
+          }
+        }
+
+        if (isHighlighted) {
+          this.ctx.strokeStyle = '#10b981';
+          this.ctx.lineWidth = 4.5;
+          this.ctx.shadowColor = '#10b981';
+          this.ctx.shadowBlur = 4;
+        } else {
+          this.ctx.strokeStyle = faint ? 'rgba(79, 70, 229, 0.15)' : 'rgba(79, 70, 229, 0.5)';
+          this.ctx.lineWidth = faint ? 1.5 : 3;
+          this.ctx.shadowBlur = 0;
+        }
 
         // Draw path following corridor coordinates
         this.ctx.beginPath();
@@ -616,6 +688,7 @@ class MazeDemoUI {
           }
         });
         this.ctx.stroke();
+        this.ctx.shadowBlur = 0;
 
         // Draw path cost weight label at the center cell of the path (unless faint)
         if (!faint && edge.path.length > 2) {
@@ -627,7 +700,7 @@ class MazeDemoUI {
           // Cost circle badge
           this.ctx.beginPath();
           this.ctx.arc(mx, my, cellSize * 0.22, 0, 2 * Math.PI);
-          this.ctx.fillStyle = '#4338ca'; // Deep Indigo
+          this.ctx.fillStyle = isHighlighted ? '#10b981' : '#4338ca'; // Green if path
           this.ctx.fill();
           this.ctx.strokeStyle = '#ffffff';
           this.ctx.lineWidth = 1;

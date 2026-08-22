@@ -278,6 +278,10 @@
             <span class="flow-step-num">6</span>
             <span class="flow-step-name">Comparison</span>
           </div>
+          <div class="flow-step" data-step="6">
+            <span class="flow-step-num">7</span>
+            <span class="flow-step-name">Search Complexity</span>
+          </div>
         </div>
 
         <div class="playground-grid">
@@ -502,6 +506,75 @@
                       <div class="bar-fill" id="compare-bar-fill" style="background: linear-gradient(90deg, var(--primary), #10b981); height: 100%; transition: width 0.5s ease; width: 0%; font-size: 0.7rem; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">0%</div>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              <!-- Panel 7: Search Algorithms Complexity -->
+              <div class="teaching-panel" id="panel-step-6">
+                <h3>7. Search Algorithms Complexity</h3>
+                <p>When searching for a path on the abstract graph, different algorithms manage the search frontier differently, leading to distinct time (computation) and space (memory) complexity bounds:</p>
+                
+                <div class="comparison-table-wrapper" style="margin-top: 5px; max-height: 250px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 6px;">
+                  <table class="comparison-table" style="font-size: 0.7rem; box-shadow: none;">
+                    <thead>
+                      <tr>
+                        <th>Algorithm</th>
+                        <th>Time</th>
+                        <th>Space</th>
+                        <th>Opt?</th>
+                        <th>Compl?</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>BFS</strong></td>
+                        <td>O(b<sup>d</sup>)</td>
+                        <td>O(b<sup>d</sup>)</td>
+                        <td>Yes*</td>
+                        <td>Yes</td>
+                      </tr>
+                      <tr>
+                        <td><strong>DFS</strong></td>
+                        <td>O(b<sup>m</sup>)</td>
+                        <td>O(b·m)</td>
+                        <td>No</td>
+                        <td>No</td>
+                      </tr>
+                      <tr>
+                        <td><strong>UCS</strong></td>
+                        <td>O(b<sup>1+⌊C*/ε⌋</sup>)</td>
+                        <td>O(b<sup>1+⌊C*/ε⌋</sup>)</td>
+                        <td>Yes</td>
+                        <td>Yes</td>
+                      </tr>
+                      <tr>
+                        <td><strong>IDS</strong></td>
+                        <td>O(b<sup>d</sup>)</td>
+                        <td>O(b·d)</td>
+                        <td>Yes*</td>
+                        <td>Yes</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Greedy</strong></td>
+                        <td>O(b<sup>m</sup>)</td>
+                        <td>O(b<sup>m</sup>)</td>
+                        <td>No</td>
+                        <td>No</td>
+                      </tr>
+                      <tr>
+                        <td><strong>A*</strong></td>
+                        <td>O(b<sup>d</sup>)</td>
+                        <td>O(b<sup>d</sup>)</td>
+                        <td>Yes</td>
+                        <td>Yes</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="teaching-tip" style="padding: 0.5rem 0.75rem;">
+                  <i data-lucide="info"></i>
+                  <span>Here, <strong>b</strong> is the branching factor, <strong>d</strong> is the solution depth, <strong>m</strong> is the max tree depth, <strong>C*</strong> is the optimal cost, and <strong>ε</strong> is the minimum step cost. *BFS/IDS are optimal only if step costs are equal.</span>
                 </div>
               </div>
 
