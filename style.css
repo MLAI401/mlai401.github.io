@@ -1814,5 +1814,415 @@ kbd {
   cursor: default;
 }
 
+/* --- Two-Room Vacuum Robot Demo Styles --- */
+.vaccum-flow-step {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  opacity: 0.4;
+  cursor: pointer;
+  transition: var(--transition-normal);
+  white-space: nowrap;
+}
 
+.vaccum-flow-step:hover {
+  opacity: 0.75;
+}
 
+.vaccum-flow-step.active {
+  opacity: 1;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.vaccum-flow-step.completed {
+  opacity: 0.75;
+  color: var(--accent);
+}
+
+.vaccum-flow-step.active .flow-step-num {
+  background: var(--primary);
+  color: white;
+  box-shadow: 0 0 10px rgba(79, 70, 229, 0.3);
+}
+
+.vaccum-flow-step.completed .flow-step-num {
+  background: var(--accent);
+  color: white;
+}
+
+.vaccum-teaching-panel {
+  display: none;
+}
+
+.vaccum-teaching-panel.active {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+.vaccum-teaching-panel h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.1rem;
+  font-family: 'Outfit', sans-serif;
+  color: var(--text-primary);
+}
+
+.vaccum-teaching-panel p {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+#vaccum-canvas {
+  cursor: pointer;
+}
+
+.vaccum-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-top: 0.75rem;
+}
+
+.vaccum-info-card {
+  background: rgba(15, 23, 42, 0.03);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.vaccum-info-title {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.vaccum-formula {
+  font-size: 0.95rem;
+  font-family: 'Fira Code', monospace;
+  background: rgba(15, 23, 42, 0.05);
+  padding: 0.35rem 0.6rem;
+  border-radius: 4px;
+  color: var(--primary);
+  margin: 0.2rem 0;
+}
+
+.vaccum-pill {
+  display: inline-block;
+  padding: 0.15rem 0.45rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.vaccum-pill.success {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent);
+}
+
+.vaccum-pill.danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+}
+
+.vaccum-pill.neutral {
+  background: rgba(100, 116, 139, 0.15);
+  color: var(--text-secondary);
+}
+
+.vaccum-action-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border-radius: 100px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--text-primary);
+}
+
+.vaccum-action-pill.suck {
+  background: rgba(245, 158, 11, 0.2);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.4);
+}
+
+.vaccum-action-pill.left,
+.vaccum-action-pill.right {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--primary);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.vaccum-action-pill.noop {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.vaccum-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.vaccum-inspector-box {
+  background: rgba(15, 23, 42, 0.03);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+}
+
+.vaccum-inspector-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.6rem;
+}
+
+.vaccum-history-timeline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(15, 23, 42, 0.04);
+  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  min-height: 42px;
+}
+
+.vaccum-history-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-family: 'Fira Code', monospace;
+}
+
+.vaccum-history-step {
+  font-size: 0.65rem;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+
+.vaccum-arrow {
+  color: var(--text-muted);
+  font-weight: bold;
+}
+
+.vaccum-rule-box {
+  background: rgba(15, 23, 42, 0.05);
+  border-left: 3px solid var(--primary);
+  padding: 0.6rem 0.8rem;
+  border-radius: 0 6px 6px 0;
+  font-family: 'Fira Code', monospace;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.vaccum-rule-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--primary);
+  text-transform: uppercase;
+  margin-bottom: 0.2rem;
+}
+
+.vaccum-callout-note {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  background: rgba(99, 102, 241, 0.05);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.vaccum-callout-note i {
+  color: var(--primary);
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.vaccum-callout-warning {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.vaccum-callout-warning i {
+  color: var(--danger);
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+}
+
+.vaccum-model-display {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.vaccum-model-room-box {
+  flex: 1;
+  min-width: 140px;
+  background: rgba(15, 23, 42, 0.04);
+  border: 1px solid var(--border-light);
+  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+}
+
+.vaccum-model-pill {
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.vaccum-model-pill.clean {
+  background: rgba(16, 185, 129, 0.2);
+  color: var(--accent);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.vaccum-model-pill.dirty {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--danger);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.vaccum-model-pill.unknown {
+  background: rgba(100, 116, 139, 0.2);
+  color: var(--text-secondary);
+  border: 1px solid rgba(100, 116, 139, 0.3);
+}
+
+.vaccum-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.vaccum-badge.success {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--accent);
+}
+
+.vaccum-badge.warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+}
+
+.vaccum-badge.danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+}
+
+.vaccum-badge.pending {
+  background: rgba(99, 102, 241, 0.15);
+  color: var(--primary);
+}
+
+.vaccum-badge.neutral {
+  background: rgba(100, 116, 139, 0.15);
+  color: var(--text-secondary);
+}
+
+.vaccum-action-log-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.vaccum-agent-trace-card {
+  background: rgba(15, 23, 42, 0.03);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+}
+
+.vaccum-agent-trace-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.4rem;
+}
+
+.vaccum-agent-trace-header h4 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 0.95rem;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.vaccum-trace-meta {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.vaccum-sequence-box {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(15, 23, 42, 0.04);
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.vaccum-explanation-bar {
+  background: rgba(15, 23, 42, 0.03);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-top: 1rem;
+}

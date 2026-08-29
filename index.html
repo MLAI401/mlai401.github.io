@@ -34,7 +34,7 @@
       <ul class="nav-links" id="nav-menu">
         <li><a href="#" class="nav-link active" id="nav-home">Home</a></li>
         <li><a href="#curriculum" class="nav-link" id="nav-curr">Curriculum</a></li>
-        <li><a href="#playground" class="nav-link" id="nav-play">Playground</a></li>
+        <li><a href="playground.html" class="nav-link" id="nav-play">Playground</a></li>
         <li><a href="#resources" class="nav-link" id="nav-res">Resources</a></li>
       </ul>
       
@@ -58,7 +58,7 @@
           MLAI401 is a curated collection of repositories and projects focused on foundational Artificial Intelligence and Machine Learning. We bring together teaching materials, hands-on labs, example applications, and projects covering core AI/ML concepts and their practical implementations.
         </p>
         <div class="hero-actions">
-          <a href="#playground" class="btn btn-primary" id="btn-cta-explore">
+          <a href="playground.html" class="btn btn-primary" id="btn-cta-explore">
             <i data-lucide="play-circle"></i> Try Playground
           </a>
           <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" id="btn-cta-labs">
@@ -163,952 +163,133 @@
     </div>
   </section>
 
-  <!-- Interactive Playground Section -->
+  <!-- Interactive Playground Showcase Section -->
   <section class="section" id="playground" style="background: rgba(241, 245, 249, 0.5); position: relative;">
     <div class="ambient-glow-green"></div>
     <div class="container">
       <div class="section-header">
-        <span class="section-subtitle">Interactive Demos</span>
-        <h2 id="playground-title">AI Playground</h2>
-        <p>Explore foundational AI and ML concepts in action. Toggle between the interactive visualizers below.</p>
-        
-        <!-- Playground Tab Navigation -->
-        <div class="playground-tabs">
-          <button class="playground-tab" data-target="view-kmeans">
-            <i data-lucide="bar-chart-2"></i> K-Means Clustering
-          </button>
-          <button class="playground-tab" data-target="view-maze">
-            <i data-lucide="grid"></i> Maze Search & Abstraction
-          </button>
-          <button class="playground-tab" data-target="view-puzzle">
-            <i data-lucide="puzzle"></i> 8-Puzzle State-Space
-          </button>
-          <button class="playground-tab" data-target="view-search">
-            <i data-lucide="git-commit"></i> Graph Search Algorithms
-          </button>
-        </div>
-      </div>
-      
-      <!-- Tab 1: K-Means Clustering View -->
-      <div class="playground-view active" id="view-kmeans">
-        <div class="playground-grid">
-          <!-- Visualizer Canvas -->
-          <div class="canvas-container" id="visualizer-canvas-container">
-            <canvas id="kmeans-canvas"></canvas>
-            <div class="canvas-overlay" id="visualizer-overlay-info">
-              <div>Mode: <span style="color: var(--accent);" id="overlay-mode">Click grid to add points</span></div>
-              <div>Iteration: <span style="color: var(--accent);" id="overlay-iter">0</span></div>
-              <div>Points: <span style="color: var(--accent);" id="overlay-points-count">0</span></div>
-            </div>
-          </div>
-          
-          <!-- Controls Panel -->
-          <div class="playground-controls glass-panel" id="controls-panel">
-            <div class="controls-group">
-              <div class="control-label">
-                <span>Number of Clusters (K)</span>
-                <span class="slider-val" id="k-value-display">3</span>
-              </div>
-              <div class="control-slider-container">
-                <input type="range" id="k-slider" min="2" max="6" value="3" step="1">
-              </div>
-            </div>
-            
-            <div class="controls-group">
-              <div class="btn-group">
-                <button class="btn-ctrl btn-ctrl-primary" id="btn-kmeans-run">
-                  <i data-lucide="play"></i> Auto Run
-                </button>
-                <button class="btn-ctrl" id="btn-kmeans-step">
-                  <i data-lucide="skip-forward"></i> Step Algorithm
-                </button>
-                <button class="btn-ctrl" id="btn-kmeans-random">
-                  <i data-lucide="shuffle"></i> Gen Points
-                </button>
-                <button class="btn-ctrl" id="btn-kmeans-reset">
-                  <i data-lucide="rotate-ccw"></i> Reset
-                </button>
-              </div>
-            </div>
-            
-            <div class="playground-stats" id="stats-panel">
-              <div class="pg-stat-row">
-                <span>Status:</span>
-                <span class="pg-stat-val" id="status-text" style="color: var(--accent);">Waiting for points</span>
-              </div>
-              <div class="pg-stat-row">
-                <span>Centroids Placed:</span>
-                <span class="pg-stat-val" id="centroids-placed-val">0 / 3</span>
-              </div>
-              <div class="pg-stat-row">
-                <span>Converged:</span>
-                <span class="pg-stat-val" id="converged-val">No</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <span class="section-subtitle">Interactive Laboratories</span>
+        <h2 id="playground-title">AI & ML Playground</h2>
+        <p>Experience foundational algorithms in real-time. Launch any of our 5 interactive visualizers on the dedicated Playground page.</p>
       </div>
 
-      <!-- Tab 2: Maze Search & Abstraction View -->
-      <div class="playground-view" id="view-maze">
+      <div class="curriculum-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
         
-        <!-- Teaching Flow Progress Indicator -->
-        <div class="flow-progress-bar">
-          <div class="flow-step active" data-step="0">
-            <span class="flow-step-num">1</span>
-            <span class="flow-step-name">Physical Maze</span>
+        <!-- Lab 1: K-Means -->
+        <div class="curriculum-card glass-panel" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div class="curriculum-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;"><i data-lucide="bar-chart-2"></i></div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+              <h3 style="margin: 0;">K-Means Clustering</h3>
+              <span class="vaccum-pill success">Unsupervised ML</span>
+            </div>
+            <p>Interactive 2D canvas for clustering dynamic point clouds. Step through Lloyd's algorithm: centroid initialization, Voronoi partition assignments, and iterative center updates.</p>
+            <ul class="curriculum-list" style="margin: 1rem 0;">
+              <li>Custom 2D data point placement</li>
+              <li>K-Means++ smart distance initialization</li>
+              <li>Step-by-step Lloyd's convergence trace</li>
+            </ul>
           </div>
-          <div class="flow-step" data-step="1">
-            <span class="flow-step-num">2</span>
-            <span class="flow-step-name">4K State Space</span>
-          </div>
-          <div class="flow-step" data-step="2">
-            <span class="flow-step-num">3</span>
-            <span class="flow-step-name">4T State Space</span>
-          </div>
-          <div class="flow-step" data-step="3">
-            <span class="flow-step-num">4</span>
-            <span class="flow-step-name">T State Space</span>
-          </div>
-          <div class="flow-step" data-step="4">
-            <span class="flow-step-num">5</span>
-            <span class="flow-step-name">Abstract Graph</span>
-          </div>
-          <div class="flow-step" data-step="5">
-            <span class="flow-step-num">6</span>
-            <span class="flow-step-name">Comparison</span>
-          </div>
-          <div class="flow-step" data-step="6">
-            <span class="flow-step-num">7</span>
-            <span class="flow-step-name">Search Complexity</span>
-          </div>
+          <a href="playground.html#view-kmeans" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">
+            <i data-lucide="play-circle"></i> Launch K-Means Lab
+          </a>
         </div>
 
-        <div class="playground-grid">
-          <!-- Visualizer Canvas -->
-          <div class="canvas-container" id="maze-canvas-container">
-            <canvas id="maze-canvas"></canvas>
+        <!-- Lab 2: Maze Abstraction -->
+        <div class="curriculum-card glass-panel" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div class="curriculum-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;"><i data-lucide="grid"></i></div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+              <h3 style="margin: 0;">Maze State Abstraction</h3>
+              <span class="vaccum-pill pending">State Space</span>
+            </div>
+            <p>Transform raw physical grid navigation (4K states) into an abstract decision-point topological graph (T states), reducing search complexity by up to 91%.</p>
+            <ul class="curriculum-list" style="margin: 1rem 0;">
+              <li>7-step guided lecture progression</li>
+              <li>Interactive low-level vs abstract robot control</li>
+              <li>Search algorithm complexity on derived graphs</li>
+            </ul>
           </div>
-          
-          <!-- Controls Panel -->
-          <div class="playground-controls glass-panel" id="maze-controls-panel">
-            
-            <!-- Step-specific details pane -->
-            <div class="teaching-panels-container">
-              
-              <!-- Panel 1: Physical Maze -->
-              <div class="teaching-panel active" id="panel-step-0">
-                <h3>1. Physical Maze Grid</h3>
-                <p>We begin with a physical grid representation of the environment. The maze contains traversable corridor cells, black wall obstacles, a starting location <span class="badge-s">S</span>, and a goal location <span class="badge-g">G</span>.</p>
-                
-                <div class="stat-summary-box">
-                  <div class="summary-item">
-                    <span class="summary-label">Grid Size:</span>
-                    <span class="summary-val">15 &times; 11</span>
-                  </div>
-                  <div class="summary-item">
-                    <span class="summary-label">Total Grid Cells:</span>
-                    <span class="summary-val">165 cells</span>
-                  </div>
-                  <div class="summary-item">
-                    <span class="summary-label">Traversable Cells (K):</span>
-                    <span class="summary-val" id="stat-k-cells">70</span>
-                  </div>
-                </div>
-                
-                <div class="teaching-tip">
-                  <i data-lucide="info"></i>
-                  <span>In a physical grid, search algorithms must explore cell-by-cell. For large grids, this creates a massive search space. Can we abstract this environment?</span>
-                </div>
+          <a href="playground.html#view-maze" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">
+            <i data-lucide="play-circle"></i> Launch Maze Lab
+          </a>
+        </div>
+
+        <!-- Lab 3: 8-Puzzle -->
+        <div class="curriculum-card glass-panel" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div class="curriculum-icon" style="background: rgba(236, 72, 153, 0.1); color: #ec4899;"><i data-lucide="puzzle"></i></div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+              <h3 style="margin: 0;">8-Puzzle Reachability</h3>
+              <span class="vaccum-pill danger">Parity & Search</span>
+            </div>
+            <p>Analyze permutation state spaces ($9! = 362,880$), inversion parity constraints, disconnected reachable components (181,440 states), and duplicate avoidance.</p>
+            <ul class="curriculum-list" style="margin: 1rem 0;">
+              <li>Interactive blank-tile transition model</li>
+              <li>Solvable vs unsolvable goal configuration tester</li>
+              <li>Dynamic BFS reachability expansion tree</li>
+            </ul>
+          </div>
+          <a href="playground.html#view-puzzle" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">
+            <i data-lucide="play-circle"></i> Launch 8-Puzzle Lab
+          </a>
+        </div>
+
+        <!-- Lab 4: Graph Search -->
+        <div class="curriculum-card glass-panel" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <div class="curriculum-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i data-lucide="git-commit"></i></div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+              <h3 style="margin: 0;">Graph Search Mechanics</h3>
+              <span class="vaccum-pill success">Classical Search</span>
+            </div>
+            <p>Detailed step-by-step execution traces for Breadth-First Search (BFS), Depth-First Search (DFS), Uniform-Cost Search (UCS), and Iterative Deepening Search (IDS).</p>
+            <ul class="curriculum-list" style="margin: 1rem 0;">
+              <li>5-stage Search Cycle execution visualizer</li>
+              <li>Live Frontier, Reached set, and Heap cost tracking</li>
+              <li>Multi-algorithm comparison history table</li>
+            </ul>
+          </div>
+          <a href="playground.html#view-search" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">
+            <i data-lucide="play-circle"></i> Launch Graph Search Lab
+          </a>
+        </div>
+
+        <!-- Lab 5: Vacuum Robot -->
+        <div class="curriculum-card glass-panel" style="display: flex; flex-direction: column; justify-content: space-between; grid-column: span 1 / -1;">
+          <div>
+            <div class="curriculum-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i data-lucide="bot"></i></div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+              <h3 style="margin: 0;">Two-Room Vacuum Robot Agents</h3>
+              <span class="vaccum-pill warning">AIMA Agent Architectures</span>
+            </div>
+            <p>Compare how information is represented and used across different agent architectures in the canonical AIMA two-room vacuum cleaner world.</p>
+            <div class="vaccum-info-grid" style="margin: 1rem 0;">
+              <div class="vaccum-info-card">
+                <strong style="color: var(--primary);">Table-Driven Agent</strong>
+                <span style="font-size: 0.85rem; color: var(--text-secondary);">Stores full percept history & evaluates $\text{Action} = \text{TABLE}[\text{History}]$.</span>
               </div>
-
-              <!-- Panel 2: 4K State Space -->
-              <div class="teaching-panel" id="panel-step-1">
-                <h3>2. Low-level State Space (4K)</h3>
-                <p>At the grid-cell level, a robot navigating the maze must track both its precise grid position and its current orientation (facing North, East, South, or West):</p>
-                
-                <div class="formula-box">
-                  State = (Grid Point, Orientation)
-                </div>
-                
-                <div class="stat-summary-box">
-                  <div class="summary-item">
-                    <span class="summary-label">Grid Points (K):</span>
-                    <span class="summary-val" id="stat-k-cells-p2">70</span>
-                  </div>
-                  <div class="summary-item">
-                    <span class="summary-label">Orientations:</span>
-                    <span class="summary-val">4 (N, E, S, W)</span>
-                  </div>
-                  <div class="summary-item">
-                    <span class="summary-label">State Space Size:</span>
-                    <span class="summary-val" id="stat-4k-size">280</span>
-                  </div>
-                </div>
-
-                <div class="manual-robot-tester">
-                  <div class="tester-header">Test Low-Level Transitions:</div>
-                  <div class="tester-btn-group">
-                    <button class="btn-ctrl" id="btn-mv-left" title="Turn Left"><i data-lucide="rotate-ccw"></i> Left</button>
-                    <button class="btn-ctrl btn-ctrl-primary" id="btn-mv-forward" title="Forward"><i data-lucide="arrow-up"></i> Forward</button>
-                    <button class="btn-ctrl" id="btn-mv-right" title="Turn Right"><i data-lucide="rotate-cw"></i> Right</button>
-                  </div>
-                  <div class="manual-log-box">
-                    <div class="manual-log-title">State-Action Transition Log:</div>
-                    <div id="manual-log" class="manual-log-content"></div>
-                  </div>
-                  <div class="tester-footer-tip">You can also use <kbd>W</kbd>, <kbd>A</kbd>, <kbd>D</kbd> or <kbd>↑</kbd>, <kbd>←</kbd>, <kbd>→</kbd> on your keyboard.</div>
-                </div>
+              <div class="vaccum-info-card">
+                <strong style="color: var(--danger);">Simple Reflex Agent</strong>
+                <span style="font-size: 0.85rem; color: var(--text-secondary);">Stateless condition-action rules with no memory ($\text{Completes} \neq \text{Knows It Is Complete}$).</span>
               </div>
-
-              <!-- Panel 3: 4T State Space -->
-              <div class="teaching-panel" id="panel-step-2">
-                <h3>3. First Abstraction — 4T State Space</h3>
-                <p>A navigation decision is only needed at turning points, corners, dead-ends, the start (S), or the goal (G). Intermediate grid cells along straight corridors are abstracted away.</p>
-                
-                <div class="formula-box">
-                  State = (Turning Point, Orientation)
-                </div>
-
-                <div class="stat-summary-box">
-                  <div class="summary-item">
-                    <span class="summary-label">Turning Points (T):</span>
-                    <span class="summary-val" id="stat-t-points-p3">25</span>
-                  </div>
-                  <div class="summary-item">
-                    <span class="summary-label">Orientations:</span>
-                    <span class="summary-val">4</span>
-                  </div>
-                  <div class="summary-item">
-                    <span class="summary-label">State Space Size:</span>
-                    <span class="summary-val" id="stat-4t-size">100</span>
-                  </div>
-                </div>
-
-                <div class="teaching-tip">
-                  <i data-lucide="info"></i>
-                  <span>State space is reduced from 4K (<span id="stat-k-4k">280</span>) to 4T (<span id="stat-t-4t">100</span>) states. We have removed intermediate grid points, but we still retain orientation because it affects steering.</span>
-                </div>
-              </div>
-
-              <!-- Panel 4: T State Space -->
-              <div class="teaching-panel" id="panel-step-3">
-                <h3>4. Second Abstraction — T State Space</h3>
-                <p>Instead of low-level steering, we allow abstract actions to move directly from one turning point to the next. Orientation is implicitly handled by the actions and removed from the state.</p>
-                
-                <div class="formula-box">
-                  State = Turning Point
-                </div>
-
-                <div class="stat-summary-box">
-                  <div class="summary-item">
-                    <span class="summary-label">Turning Points (T):</span>
-                    <span class="summary-val" id="stat-t-points-p4">25</span>
-                  </div>
-                  <div class="summary-item">
-                    <span class="summary-label">State Space Size:</span>
-                    <span class="summary-val" id="stat-t-size">25</span>
-                  </div>
-                </div>
-
-                <div class="manual-robot-tester">
-                  <div class="tester-header">Test Abstract Action Transitions:</div>
-                  <div class="tester-btn-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; max-width: 250px; margin: 0 auto;">
-                    <div></div>
-                    <button class="btn-ctrl" id="btn-abs-north" title="Move North"><i data-lucide="arrow-up"></i> North</button>
-                    <div></div>
-                    <button class="btn-ctrl" id="btn-abs-west" title="Move West"><i data-lucide="arrow-left"></i> West</button>
-                    <div style="display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem; color: var(--primary);" id="abs-current-node">S</div>
-                    <button class="btn-ctrl" id="btn-abs-east" title="Move East"><i data-lucide="arrow-right"></i> East</button>
-                    <div></div>
-                    <button class="btn-ctrl" id="btn-abs-south" title="Move South"><i data-lucide="arrow-down"></i> South</button>
-                    <div></div>
-                  </div>
-                  <div class="manual-log-box" style="margin-top: 10px;">
-                    <div class="manual-log-title">Abstract Transition Log:</div>
-                    <div id="abs-log" class="manual-log-content"></div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Panel 5: Abstract Graph -->
-              <div class="teaching-panel" id="panel-step-4">
-                <h3>5. Abstract Graph Construction</h3>
-                <p>We connect turning points by tracing the corridors. Each abstract action represents a direct path between nodes, with the cell distance as the transition cost.</p>
-                
-                <div class="stat-summary-box">
-                  <div class="summary-item">
-                    <span class="summary-label">Original Space:</span>
-                    <span class="summary-val" id="stat-orig-space">280 states</span>
-                  </div>
-                  <div class="summary-item">
-                    <span class="summary-label">Abstract Space:</span>
-                    <span class="summary-val" id="stat-final-space">25 states</span>
-                  </div>
-                  <div class="summary-item">
-                    <span class="summary-label">Total Reduction:</span>
-                    <span class="summary-val" id="stat-pct-reduction">91%</span>
-                  </div>
-                </div>
-
-                <div class="teaching-tip">
-                  <i data-lucide="git-commit"></i>
-                  <span>The dynamically derived abstract graph consists of:
-                    <br>• <strong>Nodes:</strong> Turning points (Start, Goal, Corners, Intersections).
-                    <br>• <strong>Edges:</strong> Corridors between nodes.
-                    <br>• <strong>Cost:</strong> Cell distance along each corridor (edge weight).
-                  </span>
-                </div>
-              </div>
-
-              <!-- Panel 6: Side-by-Side Comparison -->
-              <div class="teaching-panel" id="panel-step-5">
-                <h3>6. Side-by-Side Comparison</h3>
-                <p>Compare the initial representation and state space with the abstracted representation.</p>
-                
-                <div class="comparison-table-wrapper" style="margin-top: 10px;">
-                  <table class="comparison-table">
-                    <thead>
-                      <tr>
-                        <th>Initial Representation</th>
-                        <th>Abstract Representation</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td><strong>Every traversable location matters</strong></td>
-                        <td><strong>Decision points matter</strong></td>
-                      </tr>
-                      <tr>
-                        <td>State = location + orientation</td>
-                        <td>State = decision point</td>
-                      </tr>
-                      <tr>
-                        <td>Forward / Turn Left / Turn Right</td>
-                        <td>Move N / E / S / W</td>
-                      </tr>
-                      <tr>
-                        <td><span id="compare-initial-size">280</span> states <br><small>(4T or 4K states)</small></td>
-                        <td><span id="compare-abstract-size">25</span> states <br><small>(T or J states)</small></td>
-                      </tr>
-                      <tr>
-                        <td>Many small transitions</td>
-                        <td>One transition between decision points</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <div class="comparison-visual-box" style="margin-top: 15px;">
-                  <div class="comparison-stat-bar">
-                    <span class="bar-label" style="font-size: 0.75rem; font-weight: 500; display: block; margin-bottom: 5px;">State Space Size Reduction:</span>
-                    <div class="bar-container" style="background: rgba(15, 23, 42, 0.05); border-radius: 4px; overflow: hidden; height: 18px; position: relative;">
-                      <div class="bar-fill" id="compare-bar-fill" style="background: linear-gradient(90deg, var(--primary), #10b981); height: 100%; transition: width 0.5s ease; width: 0%; font-size: 0.7rem; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">0%</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Panel 7: Search Algorithms Complexity -->
-              <div class="teaching-panel" id="panel-step-6">
-                <h3>7. Search Algorithms Complexity & Cost</h3>
-                <p>Compare the search performance of different algorithms on the derived abstract graph for this specific maze from <strong>S</strong> to <strong>G</strong>:</p>
-                
-                <div class="comparison-table-wrapper" style="margin-top: 5px; max-height: 180px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 6px;">
-                  <table class="comparison-table" style="font-size: 0.7rem; box-shadow: none;">
-                    <thead>
-                      <tr>
-                        <th>Algorithm</th>
-                        <th>Path Cost</th>
-                        <th>Expanded Nodes</th>
-                        <th>Optimal?</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody id="maze-search-complexity-body">
-                      <!-- Computed dynamically -->
-                    </tbody>
-                  </table>
-                </div>
-
-                <div class="teaching-tip" style="padding: 0.5rem 0.75rem; margin-top: 8px;">
-                  <i data-lucide="info"></i>
-                  <span id="maze-search-explanation">Click "Visualize" above to trace the path and see how each algorithm explores the state space.</span>
-                </div>
-                
-                <p style="margin-top: 10px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Theoretical Complexity Bounds Reference:</p>
-                <div class="comparison-table-wrapper" style="margin-top: 5px; max-height: 150px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 6px;">
-                  <table class="comparison-table" style="font-size: 0.65rem; box-shadow: none;">
-                    <thead>
-                      <tr>
-                        <th>Algorithm</th>
-                        <th>Time</th>
-                        <th>Space</th>
-                        <th>Opt?</th>
-                        <th>Compl?</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td><strong>BFS</strong></td>
-                        <td>O(b<sup>d</sup>)</td>
-                        <td>O(b<sup>d</sup>)</td>
-                        <td>Yes*</td>
-                        <td>Yes</td>
-                      </tr>
-                      <tr>
-                        <td><strong>DFS</strong></td>
-                        <td>O(b<sup>m</sup>)</td>
-                        <td>O(b·m)</td>
-                        <td>No</td>
-                        <td>No</td>
-                      </tr>
-                      <tr>
-                        <td><strong>UCS</strong></td>
-                        <td>O(b<sup>1+⌊C*/ε⌋</sup>)</td>
-                        <td>O(b<sup>1+⌊C*/ε⌋</sup>)</td>
-                        <td>Yes</td>
-                        <td>Yes</td>
-                      </tr>
-                      <tr>
-                        <td><strong>IDS</strong></td>
-                        <td>O(b<sup>d</sup>)</td>
-                        <td>O(b·d)</td>
-                        <td>Yes*</td>
-                        <td>Yes</td>
-                      </tr>
-                      <tr>
-                        <td><strong>Greedy</strong></td>
-                        <td>O(b<sup>m</sup>)</td>
-                        <td>O(b<sup>m</sup>)</td>
-                        <td>No</td>
-                        <td>No</td>
-                      </tr>
-                      <tr>
-                        <td><strong>A*</strong></td>
-                        <td>O(b<sup>d</sup>)</td>
-                        <td>O(b<sup>d</sup>)</td>
-                        <td>Yes</td>
-                        <td>Yes</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
+              <div class="vaccum-info-card">
+                <strong style="color: var(--accent);">Model-Based Reflex Agent</strong>
+                <span style="font-size: 0.85rem; color: var(--text-secondary);">Maintains internal world model $(\text{Room A}, \text{Room B})$ and stops cleanly with $\text{NoOp}$.</span>
               </div>
             </div>
-
-            <!-- Stepped Flow Navigation Buttons -->
-            <div class="step-nav-footer">
-              <button class="btn-ctrl" id="btn-maze-prev" disabled>
-                <i data-lucide="chevron-left"></i> Back
-              </button>
-              <button class="btn-ctrl btn-ctrl-primary" id="btn-maze-next">
-                Next Step <i data-lucide="chevron-right"></i>
-              </button>
-            </div>
-
           </div>
-        </div>
-      </div>
-
-      <!-- Tab 3: 8-Puzzle State-Space Demo View -->
-      <div class="playground-view" id="view-puzzle">
-        
-        <!-- Teaching Flow Progress Indicator -->
-        <div class="puzzle-flow-progress-bar">
-          <div class="puzzle-flow-step active" data-step="0">
-            <span class="flow-step-num">1</span>
-            <span class="flow-step-name">Puzzle Setup</span>
-          </div>
-          <div class="puzzle-flow-step" data-step="1">
-            <span class="flow-step-num">2</span>
-            <span class="flow-step-name">State Representation</span>
-          </div>
-          <div class="puzzle-flow-step" data-step="2">
-            <span class="flow-step-num">3</span>
-            <span class="flow-step-name">Actions & RESULT</span>
-          </div>
-          <div class="puzzle-flow-step" data-step="3">
-            <span class="flow-step-num">4</span>
-            <span class="flow-step-name">State Space Size</span>
-          </div>
-          <div class="puzzle-flow-step" data-step="4">
-            <span class="flow-step-num">5</span>
-            <span class="flow-step-name">Solvability Presets</span>
-          </div>
-          <div class="puzzle-flow-step" data-step="5">
-            <span class="flow-step-num">6</span>
-            <span class="flow-step-name">Interactive Explore</span>
-          </div>
-          <div class="puzzle-flow-step" data-step="6">
-            <span class="flow-step-num">7</span>
-            <span class="flow-step-name">Reachability Tree</span>
-          </div>
-          <div class="puzzle-flow-step" data-step="7">
-            <span class="flow-step-num">8</span>
-            <span class="flow-step-name">Concept Summary</span>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; flex-wrap: wrap; gap: 1rem;">
+            <div style="font-size: 0.9rem; color: var(--text-muted);">Includes interactive manual controls, 5-step walkthrough, and synchronized 3-agent comparison scoreboard.</div>
+            <a href="playground.html#view-vaccum" class="btn btn-primary" style="padding: 0.75rem 2rem;">
+              <i data-lucide="play-circle"></i> Launch Vacuum Robot Lab
+            </a>
           </div>
         </div>
 
-        <div class="playground-grid">
-          <!-- Visualizer Canvas -->
-          <div class="canvas-container" id="puzzle-canvas-container">
-            <canvas id="puzzle-canvas"></canvas>
-          </div>
-          
-          <!-- Controls Panel -->
-          <div class="playground-controls glass-panel" id="puzzle-controls-panel">
-            
-            <!-- Step-specific details pane -->
-            <div class="teaching-panels-container">
-              
-              <!-- Step 0: Puzzle Setup -->
-              <div class="puzzle-teaching-panel active" id="puzzle-panel-step-0">
-                <h3>1. 8-Puzzle Setup</h3>
-                <p>The standard 8-puzzle contains 8 numbered tiles and 1 empty position (blank space '_') on a 3 &times; 3 grid. The target is to rearrange the tiles from their initial arrangement to the goal arrangement.</p>
-                
-                <div class="stat-summary-box">
-                  <div class="summary-item">
-                    <span class="summary-label">Grid Size:</span>
-                    <span class="summary-val">3 &times; 3</span>
-                  </div>
-                  <div class="summary-item">
-                    <span class="summary-label">Tiles:</span>
-                    <span class="summary-val">1 - 8</span>
-                  </div>
-                  <div class="summary-item">
-                    <span class="summary-label">Blank Position:</span>
-                    <span class="summary-val">1</span>
-                  </div>
-                </div>
-                
-                <div class="teaching-tip">
-                  <i data-lucide="info"></i>
-                  <span>A <strong>state</strong> in the 8-puzzle is a single, complete configuration of tiles and the blank. Moving a tile changes the puzzle state.</span>
-                </div>
-              </div>
-
-              <!-- Step 1: State Representation -->
-              <div class="puzzle-teaching-panel" id="puzzle-panel-step-1">
-                <h3>2. State Representation</h3>
-                <p>To store the board state in computer memory, we represent it as a simple, immutable 9-element list or tuple: <code>(7, 2, 4, 5, 0, 6, 8, 3, 1)</code>, where <code>0</code> denotes the blank position.</p>
-                
-                <div class="formula-box">
-                  state = (7, 2, 4, 5, 0, 6, 8, 3, 1)
-                </div>
-
-                <div class="teaching-tip">
-                  <i data-lucide="info"></i>
-                  <span>Any two boards with tiles in different positions represent different states. For example, <code>(7,2,4,5,0,6,8,3,1) ≠ (7,2,4,5,3,6,8,0,1)</code>. Complete board arrangements define unique states.</span>
-                </div>
-              </div>
-
-              <!-- Step 2: Actions & Transitions -->
-              <div class="puzzle-teaching-panel" id="puzzle-panel-step-2">
-                <h3>3. Actions & Transition Model</h3>
-                <p>The transition model defines which actions are possible in a state, and the resulting state after applying an action: <code>RESULT(s, a) = s'</code>. In this puzzle, we define actions from the perspective of moving the blank space.</p>
-                
-                <div class="manual-robot-tester">
-                  <div class="tester-header">Move Blank Action Model:</div>
-                  <div class="tester-btn-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; max-width: 250px; margin: 0 auto;">
-                    <div></div>
-                    <button class="btn-ctrl" id="btn-puz-up" title="Move Up"><i data-lucide="arrow-up"></i> Up</button>
-                    <div></div>
-                    <button class="btn-ctrl" id="btn-puz-left" title="Move Left"><i data-lucide="arrow-left"></i> Left</button>
-                    <div style="display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; color: var(--primary);">Blank</div>
-                    <button class="btn-ctrl" id="btn-puz-right" title="Move Right"><i data-lucide="arrow-right"></i> Right</button>
-                    <div></div>
-                    <button class="btn-ctrl" id="btn-puz-down" title="Move Down"><i data-lucide="arrow-down"></i> Down</button>
-                    <div></div>
-                  </div>
-                  
-                  <div class="manual-log-box" style="margin-top: 10px;">
-                    <div class="manual-log-title">Transition Log RESULT(s, a):</div>
-                    <div id="puz-manual-log" class="manual-log-content"></div>
-                  </div>
-                  <div class="tester-footer-tip">You can also use <kbd>W</kbd>, <kbd>A</kbd>, <kbd>S</kbd>, <kbd>D</kbd> or arrow keys on your keyboard.</div>
-                </div>
-              </div>
-
-              <!-- Step 3: State Space Size -->
-              <div class="puzzle-teaching-panel" id="puzzle-panel-step-3">
-                <h3>4. Possible Configurations Size</h3>
-                <p>How many total arrangements of the 8 tiles and blank are mathematically possible? Since there are 9 slots, there are 9 factorial total arrangements:</p>
-                
-                <div class="formula-box" style="font-size: 1.1rem;">
-                  9! = 362,880 possible arrangements
-                </div>
-
-                <div class="teaching-tip">
-                  <i data-lucide="help-circle"></i>
-                  <span>But are all of these 362,880 arrangements actually reachable from our initial configuration? Let's analyze reachability next.</span>
-                </div>
-              </div>
-
-              <!-- Step 4: Solvability Presets -->
-              <div class="puzzle-teaching-panel" id="puzzle-panel-step-4">
-                <h3>5. Parity & Solvability Presets</h3>
-                <p>The 362,880 arrangements form two completely disconnected components (parity classes) of size 181,440. You can only move within your group; legal moves cannot cross the parity divide.</p>
-                
-                <div class="btn-group" style="grid-template-columns: 1fr; gap: 6px; margin-top: 5px;">
-                  <button class="btn-ctrl" id="btn-puz-goal-solvable"><i data-lucide="check-circle"></i> Load Solvable Goal</button>
-                  <button class="btn-ctrl" id="btn-puz-goal-unsolvable"><i data-lucide="alert-triangle"></i> Load Unsolvable Goal</button>
-                  <button class="btn-ctrl btn-ctrl-primary" id="btn-puz-goal-swap"><i data-lucide="shuffle"></i> Swap Goal Tiles 7 & 8</button>
-                </div>
-                
-                <div class="search-status-banner" id="puz-goal-status" style="margin-top: 8px; padding: 0.6rem;"></div>
-              </div>
-
-              <!-- Step 5: Interactive Explore -->
-              <div class="puzzle-teaching-panel" id="puzzle-panel-step-5">
-                <h3>6. Exploration & Duplicates</h3>
-                <p>Try moving tiles to explore the state space. Notice that moving blank in a loop (e.g. Left, Right, Left) returns to a state you have already visited. A search tree tracks duplicate states to avoid looping infinitely.</p>
-                
-                <div class="manual-robot-tester">
-                  <div class="tester-header">Current Run Details:</div>
-                  <div class="stat-summary-box" style="grid-template-columns: 1fr 1fr; margin-bottom: 5px;">
-                    <div class="summary-item">
-                      <span class="summary-label">Move Counter:</span>
-                      <span class="summary-val" id="puz-explore-moves">0</span>
-                    </div>
-                    <div class="summary-item">
-                      <span class="summary-label">Control Mode:</span>
-                      <span class="summary-val" style="color:var(--primary); font-size:0.85rem;">Keyboard Active</span>
-                    </div>
-                  </div>
-
-                  <div class="tester-btn-group" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; max-width: 250px; margin: 0 auto;">
-                    <div></div>
-                    <button class="btn-ctrl" id="btn-play-up" title="Move Up"><i data-lucide="arrow-up"></i> Up</button>
-                    <div></div>
-                    <button class="btn-ctrl" id="btn-play-left" title="Move Left"><i data-lucide="arrow-left"></i> Left</button>
-                    <div style="display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.8rem; color: var(--primary);">Play</div>
-                    <button class="btn-ctrl" id="btn-play-right" title="Move Right"><i data-lucide="arrow-right"></i> Right</button>
-                    <div></div>
-                    <button class="btn-ctrl" id="btn-play-down" title="Move Down"><i data-lucide="arrow-down"></i> Down</button>
-                    <div></div>
-                  </div>
-                  
-                  <div class="btn-group" style="margin-top: 5px;">
-                    <button class="btn-ctrl" id="btn-puz-explore-dup"><i data-lucide="rotate-ccw"></i> Auto Loop Demo</button>
-                    <button class="btn-ctrl" id="btn-puz-explore-reset"><i data-lucide="refresh-cw"></i> Reset Puzzle</button>
-                  </div>
-
-                  <div class="manual-log-box" style="margin-top: 5px;">
-                    <div class="manual-log-title">State Visitation Log:</div>
-                    <div id="puz-explore-log" class="manual-log-content"></div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Step 6: Reachability Tree -->
-              <div class="puzzle-teaching-panel" id="puzzle-panel-step-6">
-                <h3>7. Reachability Tree Growth</h3>
-                <p>We expand the state space step-by-step using Breadth-First Search (BFS). This generates a search tree. Slide to choose depth and watch the tree grow from the initial state:</p>
-                
-                <div class="controls-group" style="gap: 5px;">
-                  <div class="control-label">
-                    <span>BFS Tree Depth (d)</span>
-                    <span class="slider-val" id="puz-depth-val">1</span>
-                  </div>
-                  <div class="control-slider-container">
-                    <input type="range" id="puz-depth-slider" min="0" max="3" value="1" step="1">
-                  </div>
-                </div>
-
-                <div class="live-search-stats" style="margin-top: 8px;">
-                  <div class="stats-mini-row">
-                    <div class="mini-stat-card">
-                      <span class="mini-stat-label">Total Tree Nodes:</span>
-                      <span class="mini-stat-val" id="puz-tree-nodes-total">0</span>
-                    </div>
-                    <div class="mini-stat-card">
-                      <span class="mini-stat-label">Unique States:</span>
-                      <span class="mini-stat-val" id="puz-tree-nodes-unique" style="color:var(--accent);">0</span>
-                    </div>
-                  </div>
-                  <div class="teaching-tip" style="padding: 0.5rem 0.75rem;">
-                    <i data-lucide="info"></i>
-                    <span>Notice that <strong>Total Tree Nodes</strong> grows faster than <strong>Unique States</strong> because of duplicate configurations (paths returning to visited layouts).</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Step 7: Summary View -->
-              <div class="puzzle-teaching-panel" id="puzzle-panel-step-7">
-                <h3>8. Concept Summary</h3>
-                <p>A quick-reference guide of core AI Search concepts taught by the 8-puzzle demo:</p>
-                
-                <div class="comparison-table-wrapper" style="margin-top: 5px; max-height: 230px; overflow-y: auto;">
-                  <table class="comparison-table">
-                    <thead>
-                      <tr>
-                        <th>Question</th>
-                        <th>Concept / Answer</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td><strong>What is a state?</strong></td>
-                        <td>One unique board arrangement of tiles & blank</td>
-                      </tr>
-                      <tr>
-                        <td><strong>What is a state space?</strong></td>
-                        <td>Set of all theoretically possible configurations (9! = 362,880)</td>
-                      </tr>
-                      <tr>
-                        <td><strong>What are actions?</strong></td>
-                        <td>Moves of blank space (Up, Down, Left, Right)</td>
-                      </tr>
-                      <tr>
-                        <td><strong>What is the transition model?</strong></td>
-                        <td>RESULT(s, a) yielding a new state s'</td>
-                      </tr>
-                      <tr>
-                        <td><strong>Are all states reachable?</strong></td>
-                        <td>No, parity constraints divide permutations into 2 disconnected groups</td>
-                      </tr>
-                      <tr>
-                        <td><strong>Reachable state space?</strong></td>
-                        <td>Set of states obtainable from initial state (size: 9!/2 = 181,440)</td>
-                      </tr>
-                      <tr>
-                        <td><strong>What is a goal state?</strong></td>
-                        <td>A target configuration (which must share the initial state's parity)</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-            </div>
-
-            <!-- Stepped Flow Navigation Buttons -->
-            <div class="step-nav-footer">
-              <button class="btn-ctrl" id="btn-puzzle-prev" disabled>
-                <i data-lucide="chevron-left"></i> Back
-              </button>
-              <button class="btn-ctrl btn-ctrl-primary" id="btn-puzzle-next">
-                Next Step <i data-lucide="chevron-right"></i>
-              </button>
-            </div>
-
-          </div>
-        </div>
-      </div>
-
-      <!-- Tab 4: Graph Search Algorithms Demo View -->
-      <div class="playground-view" id="view-search">
-        
-        <!-- Search Cycle Diagram -->
-        <div class="search-cycle-diagram">
-          <div class="cycle-step cs-frontier">
-            <span class="cycle-step-num"><i data-lucide="layers"></i></span>
-            <span class="cycle-step-name">1. Frontier</span>
-          </div>
-          <div class="cycle-arrow"><i data-lucide="chevron-right"></i></div>
-          <div class="cycle-step cs-select">
-            <span class="cycle-step-num"><i data-lucide="crosshair"></i></span>
-            <span class="cycle-step-name">2. Select Node</span>
-          </div>
-          <div class="cycle-arrow"><i data-lucide="chevron-right"></i></div>
-          <div class="cycle-step cs-goal-test">
-            <span class="cycle-step-num"><i data-lucide="check-square"></i></span>
-            <span class="cycle-step-name">3. Goal Test</span>
-          </div>
-          <div class="cycle-arrow"><i data-lucide="chevron-right"></i></div>
-          <div class="cycle-step cs-expand">
-            <span class="cycle-step-num"><i data-lucide="git-branch"></i></span>
-            <span class="cycle-step-name">4. Expand</span>
-          </div>
-          <div class="cycle-arrow"><i data-lucide="chevron-right"></i></div>
-          <div class="cycle-step cs-update">
-            <span class="cycle-step-num"><i data-lucide="plus-circle"></i></span>
-            <span class="cycle-step-name">5. Update Frontier</span>
-          </div>
-        </div>
-
-        <!-- Algorithm Select Tabs -->
-        <div class="search-tabs-container">
-          <button class="search-tab active" data-alg="BFS">
-            <i data-lucide="git-merge"></i> Breadth-First (BFS)
-          </button>
-          <button class="search-tab" data-alg="DFS">
-            <i data-lucide="git-pull-request"></i> Depth-First (DFS)
-          </button>
-          <button class="search-tab" data-alg="UCS">
-            <i data-lucide="trending-up"></i> Uniform-Cost (UCS)
-          </button>
-          <button class="search-tab" data-alg="IDS">
-            <i data-lucide="refresh-cw"></i> Iterative Deepening (IDS)
-          </button>
-        </div>
-
-        <div class="playground-grid">
-          <!-- Visualizer Canvas -->
-          <div class="canvas-container" id="search-canvas-container">
-            <canvas id="search-canvas"></canvas>
-          </div>
-          
-          <!-- Controls Panel -->
-          <div class="playground-controls glass-panel" id="search-controls-panel">
-            
-            <div class="teaching-panels-container">
-              <div class="teaching-panel active" style="display: flex; flex-direction: column; gap: 0.75rem;">
-                <h3>Graph Search Mechanics</h3>
-                
-                <!-- Start/Goal selections -->
-                <div class="search-controls-container">
-                  <div class="control-row">
-                    <span class="ctrl-label">Start State:</span>
-                    <select id="select-search-start" class="select-input">
-                      <option value="A" selected>A</option>
-                      <option value="B">B</option>
-                      <option value="C">C</option>
-                      <option value="D">D</option>
-                      <option value="E">E</option>
-                      <option value="F">F</option>
-                      <option value="G">G</option>
-                      <option value="H">H</option>
-                    </select>
-                  </div>
-                  <div class="control-row">
-                    <span class="ctrl-label">Goal State:</span>
-                    <select id="select-search-goal" class="select-input">
-                      <option value="A">A</option>
-                      <option value="B">B</option>
-                      <option value="C">C</option>
-                      <option value="D">D</option>
-                      <option value="E">E</option>
-                      <option value="F">F</option>
-                      <option value="G" selected>G</option>
-                      <option value="H">H</option>
-                    </select>
-                  </div>
-                </div>
-
-                <!-- Explanation banner -->
-                <div class="formula-box" id="search-explanation-text" style="font-size: 0.8rem; text-align: left; font-family: sans-serif; min-height: 58px; font-weight: normal; line-height: 1.4;">
-                  Initialize search...
-                </div>
-
-                <!-- Step Controls -->
-                <div class="btn-group" style="grid-template-columns: repeat(3, 1fr); gap: 5px;">
-                  <button class="btn-ctrl" id="btn-search-prev" title="Previous step"><i data-lucide="skip-back"></i> Prev</button>
-                  <button class="btn-ctrl btn-ctrl-primary" id="btn-search-play" title="Run automatically"><i data-lucide="play"></i> Auto</button>
-                  <button class="btn-ctrl" id="btn-search-pause" disabled title="Pause run"><i data-lucide="pause"></i> Pause</button>
-                  <button class="btn-ctrl" id="btn-search-next" title="Next step" style="grid-column: span 2;"><i data-lucide="skip-forward"></i> Next Step</button>
-                  <button class="btn-ctrl" id="btn-search-reset" title="Reset state"><i data-lucide="rotate-ccw"></i> Reset</button>
-                </div>
-
-                <!-- Speed slider -->
-                <div class="controls-group" style="gap: 2px;">
-                  <div class="control-label">
-                    <span>Auto Play Speed</span>
-                  </div>
-                  <div class="control-slider-container">
-                    <input type="range" id="search-speed-slider" min="1" max="5" value="3" step="1">
-                  </div>
-                </div>
-
-                <!-- Status mini stats -->
-                <div class="live-search-stats" style="margin-top: 5px;">
-                  <div class="stats-mini-row">
-                    <div class="mini-stat-card">
-                      <span class="mini-stat-label">Selected Node:</span>
-                      <span class="mini-stat-val" id="search-status-selected">-</span>
-                    </div>
-                    <div class="mini-stat-card" id="search-ucs-cost-panel" style="display: none;">
-                      <span class="mini-stat-label">g(n) Cost:</span>
-                      <span class="mini-stat-val" id="search-status-cost" style="color: var(--accent);">0</span>
-                    </div>
-                    <div class="mini-stat-card" id="search-ids-depth-panel" style="display: none; grid-column: span 2; display: flex; justify-content: space-between;">
-                      <div>
-                        <span class="mini-stat-label">Limit:</span>
-                        <span class="mini-stat-val" id="search-status-ids-limit">0</span>
-                      </div>
-                      <div>
-                        <span class="mini-stat-label">Depth:</span>
-                        <span class="mini-stat-val" id="search-status-ids-depth" style="color: var(--accent);">0</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="mini-stat-card" style="margin-top: 4px; display: flex; flex-direction: column; align-items: stretch; gap: 2px;">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
-                      <span class="mini-stat-label">Frontier:</span>
-                      <span class="mini-stat-val" id="search-status-frontier" style="font-family: monospace; font-size: 0.75rem;">Empty</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; border-top: 1px solid rgba(15,23,42,0.05); padding-top: 2px;">
-                      <span class="mini-stat-label">Reached Set:</span>
-                      <span class="mini-stat-val" id="search-status-reached" style="font-family: monospace; font-size: 0.75rem;">None</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; font-size: 0.75rem; border-top: 1px solid rgba(15,23,42,0.05); padding-top: 2px;">
-                      <span class="mini-stat-label">Expanded Order:</span>
-                      <span class="mini-stat-val" id="search-status-expanded" style="font-family: monospace; font-size: 0.75rem;">None</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Dynamic Step Table -->
-                <div class="comparison-table-wrapper" style="max-height: 140px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 6px;">
-                  <table class="comparison-table" style="font-size: 0.7rem; box-shadow: none;">
-                    <thead>
-                      <tr>
-                        <th>Step</th>
-                        <th>Selected</th>
-                        <th>Expanded?</th>
-                        <th>Frontier</th>
-                        <th>Reached</th>
-                      </tr>
-                    </thead>
-                    <tbody id="search-step-table-body">
-                    </tbody>
-                  </table>
-                </div>
-
-                <!-- Comparison history table -->
-                <div class="comparison-table-wrapper" style="border: 1px solid var(--border-light); border-radius: 6px; margin-top: 5px;">
-                  <table class="comparison-table" style="font-size: 0.65rem; box-shadow: none;">
-                    <thead>
-                      <tr>
-                        <th>Alg</th>
-                        <th>Expanded Node Order</th>
-                        <th>Solution Path</th>
-                        <th>Cost</th>
-                        <th>Exp#</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr id="comp-row-bfs">
-                        <td><strong>BFS</strong></td>
-                        <td colspan="4" style="color: var(--text-muted); font-style: italic; text-align: center;">Run BFS to see results</td>
-                      </tr>
-                      <tr id="comp-row-dfs">
-                        <td><strong>DFS</strong></td>
-                        <td colspan="4" style="color: var(--text-muted); font-style: italic; text-align: center;">Run DFS to see results</td>
-                      </tr>
-                      <tr id="comp-row-ucs">
-                        <td><strong>UCS</strong></td>
-                        <td colspan="4" style="color: var(--text-muted); font-style: italic; text-align: center;">Run UCS to see results</td>
-                      </tr>
-                      <tr id="comp-row-ids">
-                        <td><strong>IDS</strong></td>
-                        <td colspan="4" style="color: var(--text-muted); font-style: italic; text-align: center;">Run IDS to see results</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-              </div>
-            </div>
-
-          </div>
-        </div>
       </div>
     </div>
   </section>
-
-
 
   <!-- Resources Section -->
   <section class="section" id="resources" style="background: rgba(241, 245, 249, 0.3);">
@@ -1170,11 +351,13 @@
         </div>
         
         <div class="footer-col">
-          <h4>Interactive</h4>
+          <h4>Interactive Labs</h4>
           <ul class="footer-links">
-            <li><a href="#playground">K-Means Canvas</a></li>
-            <li><a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer">GitHub Profile</a></li>
-            <li><a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer">Organization Homepage</a></li>
+            <li><a href="playground.html#view-kmeans">K-Means Canvas</a></li>
+            <li><a href="playground.html#view-maze">Maze Search Abstraction</a></li>
+            <li><a href="playground.html#view-puzzle">8-Puzzle State-Space</a></li>
+            <li><a href="playground.html#view-search">Graph Search Algorithms</a></li>
+            <li><a href="playground.html#view-vaccum">Two-Room Vacuum Robot</a></li>
           </ul>
         </div>
       </div>
@@ -1192,18 +375,6 @@
 
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
-  <!-- Maze Search Demo JS -->
-  <script src="maze_demo/maze.js?v=2"></script>
-  <script src="maze_demo/abstraction.js?v=2"></script>
-  <script src="maze_demo/search.js?v=2"></script>
-  <script src="maze_demo/ui.js?v=2"></script>
-  <!-- 8-Puzzle State-Space Demo JS -->
-  <script src="puzzle_demo/puzzle.js?v=2"></script>
-  <script src="puzzle_demo/reachability.js?v=2"></script>
-  <script src="puzzle_demo/ui.js?v=2"></script>
-  <!-- Graph Search Demo JS -->
-  <script src="search_demo/graph.js?v=2"></script>
-  <script src="search_demo/ui.js?v=2"></script>
   <!-- Application JS -->
   <script src="main.js?v=2"></script>
 </body>

@@ -86,6 +86,12 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           window.searchDemo.resizeCanvas();
         }
+      } else if (targetId === 'view-vaccum') {
+        if (!window.vacuumDemo) {
+          window.vacuumDemo = new VacuumDemoUI();
+        } else {
+          window.vacuumDemo.resizeCanvas();
+        }
       } else if (targetId === 'view-kmeans') {
         // Resize K-Means canvas
         if (typeof resizeCanvas === 'function') {
@@ -94,62 +100,79 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   });
-  const canvas = document.getElementById('kmeans-canvas');
-  const ctx = canvas.getContext('2d');
-  const kSlider = document.getElementById('k-slider');
-  const kValueDisplay = document.getElementById('k-value-display');
-  const btnRun = document.getElementById('btn-kmeans-run');
-  const btnStep = document.getElementById('btn-kmeans-step');
-  const btnRandom = document.getElementById('btn-kmeans-random');
-  const btnReset = document.getElementById('btn-kmeans-reset');
-  const overlayMode = document.getElementById('overlay-mode');
-  const overlayIter = document.getElementById('overlay-iter');
-  const overlayPointsCount = document.getElementById('overlay-points-count');
-  const statusText = document.getElementById('status-text');
-  const centroidsPlacedVal = document.getElementById('centroids-placed-val');
-  const convergedVal = document.getElementById('converged-val');
 
-  // Palette for clusters
-  const clusterColors = [
-    { fill: '#8b5cf6', rgb: '139, 92, 246' }, // Neon Purple
-    { fill: '#22d3ee', rgb: '34, 211, 238' }, // Cyan
-    { fill: '#ec4899', rgb: '236, 72, 153' }, // Neon Pink
-    { fill: '#10b981', rgb: '16, 185, 129' }, // Emerald Green
-    { fill: '#f59e0b', rgb: '245, 158, 11' }, // Amber Yellow
-    { fill: '#ef4444', rgb: '239, 68, 68' }   // Red
-  ];
-
-  let state = {
-    k: 3,
-    points: [],
-    centroids: [],
-    iteration: 0,
-    converged: false,
-    isRunning: false,
-    runInterval: null,
-    stepPhase: 'ASSIGN' // ASSIGN or UPDATE
-  };
-
-  // Setup Canvas Dimensions with Retina support
-  function resizeCanvas() {
-    const rect = canvas.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.scale(dpr, dpr);
-    draw();
+  // Hash-based tab activation (e.g. playground.html#view-vaccum)
+  function activateTabFromHash() {
+    const hash = window.location.hash.replace('#', '');
+    if (hash) {
+      const matchingTab = document.querySelector(`.playground-tab[data-target="${hash}"]`);
+      if (matchingTab) {
+        matchingTab.click();
+      }
+    }
   }
+  activateTabFromHash();
+  window.addEventListener('hashchange', activateTabFromHash);
 
-  // Initialize Canvas
-  resizeCanvas();
-  window.addEventListener('resize', resizeCanvas);
+  const canvas = document.getElementById('kmeans-canvas');
+  if (canvas) {
+    const ctx = canvas.getContext('2d');
+    const kSlider = document.getElementById('k-slider');
+    const kValueDisplay = document.getElementById('k-value-display');
+    const btnRun = document.getElementById('btn-kmeans-run');
+    const btnStep = document.getElementById('btn-kmeans-step');
+    const btnRandom = document.getElementById('btn-kmeans-random');
+    const btnReset = document.getElementById('btn-kmeans-reset');
+    const overlayMode = document.getElementById('overlay-mode');
+    const overlayIter = document.getElementById('overlay-iter');
+    const overlayPointsCount = document.getElementById('overlay-points-count');
+    const statusText = document.getElementById('status-text');
+    const centroidsPlacedVal = document.getElementById('centroids-placed-val');
+    const convergedVal = document.getElementById('converged-val');
 
-  // K Slider event listener
-  kSlider.addEventListener('input', (e) => {
-    state.k = parseInt(e.target.value);
-    kValueDisplay.textContent = state.k;
-    resetState(false); // Reset calculation but keep points
-  });
+    // Palette for clusters
+    const clusterColors = [
+      { fill: '#8b5cf6', rgb: '139, 92, 246' }, // Neon Purple
+      { fill: '#22d3ee', rgb: '34, 211, 238' }, // Cyan
+      { fill: '#ec4899', rgb: '236, 72, 153' }, // Neon Pink
+      { fill: '#10b981', rgb: '16, 185, 129' }, // Emerald Green
+      { fill: '#f59e0b', rgb: '245, 158, 11' }, // Amber Yellow
+      { fill: '#ef4444', rgb: '239, 68, 68' }   // Red
+    ];
+
+    let state = {
+      k: 3,
+      points: [],
+      centroids: [],
+      iteration: 0,
+      converged: false,
+      isRunning: false,
+      runInterval: null,
+      stepPhase: 'ASSIGN' // ASSIGN or UPDATE
+    };
+
+    // Setup Canvas Dimensions with Retina support
+    function resizeCanvas() {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.scale(dpr, dpr);
+      draw();
+    }
+
+    // Initialize Canvas
+    resizeCanvas();
+    window.addEventListener('resize', resizeCanvas);
+
+    // K Slider event listener
+    if (kSlider) {
+      kSlider.addEventListener('input', (e) => {
+        state.k = parseInt(e.target.value);
+        if (kValueDisplay) kValueDisplay.textContent = state.k;
+        resetState(false); // Reset calculation but keep points
+      });
+    }
 
   // Event listener: Add point on click
   canvas.addEventListener('mousedown', (e) => {
@@ -577,5 +600,6 @@ document.addEventListener('DOMContentLoaded', () => {
       ctx.textBaseline = 'middle';
       ctx.fillText(index + 1, cx, cy);
     });
+  }
   }
 });
