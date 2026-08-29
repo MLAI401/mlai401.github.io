@@ -582,8 +582,8 @@ a {
 /* Interactive Playground Section */
 .playground-grid {
   display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 2rem;
+  grid-template-columns: 1fr 420px;
+  gap: 1.75rem;
   align-items: stretch;
 }
 
@@ -1041,8 +1041,9 @@ footer {
     order: -1;
   }
   
-  .playground-grid {
-    grid-template-columns: 1fr;
+  .playground-grid,
+  .vaccum-bottom-grid {
+    grid-template-columns: 1fr !important;
   }
 }
 

@@ -194,9 +194,9 @@ class VacuumDemoUI {
     // Start render loop
     this.startAnimationLoop();
 
-    // Set initial teaching step
-    this.setStep(0);
+    // Initialize environment and comparison UI
     this.updateUI();
+    this.resetComparison();
   }
 
   resizeCanvas() {
@@ -781,8 +781,8 @@ class VacuumDemoUI {
 
     const midX = w / 2;
     const roomW = midX - 16;
-    const roomH = h - 50;
-    const roomY = 35;
+    const roomH = h - 44;
+    const roomY = 34;
 
     // Draw Room A (Left)
     this.drawRoom(ctx, 10, roomY, roomW, roomH, 'Room A', this.env.roomA, this.env.location === 'A');
@@ -795,9 +795,9 @@ class VacuumDemoUI {
     ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
     ctx.fillRect(midX - 4, roomY, 8, roomH);
     // Doorway cut
-    ctx.clearRect(midX - 5, roomY + roomH * 0.4, 10, roomH * 0.45);
+    ctx.clearRect(midX - 5, roomY + roomH * 0.35, 10, roomH * 0.5);
     ctx.strokeStyle = 'rgba(99, 102, 241, 0.3)';
-    ctx.strokeRect(midX - 5, roomY + roomH * 0.4, 10, roomH * 0.45);
+    ctx.strokeRect(midX - 5, roomY + roomH * 0.35, 10, roomH * 0.5);
     ctx.restore();
 
     // Draw Dust / Dirt Elements in Rooms
@@ -809,7 +809,7 @@ class VacuumDemoUI {
 
     // Draw Animated Vacuum Robot
     const rx = (this.robotAnimX !== null ? this.robotAnimX : (this.env.location === 'A' ? 0.25 : 0.75)) * w;
-    const ry = roomY + roomH * 0.65;
+    const ry = roomY + roomH * 0.62;
     this.drawRobot(ctx, rx, ry);
 
     // Draw Top Environment State HUD
@@ -1048,9 +1048,9 @@ class VacuumDemoUI {
     // Floating Percept HUD Badge Above Robot
     const percept = this.env.getPercept();
     const hudW = 120;
-    const hudH = 26;
+    const hudH = 24;
     const hudX = x - hudW / 2;
-    const hudY = y - 56;
+    const hudY = y - 46;
 
     ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
     ctx.beginPath();

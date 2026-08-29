@@ -1006,48 +1006,12 @@
       <!-- Tab 5: Two-Room Vacuum Robot Agent View -->
       <div class="playground-view" id="view-vaccum">
         
-        <!-- Teaching Flow Progress Indicator -->
-        <div class="flow-progress-bar" id="vaccum-flow-bar">
-          <div class="flow-step vaccum-flow-step active" data-step="0">
-            <span class="flow-step-num">1</span>
-            <span class="flow-step-name">Environment & Measure</span>
-          </div>
-          <div class="flow-step vaccum-flow-step" data-step="1">
-            <span class="flow-step-num">2</span>
-            <span class="flow-step-name">Table-Driven Agent</span>
-          </div>
-          <div class="flow-step vaccum-flow-step" data-step="2">
-            <span class="flow-step-num">3</span>
-            <span class="flow-step-name">Simple Reflex Agent</span>
-          </div>
-          <div class="flow-step vaccum-flow-step" data-step="3">
-            <span class="flow-step-num">4</span>
-            <span class="flow-step-name">Model-Based Reflex</span>
-          </div>
-          <div class="flow-step vaccum-flow-step" data-step="4">
-            <span class="flow-step-num">5</span>
-            <span class="flow-step-name">3-Agent Comparison</span>
-          </div>
-        </div>
-
-        <div class="playground-grid">
-          <!-- Visualizer Canvas Container -->
-          <div class="canvas-container" id="vaccum-canvas-container" style="min-height: 380px;">
-            <canvas id="vaccum-canvas"></canvas>
-            <div class="canvas-overlay" id="vaccum-canvas-overlay">
-              <div>Interactive: <span style="color: var(--accent);">Click room top to toggle Dirt | Click floor to place Robot</span></div>
-            </div>
-          </div>
-
-          <!-- Controls & Performance Dashboard Panel -->
-          <div class="playground-controls glass-panel" id="vaccum-controls-panel">
-            
-            <div class="controls-group">
-              <div class="control-label">
-                <span>Initial State Preset</span>
-                <span class="badge-tag">AIMA Standard</span>
-              </div>
-              <select id="vaccum-initial-select" class="control-select">
+        <!-- Top Controls Bar -->
+        <div class="glass-panel" style="padding: 1rem 1.5rem; margin-bottom: 1.25rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
+          <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;">
+            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+              <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary);">Start Preset</span>
+              <select id="vaccum-initial-select" class="control-select" style="min-width: 180px;">
                 <option value="A_Dirty_Dirty" selected>(A, Dirty, Dirty)</option>
                 <option value="A_Dirty_Clean">(A, Dirty, Clean)</option>
                 <option value="A_Clean_Dirty">(A, Clean, Dirty)</option>
@@ -1059,286 +1023,101 @@
               </select>
             </div>
 
-            <div class="controls-group">
-              <div class="control-label">
-                <span>Agent Architecture</span>
-              </div>
-              <select id="vaccum-agent-select" class="control-select">
-                <option value="table" selected>Table-Driven Agent (History Lookup)</option>
-                <option value="reflex">Simple Reflex Agent (No Memory)</option>
-                <option value="model">Model-Based Reflex Agent (Internal State)</option>
+            <div style="display: flex; flex-direction: column; gap: 0.25rem;">
+              <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary);">Agent Architecture</span>
+              <select id="vaccum-agent-select" class="control-select" style="min-width: 220px;">
+                <option value="table" selected>Table-Driven Agent</option>
+                <option value="reflex">Simple Reflex Agent</option>
+                <option value="model">Model-Based Reflex Agent</option>
               </select>
             </div>
+          </div>
 
-            <div class="controls-group">
-              <div class="btn-group">
-                <button class="btn-ctrl btn-ctrl-primary" id="btn-vaccum-play">
-                  <i data-lucide="play"></i> Auto Run
-                </button>
-                <button class="btn-ctrl" id="btn-vaccum-step">
-                  <i data-lucide="skip-forward"></i> Step
-                </button>
-                <button class="btn-ctrl" id="btn-vaccum-reset">
-                  <i data-lucide="rotate-ccw"></i> Reset
-                </button>
-              </div>
+          <div style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: center;">
+            <div class="btn-group" style="gap: 0.5rem;">
+              <button class="btn-ctrl btn-ctrl-primary" id="btn-vaccum-play">
+                <i data-lucide="play"></i> Auto Run
+              </button>
+              <button class="btn-ctrl" id="btn-vaccum-step">
+                <i data-lucide="skip-forward"></i> Step
+              </button>
+              <button class="btn-ctrl" id="btn-vaccum-reset">
+                <i data-lucide="rotate-ccw"></i> Reset
+              </button>
             </div>
 
-            <div class="controls-group">
-              <div class="control-label">
-                <span>Simulation Speed</span>
-              </div>
-              <div class="control-slider-container">
-                <input type="range" id="vaccum-speed-slider" min="1" max="5" value="3" step="1">
-              </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: var(--text-secondary);">Speed</span>
+              <input type="range" id="vaccum-speed-slider" min="1" max="5" value="3" step="1" style="width: 100px;">
             </div>
-
-            <div class="playground-stats" id="vaccum-stats-panel">
-              <div class="pg-stat-row">
-                <span>Performance Score:</span>
-                <span class="pg-stat-val" id="vaccum-stat-score" style="color: var(--accent); font-weight: 700; font-size: 1.1rem;">0.0</span>
-              </div>
-              <div class="pg-stat-row">
-                <span>Rooms Cleaned:</span>
-                <span class="pg-stat-val" id="vaccum-stat-cleaned">0 / 2</span>
-              </div>
-              <div class="pg-stat-row">
-                <span>Movement Actions (L/R):</span>
-                <span class="pg-stat-val" id="vaccum-stat-moves">0</span>
-              </div>
-              <div class="pg-stat-row">
-                <span>Total Actions:</span>
-                <span class="pg-stat-val" id="vaccum-stat-total">0</span>
-              </div>
-              <div class="pg-stat-row">
-                <span>Task Complete (Clean):</span>
-                <span class="pg-stat-val" id="vaccum-stat-complete" style="color: var(--danger);">No</span>
-              </div>
-              <div class="pg-stat-row">
-                <span>Agent Stopped (NoOp):</span>
-                <span class="pg-stat-val" id="vaccum-stat-stopped">No</span>
-              </div>
-            </div>
-
           </div>
         </div>
 
-        <!-- Teaching Inspector & Walkthrough Panels -->
-        <div class="teaching-panels-container glass-panel" style="margin-top: 1.5rem; padding: 1.5rem;">
+        <!-- Room A & Room B Visualizer Canvas -->
+        <div class="canvas-container" id="vaccum-canvas-container" style="height: 290px; min-height: 240px; aspect-ratio: unset; margin-bottom: 1.25rem;">
+          <canvas id="vaccum-canvas"></canvas>
+          <div class="canvas-overlay" id="vaccum-canvas-overlay">
+            <div>Interactive: <span style="color: var(--accent);">Click room top to toggle Dirt | Click floor to place Robot</span></div>
+          </div>
+        </div>
+
+        <!-- Aligned 2-Column Dashboard: Manual Controls (Under Room A) & Metrics (Under Room B) -->
+        <div class="vaccum-bottom-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
           
-          <!-- Step 0: Environment & PEAS Setup -->
-          <div class="teaching-panel vaccum-teaching-panel active" id="vaccum-panel-env">
-            <div class="panel-header-badge"><i data-lucide="compass"></i> Step 1: Environment & PEAS Formulation</div>
-            <h3>Two-Room Vacuum Robot Environment (AIMA)</h3>
-            <p>The environment consists of two rooms (<strong>Room A</strong> and <strong>Room B</strong>). Each room is either <strong>Clean</strong> or <strong>Dirty</strong>, and the robot is located in one of the two rooms.</p>
-            
-            <div class="vaccum-info-grid">
-              <div class="vaccum-info-card">
-                <div class="vaccum-info-title"><i data-lucide="database"></i> Environment State</div>
-                <div class="vaccum-formula">$$\text{State} = (\text{Robot Location}, \text{Room A Status}, \text{Room B Status})$$</div>
-                <p>Current: <strong id="vaccum-inspect-state" style="color: var(--primary);">(A, Dirty, Dirty)</strong></p>
-              </div>
-
-              <div class="vaccum-info-card">
-                <div class="vaccum-info-title"><i data-lucide="eye"></i> Robot Percept</div>
-                <div class="vaccum-formula">$$\text{Percept} = (\text{Current Location}, \text{Current Room Status})$$</div>
-                <p>Observed: <strong id="vaccum-inspect-percept" style="color: var(--accent);">(A, Dirty)</strong></p>
-              </div>
-
-              <div class="vaccum-info-card">
-                <div class="vaccum-info-title"><i data-lucide="award"></i> Performance Measure</div>
-                <div class="vaccum-formula">$$\text{Score} = 10 \times (\text{Cleaned}) - 1.5 \times (\text{Moves})$$</div>
-                <p><span class="vaccum-pill success">+10</span> per dirty room cleaned, <span class="vaccum-pill danger">-1.5</span> per Left/Right move, <span class="vaccum-pill neutral">0</span> for Suck/NoOp.</p>
-              </div>
+          <!-- Below Room A: Manual Controls -->
+          <div class="glass-panel" style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.6rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+              <span style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-primary);">Manual Controls (Room A)</span>
+              <span class="vaccum-pill neutral">Direct Actions</span>
             </div>
-
-            <div class="controls-group" style="margin-top: 1rem;">
-              <div class="control-label">
-                <span>Manual Environment Controls (Demonstrate Transitions)</span>
-              </div>
-              <div class="btn-group" style="flex-wrap: wrap;">
-                <button class="btn-ctrl" id="btn-vaccum-man-suck"><i data-lucide="zap"></i> Suck</button>
-                <button class="btn-ctrl" id="btn-vaccum-man-left"><i data-lucide="arrow-left"></i> Left</button>
-                <button class="btn-ctrl" id="btn-vaccum-man-right"><i data-lucide="arrow-right"></i> Right</button>
-                <button class="btn-ctrl" id="btn-vaccum-man-noop"><i data-lucide="square"></i> NoOp</button>
-                <button class="btn-ctrl btn-ctrl-secondary" id="btn-vaccum-toggle-a"><i data-lucide="sparkles"></i> Toggle A Dirt</button>
-                <button class="btn-ctrl btn-ctrl-secondary" id="btn-vaccum-toggle-b"><i data-lucide="sparkles"></i> Toggle B Dirt</button>
-                <button class="btn-ctrl btn-ctrl-secondary" id="btn-vaccum-place-a"><i data-lucide="map-pin"></i> Robot to A</button>
-                <button class="btn-ctrl btn-ctrl-secondary" id="btn-vaccum-place-b"><i data-lucide="map-pin"></i> Robot to B</button>
-              </div>
+            <div class="btn-group" style="grid-template-columns: repeat(2, 1fr); gap: 6px;">
+              <button class="btn-ctrl" id="btn-vaccum-man-suck" title="Suck"><i data-lucide="zap"></i> Suck</button>
+              <button class="btn-ctrl" id="btn-vaccum-man-noop" title="NoOp"><i data-lucide="square"></i> NoOp</button>
             </div>
-
-            <div class="vaccum-explanation-bar" id="vaccum-inspect-explanation">
-              Manual mode active. Click manual buttons above or step an agent to test state transitions.
+            <div class="btn-group" style="grid-template-columns: repeat(2, 1fr); gap: 6px;">
+              <button class="btn-ctrl" id="btn-vaccum-man-left" title="Left"><i data-lucide="arrow-left"></i> Left</button>
+              <button class="btn-ctrl" id="btn-vaccum-man-right" title="Right"><i data-lucide="arrow-right"></i> Right</button>
+            </div>
+            <div class="btn-group" style="grid-template-columns: repeat(2, 1fr); gap: 6px;">
+              <button class="btn-ctrl" id="btn-vaccum-toggle-a"><i data-lucide="sparkles"></i> Dirt A</button>
+              <button class="btn-ctrl" id="btn-vaccum-toggle-b"><i data-lucide="sparkles"></i> Dirt B</button>
+            </div>
+            <div class="btn-group" style="grid-template-columns: repeat(2, 1fr); gap: 6px;">
+              <button class="btn-ctrl" id="btn-vaccum-place-a"><i data-lucide="map-pin"></i> Robot A</button>
+              <button class="btn-ctrl" id="btn-vaccum-place-b"><i data-lucide="map-pin"></i> Robot B</button>
             </div>
           </div>
 
-          <!-- Step 1: Table-Driven Agent -->
-          <div class="teaching-panel vaccum-teaching-panel" id="vaccum-panel-table">
-            <div class="panel-header-badge"><i data-lucide="table"></i> Step 2: Table-Driven Agent</div>
-            <h3>Table-Driven Agent: Action = TABLE[Percept History]</h3>
-            <p>The Table-Driven Agent stores the entire history of observed percepts and looks up the corresponding pre-calculated action in a lookup table. It does not reason about the world; it strictly pattern-matches the accumulated percept sequence.</p>
-
-            <div class="vaccum-inspector-box">
-              <div class="vaccum-inspector-header">
-                <span class="vaccum-tag"><i data-lucide="history"></i> Accumulated Percept History</span>
-                <span style="font-size: 0.85rem; color: var(--text-muted);">Grows by 1 percept per step</span>
-              </div>
-              <div class="vaccum-history-timeline" id="vaccum-table-history-list">
-                <span style="color: var(--text-muted);">History empty []</span>
-              </div>
+          <!-- Below Room B: Performance Score & Metrics -->
+          <div class="glass-panel" id="vaccum-stats-panel" style="padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+              <span style="font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-primary);">Performance Score & Metrics (Room B)</span>
+              <span class="vaccum-pill success">Live Score</span>
             </div>
-
-            <div class="vaccum-inspector-box" style="margin-top: 1rem;">
-              <div class="vaccum-inspector-header">
-                <span class="vaccum-tag"><i data-lucide="search"></i> Table Lookup Match</span>
-                <span style="font-size: 0.85rem; color: var(--text-muted);">Formula: Entire History → Table Lookup → Action</span>
-              </div>
-              <div id="vaccum-table-match" style="font-size: 0.9rem;">
-                Step the agent to inspect the lookup key and action match.
-              </div>
+            <div class="pg-stat-row">
+              <span>Performance Score:</span>
+              <span class="pg-stat-val" id="vaccum-stat-score" style="color: var(--accent); font-weight: 700; font-size: 1.15rem;">0.0</span>
             </div>
-
-            <div class="vaccum-callout-note" style="margin-top: 1rem;">
-              <i data-lucide="alert-circle"></i>
-              <div>
-                <strong>Key Teaching Limitation:</strong> As the sequence of percepts grows, the number of possible histories grows exponentially ($4^T$ for $T$ steps). A table-driven agent quickly exhausts memory in realistic environments.
-              </div>
+            <div class="pg-stat-row">
+              <span>Rooms Cleaned:</span>
+              <span class="pg-stat-val" id="vaccum-stat-cleaned">0 / 2</span>
             </div>
-          </div>
-
-          <!-- Step 2: Simple Reflex Agent -->
-          <div class="teaching-panel vaccum-teaching-panel" id="vaccum-panel-reflex">
-            <div class="panel-header-badge"><i data-lucide="zap"></i> Step 3: Simple Reflex Agent</div>
-            <h3>Simple Reflex Agent: Current Percept → Condition-Action Rule → Action</h3>
-            <p>The Simple Reflex Agent selects actions based <strong>strictly on the current percept</strong>. It stores <strong>zero memory</strong> and has no internal model of the other room.</p>
-
-            <div class="vaccum-info-grid" style="margin-top: 1rem;">
-              <div class="vaccum-info-card">
-                <div class="vaccum-info-title"><i data-lucide="cpu"></i> Memory Footprint</div>
-                <div style="font-size: 1.25rem; font-weight: 700; color: var(--danger); margin: 0.5rem 0;">Memory: NONE (0 Bytes)</div>
-                <p>Cannot remember previous percepts or the status of unobserved rooms.</p>
-              </div>
-
-              <div class="vaccum-info-card" style="grid-column: span 2;">
-                <div class="vaccum-info-title"><i data-lucide="code"></i> Condition-Action Rules</div>
-                <div id="vaccum-reflex-rule">
-                  <div class="vaccum-rule-box">
-                    <code>IF Current Room is Dirty THEN Suck<br>ELSE IF Location == A THEN Right<br>ELSE IF Location == B THEN Left</code>
-                  </div>
-                </div>
-              </div>
+            <div class="pg-stat-row">
+              <span>Movement Actions (L/R):</span>
+              <span class="pg-stat-val" id="vaccum-stat-moves">0</span>
             </div>
-
-            <div class="vaccum-callout-warning" id="vaccum-reflex-loop-warning" style="margin-top: 1rem;">
-              <i data-lucide="refresh-cw"></i>
-              <div>
-                <strong>Crucial Teaching Distinction: Completes Cleaning $\neq$ Knows It Is Complete!</strong><br>
-                Both rooms are clean ($\text{Room A}=\text{Clean} \land \text{Room B}=\text{Clean}$). However, when the robot is at Room B, its percept is only <code>(B, Clean)</code>. Because it has no memory of Room A, it executes <code>Left</code>. At Room A, it executes <code>Right</code>, falling into an <strong>infinite oscillation loop</strong>.
-              </div>
+            <div class="pg-stat-row">
+              <span>Total Actions:</span>
+              <span class="pg-stat-val" id="vaccum-stat-total">0</span>
             </div>
-          </div>
-
-          <!-- Step 3: Model-Based Reflex Agent -->
-          <div class="teaching-panel vaccum-teaching-panel" id="vaccum-panel-model">
-            <div class="panel-header-badge"><i data-lucide="layers"></i> Step 4: Model-Based Reflex Agent</div>
-            <h3>Model-Based Reflex Agent: Percept + Internal State Model → Updated Model → Rule → Action</h3>
-            <p>The Model-Based Reflex Agent maintains an <strong>internal state model</strong> tracking the cleanliness of both Room A and Room B. It updates its internal model upon observing percepts and predicting the effect of its own cleaning actions.</p>
-
-            <div class="vaccum-inspector-box" style="margin-top: 1rem;">
-              <div class="vaccum-inspector-header">
-                <span class="vaccum-tag"><i data-lucide="cpu"></i> Agent Internal State Model</span>
-                <span style="font-size: 0.85rem; color: var(--accent);">State: (A Status, B Status)</span>
-              </div>
-              <div class="vaccum-model-display">
-                <div class="vaccum-model-room-box">
-                  <span>Room A Knowledge</span>
-                  <div id="vaccum-model-a" class="vaccum-model-pill unknown">Unknown</div>
-                </div>
-                <div class="vaccum-model-room-box">
-                  <span>Room B Knowledge</span>
-                  <div id="vaccum-model-b" class="vaccum-model-pill unknown">Unknown</div>
-                </div>
-              </div>
+            <div class="pg-stat-row">
+              <span>Task Complete (Clean):</span>
+              <span class="pg-stat-val" id="vaccum-stat-complete" style="color: var(--danger);">No</span>
             </div>
-
-            <div class="vaccum-inspector-box" style="margin-top: 1rem;">
-              <div class="vaccum-inspector-header">
-                <span class="vaccum-tag"><i data-lucide="check-circle-2"></i> Model-Based Decision Rule</span>
-                <span style="font-size: 0.85rem; color: var(--text-muted);">Stops with NoOp when both rooms known Clean</span>
-              </div>
-              <div id="vaccum-model-rule" style="font-size: 0.9rem;">
-                Step agent to observe internal state updates and decision rules.
-              </div>
+            <div class="pg-stat-row">
+              <span>Agent Stopped (NoOp):</span>
+              <span class="pg-stat-val" id="vaccum-stat-stopped">No</span>
             </div>
-
-            <div class="vaccum-callout-note" style="margin-top: 1rem; border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.05);">
-              <i data-lucide="check" style="color: var(--accent);"></i>
-              <div>
-                <strong>Memory Efficiency:</strong> The agent does <em>not</em> need the entire percept history. It only maintains the minimal internal model ($2 \text{ variables}$) required to reflect the unobserved world and stop cleanly with <code>NoOp</code>.
-              </div>
-            </div>
-          </div>
-
-          <!-- Step 4: Side-by-Side Comparison -->
-          <div class="teaching-panel vaccum-teaching-panel" id="vaccum-panel-comp">
-            <div class="panel-header-badge"><i data-lucide="columns"></i> Step 5: Side-by-Side 3-Agent Comparison</div>
-            <h3>Side-by-Side Multi-Agent Performance Comparison</h3>
-            <p>Compare all three agent architectures starting from the <strong>exact same initial environment</strong>. Evaluate task completion, number of actions required, stopping ability, and final performance score.</p>
-
-            <div class="controls-group" style="margin: 1rem 0;">
-              <div class="btn-group">
-                <button class="btn-ctrl btn-ctrl-primary" id="btn-vaccum-comp-run">
-                  <i data-lucide="play"></i> Run All 3 Agents
-                </button>
-                <button class="btn-ctrl" id="btn-vaccum-comp-step">
-                  <i data-lucide="skip-forward"></i> Step All
-                </button>
-                <button class="btn-ctrl" id="btn-vaccum-comp-reset">
-                  <i data-lucide="rotate-ccw"></i> Reset Comparison
-                </button>
-              </div>
-            </div>
-
-            <div class="table-responsive" style="margin-top: 1rem; overflow-x: auto;">
-              <table class="data-table" style="width: 100%; border-collapse: collapse;">
-                <thead>
-                  <tr>
-                    <th>Agent Architecture</th>
-                    <th>Decision Basis</th>
-                    <th>Memory / Representation</th>
-                    <th>Complete?</th>
-                    <th>Stops?</th>
-                    <th>Actions to Clean</th>
-                    <th>Moves</th>
-                    <th>Total Actions</th>
-                    <th>Final Score</th>
-                  </tr>
-                </thead>
-                <tbody id="vaccum-comp-table-body">
-                  <!-- Dynamically populated -->
-                </tbody>
-              </table>
-            </div>
-
-            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem;">
-              * <em>Note for Simple Reflex Agent:</em> "Complete" signifies that the physical environment reached the all-clean state ($A=\text{Clean} \land B=\text{Clean}$). The agent itself has no memory and cannot infer completion, continuing to oscillate between rooms.
-            </div>
-
-            <h4 style="margin-top: 1.5rem; margin-bottom: 0.75rem; font-family: Outfit, sans-serif;">Action Sequence Trace Comparison</h4>
-            <div class="vaccum-action-log-grid" id="vaccum-comp-actions-log">
-              <!-- Dynamically populated traces -->
-            </div>
-          </div>
-
-          <!-- Step Flow Navigation Footer Buttons -->
-          <div class="panel-nav-buttons" style="display: flex; justify-content: space-between; margin-top: 1.5rem; border-top: 1px solid var(--border-light); padding-top: 1rem;">
-            <button class="btn-ctrl" id="btn-vaccum-prev" disabled>
-              <i data-lucide="arrow-left"></i> Previous Step
-            </button>
-            <button class="btn-ctrl btn-ctrl-primary" id="btn-vaccum-next">
-              Next Step <i data-lucide="arrow-right"></i>
-            </button>
           </div>
 
         </div>
