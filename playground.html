@@ -842,6 +842,9 @@
           <button class="search-tab" data-alg="ASTAR">
             <i data-lucide="sparkles"></i> A* Search (A*)
           </button>
+          <button class="search-tab" data-alg="GREEDY">
+            <i data-lucide="compass"></i> Greedy Best-First (Greedy)
+          </button>
         </div>
 
         <div class="playground-grid">
@@ -921,6 +924,10 @@
                     <div class="mini-stat-card" id="search-ucs-cost-panel" style="display: none;">
                       <span class="mini-stat-label">g(n) Cost:</span>
                       <span class="mini-stat-val" id="search-status-cost" style="color: var(--accent);">0</span>
+                    </div>
+                    <div class="mini-stat-card" id="search-greedy-cost-panel" style="display: none;">
+                      <span class="mini-stat-label">h(n) Heuristic:</span>
+                      <span class="mini-stat-val" id="search-status-greedy-h" style="color: #f59e0b;">0</span>
                     </div>
                     <div class="mini-stat-card" id="search-ids-depth-panel" style="display: none; grid-column: span 2; display: flex; justify-content: space-between;">
                       <div>
@@ -1014,6 +1021,10 @@
                       <tr id="comp-row-astar">
                         <td><strong>A*</strong></td>
                         <td colspan="4" style="color: var(--text-muted); font-style: italic; text-align: center;">Run A* to see results</td>
+                      </tr>
+                      <tr id="comp-row-greedy">
+                        <td><strong>Greedy Best-First</strong></td>
+                        <td colspan="4" style="color: var(--text-muted); font-style: italic; text-align: center;">Run Greedy to see results</td>
                       </tr>
                     </tbody>
                   </table>

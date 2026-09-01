@@ -38,7 +38,8 @@ class SearchDemoUI {
       DFS: null,
       UCS: null,
       IDS: null,
-      ASTAR: null
+      ASTAR: null,
+      GREEDY: null
     };
 
     this.init();
@@ -117,6 +118,8 @@ class SearchDemoUI {
       this.steps = runIDS(this.startNode, this.goalNode);
     } else if (this.currentAlg === 'ASTAR') {
       this.steps = runAStar(this.startNode, this.goalNode);
+    } else if (this.currentAlg === 'GREEDY' || this.currentAlg === 'GBFS') {
+      this.steps = runGreedy(this.startNode, this.goalNode);
     }
 
     this.currentStepIdx = 0;
@@ -207,6 +210,7 @@ class SearchDemoUI {
     // Frontier formatting
     const frontierStr = step.frontier.map(item => {
       if (this.currentAlg === 'ASTAR') return `${item.node}(f:${item.f})`;
+      if (this.currentAlg === 'GREEDY') return `${item.node}(h:${item.h})`;
       if (this.currentAlg === 'UCS') return `${item.node}(g:${item.cost})`;
       if (this.currentAlg === 'IDS') return `${item.node}(d:${item.depth})`;
       return item.node;
@@ -217,6 +221,7 @@ class SearchDemoUI {
     const ucsCostPanel = document.getElementById('search-ucs-cost-panel');
     const idsDepthPanel = document.getElementById('search-ids-depth-panel');
     const astarCostPanel = document.getElementById('search-astar-cost-panel');
+    const greedyCostPanel = document.getElementById('search-greedy-cost-panel');
     
     if (ucsCostPanel) {
       if (this.currentAlg === 'UCS') {
@@ -248,6 +253,16 @@ class SearchDemoUI {
         setSafeText('search-status-astar-f', fCost);
       } else {
         astarCostPanel.style.display = 'none';
+      }
+    }
+
+    if (greedyCostPanel) {
+      if (this.currentAlg === 'GREEDY') {
+        greedyCostPanel.style.display = 'block';
+        const hCost = step.currentNode ? getHeuristic(step.currentNode, this.goalNode) : 0;
+        setSafeText('search-status-greedy-h', hCost);
+      } else {
+        greedyCostPanel.style.display = 'none';
       }
     }
 
@@ -310,6 +325,7 @@ class SearchDemoUI {
         // Frontier ordered display
         const frontierText = step.frontier.map(item => {
           if (this.currentAlg === 'ASTAR') return `${item.node}(f:${item.f})`;
+          if (this.currentAlg === 'GREEDY') return `${item.node}(h:${item.h})`;
           if (this.currentAlg === 'UCS') return `${item.node}(${item.cost})`;
           if (this.currentAlg === 'IDS') return `${item.node}(d:${item.depth})`;
           return item.node;
@@ -378,14 +394,17 @@ class SearchDemoUI {
   }
 
   updateComparisonTable() {
-    const algs = ['BFS', 'DFS', 'UCS', 'IDS', 'ASTAR'];
+    const algs = ['BFS', 'DFS', 'UCS', 'IDS', 'ASTAR', 'GREEDY'];
     algs.forEach(alg => {
       const data = this.runHistory[alg];
-      const rowId = alg === 'ASTAR' ? 'comp-row-astar' : `comp-row-${alg.toLowerCase()}`;
+      const rowId = alg === 'ASTAR' ? 'comp-row-astar' : (alg === 'GREEDY' ? 'comp-row-greedy' : `comp-row-${alg.toLowerCase()}`);
       const row = document.getElementById(rowId);
       if (row && data) {
+        let displayName = alg;
+        if (alg === 'ASTAR') displayName = 'A*';
+        else if (alg === 'GREEDY') displayName = 'Greedy Best-First';
         row.innerHTML = `
-          <td><strong>${alg === 'ASTAR' ? 'A*' : alg}</strong></td>
+          <td><strong>${displayName}</strong></td>
           <td><small>${data.expanded || '-'}</small></td>
           <td><small>${data.path || '-'}</small></td>
           <td><strong>${data.cost ?? '-'}</strong></td>
@@ -621,6 +640,11 @@ class SearchDemoUI {
           const hCost = getHeuristic(nodeId, this.goalNode);
           ctx.fillText(`h:${hCost}`, nx, ny + radius + 11);
         }
+      } else if (this.currentAlg === 'GREEDY') {
+        ctx.fillStyle = '#64748b';
+        ctx.font = 'bold 9px monospace';
+        const hCost = getHeuristic(nodeId, this.goalNode);
+        ctx.fillText(`h:${hCost}`, nx, ny + radius + 11);
       } else if (this.currentAlg === 'UCS' && reachedSet.has(nodeId)) {
         ctx.fillStyle = '#64748b';
         ctx.font = 'bold 9px monospace';
@@ -671,6 +695,7 @@ class SearchDemoUI {
     else if (this.currentAlg === 'UCS') desc = 'PRIORITY QUEUE (ORDERED BY LOWEST g(n))';
     else if (this.currentAlg === 'IDS') desc = 'LIFO STACK (RESETS EACH DEPTH LIMIT)';
     else if (this.currentAlg === 'ASTAR') desc = 'PRIORITY QUEUE (ORDERED BY LOWEST f(n) = g(n) + h(n))';
+    else if (this.currentAlg === 'GREEDY') desc = 'PRIORITY QUEUE (ORDERED BY LOWEST h(n))';
     
     ctx.fillText(`FRONTIER: ${desc}`, 20, startY + 14);
 
@@ -731,7 +756,7 @@ class SearchDemoUI {
         ctx.fillText("...", stackStartX + cellW / 2, stackStartY - maxDraw * (cellH + 2) + 8);
       }
     } else {
-      // Draw Queue horizontally (BFS / UCS / ASTAR)
+      // Draw Queue horizontally (BFS / UCS / ASTAR / GREEDY)
       const totalW = len * cellW + (len - 1) * 4;
       let startX = (w - totalW) / 2;
       if (startX < 95) startX = 95; // bound check so pointer doesn't clip
@@ -750,7 +775,7 @@ class SearchDemoUI {
         ctx.strokeStyle = i === 0 ? '#4f46e5' : '#818cf8';
         ctx.stroke();
 
-        // Node ID and cost / f
+        // Node ID and cost / f / h
         ctx.fillStyle = i === 0 ? '#ffffff' : '#3730a3';
         ctx.font = 'bold 11px Outfit, sans-serif';
         ctx.textAlign = 'center';
@@ -759,6 +784,7 @@ class SearchDemoUI {
         let label = item.node;
         if (this.currentAlg === 'UCS') label = `${item.node}(g:${item.cost})`;
         if (this.currentAlg === 'ASTAR') label = `${item.node}(f:${item.f})`;
+        if (this.currentAlg === 'GREEDY') label = `${item.node}(h:${item.h})`;
         ctx.fillText(label, cx + cellW / 2, cy + cellH / 2);
 
         // FRONT / lowest cost indicators
@@ -769,6 +795,7 @@ class SearchDemoUI {
           let indicatorText = "FRONT (Pop)";
           if (this.currentAlg === 'UCS') indicatorText = "LOWEST COST (Pop)";
           if (this.currentAlg === 'ASTAR') indicatorText = "LOWEST f(n) (Pop)";
+          if (this.currentAlg === 'GREEDY') indicatorText = "LOWEST h(n) (Pop)";
           ctx.fillText(indicatorText, cx + cellW / 2, cy - 6);
           ctx.fillText("▼", cx + cellW / 2, cy - 1);
         }
