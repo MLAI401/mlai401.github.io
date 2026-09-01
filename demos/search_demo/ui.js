@@ -16,6 +16,8 @@ class SearchDemoUI {
     this.speedSlider = document.getElementById('search-speed-slider');
     this.startSelect = document.getElementById('select-search-start');
     this.goalSelect = document.getElementById('select-search-goal');
+    this.smaMaxNodesSelect = document.getElementById('select-sma-maxnodes');
+    this.smaMaxNodesRow = document.getElementById('sma-maxnodes-row');
     
     this.algTabButtons = document.querySelectorAll('.search-tab');
     this.stepTableBody = document.getElementById('search-step-table-body');
@@ -39,7 +41,9 @@ class SearchDemoUI {
       UCS: null,
       IDS: null,
       ASTAR: null,
-      GREEDY: null
+      GREEDY: null,
+      BIBF: null,
+      SMA: null
     };
 
     this.init();
@@ -55,6 +59,9 @@ class SearchDemoUI {
         this.algTabButtons.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         this.currentAlg = btn.getAttribute('data-alg');
+        if (this.smaMaxNodesRow) {
+          this.smaMaxNodesRow.style.display = (this.currentAlg === 'SMA') ? 'flex' : 'none';
+        }
         this.pause();
         this.generateTrace();
       });
@@ -69,6 +76,14 @@ class SearchDemoUI {
       });
       this.goalSelect.addEventListener('change', (e) => {
         this.goalNode = e.target.value;
+        this.pause();
+        this.generateTrace();
+      });
+    }
+
+    // SMA* memory bound select
+    if (this.smaMaxNodesSelect) {
+      this.smaMaxNodesSelect.addEventListener('change', () => {
         this.pause();
         this.generateTrace();
       });
@@ -120,6 +135,11 @@ class SearchDemoUI {
       this.steps = runAStar(this.startNode, this.goalNode);
     } else if (this.currentAlg === 'GREEDY' || this.currentAlg === 'GBFS') {
       this.steps = runGreedy(this.startNode, this.goalNode);
+    } else if (this.currentAlg === 'BIBF') {
+      this.steps = runBIBF(this.startNode, this.goalNode);
+    } else if (this.currentAlg === 'SMA') {
+      const maxNodes = this.smaMaxNodesSelect ? parseInt(this.smaMaxNodesSelect.value, 10) : 4;
+      this.steps = runSMA(this.startNode, this.goalNode, maxNodes);
     }
 
     this.currentStepIdx = 0;
@@ -198,7 +218,7 @@ class SearchDemoUI {
     
     // Reached set formatting
     let reachedStr = '';
-    if (this.currentAlg === 'UCS' || this.currentAlg === 'ASTAR') {
+    if (this.currentAlg === 'UCS' || this.currentAlg === 'ASTAR' || this.currentAlg === 'BIBF' || this.currentAlg === 'SMA') {
       reachedStr = Object.entries(step.reached)
         .map(([node, cost]) => `${node}(g:${cost})`)
         .join(', ');
@@ -213,6 +233,8 @@ class SearchDemoUI {
       if (this.currentAlg === 'GREEDY') return `${item.node}(h:${item.h})`;
       if (this.currentAlg === 'UCS') return `${item.node}(g:${item.cost})`;
       if (this.currentAlg === 'IDS') return `${item.node}(d:${item.depth})`;
+      if (this.currentAlg === 'BIBF') return `${item.node}[${item.dir}](g:${item.cost})`;
+      if (this.currentAlg === 'SMA') return `${item.node}(f:${item.f})`;
       return item.node;
     }).join(', ');
     setSafeText('search-status-frontier', frontierStr || 'Empty');
@@ -263,6 +285,35 @@ class SearchDemoUI {
         setSafeText('search-status-greedy-h', hCost);
       } else {
         greedyCostPanel.style.display = 'none';
+      }
+    }
+
+    const bibfPanel = document.getElementById('search-bibf-panel');
+    if (bibfPanel) {
+      if (this.currentAlg === 'BIBF') {
+        bibfPanel.style.display = 'block';
+        setSafeText('search-status-bibf-dir', step.dir === 'F' ? 'Forward' : (step.dir === 'B' ? 'Backward' : '-'));
+        let meetNode = '-';
+        if (step.action === 'MEET') meetNode = step.successorNode || step.currentNode;
+        else if (step.action === 'GOAL_FOUND') meetNode = step.meetNode || '-';
+        setSafeText('search-status-bibf-meet', meetNode);
+        setSafeText('search-status-bibf-cost', step.action === 'GOAL_FOUND' ? step.cost : '-');
+      } else {
+        bibfPanel.style.display = 'none';
+      }
+    }
+
+    const smaPanel = document.getElementById('search-sma-panel');
+    if (smaPanel) {
+      if (this.currentAlg === 'SMA') {
+        smaPanel.style.display = 'block';
+        setSafeText('search-status-sma-mem', step.memoryUsed ?? 0);
+        setSafeText('search-status-sma-bound', step.maxNodes ?? 0);
+        const curFrontierItem = step.frontier.find(it => it.node === step.currentNode);
+        const fVal = curFrontierItem ? curFrontierItem.f : (step.action === 'GOAL_FOUND' ? step.cost : '-');
+        setSafeText('search-status-sma-f', fVal);
+      } else {
+        smaPanel.style.display = 'none';
       }
     }
 
@@ -328,12 +379,14 @@ class SearchDemoUI {
           if (this.currentAlg === 'GREEDY') return `${item.node}(h:${item.h})`;
           if (this.currentAlg === 'UCS') return `${item.node}(${item.cost})`;
           if (this.currentAlg === 'IDS') return `${item.node}(d:${item.depth})`;
+          if (this.currentAlg === 'BIBF') return `${item.node}[${item.dir}]:${item.cost}`;
+          if (this.currentAlg === 'SMA') return `${item.node}(f:${item.f})`;
           return item.node;
         }).join(', ') || 'Empty';
 
         // Reached best-cost display
         let reachedText = '';
-        if (this.currentAlg === 'UCS' || this.currentAlg === 'ASTAR') {
+        if (this.currentAlg === 'UCS' || this.currentAlg === 'ASTAR' || this.currentAlg === 'BIBF' || this.currentAlg === 'SMA') {
           reachedText = Object.entries(step.reached)
             .map(([node, cost]) => `${node}:${cost}`)
             .join(', ');
@@ -382,11 +435,11 @@ class SearchDemoUI {
       selectClass('.cs-frontier');
     } else if (action === 'SELECT') {
       selectClass('.cs-select');
-    } else if (action === 'GOAL_TEST') {
+    } else if (action === 'GOAL_TEST' || action === 'MEET') {
       selectClass('.cs-goal-test');
-    } else if (action === 'EXPAND') {
+    } else if (action === 'EXPAND' || action === 'REGENERATE' || action === 'DEAD_END') {
       selectClass('.cs-expand');
-    } else if (['GENERATE_SUCCESSOR', 'UPDATE_FRONTIER', 'SKIP_DUPLICATE', 'DEPTH_LIMIT_REACHED'].includes(action)) {
+    } else if (['GENERATE_SUCCESSOR', 'UPDATE_FRONTIER', 'SKIP_DUPLICATE', 'DEPTH_LIMIT_REACHED', 'FORGET', 'BACKUP'].includes(action)) {
       selectClass('.cs-update');
     } else if (action === 'GOAL_FOUND') {
       selectClass('.cs-goal-test');
@@ -496,20 +549,6 @@ class SearchDemoUI {
         ctx.stroke();
         ctx.shadowBlur = 0; // reset
 
-        // Draw direction arrow head
-        const angle = Math.atan2(ty - fy, tx - fx);
-        const radiusNode = 17; // offset arrow from node circle edge
-        const ax = tx - radiusNode * Math.cos(angle);
-        const ay = ty - radiusNode * Math.sin(angle);
-
-        ctx.beginPath();
-        ctx.moveTo(ax, ay);
-        ctx.lineTo(ax - 7 * Math.cos(angle - Math.PI / 6), ay - 7 * Math.sin(angle - Math.PI / 6));
-        ctx.lineTo(ax - 7 * Math.cos(angle + Math.PI / 6), ay - 7 * Math.sin(angle + Math.PI / 6));
-        ctx.closePath();
-        ctx.fillStyle = isSolEdge ? '#10b981' : (isActiveGen ? '#f59e0b' : '#64748b');
-        ctx.fill();
-
         // Draw edge cost text at the middle of edge
         const mx = (fx + tx) / 2;
         const my = (fy + ty) / 2;
@@ -538,11 +577,19 @@ class SearchDemoUI {
     const w = this.canvas.width / (window.devicePixelRatio || 1);
 
     // Sets of node classifications
-    const expandedSet = new Set(step.expanded);
+    const expandedSet = new Set(
+      this.currentAlg === 'BIBF' ? step.expanded.map(e => e.replace(/\([FB]\)$/, '')) : step.expanded
+    );
     const selectedSet = new Set(step.selected);
-    const reachedSet = (this.currentAlg === 'UCS' || this.currentAlg === 'ASTAR')
-      ? new Set(Object.keys(step.reached)) 
+    const reachedSet = (this.currentAlg === 'UCS' || this.currentAlg === 'ASTAR' || this.currentAlg === 'BIBF' || this.currentAlg === 'SMA')
+      ? new Set(Object.keys(step.reached))
       : new Set(step.reached);
+
+    // BIBF only: which of those reached nodes came from the backward search,
+    // so we can tint them violet and visually distinguish the two frontiers.
+    const backwardReachedSet = (this.currentAlg === 'BIBF' && step.reachedDetail)
+      ? new Set(Object.keys(step.reachedDetail.b || {}))
+      : new Set();
 
     // Frontier nodes map
     const frontierNodes = new Set(step.frontier.map(item => item.node));
@@ -590,13 +637,25 @@ class SearchDemoUI {
         borderStroke = '#1e293b';
         textFill = '#ffffff';
       } else if (frontierNodes.has(nodeId)) {
-        fillColor = '#e0e7ff'; // waiting in frontier
-        borderStroke = '#4f46e5';
-        textFill = '#3730a3';
+        if (this.currentAlg === 'BIBF' && backwardReachedSet.has(nodeId) && !step.frontier.some(it => it.node === nodeId && it.dir === 'F')) {
+          fillColor = '#f3e8ff'; // waiting in the BACKWARD frontier
+          borderStroke = '#7c3aed';
+          textFill = '#6d28d9';
+        } else {
+          fillColor = '#e0e7ff'; // waiting in frontier
+          borderStroke = '#4f46e5';
+          textFill = '#3730a3';
+        }
       } else if (reachedSet.has(nodeId)) {
-        fillColor = '#e0f2fe'; // reached but not in frontier (processed or subset)
-        borderStroke = '#0284c7';
-        textFill = '#0369a1';
+        if (this.currentAlg === 'BIBF' && backwardReachedSet.has(nodeId)) {
+          fillColor = '#f5f3ff'; // reached only from the BACKWARD search
+          borderStroke = '#7c3aed';
+          textFill = '#6d28d9';
+        } else {
+          fillColor = '#e0f2fe'; // reached but not in frontier (processed or subset)
+          borderStroke = '#0284c7';
+          textFill = '#0369a1';
+        }
       }
 
       // Draw node circle
@@ -645,11 +704,17 @@ class SearchDemoUI {
         ctx.font = 'bold 9px monospace';
         const hCost = getHeuristic(nodeId, this.goalNode);
         ctx.fillText(`h:${hCost}`, nx, ny + radius + 11);
-      } else if (this.currentAlg === 'UCS' && reachedSet.has(nodeId)) {
+      } else if ((this.currentAlg === 'UCS' || this.currentAlg === 'BIBF') && reachedSet.has(nodeId)) {
         ctx.fillStyle = '#64748b';
         ctx.font = 'bold 9px monospace';
         const cost = step.reached[nodeId] ?? '∞';
         ctx.fillText(`g:${cost}`, nx, ny + radius + 11);
+      } else if (this.currentAlg === 'SMA' && reachedSet.has(nodeId)) {
+        ctx.fillStyle = '#64748b';
+        ctx.font = 'bold 9px monospace';
+        const frontierItem = step.frontier.find(it => it.node === nodeId);
+        const label = frontierItem ? `f:${frontierItem.f}` : `g:${step.reached[nodeId] ?? '∞'}`;
+        ctx.fillText(label, nx, ny + radius + 11);
       } else if (this.currentAlg === 'IDS' && nodeId === step.currentNode) {
         ctx.fillStyle = '#64748b';
         ctx.font = 'bold 9px monospace';
@@ -696,6 +761,8 @@ class SearchDemoUI {
     else if (this.currentAlg === 'IDS') desc = 'LIFO STACK (RESETS EACH DEPTH LIMIT)';
     else if (this.currentAlg === 'ASTAR') desc = 'PRIORITY QUEUE (ORDERED BY LOWEST f(n) = g(n) + h(n))';
     else if (this.currentAlg === 'GREEDY') desc = 'PRIORITY QUEUE (ORDERED BY LOWEST h(n))';
+    else if (this.currentAlg === 'BIBF') desc = 'TWO PRIORITY QUEUES: FORWARD (from START) + BACKWARD (from GOAL)';
+    else if (this.currentAlg === 'SMA') desc = 'MEMORY-BOUNDED PRIORITY QUEUE (LOWEST f(n), WORST LEAF FORGOTTEN WHEN FULL)';
     
     ctx.fillText(`FRONTIER: ${desc}`, 20, startY + 14);
 
@@ -756,52 +823,69 @@ class SearchDemoUI {
         ctx.fillText("...", stackStartX + cellW / 2, stackStartY - maxDraw * (cellH + 2) + 8);
       }
     } else {
-      // Draw Queue horizontally (BFS / UCS / ASTAR / GREEDY)
+      // Draw Queue horizontally (BFS / UCS / ASTAR / GREEDY / BIBF / SMA)
       const totalW = len * cellW + (len - 1) * 4;
       let startX = (w - totalW) / 2;
       if (startX < 95) startX = 95; // bound check so pointer doesn't clip
-      
+
       const cy = startY + 24;
+
+      // For BIBF the array is [...forward items (cost-sorted), ...backward items (cost-sorted)],
+      // so "next to pop" is whichever of frontierF[0]/frontierB[0] has the lower cost -- not
+      // necessarily index 0. Compute that node once, tie -> forward (matches runBIBF's own rule).
+      let bibfNextKey = null;
+      if (this.currentAlg === 'BIBF' && len > 0) {
+        const fFirst = step.frontier.find(it => it.dir === 'F');
+        const bFirst = step.frontier.find(it => it.dir === 'B');
+        const pick = (fFirst && (!bFirst || fFirst.cost <= bFirst.cost)) ? fFirst : bFirst;
+        if (pick) bibfNextKey = `${pick.node}${pick.dir}`;
+      }
 
       for (let i = 0; i < len; i++) {
         const item = step.frontier[i];
         const cx = startX + i * (cellW + 4);
+        const isBackward = this.currentAlg === 'BIBF' && item.dir === 'B';
+        const isNext = this.currentAlg === 'BIBF' ? (`${item.node}${item.dir}` === bibfNextKey) : (i === 0);
 
-        // Highlight first item (index 0) which is selected next
-        ctx.fillStyle = i === 0 ? '#4f46e5' : '#e0e7ff';
+        // Highlight the item selected next
+        ctx.fillStyle = isNext ? (isBackward ? '#7c3aed' : '#4f46e5') : (isBackward ? '#f3e8ff' : '#e0e7ff');
         ctx.beginPath();
         this.roundRect(cx, cy, cellW, cellH, 4);
         ctx.fill();
-        ctx.strokeStyle = i === 0 ? '#4f46e5' : '#818cf8';
+        ctx.strokeStyle = isNext ? (isBackward ? '#7c3aed' : '#4f46e5') : (isBackward ? '#c4b5fd' : '#818cf8');
         ctx.stroke();
 
         // Node ID and cost / f / h
-        ctx.fillStyle = i === 0 ? '#ffffff' : '#3730a3';
+        ctx.fillStyle = isNext ? '#ffffff' : (isBackward ? '#6d28d9' : '#3730a3');
         ctx.font = 'bold 11px Outfit, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        
+
         let label = item.node;
         if (this.currentAlg === 'UCS') label = `${item.node}(g:${item.cost})`;
         if (this.currentAlg === 'ASTAR') label = `${item.node}(f:${item.f})`;
         if (this.currentAlg === 'GREEDY') label = `${item.node}(h:${item.h})`;
+        if (this.currentAlg === 'BIBF') label = `${item.node}${item.dir}:${item.cost}`;
+        if (this.currentAlg === 'SMA') label = `${item.node}(f:${item.f})`;
         ctx.fillText(label, cx + cellW / 2, cy + cellH / 2);
 
         // FRONT / lowest cost indicators
-        if (i === 0) {
-          ctx.fillStyle = '#4f46e5';
+        if (isNext) {
+          ctx.fillStyle = isBackward ? '#7c3aed' : '#4f46e5';
           ctx.font = 'bold 8px monospace';
           ctx.textAlign = 'center';
           let indicatorText = "FRONT (Pop)";
           if (this.currentAlg === 'UCS') indicatorText = "LOWEST COST (Pop)";
           if (this.currentAlg === 'ASTAR') indicatorText = "LOWEST f(n) (Pop)";
           if (this.currentAlg === 'GREEDY') indicatorText = "LOWEST h(n) (Pop)";
+          if (this.currentAlg === 'BIBF') indicatorText = isBackward ? "NEXT: BACKWARD (Pop)" : "NEXT: FORWARD (Pop)";
+          if (this.currentAlg === 'SMA') indicatorText = "LOWEST f(n) (Pop)";
           ctx.fillText(indicatorText, cx + cellW / 2, cy - 6);
           ctx.fillText("▼", cx + cellW / 2, cy - 1);
         }
 
-        // BACK indicator
-        if (i === len - 1 && len > 1) {
+        // BACK indicator (skip for BIBF -- two interleaved queues make "back" ambiguous)
+        if (i === len - 1 && len > 1 && this.currentAlg !== 'BIBF') {
           ctx.fillStyle = '#64748b';
           ctx.font = 'bold 8px monospace';
           ctx.textAlign = 'center';

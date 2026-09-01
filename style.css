@@ -515,6 +515,10 @@ a {
   gap: 1.5rem;
 }
 
+.curriculum-grid-3col {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .curriculum-card {
   padding: 2.25rem;
   display: flex;
@@ -562,7 +566,8 @@ a {
   flex-direction: column;
   gap: 0.5rem;
   border-top: 1px solid var(--border-light);
-  padding-top: 1.25rem;
+  padding: 1.25rem 0 0 0;
+  margin: 0;
 }
 
 .curriculum-list li {
@@ -921,7 +926,7 @@ footer {
 
 .footer-grid {
   display: grid;
-  grid-template-columns: 1.5fr 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: 4rem;
   margin-bottom: 3rem;
 }
@@ -1045,6 +1050,10 @@ footer {
   .vaccum-bottom-grid {
     grid-template-columns: 1fr !important;
   }
+
+  .curriculum-grid-3col {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
@@ -1083,6 +1092,10 @@ footer {
   
   .section {
     padding: 4rem 0;
+  }
+
+  .curriculum-grid-3col {
+    grid-template-columns: 1fr;
   }
 }
 

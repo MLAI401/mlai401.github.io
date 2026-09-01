@@ -33,7 +33,7 @@
       
       <ul class="nav-links" id="nav-menu">
         <li><a href="index.html" class="nav-link" id="nav-home">Home</a></li>
-        <li><a href="index.html#curriculum" class="nav-link" id="nav-curr">Curriculum</a></li>
+        <li><a href="curriculum.html" class="nav-link" id="nav-curr">Curriculum</a></li>
         <li><a href="playground.html" class="nav-link active" id="nav-play">Playground</a></li>
         <li><a href="index.html#resources" class="nav-link" id="nav-res">Resources</a></li>
       </ul>
@@ -845,6 +845,12 @@
           <button class="search-tab" data-alg="GREEDY">
             <i data-lucide="compass"></i> Greedy Best-First (Greedy)
           </button>
+          <button class="search-tab" data-alg="BIBF">
+            <i data-lucide="git-compare"></i> Bidirectional (BIBF)
+          </button>
+          <button class="search-tab" data-alg="SMA">
+            <i data-lucide="database"></i> Memory-Bounded A* (SMA*)
+          </button>
         </div>
 
         <div class="playground-grid">
@@ -886,6 +892,17 @@
                       <option value="F">F</option>
                       <option value="G" selected>G</option>
                       <option value="H">H</option>
+                    </select>
+                  </div>
+                  <div class="control-row" id="sma-maxnodes-row" style="display: none;">
+                    <span class="ctrl-label">SMA* Memory Bound:</span>
+                    <select id="select-sma-maxnodes" class="select-input">
+                      <option value="3">3 nodes</option>
+                      <option value="4" selected>4 nodes</option>
+                      <option value="5">5 nodes</option>
+                      <option value="6">6 nodes</option>
+                      <option value="8">8 nodes</option>
+                      <option value="100">Unbounded (100)</option>
                     </select>
                   </div>
                 </div>
@@ -955,6 +972,38 @@
                         </div>
                       </div>
                     </div>
+                    <div class="mini-stat-card" id="search-bibf-panel" style="display: none; grid-column: span 2;">
+                      <div style="display: flex; justify-content: space-between; gap: 8px;">
+                        <div>
+                          <span class="mini-stat-label">Direction:</span>
+                          <span class="mini-stat-val" id="search-status-bibf-dir" style="color: var(--accent);">-</span>
+                        </div>
+                        <div>
+                          <span class="mini-stat-label">Meeting Node:</span>
+                          <span class="mini-stat-val" id="search-status-bibf-meet" style="color: #7c3aed;">-</span>
+                        </div>
+                        <div>
+                          <span class="mini-stat-label">Best Cost:</span>
+                          <span class="mini-stat-val" id="search-status-bibf-cost" style="color: #10b981; font-weight: bold;">-</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mini-stat-card" id="search-sma-panel" style="display: none; grid-column: span 2;">
+                      <div style="display: flex; justify-content: space-between; gap: 8px;">
+                        <div>
+                          <span class="mini-stat-label">Memory Used:</span>
+                          <span class="mini-stat-val" id="search-status-sma-mem" style="color: var(--accent);">0</span>
+                        </div>
+                        <div>
+                          <span class="mini-stat-label">Bound:</span>
+                          <span class="mini-stat-val" id="search-status-sma-bound" style="color: #f59e0b;">0</span>
+                        </div>
+                        <div>
+                          <span class="mini-stat-label">f(n):</span>
+                          <span class="mini-stat-val" id="search-status-sma-f" style="color: #10b981; font-weight: bold;">0</span>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                   <div class="mini-stat-card" style="margin-top: 4px; display: flex; flex-direction: column; align-items: stretch; gap: 2px;">
                     <div style="display: flex; justify-content: space-between; font-size: 0.75rem;">
@@ -985,47 +1034,6 @@
                       </tr>
                     </thead>
                     <tbody id="search-step-table-body">
-                    </tbody>
-                  </table>
-                </div>
-
-                <!-- Comparison history table -->
-                <div class="comparison-table-wrapper" style="border: 1px solid var(--border-light); border-radius: 6px; margin-top: 5px;">
-                  <table class="comparison-table" style="font-size: 0.65rem; box-shadow: none;">
-                    <thead>
-                      <tr>
-                        <th>Alg</th>
-                        <th>Expanded Node Order</th>
-                        <th>Solution Path</th>
-                        <th>Cost</th>
-                        <th>Exp#</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr id="comp-row-bfs">
-                        <td><strong>BFS</strong></td>
-                        <td colspan="4" style="color: var(--text-muted); font-style: italic; text-align: center;">Run BFS to see results</td>
-                      </tr>
-                      <tr id="comp-row-dfs">
-                        <td><strong>DFS</strong></td>
-                        <td colspan="4" style="color: var(--text-muted); font-style: italic; text-align: center;">Run DFS to see results</td>
-                      </tr>
-                      <tr id="comp-row-ucs">
-                        <td><strong>UCS</strong></td>
-                        <td colspan="4" style="color: var(--text-muted); font-style: italic; text-align: center;">Run UCS to see results</td>
-                      </tr>
-                      <tr id="comp-row-ids">
-                        <td><strong>IDS</strong></td>
-                        <td colspan="4" style="color: var(--text-muted); font-style: italic; text-align: center;">Run IDS to see results</td>
-                      </tr>
-                      <tr id="comp-row-astar">
-                        <td><strong>A*</strong></td>
-                        <td colspan="4" style="color: var(--text-muted); font-style: italic; text-align: center;">Run A* to see results</td>
-                      </tr>
-                      <tr id="comp-row-greedy">
-                        <td><strong>Greedy Best-First</strong></td>
-                        <td colspan="4" style="color: var(--text-muted); font-style: italic; text-align: center;">Run Greedy to see results</td>
-                      </tr>
                     </tbody>
                   </table>
                 </div>
@@ -1160,69 +1168,24 @@
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer id="footer-section">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <a href="index.html" class="logo" id="footer-logo">
-            <span class="logo-icon">M</span>
-            MLAI401
-          </a>
-          <p>Educational framework and resources for foundational Artificial Intelligence & Machine Learning. Engineered for UIC CS411.</p>
-        </div>
-        
-        <div class="footer-col">
-          <h4>Syllabus Sections</h4>
-          <ul class="footer-links">
-            <li><a href="index.html#curriculum">Foundational ML</a></li>
-            <li><a href="index.html#curriculum">Deep Learning</a></li>
-            <li><a href="index.html#curriculum">Reinforcement Learning</a></li>
-            <li><a href="index.html#curriculum">Generative AI</a></li>
-          </ul>
-        </div>
-        
-        <div class="footer-col">
-          <h4>Interactive Labs</h4>
-          <ul class="footer-links">
-            <li><a href="playground.html#view-kmeans">K-Means Canvas</a></li>
-            <li><a href="playground.html#view-maze">Maze Search Abstraction</a></li>
-            <li><a href="playground.html#view-puzzle">8-Puzzle State-Space</a></li>
-            <li><a href="playground.html#view-search">Graph Search Algorithms</a></li>
-            <li><a href="playground.html#view-vaccum">Two-Room Vacuum Robot</a></li>
-          </ul>
-        </div>
-      </div>
-      
-      <div class="footer-bottom">
-        <div>&copy; 2026 MLAI401. All rights reserved. Built for educational and research purposes.</div>
-        <div class="social-links">
-          <a href="https://github.com/MLAI401" class="social-link" aria-label="GitHub Profile" target="_blank" rel="noopener noreferrer">
-            <i data-lucide="github"></i>
-          </a>
-        </div>
-      </div>
-    </div>
-  </footer>
-
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
   <!-- Maze Search Demo JS -->
-  <script src="maze_demo/maze.js?v=2"></script>
-  <script src="maze_demo/abstraction.js?v=2"></script>
-  <script src="maze_demo/search.js?v=2"></script>
-  <script src="maze_demo/ui.js?v=2"></script>
+  <script src="demos/maze_demo/maze.js?v=2"></script>
+  <script src="demos/maze_demo/abstraction.js?v=2"></script>
+  <script src="demos/maze_demo/search.js?v=2"></script>
+  <script src="demos/maze_demo/ui.js?v=2"></script>
   <!-- 8-Puzzle State-Space Demo JS -->
-  <script src="puzzle_demo/puzzle.js?v=2"></script>
-  <script src="puzzle_demo/reachability.js?v=2"></script>
-  <script src="puzzle_demo/ui.js?v=2"></script>
+  <script src="demos/puzzle_demo/puzzle.js?v=2"></script>
+  <script src="demos/puzzle_demo/reachability.js?v=2"></script>
+  <script src="demos/puzzle_demo/ui.js?v=2"></script>
   <!-- Graph Search Demo JS -->
-  <script src="search_demo/graph.js?v=2"></script>
-  <script src="search_demo/ui.js?v=2"></script>
+  <script src="demos/search_demo/graph.js?v=2"></script>
+  <script src="demos/search_demo/ui.js?v=2"></script>
   <!-- Two-Room Vacuum Robot Demo JS -->
-  <script src="vaccum_demo/environment.js?v=2"></script>
-  <script src="vaccum_demo/agents.js?v=2"></script>
-  <script src="vaccum_demo/ui.js?v=2"></script>
+  <script src="demos/vaccum_demo/environment.js?v=2"></script>
+  <script src="demos/vaccum_demo/agents.js?v=2"></script>
+  <script src="demos/vaccum_demo/ui.js?v=2"></script>
   <!-- Application JS -->
   <script src="main.js?v=2"></script>
 </body>

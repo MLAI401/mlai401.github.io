@@ -56,8 +56,3 @@ We leverage industry-standard libraries and frameworks to build, train, and eval
 
 ---
 
-## 🤝 Getting Involved
-If you are a student, researcher, or developer looking to learn or contribute:
-1. **Fork** any of our laboratory repositories to get started with the hands-on coding exercises.
-2. **Read** the documentation and guides inside the `teaching-materials` repository for theory explanations.
-3. **Explore** the interactive visualizations on our [Landing Page](https://mlai401.github.io) to build intuitive understanding.

@@ -1094,6 +1094,410 @@ function runGreedy(start, goal) {
   return steps;
 }
 
+
+// ---------------------------------------------------------------------------
+// Bidirectional Best-First Search (bidirectional uniform-cost, meet in the middle)
+// Ref: https://github.com/aimacode/aima-python (bidirectional_search family)
+// ---------------------------------------------------------------------------
+function getPredecessorsAlphabetical(node) {
+  const preds = [];
+  Object.entries(GRAPH).forEach(([from, edges]) => {
+    edges.forEach(e => { if (e.to === node) preds.push({ to: from, cost: e.cost }); });
+  });
+  return preds.sort((a, b) => a.to.localeCompare(b.to));
+}
+
+function runBIBF(start, goal) {
+  const steps = [];
+
+  if (start === goal) {
+    steps.push({
+      action: 'GOAL_FOUND', currentNode: start, successorNode: null,
+      frontier: [], reached: { [start]: 0 }, reachedDetail: { f: { [start]: 0 }, b: { [start]: 0 } },
+      selected: [], expanded: [], path: [start], cost: 0,
+      explanation: `Start equals goal (${start}). Trivial solution.`
+    });
+    return steps;
+  }
+
+  let frontierF = [{ node: start, parent: null, cost: 0 }];
+  let frontierB = [{ node: goal, parent: null, cost: 0 }];
+  let reachedF = new Map([[start, { cost: 0, item: frontierF[0] }]]);
+  let reachedB = new Map([[goal, { cost: 0, item: frontierB[0] }]]);
+  let selected = [];
+  let expanded = [];
+  let best = null; // { cost, meetNode, fItem, bItem }
+
+  const frontierSnapshot = () => [
+    ...frontierF.map(i => ({ ...i, dir: 'F' })),
+    ...frontierB.map(i => ({ ...i, dir: 'B' })),
+  ];
+  const reachedSnapshot = () => {
+    const o = {};
+    reachedF.forEach((v, k) => { o[k] = v.cost; });
+    reachedB.forEach((v, k) => { o[k] = (o[k] !== undefined) ? Math.min(o[k], v.cost) : v.cost; });
+    return o;
+  };
+  const reachedDetail = () => {
+    const f = {}, b = {};
+    reachedF.forEach((v, k) => { f[k] = v.cost; });
+    reachedB.forEach((v, k) => { b[k] = v.cost; });
+    return { f, b };
+  };
+
+  const checkMeeting = (node) => {
+    if (reachedF.has(node) && reachedB.has(node)) {
+      const cost = reachedF.get(node).cost + reachedB.get(node).cost;
+      if (!best || cost < best.cost) {
+        best = { cost, meetNode: node, fItem: reachedF.get(node).item, bItem: reachedB.get(node).item };
+      }
+      return true;
+    }
+    return false;
+  };
+
+  steps.push({
+    action: 'START', currentNode: null, successorNode: null,
+    frontier: frontierSnapshot(), reached: reachedSnapshot(), reachedDetail: reachedDetail(),
+    selected: [...selected], expanded: [...expanded],
+    explanation: `Initialize BIBF. Forward frontier = {${start}} (g=0). Backward frontier = {${goal}} (g=0).`
+  });
+
+  const buildSolution = () => {
+    const pathF = reconstructPathBibf(best.fItem);          // start -> ... -> meet
+    const pathB = reconstructPathBibf(best.bItem).reverse(); // meet -> ... -> goal
+    return [...pathF, ...pathB.slice(1)];
+  };
+  // Local path builder: BIBF's frontier items use {node, parent, cost}, distinct
+  // shape from the {node, parent} items reconstructPath() expects elsewhere.
+  function reconstructPathBibf(item) {
+    const path = [];
+    let curr = item;
+    while (curr) { path.push(curr.node); curr = curr.parent; }
+    return path.reverse();
+  }
+
+  let iterations = 0;
+  const MAX_ITER = 200; // safety
+  while (frontierF.length > 0 && frontierB.length > 0 && iterations < MAX_ITER) {
+    iterations++;
+
+    frontierF.sort((a, b) => (a.cost - b.cost) || a.node.localeCompare(b.node));
+    frontierB.sort((a, b) => (a.cost - b.cost) || a.node.localeCompare(b.node));
+    const topF = frontierF[0].cost;
+    const topB = frontierB[0].cost;
+
+    // Standard bidirectional termination bound: stop once no unexplored
+    // combination could possibly beat the best meeting cost found so far.
+    if (best && topF + topB >= best.cost) {
+      break;
+    }
+
+    // Expand whichever frontier currently has the cheaper top priority
+    // (tie -> forward), alternating direction as costs demand.
+    const expandForward = topF <= topB;
+    const dir = expandForward ? 'F' : 'B';
+    const frontier = expandForward ? frontierF : frontierB;
+    const reachedThis = expandForward ? reachedF : reachedB;
+
+    const currentItem = frontier.shift();
+    const currentNode = currentItem.node;
+    selected.push(`${currentNode}(${dir})`);
+
+    steps.push({
+      action: 'SELECT', currentNode, successorNode: null, dir,
+      frontier: frontierSnapshot(), reached: reachedSnapshot(), reachedDetail: reachedDetail(),
+      selected: [...selected], expanded: [...expanded],
+      explanation: `Select ${currentNode} from the ${expandForward ? 'FORWARD' : 'BACKWARD'} frontier (lowest g=${currentItem.cost}).`
+    });
+
+    const metOnSelect = checkMeeting(currentNode);
+    if (metOnSelect) {
+      steps.push({
+        action: 'MEET', currentNode, successorNode: null, dir,
+        frontier: frontierSnapshot(), reached: reachedSnapshot(), reachedDetail: reachedDetail(),
+        selected: [...selected], expanded: [...expanded],
+        explanation: `${currentNode} has now been reached from BOTH directions. Candidate meeting cost = ${best.cost}.`
+      });
+    }
+
+    expanded.push(`${currentNode}(${dir})`);
+    steps.push({
+      action: 'EXPAND', currentNode, successorNode: null, dir,
+      frontier: frontierSnapshot(), reached: reachedSnapshot(), reachedDetail: reachedDetail(),
+      selected: [...selected], expanded: [...expanded],
+      explanation: `Expand ${currentNode} in the ${expandForward ? 'FORWARD' : 'BACKWARD'} direction (${expandForward ? 'successors' : 'predecessors'}, alphabetically).`
+    });
+
+    const neighbors = expandForward ? getSuccessorsAlphabetical(currentNode) : getPredecessorsAlphabetical(currentNode);
+    for (const nb of neighbors) {
+      const newCost = currentItem.cost + nb.cost;
+      steps.push({
+        action: 'GENERATE_SUCCESSOR', currentNode, successorNode: nb.to, dir,
+        frontier: frontierSnapshot(), reached: reachedSnapshot(), reachedDetail: reachedDetail(),
+        selected: [...selected], expanded: [...expanded],
+        explanation: `Generate ${nb.to} from ${currentNode} (${dir}). g(${nb.to}) = ${currentItem.cost} + ${nb.cost} = ${newCost}.`
+      });
+
+      const existing = reachedThis.get(nb.to);
+      if (!existing || newCost < existing.cost) {
+        const childItem = { node: nb.to, parent: currentItem, cost: newCost };
+        reachedThis.set(nb.to, { cost: newCost, item: childItem });
+        const idx = frontier.findIndex(f => f.node === nb.to);
+        if (idx >= 0) frontier[idx] = childItem; else frontier.push(childItem);
+
+        steps.push({
+          action: 'UPDATE_FRONTIER', currentNode, successorNode: nb.to, dir,
+          frontier: frontierSnapshot(), reached: reachedSnapshot(), reachedDetail: reachedDetail(),
+          selected: [...selected], expanded: [...expanded],
+          explanation: `${existing ? 'Cheaper path' : 'New node'}: add/update ${nb.to} in the ${expandForward ? 'FORWARD' : 'BACKWARD'} frontier with g=${newCost}.`
+        });
+
+        if (checkMeeting(nb.to)) {
+          steps.push({
+            action: 'MEET', currentNode, successorNode: nb.to, dir,
+            frontier: frontierSnapshot(), reached: reachedSnapshot(), reachedDetail: reachedDetail(),
+            selected: [...selected], expanded: [...expanded],
+            explanation: `${nb.to} has now been reached from BOTH directions. Candidate meeting cost = ${best.cost}.`
+          });
+        }
+      } else {
+        steps.push({
+          action: 'SKIP_DUPLICATE', currentNode, successorNode: nb.to, dir,
+          frontier: frontierSnapshot(), reached: reachedSnapshot(), reachedDetail: reachedDetail(),
+          selected: [...selected], expanded: [...expanded],
+          explanation: `Path to ${nb.to} via ${currentNode} (${dir}) is not cheaper (${newCost} >= ${existing.cost}). Ignore.`
+        });
+      }
+    }
+  }
+
+  if (best) {
+    const path = buildSolution();
+    steps.push({
+      action: 'GOAL_FOUND', currentNode: best.meetNode, successorNode: null,
+      frontier: frontierSnapshot(), reached: reachedSnapshot(), reachedDetail: reachedDetail(),
+      selected: [...selected], expanded: [...expanded],
+      path, cost: best.cost, meetNode: best.meetNode,
+      explanation: `Both frontiers can no longer improve on meeting cost ${best.cost}. Best meeting node: ${best.meetNode}. Solution path: ${path.join(' -> ')}.`
+    });
+  } else {
+    steps.push({
+      action: 'FAIL', currentNode: null, successorNode: null,
+      frontier: frontierSnapshot(), reached: reachedSnapshot(), reachedDetail: reachedDetail(),
+      selected: [...selected], expanded: [...expanded],
+      explanation: `Frontiers exhausted without the two searches meeting. Search failed.`
+    });
+  }
+
+  return steps;
+}
+
+// ---------------------------------------------------------------------------
+// Simplified Memory-Bounded A* (SMA*)
+// Ref: https://github.com/aimacode/aima-python (search.py notes on SMA*)
+// ---------------------------------------------------------------------------
+let __smaIdCounter = 0;
+function makeSmaNode(state, parent, g, h) {
+  return {
+    id: __smaIdCounter++,
+    state,
+    parent,
+    children: [],             // currently in-memory children (generated & not forgotten)
+    g,
+    h,
+    f: parent ? Math.max(parent.f, g + h) : g + h, // monotonic backed-up f-value
+    fullyExpanded: false,     // all successors ever generated (may since be forgotten)
+    forgottenBestF: Infinity, // best f among children we've forgotten
+    depth: parent ? parent.depth + 1 : 0,
+  };
+}
+
+function smaAncestorStates(node) {
+  const states = new Set();
+  let n = node;
+  while (n) { states.add(n.state); n = n.parent; }
+  return states;
+}
+
+function smaPath(node) {
+  const path = [];
+  let n = node;
+  while (n) { path.push(n.state); n = n.parent; }
+  return path.reverse();
+}
+
+function runSMA(start, goal, maxNodes = 6) {
+  const steps = [];
+  const root = makeSmaNode(start, null, 0, getHeuristic(start, goal));
+  let allNodes = [root]; // every node currently held in memory
+  let selected = [];
+  let expanded = [];
+
+  const isLeaf = (n) => n.children.length === 0;
+  // A node is "selectable" if it's a leaf with f < infinity (not a proven
+  // dead end) -- either not yet expanded, or fully expanded with forgotten
+  // children worth regenerating.
+  const isSelectable = (n) => n.f < Infinity && isLeaf(n);
+
+  const frontierSnapshot = () =>
+    allNodes.filter(isSelectable).map(n => ({ node: n.state, cost: n.g, h: n.h, f: n.f, id: n.id }));
+  const reachedSnapshot = () => {
+    const o = {};
+    allNodes.forEach(n => { if (o[n.state] === undefined || n.g < o[n.state]) o[n.state] = n.g; });
+    return o;
+  };
+
+  steps.push({
+    action: 'START', currentNode: null, successorNode: null,
+    frontier: frontierSnapshot(), reached: reachedSnapshot(),
+    selected: [...selected], expanded: [...expanded],
+    maxNodes, memoryUsed: allNodes.length,
+    explanation: `Initialize SMA*. Root ${start}: g=0, h=${root.h}, f=${root.f}. Memory bound = ${maxNodes} nodes.`
+  });
+
+  let iterations = 0;
+  const MAX_ITER = 300;
+
+  while (iterations < MAX_ITER) {
+    iterations++;
+
+    const leaves = allNodes.filter(isSelectable);
+    if (leaves.length === 0) {
+      steps.push({
+        action: 'FAIL', currentNode: null, successorNode: null,
+        frontier: [], reached: reachedSnapshot(), selected: [...selected], expanded: [...expanded],
+        maxNodes, memoryUsed: allNodes.length,
+        explanation: `No selectable node remains in memory (everything forgotten). Search failed under the ${maxNodes}-node memory bound.`
+      });
+      return steps;
+    }
+
+    // Pick lowest-f leaf; tie-break toward greater depth (standard SMA*
+    // depth-first preference under ties), then insertion order.
+    leaves.sort((a, b) => (a.f - b.f) || (b.depth - a.depth) || (a.id - b.id));
+    const node = leaves[0];
+    selected.push(node.state);
+
+    steps.push({
+      action: 'SELECT', currentNode: node.state, successorNode: null,
+      frontier: frontierSnapshot(), reached: reachedSnapshot(),
+      selected: [...selected], expanded: [...expanded],
+      maxNodes, memoryUsed: allNodes.length,
+      explanation: `Select ${node.state} with the lowest f(n)=${node.f} among nodes in memory (g=${node.g}, h=${node.h}).`
+    });
+
+    const isGoal = node.state === goal;
+    steps.push({
+      action: 'GOAL_TEST', currentNode: node.state, successorNode: null,
+      frontier: frontierSnapshot(), reached: reachedSnapshot(),
+      selected: [...selected], expanded: [...expanded],
+      maxNodes, memoryUsed: allNodes.length,
+      explanation: `Goal Test: Is ${node.state} the goal? ${isGoal ? 'YES!' : 'NO.'}`
+    });
+
+    if (isGoal) {
+      const path = smaPath(node);
+      steps.push({
+        action: 'GOAL_FOUND', currentNode: node.state, successorNode: null,
+        frontier: frontierSnapshot(), reached: reachedSnapshot(),
+        selected: [...selected], expanded: [...expanded],
+        path, cost: node.g, maxNodes, memoryUsed: allNodes.length,
+        explanation: `Goal found! f(n) = g(n) = ${node.g} (h=0 at the goal). Solution path: ${path.join(' -> ')}.`
+      });
+      return steps;
+    }
+
+    const wasRegeneration = node.fullyExpanded && node.forgottenBestF < Infinity;
+    expanded.push(node.state);
+    steps.push({
+      action: wasRegeneration ? 'REGENERATE' : 'EXPAND', currentNode: node.state, successorNode: null,
+      frontier: frontierSnapshot(), reached: reachedSnapshot(),
+      selected: [...selected], expanded: [...expanded],
+      maxNodes, memoryUsed: allNodes.length,
+      explanation: wasRegeneration
+        ? `${node.state} was expanded before but its children were forgotten to save memory. Regenerate its successors now.`
+        : `Expand ${node.state}. Generate successors alphabetically.`
+    });
+
+    const ancestors = smaAncestorStates(node);
+    const successors = getSuccessorsAlphabetical(node.state).filter(s => !ancestors.has(s.to));
+    node.fullyExpanded = true;
+
+    if (successors.length === 0) {
+      node.f = Infinity; // dead end: never worth selecting again
+      steps.push({
+        action: 'DEAD_END', currentNode: node.state, successorNode: null,
+        frontier: frontierSnapshot(), reached: reachedSnapshot(),
+        selected: [...selected], expanded: [...expanded],
+        maxNodes, memoryUsed: allNodes.length,
+        explanation: `${node.state} has no unvisited successors on this path. Set f(${node.state}) = infinity so it is never reselected.`
+      });
+    }
+
+    for (const s of successors) {
+      const childG = node.g + s.cost;
+      const childH = getHeuristic(s.to, goal);
+      const child = makeSmaNode(s.to, node, childG, childH);
+      node.children.push(child);
+      allNodes.push(child);
+
+      steps.push({
+        action: 'GENERATE_SUCCESSOR', currentNode: node.state, successorNode: s.to,
+        frontier: frontierSnapshot(), reached: reachedSnapshot(),
+        selected: [...selected], expanded: [...expanded],
+        maxNodes, memoryUsed: allNodes.length,
+        explanation: `Generate ${s.to}: g=${childG}, h=${childH}, f=max(parent f=${node.f}, ${childG}+${childH})=${child.f}.`
+      });
+
+      // Enforce the memory bound: drop the worst (highest-f) leaf, backing its
+      // f-value up to its parent, until we're back within maxNodes. Never
+      // drop the node we just created, and never drop the root (it has no parent).
+      while (allNodes.length > maxNodes) {
+        const droppable = allNodes.filter(n => isLeaf(n) && n.parent !== null && n.id !== child.id);
+        if (droppable.length === 0) break; // nothing safe to drop
+        droppable.sort((a, b) => (b.f - a.f) || (a.depth - b.depth) || (a.id - b.id));
+        const worst = droppable[0];
+
+        // Remove from memory & from its parent's child list.
+        allNodes = allNodes.filter(n => n.id !== worst.id);
+        const p = worst.parent;
+        p.children = p.children.filter(c => c.id !== worst.id);
+        p.forgottenBestF = Math.min(p.forgottenBestF, worst.f);
+
+        steps.push({
+          action: 'FORGET', currentNode: p.state, successorNode: worst.state,
+          frontier: frontierSnapshot(), reached: reachedSnapshot(),
+          selected: [...selected], expanded: [...expanded],
+          maxNodes, memoryUsed: allNodes.length,
+          explanation: `Memory full (>${maxNodes} nodes). Forget worst leaf ${worst.state} (f=${worst.f}). Back up f=${worst.f} to parent ${p.state}.`
+        });
+
+        // Cascade: if the parent has now forgotten every child it ever made,
+        // it becomes a leaf again and inherits the best forgotten f-value.
+        if (p.children.length === 0 && p.fullyExpanded) {
+          p.f = Math.max(p.f, p.forgottenBestF);
+          steps.push({
+            action: 'BACKUP', currentNode: p.state, successorNode: null,
+            frontier: frontierSnapshot(), reached: reachedSnapshot(),
+            selected: [...selected], expanded: [...expanded],
+            maxNodes, memoryUsed: allNodes.length,
+            explanation: `${p.state} has no remaining children in memory. It becomes a leaf again with backed-up f(${p.state})=${p.f}.`
+          });
+        }
+      }
+    }
+  }
+
+  steps.push({
+    action: 'FAIL', currentNode: null, successorNode: null,
+    frontier: frontierSnapshot(), reached: reachedSnapshot(), selected: [...selected], expanded: [...expanded],
+    maxNodes, memoryUsed: allNodes.length,
+    explanation: `Safety iteration limit reached without finding the goal.`
+  });
+  return steps;
+}
+
 // Export to window scope
 window.GRAPH = GRAPH;
 window.NODE_LAYOUT = NODE_LAYOUT;
@@ -1106,4 +1510,7 @@ window.runIDS = runIDS;
 window.runAStar = runAStar;
 window.runGreedy = runGreedy;
 window.runGBFS = runGreedy;
+window.runBIBF = runBIBF;
+window.runSMA = runSMA;
+window.getPredecessorsAlphabetical = getPredecessorsAlphabetical;
 

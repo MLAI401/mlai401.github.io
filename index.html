@@ -33,7 +33,7 @@
       
       <ul class="nav-links" id="nav-menu">
         <li><a href="#" class="nav-link active" id="nav-home">Home</a></li>
-        <li><a href="#curriculum" class="nav-link" id="nav-curr">Curriculum</a></li>
+        <li><a href="curriculum.html" class="nav-link" id="nav-curr">Curriculum</a></li>
         <li><a href="playground.html" class="nav-link" id="nav-play">Playground</a></li>
         <li><a href="#resources" class="nav-link" id="nav-res">Resources</a></li>
       </ul>
@@ -57,14 +57,6 @@
         <p class="hero-description" id="sub-headline">
           MLAI401 is a curated collection of repositories and projects focused on foundational Artificial Intelligence and Machine Learning. We bring together teaching materials, hands-on labs, example applications, and projects covering core AI/ML concepts and their practical implementations.
         </p>
-        <div class="hero-actions">
-          <a href="playground.html" class="btn btn-primary" id="btn-cta-explore">
-            <i data-lucide="play-circle"></i> Try Playground
-          </a>
-          <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="btn btn-secondary" id="btn-cta-labs">
-            GitHub Profile <i data-lucide="github"></i>
-          </a>
-        </div>
       </div>
       
       <div class="hero-art-container" id="hero-art">
@@ -98,195 +90,6 @@
         <div class="stat-number">Open</div>
         <div class="stat-label">Source</div>
         <div class="stat-desc">MIT Licensed repositories</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Curriculum / Core Pillars Section -->
-  <section class="section" id="curriculum">
-    <div class="container">
-      <div class="section-header">
-        <span class="section-subtitle">Structure</span>
-        <h2 id="curriculum-title">The MLAI401 Curriculum</h2>
-        <p>A systematic progression designed to develop deep intuition for both the mathematical foundations and code-level details of modern AI systems.</p>
-      </div>
-      
-      <div class="curriculum-grid">
-        <div class="curriculum-card glass-panel" id="card-foundational">
-          <div class="curriculum-icon"><i data-lucide="bar-chart-2"></i></div>
-          <h3>Foundational ML</h3>
-          <p>Classical statistical models and machine learning fundamentals that form the core toolkit of data science.</p>
-          <ul class="curriculum-list">
-            <li>Linear & Logistic Regression</li>
-            <li>Support Vector Machines (SVMs)</li>
-            <li>Unsupervised K-Means & PCA</li>
-            <li>Validation & Metric Analysis</li>
-          </ul>
-        </div>
-        
-        <div class="curriculum-card glass-panel" id="card-deep-learning">
-          <div class="curriculum-icon"><i data-lucide="layers"></i></div>
-          <h3>Deep Learning</h3>
-          <p>Multi-layer representations, computational graphs, and training optimizations for high-dimensional data.</p>
-          <ul class="curriculum-list">
-            <li>Multi-Layer Perceptrons (MLPs)</li>
-            <li>CNNs & Computer Vision</li>
-            <li>RNNs & Sequence Modeling</li>
-            <li>Adam & SGD Optimization</li>
-          </ul>
-        </div>
-        
-        <div class="curriculum-card glass-panel" id="card-reinforcement">
-          <div class="curriculum-icon"><i data-lucide="target"></i></div>
-          <h3>Reinforcement Learning</h3>
-          <p>Decision-making paradigms where agents learn optimized sequences of actions via environment interactions.</p>
-          <ul class="curriculum-list">
-            <li>Markov Decision Processes (MDP)</li>
-            <li>Q-Learning & SARSA</li>
-            <li>Policy Gradients & REINFORCE</li>
-            <li>Actor-Critic Frameworks</li>
-          </ul>
-        </div>
-        
-        <div class="curriculum-card glass-panel" id="card-generative">
-          <div class="curriculum-icon"><i data-lucide="wand2"></i></div>
-          <h3>Generative AI & LLMs</h3>
-          <p>Foundational architectures powering the generative revolution, from tokenization to custom text synthesis.</p>
-          <ul class="curriculum-list">
-            <li>Autoencoders & GANs</li>
-            <li>Transformer Architectures</li>
-            <li>LLM Fine-tuning & LoRA</li>
-            <li>Retrieval-Augmented Gen (RAG)</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Interactive Playground Showcase Section -->
-  <section class="section" id="playground" style="background: rgba(241, 245, 249, 0.5); position: relative;">
-    <div class="ambient-glow-green"></div>
-    <div class="container">
-      <div class="section-header">
-        <span class="section-subtitle">Interactive Laboratories</span>
-        <h2 id="playground-title">AI & ML Playground</h2>
-        <p>Experience foundational algorithms in real-time. Launch any of our 5 interactive visualizers on the dedicated Playground page.</p>
-      </div>
-
-      <div class="curriculum-grid" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
-        
-        <!-- Lab 1: K-Means -->
-        <div class="curriculum-card glass-panel" style="display: flex; flex-direction: column; justify-content: space-between;">
-          <div>
-            <div class="curriculum-icon" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;"><i data-lucide="bar-chart-2"></i></div>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-              <h3 style="margin: 0;">K-Means Clustering</h3>
-              <span class="vaccum-pill success">Unsupervised ML</span>
-            </div>
-            <p>Interactive 2D canvas for clustering dynamic point clouds. Step through Lloyd's algorithm: centroid initialization, Voronoi partition assignments, and iterative center updates.</p>
-            <ul class="curriculum-list" style="margin: 1rem 0;">
-              <li>Custom 2D data point placement</li>
-              <li>K-Means++ smart distance initialization</li>
-              <li>Step-by-step Lloyd's convergence trace</li>
-            </ul>
-          </div>
-          <a href="playground.html#view-kmeans" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">
-            <i data-lucide="play-circle"></i> Launch K-Means Lab
-          </a>
-        </div>
-
-        <!-- Lab 2: Maze Abstraction -->
-        <div class="curriculum-card glass-panel" style="display: flex; flex-direction: column; justify-content: space-between;">
-          <div>
-            <div class="curriculum-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;"><i data-lucide="grid"></i></div>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-              <h3 style="margin: 0;">Maze State Abstraction</h3>
-              <span class="vaccum-pill pending">State Space</span>
-            </div>
-            <p>Transform raw physical grid navigation (4K states) into an abstract decision-point topological graph (T states), reducing search complexity by up to 91%.</p>
-            <ul class="curriculum-list" style="margin: 1rem 0;">
-              <li>7-step guided lecture progression</li>
-              <li>Interactive low-level vs abstract robot control</li>
-              <li>Search algorithm complexity on derived graphs</li>
-            </ul>
-          </div>
-          <a href="playground.html#view-maze" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">
-            <i data-lucide="play-circle"></i> Launch Maze Lab
-          </a>
-        </div>
-
-        <!-- Lab 3: 8-Puzzle -->
-        <div class="curriculum-card glass-panel" style="display: flex; flex-direction: column; justify-content: space-between;">
-          <div>
-            <div class="curriculum-icon" style="background: rgba(236, 72, 153, 0.1); color: #ec4899;"><i data-lucide="puzzle"></i></div>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-              <h3 style="margin: 0;">8-Puzzle Reachability</h3>
-              <span class="vaccum-pill danger">Parity & Search</span>
-            </div>
-            <p>Analyze permutation state spaces ($9! = 362,880$), inversion parity constraints, disconnected reachable components (181,440 states), and duplicate avoidance.</p>
-            <ul class="curriculum-list" style="margin: 1rem 0;">
-              <li>Interactive blank-tile transition model</li>
-              <li>Solvable vs unsolvable goal configuration tester</li>
-              <li>Dynamic BFS reachability expansion tree</li>
-            </ul>
-          </div>
-          <a href="playground.html#view-puzzle" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">
-            <i data-lucide="play-circle"></i> Launch 8-Puzzle Lab
-          </a>
-        </div>
-
-        <!-- Lab 4: Graph Search -->
-        <div class="curriculum-card glass-panel" style="display: flex; flex-direction: column; justify-content: space-between;">
-          <div>
-            <div class="curriculum-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i data-lucide="git-commit"></i></div>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-              <h3 style="margin: 0;">Graph Search Mechanics</h3>
-              <span class="vaccum-pill success">Classical Search</span>
-            </div>
-            <p>Detailed step-by-step execution traces for BFS, DFS, Uniform-Cost Search (UCS), Iterative Deepening (IDS), A* Search, and Greedy Best-First Search.</p>
-            <ul class="curriculum-list" style="margin: 1rem 0;">
-              <li>5-stage Search Cycle execution visualizer</li>
-              <li>Live Frontier, Reached set, and Heap cost tracking</li>
-              <li>Multi-algorithm comparison history table</li>
-            </ul>
-          </div>
-          <a href="playground.html#view-search" class="btn btn-primary" style="width: 100%; justify-content: center; margin-top: 1rem;">
-            <i data-lucide="play-circle"></i> Launch Graph Search Lab
-          </a>
-        </div>
-
-        <!-- Lab 5: Vacuum Robot -->
-        <div class="curriculum-card glass-panel" style="display: flex; flex-direction: column; justify-content: space-between; grid-column: span 1 / -1;">
-          <div>
-            <div class="curriculum-icon" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i data-lucide="bot"></i></div>
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-              <h3 style="margin: 0;">Two-Room Vacuum Robot Agents</h3>
-              <span class="vaccum-pill warning">AIMA Agent Architectures</span>
-            </div>
-            <p>Compare how information is represented and used across different agent architectures in the canonical AIMA two-room vacuum cleaner world.</p>
-            <div class="vaccum-info-grid" style="margin: 1rem 0;">
-              <div class="vaccum-info-card">
-                <strong style="color: var(--primary);">Table-Driven Agent</strong>
-                <span style="font-size: 0.85rem; color: var(--text-secondary);">Stores full percept history & evaluates $\text{Action} = \text{TABLE}[\text{History}]$.</span>
-              </div>
-              <div class="vaccum-info-card">
-                <strong style="color: var(--danger);">Simple Reflex Agent</strong>
-                <span style="font-size: 0.85rem; color: var(--text-secondary);">Stateless condition-action rules with no memory ($\text{Completes} \neq \text{Knows It Is Complete}$).</span>
-              </div>
-              <div class="vaccum-info-card">
-                <strong style="color: var(--accent);">Model-Based Reflex Agent</strong>
-                <span style="font-size: 0.85rem; color: var(--text-secondary);">Maintains internal world model $(\text{Room A}, \text{Room B})$ and stops cleanly with $\text{NoOp}$.</span>
-              </div>
-            </div>
-          </div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; flex-wrap: wrap; gap: 1rem;">
-            <div style="font-size: 0.9rem; color: var(--text-muted);">Includes interactive environment controls and synchronized 3-agent comparison scoreboard.</div>
-            <a href="playground.html#view-vaccum" class="btn btn-primary" style="padding: 0.75rem 2rem;">
-              <i data-lucide="play-circle"></i> Launch Vacuum Robot Lab
-            </a>
-          </div>
-        </div>
-
       </div>
     </div>
   </section>
@@ -327,51 +130,6 @@
       </div>
     </div>
   </section>
-
-  <!-- Footer -->
-  <footer id="footer-section">
-    <div class="container">
-      <div class="footer-grid">
-        <div class="footer-brand">
-          <a href="#" class="logo" id="footer-logo">
-            <span class="logo-icon">M</span>
-            MLAI401
-          </a>
-          <p>Educational framework and resources for foundational Artificial Intelligence & Machine Learning. Engineered for UIC CS411.</p>
-        </div>
-        
-        <div class="footer-col">
-          <h4>Syllabus Sections</h4>
-          <ul class="footer-links">
-            <li><a href="#curriculum">Foundational ML</a></li>
-            <li><a href="#curriculum">Deep Learning</a></li>
-            <li><a href="#curriculum">Reinforcement Learning</a></li>
-            <li><a href="#curriculum">Generative AI</a></li>
-          </ul>
-        </div>
-        
-        <div class="footer-col">
-          <h4>Interactive Labs</h4>
-          <ul class="footer-links">
-            <li><a href="playground.html#view-kmeans">K-Means Canvas</a></li>
-            <li><a href="playground.html#view-maze">Maze Search Abstraction</a></li>
-            <li><a href="playground.html#view-puzzle">8-Puzzle State-Space</a></li>
-            <li><a href="playground.html#view-search">Graph Search Algorithms</a></li>
-            <li><a href="playground.html#view-vaccum">Two-Room Vacuum Robot</a></li>
-          </ul>
-        </div>
-      </div>
-      
-      <div class="footer-bottom">
-        <div>&copy; 2026 MLAI401. All rights reserved. Built for educational and research purposes.</div>
-        <div class="social-links">
-          <a href="https://github.com/MLAI401" class="social-link" aria-label="GitHub Profile" target="_blank" rel="noopener noreferrer">
-            <i data-lucide="github"></i>
-          </a>
-        </div>
-      </div>
-    </div>
-  </footer>
 
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>

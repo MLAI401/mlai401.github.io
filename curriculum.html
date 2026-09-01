@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Curriculum - MLAI401 Foundational AI & ML</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="The MLAI401 curriculum: six core topics spanning problem formulation, search & planning, constraint satisfaction, knowledge & reasoning, learning & decision making, and generative & agentic AI.">
+  <meta name="keywords" content="AI Curriculum, Problem Formulation, Search and Planning, Constraint Satisfaction, Knowledge and Reasoning, Machine Learning, Reinforcement Learning, Agentic AI, AIMA">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="MLAI401 - Curriculum">
+  <meta property="og:description" content="Six core topics covering foundational Artificial Intelligence and Machine Learning, each paired with a hands-on demo.">
+  <meta property="og:type" content="website">
+
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navigation Header -->
+  <header class="navbar" id="navbar-header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo" id="logo-link">
+        <span class="logo-icon">M</span>
+        MLAI401
+      </a>
+
+      <button class="menu-toggle" id="menu-toggle-btn" aria-label="Toggle Navigation Menu">
+        <i data-lucide="menu"></i>
+      </button>
+
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="index.html" class="nav-link" id="nav-home">Home</a></li>
+        <li><a href="curriculum.html" class="nav-link active" id="nav-curr">Curriculum</a></li>
+        <li><a href="playground.html" class="nav-link" id="nav-play">Playground</a></li>
+        <li><a href="index.html#resources" class="nav-link" id="nav-res">Resources</a></li>
+      </ul>
+
+      <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="nav-btn" id="nav-github-btn">
+        <i data-lucide="github"></i> GitHub Profile
+      </a>
+    </div>
+  </header>
+
+  <!-- Curriculum Hero Section -->
+  <section class="hero" id="curriculum-hero" style="min-height: auto; padding-top: 7rem; padding-bottom: 2.5rem;">
+    <div class="container">
+      <div class="hero-content" style="max-width: 800px; margin: 0 auto; text-align: center;">
+        <div class="hero-badge" id="hero-badge-tag" style="margin: 0 auto 1.25rem;">
+          <i data-lucide="sparkles"></i> MLAI401 &bull; Curriculum
+        </div>
+        <h1 class="hero-title" style="font-size: 2.75rem; margin-bottom: 1rem;">
+          Curriculum
+        </h1>
+        <p class="hero-description" style="margin: 0 auto; font-size: 1.05rem;">
+          A systematic progression through foundational Artificial Intelligence and Machine Learning &mdash; from problem formulation to generative, agentic AI. Each topic is paired with a hands-on demo in the Playground.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Curriculum Topics Section -->
+  <section class="section" id="curriculum" style="background: rgba(241, 245, 249, 0.5); position: relative;">
+    <div class="ambient-glow-green"></div>
+    <div class="container">
+      <div class="curriculum-grid curriculum-grid-3col">
+
+        <!-- Topic 1: Problem Formulation -->
+        <div class="curriculum-card glass-panel" id="topic-formulation">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+            <div class="curriculum-icon" style="margin-bottom: 0;"><i data-lucide="flag"></i></div>
+            <span class="vaccum-pill neutral">Topic 01</span>
+          </div>
+          <h3>Problem Formulation</h3>
+          <p>Describing a task as a search problem &mdash; initial state, actions, transition model, goal test, and path cost &mdash; and abstracting a physical environment into states and a graph.</p>
+          <ul class="curriculum-list">
+            <li style="justify-content: space-between;">
+              <span>Vacuum World &mdash; agents</span>
+              <a href="playground.html#view-vaccum" class="vaccum-pill success" style="text-decoration: none;">Try it</a>
+            </li>
+            <li style="justify-content: space-between;">
+              <span>Maze &rarr; State Space</span>
+              <a href="playground.html#view-maze" class="vaccum-pill success" style="text-decoration: none;">Try it</a>
+            </li>
+            <li style="justify-content: space-between;">
+              <span>8-Puzzle &rarr; State Space</span>
+              <a href="playground.html#view-puzzle" class="vaccum-pill success" style="text-decoration: none;">Try it</a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Topic 2: Search & Planning -->
+        <div class="curriculum-card glass-panel" id="topic-search">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+            <div class="curriculum-icon" style="margin-bottom: 0;"><i data-lucide="route"></i></div>
+            <span class="vaccum-pill neutral">Topic 02</span>
+          </div>
+          <h3>Search &amp; Planning</h3>
+          <p>One problem solved with BFS, DFS, Uniform-Cost, Greedy Best-First, and A* &mdash; comparing frontier, explored nodes, path, and cost, plus adversarial search against an opponent.</p>
+          <ul class="curriculum-list">
+            <li style="justify-content: space-between;">
+              <span>Route-Finding Visualizer</span>
+              <a href="playground.html#view-search" class="vaccum-pill success" style="text-decoration: none;">Try it</a>
+            </li>
+            <li style="justify-content: space-between;">
+              <span>Tic-Tac-Toe</span>
+              <span class="vaccum-pill neutral">Planned</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Topic 3: Constraint Satisfaction -->
+        <div class="curriculum-card glass-panel" id="topic-csp">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+            <div class="curriculum-icon" style="margin-bottom: 0;"><i data-lucide="grid-3x3"></i></div>
+            <span class="vaccum-pill neutral">Topic 03</span>
+          </div>
+          <h3>Constraint Satisfaction</h3>
+          <p>Variables, domains, and constraints &mdash; assigning values, detecting conflicts, and backtracking to reach a solution that satisfies every constraint.</p>
+          <ul class="curriculum-list">
+            <li style="justify-content: space-between;">
+              <span>Scheduling</span>
+              <span class="vaccum-pill neutral">Planned</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Topic 4: Knowledge & Reasoning -->
+        <div class="curriculum-card glass-panel" id="topic-knowledge">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+            <div class="curriculum-icon" style="margin-bottom: 0;"><i data-lucide="brain"></i></div>
+            <span class="vaccum-pill neutral">Topic 04</span>
+          </div>
+          <h3>Knowledge &amp; Reasoning</h3>
+          <p>Going from facts and rules to new conclusions through logical inference, and from a prior belief to a posterior belief through evidence under uncertainty.</p>
+          <ul class="curriculum-list">
+            <li style="justify-content: space-between;">
+              <span>Mini Knowledge Agent</span>
+              <span class="vaccum-pill neutral">Planned</span>
+            </li>
+            <li style="justify-content: space-between;">
+              <span>Bayesian Reasoning Demo</span>
+              <span class="vaccum-pill neutral">Planned</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Topic 5: Learning & Decision Making -->
+        <div class="curriculum-card glass-panel" id="topic-learning">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+            <div class="curriculum-icon" style="margin-bottom: 0;"><i data-lucide="line-chart"></i></div>
+            <span class="vaccum-pill neutral">Topic 05</span>
+          </div>
+          <h3>Learning &amp; Decision Making</h3>
+          <p>Learning patterns from labeled examples rather than explicitly programmed rules, and learning a better policy through state &rarr; action &rarr; reward interaction.</p>
+          <ul class="curriculum-list">
+            <li style="justify-content: space-between;">
+              <span>Classification Demo</span>
+              <span class="vaccum-pill neutral">Planned</span>
+            </li>
+            <li style="justify-content: space-between;">
+              <span>Grid World Agent</span>
+              <span class="vaccum-pill neutral">Planned</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Topic 6: Generative & Agentic AI -->
+        <div class="curriculum-card glass-panel" id="topic-agentic">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+            <div class="curriculum-icon" style="margin-bottom: 0;"><i data-lucide="bot"></i></div>
+            <span class="vaccum-pill neutral">Topic 06</span>
+          </div>
+          <h3>Generative &amp; Agentic AI</h3>
+          <p>A goal-driven agent that reasons about a task, plans, acts, observes results, and replans &mdash; using tools and memory, and coordinating with other agents to complete work.</p>
+          <ul class="curriculum-list">
+            <li style="justify-content: space-between;">
+              <span>Goal-Driven AI Agent</span>
+              <span class="vaccum-pill neutral">Planned</span>
+            </li>
+            <li style="justify-content: space-between;">
+              <span>Two-Agent Task</span>
+              <span class="vaccum-pill neutral">Planned</span>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+  <!-- Application JS -->
+  <script src="main.js?v=2"></script>
+</body>
+</html>
