@@ -378,11 +378,13 @@ function runUCS(start, goal) {
     return copy;
   };
 
+  const getFrontierCopy = (f) => f.map(item => ({ ...item }));
+
   steps.push({
     action: 'START',
     currentNode: null,
     successorNode: null,
-    frontier: [...frontier],
+    frontier: getFrontierCopy(frontier),
     reached: getReachedCopy(reached),
     selected: [...selected],
     expanded: [...expanded],
@@ -404,7 +406,7 @@ function runUCS(start, goal) {
       action: 'SELECT',
       currentNode: currentNode,
       successorNode: null,
-      frontier: [...frontier],
+      frontier: getFrontierCopy(frontier),
       reached: getReachedCopy(reached),
       selected: [...selected],
       expanded: [...expanded],
@@ -416,7 +418,7 @@ function runUCS(start, goal) {
       action: 'GOAL_TEST',
       currentNode: currentNode,
       successorNode: null,
-      frontier: [...frontier],
+      frontier: getFrontierCopy(frontier),
       reached: getReachedCopy(reached),
       selected: [...selected],
       expanded: [...expanded],
@@ -429,7 +431,7 @@ function runUCS(start, goal) {
         action: 'GOAL_FOUND',
         currentNode: currentNode,
         successorNode: null,
-        frontier: [...frontier],
+        frontier: getFrontierCopy(frontier),
         reached: getReachedCopy(reached),
         selected: [...selected],
         expanded: [...expanded],
@@ -445,7 +447,7 @@ function runUCS(start, goal) {
       action: 'EXPAND',
       currentNode: currentNode,
       successorNode: null,
-      frontier: [...frontier],
+      frontier: getFrontierCopy(frontier),
       reached: getReachedCopy(reached),
       selected: [...selected],
       expanded: [...expanded],
@@ -459,7 +461,7 @@ function runUCS(start, goal) {
         action: 'GENERATE_SUCCESSOR',
         currentNode: currentNode,
         successorNode: succ.to,
-        frontier: [...frontier],
+        frontier: getFrontierCopy(frontier),
         reached: getReachedCopy(reached),
         selected: [...selected],
         expanded: [...expanded],
@@ -473,7 +475,7 @@ function runUCS(start, goal) {
           action: 'UPDATE_FRONTIER',
           currentNode: currentNode,
           successorNode: succ.to,
-          frontier: [...frontier],
+          frontier: getFrontierCopy(frontier),
           reached: getReachedCopy(reached),
           selected: [...selected],
           expanded: [...expanded],
@@ -497,7 +499,7 @@ function runUCS(start, goal) {
             action: 'UPDATE_FRONTIER',
             currentNode: currentNode,
             successorNode: succ.to,
-            frontier: [...frontier],
+            frontier: getFrontierCopy(frontier),
             reached: getReachedCopy(reached),
             selected: [...selected],
             expanded: [...expanded],
@@ -508,7 +510,7 @@ function runUCS(start, goal) {
             action: 'SKIP_DUPLICATE',
             currentNode: currentNode,
             successorNode: succ.to,
-            frontier: [...frontier],
+            frontier: getFrontierCopy(frontier),
             reached: getReachedCopy(reached),
             selected: [...selected],
             expanded: [...expanded],
@@ -523,7 +525,7 @@ function runUCS(start, goal) {
     action: 'FAIL',
     currentNode: null,
     successorNode: null,
-    frontier: [...frontier],
+    frontier: getFrontierCopy(frontier),
     reached: getReachedCopy(reached),
     selected: [...selected],
     expanded: [...expanded],
@@ -738,10 +740,223 @@ function runIDS(start, goal) {
   return steps;
 }
 
+// Heuristic definitions
+const DEFAULT_HEURISTICS_TO_G = {
+  A: 6,
+  B: 4,
+  C: 6,
+  D: 3,
+  E: 1,
+  F: 6,
+  G: 0,
+  H: 5
+};
+
+/**
+ * Straight-line Euclidean distance heuristic function.
+ * For default goal G, uses consistent, admissible integer values from standard AIMA model.
+ * For any arbitrary goal state, computes Euclidean distance scaled appropriately.
+ */
+function getHeuristic(node, goal) {
+  if (node === goal) return 0;
+  if (goal === 'G' && DEFAULT_HEURISTICS_TO_G[node] !== undefined) {
+    return DEFAULT_HEURISTICS_TO_G[node];
+  }
+  const n1 = NODE_LAYOUT[node];
+  const n2 = NODE_LAYOUT[goal];
+  if (!n1 || !n2) return 0;
+  return Math.round(Math.hypot(n1.x - n2.x, n1.y - n2.y) * 7);
+}
+
+/**
+ * Event-driven A* Search (Priority Queue ordered by f(n) = g(n) + h(n))
+ */
+function runAStar(start, goal) {
+  const steps = [];
+  const startH = getHeuristic(start, goal);
+  let frontier = [{ node: start, parent: null, cost: 0, h: startH, f: startH }]; // Priority Queue by f(n)
+  let reached = new Map();
+  reached.set(start, 0);
+  let selected = [];
+  let expanded = [];
+
+  const getReachedCopy = (map) => {
+    const copy = {};
+    for (let [k, v] of map) {
+      copy[k] = v;
+    }
+    return copy;
+  };
+
+  const getFrontierCopy = (f) => f.map(item => ({ ...item }));
+
+  steps.push({
+    action: 'START',
+    currentNode: null,
+    successorNode: null,
+    frontier: getFrontierCopy(frontier),
+    reached: getReachedCopy(reached),
+    selected: [...selected],
+    expanded: [...expanded],
+    explanation: `Initialize A* Search. Add start node ${start} with g(n)=0, h(n)=${startH} ⇒ f(n)=${startH} to priority queue.`
+  });
+
+  while (frontier.length > 0) {
+    // Sort priority queue by evaluation function f(n) = g(n) + h(n)
+    frontier.sort((a, b) => {
+      if (a.f !== b.f) return a.f - b.f;
+      if (a.cost !== b.cost) return a.cost - b.cost;
+      return a.node.localeCompare(b.node); // alphabetical tie-breaker
+    });
+
+    const currentItem = frontier.shift(); // Remove minimum f(n) item
+    const currentNode = currentItem.node;
+    selected.push(currentNode);
+
+    steps.push({
+      action: 'SELECT',
+      currentNode: currentNode,
+      successorNode: null,
+      frontier: getFrontierCopy(frontier),
+      reached: getReachedCopy(reached),
+      selected: [...selected],
+      expanded: [...expanded],
+      explanation: `Select node ${currentNode} with lowest f(n) = g(n) + h(n) = ${currentItem.cost} + ${currentItem.h} = ${currentItem.f} from frontier.`
+    });
+
+    const isGoal = currentNode === goal;
+    steps.push({
+      action: 'GOAL_TEST',
+      currentNode: currentNode,
+      successorNode: null,
+      frontier: getFrontierCopy(frontier),
+      reached: getReachedCopy(reached),
+      selected: [...selected],
+      expanded: [...expanded],
+      explanation: `Goal Test: Is selected node ${currentNode} the goal? ${isGoal ? 'YES!' : 'NO.'}`
+    });
+
+    if (isGoal) {
+      const path = reconstructPath(currentItem);
+      steps.push({
+        action: 'GOAL_FOUND',
+        currentNode: currentNode,
+        successorNode: null,
+        frontier: getFrontierCopy(frontier),
+        reached: getReachedCopy(reached),
+        selected: [...selected],
+        expanded: [...expanded],
+        path: path,
+        cost: currentItem.cost,
+        explanation: `Goal found on selection! Solution path: ${path.join(' → ')} with cost ${currentItem.cost}.`
+      });
+      return steps;
+    }
+
+    expanded.push(currentNode);
+    steps.push({
+      action: 'EXPAND',
+      currentNode: currentNode,
+      successorNode: null,
+      frontier: getFrontierCopy(frontier),
+      reached: getReachedCopy(reached),
+      selected: [...selected],
+      expanded: [...expanded],
+      explanation: `Expand ${currentNode}. Generate successors alphabetically and evaluate f(n) = g(n) + h(n).`
+    });
+
+    const successors = getSuccessorsAlphabetical(currentNode);
+    for (let succ of successors) {
+      const newCost = currentItem.cost + succ.cost;
+      const succH = getHeuristic(succ.to, goal);
+      const newF = newCost + succH;
+
+      steps.push({
+        action: 'GENERATE_SUCCESSOR',
+        currentNode: currentNode,
+        successorNode: succ.to,
+        frontier: getFrontierCopy(frontier),
+        reached: getReachedCopy(reached),
+        selected: [...selected],
+        expanded: [...expanded],
+        explanation: `Generate successor ${succ.to}. g(${succ.to}) = ${currentItem.cost} + ${succ.cost} = ${newCost}, h(${succ.to}) = ${succH} ⇒ f(${succ.to}) = ${newF}.`
+      });
+
+      if (!reached.has(succ.to)) {
+        reached.set(succ.to, newCost);
+        frontier.push({ node: succ.to, parent: currentItem, cost: newCost, h: succH, f: newF });
+        steps.push({
+          action: 'UPDATE_FRONTIER',
+          currentNode: currentNode,
+          successorNode: succ.to,
+          frontier: getFrontierCopy(frontier),
+          reached: getReachedCopy(reached),
+          selected: [...selected],
+          expanded: [...expanded],
+          explanation: `${succ.to} is new. Add to priority queue with f(${succ.to}) = ${newF} (g=${newCost}, h=${succH}).`
+        });
+      } else {
+        const oldCost = reached.get(succ.to);
+        if (newCost < oldCost) {
+          reached.set(succ.to, newCost);
+
+          const frontItem = frontier.find(item => item.node === succ.to);
+          if (frontItem) {
+            frontItem.cost = newCost;
+            frontItem.h = succH;
+            frontItem.f = newF;
+            frontItem.parent = currentItem;
+          } else {
+            frontier.push({ node: succ.to, parent: currentItem, cost: newCost, h: succH, f: newF });
+          }
+
+          steps.push({
+            action: 'UPDATE_FRONTIER',
+            currentNode: currentNode,
+            successorNode: succ.to,
+            frontier: getFrontierCopy(frontier),
+            reached: getReachedCopy(reached),
+            selected: [...selected],
+            expanded: [...expanded],
+            explanation: `Cheaper path to ${succ.to} found (g: ${newCost} < ${oldCost}). Update f(${succ.to}) = ${newF} in Reached and Priority Queue.`
+          });
+        } else {
+          steps.push({
+            action: 'SKIP_DUPLICATE',
+            currentNode: currentNode,
+            successorNode: succ.to,
+            frontier: getFrontierCopy(frontier),
+            reached: getReachedCopy(reached),
+            selected: [...selected],
+            expanded: [...expanded],
+            explanation: `Path to ${succ.to} via ${currentNode} is not cheaper (g: ${newCost} ≥ ${oldCost}). Ignore.`
+          });
+        }
+      }
+    }
+  }
+
+  steps.push({
+    action: 'FAIL',
+    currentNode: null,
+    successorNode: null,
+    frontier: getFrontierCopy(frontier),
+    reached: getReachedCopy(reached),
+    selected: [...selected],
+    expanded: [...expanded],
+    explanation: `Frontier is empty. Search failed.`
+  });
+  return steps;
+}
+
 // Export to window scope
 window.GRAPH = GRAPH;
 window.NODE_LAYOUT = NODE_LAYOUT;
+window.DEFAULT_HEURISTICS_TO_G = DEFAULT_HEURISTICS_TO_G;
+window.getHeuristic = getHeuristic;
 window.runBFS = runBFS;
 window.runDFS = runDFS;
 window.runUCS = runUCS;
 window.runIDS = runIDS;
+window.runAStar = runAStar;
+

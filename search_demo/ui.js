@@ -37,7 +37,8 @@ class SearchDemoUI {
       BFS: null,
       DFS: null,
       UCS: null,
-      IDS: null
+      IDS: null,
+      ASTAR: null
     };
 
     this.init();
@@ -114,6 +115,8 @@ class SearchDemoUI {
       this.steps = runUCS(this.startNode, this.goalNode);
     } else if (this.currentAlg === 'IDS') {
       this.steps = runIDS(this.startNode, this.goalNode);
+    } else if (this.currentAlg === 'ASTAR') {
+      this.steps = runAStar(this.startNode, this.goalNode);
     }
 
     this.currentStepIdx = 0;
@@ -192,7 +195,7 @@ class SearchDemoUI {
     
     // Reached set formatting
     let reachedStr = '';
-    if (this.currentAlg === 'UCS') {
+    if (this.currentAlg === 'UCS' || this.currentAlg === 'ASTAR') {
       reachedStr = Object.entries(step.reached)
         .map(([node, cost]) => `${node}(g:${cost})`)
         .join(', ');
@@ -203,6 +206,7 @@ class SearchDemoUI {
 
     // Frontier formatting
     const frontierStr = step.frontier.map(item => {
+      if (this.currentAlg === 'ASTAR') return `${item.node}(f:${item.f})`;
       if (this.currentAlg === 'UCS') return `${item.node}(g:${item.cost})`;
       if (this.currentAlg === 'IDS') return `${item.node}(d:${item.depth})`;
       return item.node;
@@ -212,11 +216,11 @@ class SearchDemoUI {
     // Show/Hide algorithm specific status pane parameters
     const ucsCostPanel = document.getElementById('search-ucs-cost-panel');
     const idsDepthPanel = document.getElementById('search-ids-depth-panel');
+    const astarCostPanel = document.getElementById('search-astar-cost-panel');
     
     if (ucsCostPanel) {
       if (this.currentAlg === 'UCS') {
         ucsCostPanel.style.display = 'block';
-        const currentItem = step.frontier.find(item => item.node === step.currentNode) || { cost: 0 };
         setSafeText('search-status-cost', step.currentNode ? (step.reached[step.currentNode] ?? 0) : 0);
       } else {
         ucsCostPanel.style.display = 'none';
@@ -230,6 +234,20 @@ class SearchDemoUI {
         setSafeText('search-status-ids-depth', step.depth ?? 0);
       } else {
         idsDepthPanel.style.display = 'none';
+      }
+    }
+
+    if (astarCostPanel) {
+      if (this.currentAlg === 'ASTAR') {
+        astarCostPanel.style.display = 'block';
+        const gCost = step.currentNode ? (step.reached[step.currentNode] ?? 0) : 0;
+        const hCost = step.currentNode ? getHeuristic(step.currentNode, this.goalNode) : 0;
+        const fCost = gCost + hCost;
+        setSafeText('search-status-astar-g', gCost);
+        setSafeText('search-status-astar-h', hCost);
+        setSafeText('search-status-astar-f', fCost);
+      } else {
+        astarCostPanel.style.display = 'none';
       }
     }
 
@@ -291,6 +309,7 @@ class SearchDemoUI {
 
         // Frontier ordered display
         const frontierText = step.frontier.map(item => {
+          if (this.currentAlg === 'ASTAR') return `${item.node}(f:${item.f})`;
           if (this.currentAlg === 'UCS') return `${item.node}(${item.cost})`;
           if (this.currentAlg === 'IDS') return `${item.node}(d:${item.depth})`;
           return item.node;
@@ -298,7 +317,7 @@ class SearchDemoUI {
 
         // Reached best-cost display
         let reachedText = '';
-        if (this.currentAlg === 'UCS') {
+        if (this.currentAlg === 'UCS' || this.currentAlg === 'ASTAR') {
           reachedText = Object.entries(step.reached)
             .map(([node, cost]) => `${node}:${cost}`)
             .join(', ');
@@ -359,13 +378,14 @@ class SearchDemoUI {
   }
 
   updateComparisonTable() {
-    const algs = ['BFS', 'DFS', 'UCS', 'IDS'];
+    const algs = ['BFS', 'DFS', 'UCS', 'IDS', 'ASTAR'];
     algs.forEach(alg => {
       const data = this.runHistory[alg];
-      const row = document.getElementById(`comp-row-${alg.toLowerCase()}`);
+      const rowId = alg === 'ASTAR' ? 'comp-row-astar' : `comp-row-${alg.toLowerCase()}`;
+      const row = document.getElementById(rowId);
       if (row && data) {
         row.innerHTML = `
-          <td><strong>${alg}</strong></td>
+          <td><strong>${alg === 'ASTAR' ? 'A*' : alg}</strong></td>
           <td><small>${data.expanded || '-'}</small></td>
           <td><small>${data.path || '-'}</small></td>
           <td><strong>${data.cost ?? '-'}</strong></td>
@@ -501,7 +521,7 @@ class SearchDemoUI {
     // Sets of node classifications
     const expandedSet = new Set(step.expanded);
     const selectedSet = new Set(step.selected);
-    const reachedSet = this.currentAlg === 'UCS' 
+    const reachedSet = (this.currentAlg === 'UCS' || this.currentAlg === 'ASTAR')
       ? new Set(Object.keys(step.reached)) 
       : new Set(step.reached);
 
@@ -590,7 +610,18 @@ class SearchDemoUI {
       ctx.fillText(nodeId, nx, ny);
 
       // Label details (cost or depth under nodes)
-      if (this.currentAlg === 'UCS' && reachedSet.has(nodeId)) {
+      if (this.currentAlg === 'ASTAR') {
+        ctx.fillStyle = '#64748b';
+        ctx.font = 'bold 9px monospace';
+        if (reachedSet.has(nodeId)) {
+          const gCost = step.reached[nodeId] ?? 0;
+          const hCost = getHeuristic(nodeId, this.goalNode);
+          ctx.fillText(`f:${gCost + hCost}`, nx, ny + radius + 11);
+        } else {
+          const hCost = getHeuristic(nodeId, this.goalNode);
+          ctx.fillText(`h:${hCost}`, nx, ny + radius + 11);
+        }
+      } else if (this.currentAlg === 'UCS' && reachedSet.has(nodeId)) {
         ctx.fillStyle = '#64748b';
         ctx.font = 'bold 9px monospace';
         const cost = step.reached[nodeId] ?? '∞';
@@ -639,6 +670,7 @@ class SearchDemoUI {
     else if (this.currentAlg === 'DFS') desc = 'LIFO STACK (LAST IN -> FIRST OUT)';
     else if (this.currentAlg === 'UCS') desc = 'PRIORITY QUEUE (ORDERED BY LOWEST g(n))';
     else if (this.currentAlg === 'IDS') desc = 'LIFO STACK (RESETS EACH DEPTH LIMIT)';
+    else if (this.currentAlg === 'ASTAR') desc = 'PRIORITY QUEUE (ORDERED BY LOWEST f(n) = g(n) + h(n))';
     
     ctx.fillText(`FRONTIER: ${desc}`, 20, startY + 14);
 
@@ -699,7 +731,7 @@ class SearchDemoUI {
         ctx.fillText("...", stackStartX + cellW / 2, stackStartY - maxDraw * (cellH + 2) + 8);
       }
     } else {
-      // Draw Queue horizontally (BFS / UCS)
+      // Draw Queue horizontally (BFS / UCS / ASTAR)
       const totalW = len * cellW + (len - 1) * 4;
       let startX = (w - totalW) / 2;
       if (startX < 95) startX = 95; // bound check so pointer doesn't clip
@@ -718,7 +750,7 @@ class SearchDemoUI {
         ctx.strokeStyle = i === 0 ? '#4f46e5' : '#818cf8';
         ctx.stroke();
 
-        // Node ID and cost
+        // Node ID and cost / f
         ctx.fillStyle = i === 0 ? '#ffffff' : '#3730a3';
         ctx.font = 'bold 11px Outfit, sans-serif';
         ctx.textAlign = 'center';
@@ -726,6 +758,7 @@ class SearchDemoUI {
         
         let label = item.node;
         if (this.currentAlg === 'UCS') label = `${item.node}(g:${item.cost})`;
+        if (this.currentAlg === 'ASTAR') label = `${item.node}(f:${item.f})`;
         ctx.fillText(label, cx + cellW / 2, cy + cellH / 2);
 
         // FRONT / lowest cost indicators
@@ -733,7 +766,9 @@ class SearchDemoUI {
           ctx.fillStyle = '#4f46e5';
           ctx.font = 'bold 8px monospace';
           ctx.textAlign = 'center';
-          const indicatorText = this.currentAlg === 'UCS' ? "LOWEST COST (Pop)" : "FRONT (Pop)";
+          let indicatorText = "FRONT (Pop)";
+          if (this.currentAlg === 'UCS') indicatorText = "LOWEST COST (Pop)";
+          if (this.currentAlg === 'ASTAR') indicatorText = "LOWEST f(n) (Pop)";
           ctx.fillText(indicatorText, cx + cellW / 2, cy - 6);
           ctx.fillText("▼", cx + cellW / 2, cy - 1);
         }
