@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Problem Formulation - MLAI401 Foundational AI & ML</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="An illustrated lecture page on formulating a problem for search: state, state space, abstraction, initial state, actions, transition model, goal test, and step/path cost — shown through the Two-Room Vacuum World and the 8-Puzzle.">
+  <meta name="keywords" content="Problem Formulation, State Space, Abstraction, Transition Model, Goal Test, Path Cost, Vacuum World, 8-Puzzle, AIMA">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="MLAI401 - Problem Formulation">
+  <meta property="og:description" content="One interactive illustration, two worked examples: the Two-Room Vacuum World and the 8-Puzzle, walked through the parts of a formal problem definition.">
+  <meta property="og:type" content="website">
+
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navigation Header -->
+  <header class="navbar" id="navbar-header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo" id="logo-link">
+        <span class="logo-icon">M</span>
+        MLAI401
+      </a>
+
+      <button class="menu-toggle" id="menu-toggle-btn" aria-label="Toggle Navigation Menu">
+        <i data-lucide="menu"></i>
+      </button>
+
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="index.html" class="nav-link" id="nav-home">Home</a></li>
+        <li><a href="curriculum.html" class="nav-link active" id="nav-curr">Curriculum</a></li>
+        <li><a href="playground.html" class="nav-link" id="nav-play">Playground</a></li>
+        <li><a href="index.html#resources" class="nav-link" id="nav-res">Resources</a></li>
+      </ul>
+
+      <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="nav-btn" id="nav-github-btn">
+        <i data-lucide="github"></i> GitHub Profile
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero" id="pf-hero" style="min-height: auto; padding-top: 7rem; padding-bottom: 2rem;">
+    <div class="container">
+      <div style="max-width: 800px; margin: 0 auto; text-align: center;">
+        <a href="curriculum.html" class="pf-breadcrumb" style="justify-content: center;">
+          <i data-lucide="arrow-left"></i> Back to Curriculum
+        </a>
+        <div class="hero-badge" style="margin: 0 auto 1.25rem;">
+          <i data-lucide="flag"></i> Topic 01 &bull; Problem Formulation
+        </div>
+        <h1 class="hero-title" style="font-size: 2.75rem; margin-bottom: 1rem;">
+          Formulating a Problem
+        </h1>
+        <p class="hero-description" style="margin: 0 auto; font-size: 1.05rem;">
+          Before an agent can search for a solution, the task must first be described formally &mdash; as a state, a state space, a starting point, a set of actions, a way to predict their effect, a test for success, and a cost. This page is a lecture aid, not a running search demo.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Illustration -->
+  <section class="section" id="pf-illustration" style="padding-top: 1rem;">
+    <div class="container">
+
+      <div class="pf-example-tabs">
+        <button class="pf-example-tab active" data-example="vaccum">
+          <i data-lucide="wind"></i> Two-Room Vacuum World
+        </button>
+        <button class="pf-example-tab" data-example="puzzle">
+          <i data-lucide="grid-3x3"></i> 8-Puzzle
+        </button>
+      </div>
+
+      <div class="playground-grid" style="margin-top: 2rem;">
+
+        <div class="pf-stage glass-panel" id="pf-stage">
+          <!-- Rendered by demos/formulation_demo/ui.js -->
+        </div>
+
+        <div class="playground-controls glass-panel">
+          <div class="flow-progress-bar" id="pf-flow-bar">
+            <!-- Rendered by demos/formulation_demo/ui.js -->
+          </div>
+
+          <div class="teaching-panels-container" id="pf-panels">
+            <!-- Rendered by demos/formulation_demo/ui.js -->
+          </div>
+
+          <div class="btn-group" style="margin-top: 0.5rem;">
+            <button class="btn-ctrl" id="btn-pf-prev"><i data-lucide="chevron-left"></i> Prev</button>
+            <button class="btn-ctrl" id="btn-pf-next">Next <i data-lucide="chevron-right"></i></button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- Formulated Problem Summary -->
+  <section class="section" id="pf-summary" style="background: rgba(241, 245, 249, 0.5);">
+    <div class="ambient-glow-green"></div>
+    <div class="container">
+      <div class="section-header">
+        <span class="section-subtitle">Putting It Together</span>
+        <h2>The Formulated Problem</h2>
+        <p>No search yet &mdash; just the formal pieces the currently selected example is built from.</p>
+      </div>
+
+      <div class="pf-final-card glass-panel">
+        <div id="pf-final-content">
+          <!-- Rendered by demos/formulation_demo/ui.js -->
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+
+  <!-- Reused state models (same source of truth as the Playground demos) -->
+  <script src="demos/vaccum_demo/environment.js?v=1"></script>
+  <script src="demos/puzzle_demo/puzzle.js?v=1"></script>
+
+  <!-- Page controller -->
+  <script src="demos/formulation_demo/ui.js?v=1"></script>
+
+  <!-- Application JS -->
+  <script src="main.js?v=2"></script>
+</body>
+</html>
