@@ -214,22 +214,8 @@ const SDS_TERMS = [
     key: 'frontierops', name: 'Frontier Operations', kind: 'frontierops',
     definition: 'The frontier supports four operations: IS-EMPTY, TOP and POP to select and remove the next node, and ADD to insert a newly generated node.',
     formula: 'IS-EMPTY(frontier) &middot; TOP(frontier) &middot; POP(frontier) &middot; ADD(node, frontier)',
-    tip: 'Every search algorithm calls the same four operations — only the frontier’s internal ordering changes.',
-    note: 'Left: A expanded, with B, C, E waiting in the frontier. Right: the frontier container and a log of each operation run against it, in sequence.',
-    nodeStates: {
-      A: { cls: ['sl-explored'], sublabel: 'expanded' },
-      B: { cls: ['sl-frontier'] }, C: { cls: ['sl-frontier'] }, E: { cls: ['sl-frontier'] }
-    },
-    edgeClasses: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight' },
-    frontierOps: {
-      initial: ['B', 'C', 'E'],
-      ops: [
-        { label: 'IS-EMPTY(frontier)', result: 'false' },
-        { label: 'TOP(frontier)', result: 'B' },
-        { label: 'POP(frontier)', result: 'B &nbsp;&rarr;&nbsp; frontier = {C, E}' },
-        { label: 'ADD(D, frontier)', result: 'frontier = {C, E, D}' }
-      ]
-    }
+    tip: 'Click Run/Prev/Next, click a logged operation, or click node B or D on the graph to jump straight to that point in the run.',
+    note: 'A expanded, with B, C, E waiting in the frontier. Run each operation in sequence — POP dequeues B, then ADD(D, frontier) inserts D (B’s child) — and watch the frontier container and the graph update together.'
   },
   {
     key: 'frontiertypes', name: 'Frontier Types', kind: 'frontiertypes',
@@ -250,6 +236,48 @@ const SDS_TERMS = [
     tip: 'BFS and UCS run the exact same loop — only the frontier’s ordering (FIFO vs. priority-by-cost) differs.',
     note: 'Step through breadth-first search or uniform-cost search on the same graph — the pseudocode cursor, the graph, and the frontier/reached readout all move together. Click Prev/Next, click a line of pseudocode to advance, or click any highlighted node to jump straight to the step where it was expanded.'
   }
+];
+
+// Frontier Operations: a small precomputed, cumulative run of the four
+// frontier operations against the SL_GRAPH state used elsewhere on this
+// page. Step 0 is the setup (A already expanded, frontier = {B, C, E});
+// each later step is one operation's outcome. IS-EMPTY and TOP only peek
+// (frontier unchanged); POP dequeues B (its "expanded" class stands in
+// for "no longer in the frontier"); ADD(D, frontier) then inserts D — the
+// child B would have produced by being expanded — so the sequence reads
+// as one coherent mini-run, not four disconnected examples.
+const SDS_FRONTIER_OPS_STEPS = [
+  { op: null, label: 'Initial frontier', result: 'frontier = {B, C, E}', frontier: ['B', 'C', 'E'], changedNode: null,
+    nodeStates: {
+      A: { cls: ['sl-explored'], sublabel: 'expanded' },
+      B: { cls: ['sl-frontier'] }, C: { cls: ['sl-frontier'] }, E: { cls: ['sl-frontier'] }
+    },
+    edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight' } },
+  { op: 'IS-EMPTY(frontier)', label: 'IS-EMPTY(frontier)', result: 'false', frontier: ['B', 'C', 'E'], changedNode: null,
+    nodeStates: {
+      A: { cls: ['sl-explored'], sublabel: 'expanded' },
+      B: { cls: ['sl-frontier'] }, C: { cls: ['sl-frontier'] }, E: { cls: ['sl-frontier'] }
+    },
+    edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight' } },
+  { op: 'TOP(frontier)', label: 'TOP(frontier)', result: 'B', frontier: ['B', 'C', 'E'], changedNode: 'B',
+    nodeStates: {
+      A: { cls: ['sl-explored'], sublabel: 'expanded' },
+      B: { cls: ['sl-frontier'], sublabel: 'next' }, C: { cls: ['sl-frontier'] }, E: { cls: ['sl-frontier'] }
+    },
+    edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight' } },
+  { op: 'POP(frontier)', label: 'POP(frontier)', result: 'B &nbsp;&rarr;&nbsp; frontier = {C, E}', frontier: ['C', 'E'], changedNode: 'B',
+    nodeStates: {
+      A: { cls: ['sl-explored'], sublabel: 'expanded' },
+      B: { cls: ['sl-explored'], sublabel: 'popped' }, C: { cls: ['sl-frontier'] }, E: { cls: ['sl-frontier'] }
+    },
+    edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight' } },
+  { op: 'ADD(D, frontier)', label: 'ADD(D, frontier)', result: 'frontier = {C, E, D}', frontier: ['C', 'E', 'D'], changedNode: 'D',
+    nodeStates: {
+      A: { cls: ['sl-explored'], sublabel: 'expanded' },
+      B: { cls: ['sl-explored'], sublabel: 'popped' }, C: { cls: ['sl-frontier'] }, E: { cls: ['sl-frontier'] },
+      D: { cls: ['sl-frontier'], sublabel: 'added' }
+    },
+    edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight', 'B-D': 'sl-gedge-highlight' } }
 ];
 
 // Generic best-first-search pseudocode (BFS = FIFO frontier, UCS =
@@ -340,6 +368,7 @@ class SearchLectureUI {
     this.dsIdx = 0;
     this.dsAlgo = 'bfs';
     this.dsStep = 0;
+    this.frOpsStep = 0;
 
     this.tabsEl = document.getElementById('sl-topic-tabs');
     this.conceptColEl = document.getElementById('sl-concept-col');
@@ -363,6 +392,7 @@ class SearchLectureUI {
     this.dsIdx = 0;
     this.dsAlgo = 'bfs';
     this.dsStep = 0;
+    this.frOpsStep = 0;
     this.render();
   }
 
@@ -376,6 +406,7 @@ class SearchLectureUI {
     if (idx < 0 || idx >= SDS_TERMS.length || idx === this.dsIdx) return;
     this.dsIdx = idx;
     this.dsStep = 0;
+    this.frOpsStep = 0;
     this.render();
   }
 
@@ -390,6 +421,12 @@ class SearchLectureUI {
     const steps = this.dsAlgo === 'bfs' ? SDS_BFS_STEPS : SDS_UCS_STEPS;
     if (idx < 0 || idx >= steps.length) return;
     this.dsStep = idx;
+    this.render();
+  }
+
+  setFrOpsStep(idx) {
+    if (idx < 0 || idx >= SDS_FRONTIER_OPS_STEPS.length) return;
+    this.frOpsStep = idx;
     this.render();
   }
 
@@ -638,26 +675,66 @@ class SearchLectureUI {
     }
 
     if (term.kind === 'frontierops') {
-      const boxes = term.frontierOps.initial.map(s => `<div class="sl-frontier-box">${s}</div>`).join('');
-      const ops = term.frontierOps.ops.map(op => `
-        <div class="sl-frontier-op"><span class="sl-frontier-op-label">${op.label}</span><span class="sl-frontier-op-result">${op.result}</span></div>
-      `).join('');
+      const step = SDS_FRONTIER_OPS_STEPS[this.frOpsStep];
+
+      // Every node whose state changes at some step (B is popped, D is
+      // added) is a valid jump target, same convention as the "Putting
+      // It Together" stepper's graph. A/C/E never change across this
+      // short run, so they stay inert.
+      const clickableNodes = SDS_FRONTIER_OPS_STEPS
+        .map(s => s.changedNode)
+        .filter((n, i, arr) => n && arr.indexOf(n) === i);
+
+      const boxes = step.frontier.map(s => `<div class="sl-frontier-box">${s}</div>`).join('');
+      const ops = SDS_FRONTIER_OPS_STEPS.slice(1).map((s, i) => {
+        const idx = i + 1; // step index this log entry represents
+        const stateCls = idx < this.frOpsStep ? 'sl-frontier-op-done' : idx === this.frOpsStep ? 'sl-frontier-op-active' : 'sl-frontier-op-pending';
+        return `
+        <div class="sl-frontier-op ${stateCls}" data-idx="${idx}">
+          <span class="sl-frontier-op-label">${s.op}</span><span class="sl-frontier-op-result">${idx <= this.frOpsStep ? s.result : '&hellip;'}</span>
+        </div>`;
+      }).join('');
+
       this.graphColEl.innerHTML = `
         <div class="sl-graph-illustration sl-graph-illustration-compact">
           <div class="sl-dual-diagrams">
             <div class="sl-diagram-block sl-diagram-block-graph">
               <div class="sl-tree-caption">State-Space Graph</div>
-              <div class="sl-graph-svg-wrap">${this.renderGraphSVG(term.nodeStates, term.edgeClasses)}</div>
+              <div class="sl-graph-svg-wrap">${this.renderGraphSVG(step.nodeStates, step.edges, clickableNodes)}</div>
             </div>
             <div class="sl-diagram-block sl-diagram-block-tree">
               <div class="sl-tree-caption">Frontier &amp; Operation Log</div>
               <div class="sl-frontier-boxes">${boxes}</div>
               <div class="sl-frontier-ops">${ops}</div>
+              <div class="sl-step-controls">
+                <button class="sl-step-btn" id="sl-frops-prev" ${this.frOpsStep === 0 ? 'disabled' : ''}>&larr; Prev</button>
+                <span class="sl-step-indicator">${this.frOpsStep === 0 ? 'Ready' : `Step ${this.frOpsStep} / ${SDS_FRONTIER_OPS_STEPS.length - 1}`}</span>
+                <button class="sl-step-btn" id="sl-frops-next" ${this.frOpsStep === SDS_FRONTIER_OPS_STEPS.length - 1 ? 'disabled' : ''}>Run Next &rarr;</button>
+              </div>
             </div>
           </div>
           <div class="sl-illustration-note">${term.note}</div>
         </div>
       `;
+
+      const frOpsPrev = this.graphColEl.querySelector('#sl-frops-prev');
+      const frOpsNext = this.graphColEl.querySelector('#sl-frops-next');
+      if (frOpsPrev) frOpsPrev.addEventListener('click', () => this.setFrOpsStep(this.frOpsStep - 1));
+      if (frOpsNext) frOpsNext.addEventListener('click', () => this.setFrOpsStep(this.frOpsStep + 1));
+      this.graphColEl.querySelectorAll('.sl-frontier-op').forEach(el => {
+        el.addEventListener('click', () => this.setFrOpsStep(parseInt(el.dataset.idx, 10)));
+      });
+      this.graphColEl.querySelectorAll('.sl-gnode-clickable').forEach(el => {
+        // A node can be `changedNode` at more than one step (B is
+        // peeked by TOP, then actually dequeued by POP) — jump to the
+        // LAST such step, where its state finally settles, not the
+        // first mention of it.
+        let targetIdx = -1;
+        for (let i = SDS_FRONTIER_OPS_STEPS.length - 1; i >= 0; i--) {
+          if (SDS_FRONTIER_OPS_STEPS[i].changedNode === el.dataset.state) { targetIdx = i; break; }
+        }
+        el.addEventListener('click', () => this.setFrOpsStep(targetIdx));
+      });
       return;
     }
 

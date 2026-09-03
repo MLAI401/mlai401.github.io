@@ -3468,6 +3468,12 @@ body.sl-page::after {
   border-radius: 8px;
   background: rgba(15, 23, 42, 0.02);
   border: 1px solid var(--border-light);
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.sl-frontier-op:hover {
+  border-color: var(--border-focus);
 }
 
 .sl-frontier-op-label {
@@ -3480,6 +3486,29 @@ body.sl-page::after {
 .sl-frontier-op-result {
   font-size: 0.72rem;
   color: var(--text-secondary);
+}
+
+/* Frontier Operations run state: pending ops are dimmed (their result
+   hasn't happened yet, shown as "…"); the active op is the one the graph
+   and frontier box currently reflect; done ops stay legible but recede
+   once the run has moved past them. */
+.sl-frontier-op-pending {
+  opacity: 0.5;
+}
+
+.sl-frontier-op-pending .sl-frontier-op-result {
+  font-style: italic;
+}
+
+.sl-frontier-op-active {
+  border-color: #4f46e5;
+  background: rgba(79, 70, 229, 0.06);
+  box-shadow: 0 0 0 1px rgba(79, 70, 229, 0.25);
+}
+
+.sl-frontier-op-active .sl-frontier-op-result {
+  color: var(--text-primary);
+  font-weight: 600;
 }
 
 /* Frontier Types: three side-by-side panels comparing FIFO / LIFO /
