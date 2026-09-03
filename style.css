@@ -2408,13 +2408,16 @@ body.pf-page::after {
   padding: 0.6rem 1rem;
 }
 
-/* Main two-column area: concept content is the star (1fr); the
-   illustration is a smaller, supporting column. */
+/* Main two-column area: a fixed 60/40 split — concept column (definition,
+   formula, teaching tip) at 60%, illustration column at 40% — kept
+   proportional (not a fixed px sidebar) so the two stay visually balanced
+   at any viewport width. minmax(0, ...) keeps each track from growing to
+   fit its content and breaking the column's own overflow scroll. */
 .pf-main-grid {
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
-  grid-template-columns: 1fr 360px;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   gap: 1.25rem;
   padding: 1rem 1.5rem 1.25rem;
 }
@@ -2976,14 +2979,18 @@ body.sl-page::after {
   padding: 0.6rem 1rem;
 }
 
-/* Main two-column area: concept content is the star (1fr); the graph
-   illustration is a smaller, supporting column — collapsed entirely on
-   Concept 9, which is a table, not a graph (.sl-single-col). */
+/* Main two-column area: a fixed 60/40 split — concept column (definition,
+   formula, teaching tip) at 60%, graph illustration column at 40% — kept
+   proportional (not a fixed px sidebar) so the two stay visually balanced
+   at any viewport width. minmax(0, ...) keeps each track from growing to
+   fit its content and breaking the column's own overflow scroll. Collapses
+   to a single column entirely on Concept 9, which is a table, not a graph
+   (.sl-single-col). */
 .sl-main-grid {
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   gap: 1.25rem;
   padding: 1rem 1.5rem 1.25rem;
 }
