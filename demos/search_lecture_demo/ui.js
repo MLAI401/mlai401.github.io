@@ -248,7 +248,7 @@ const SDS_TERMS = [
     definition: 'A search algorithm repeats one loop: pop the next node from the frontier, test whether it is the goal, otherwise expand it and add its children to the frontier.',
     formula: 'loop: POP &rarr; GOAL-TEST &rarr; EXPAND &rarr; ADD / UPDATE',
     tip: 'BFS and UCS run the exact same loop — only the frontier’s ordering (FIFO vs. priority-by-cost) differs.',
-    note: 'Step through breadth-first search or uniform-cost search on the same graph — the pseudocode cursor, the graph, and the frontier/reached readout all move together.'
+    note: 'Step through breadth-first search or uniform-cost search on the same graph — the pseudocode cursor, the graph, and the frontier/reached readout all move together. Click Prev/Next, click a line of pseudocode to advance, or click any highlighted node to jump straight to the step where it was expanded.'
   }
 ];
 
@@ -550,7 +550,7 @@ class SearchLectureUI {
       const step = steps[this.dsStep];
       const activeSet = new Set(step.active);
       const pseudoHTML = SDS_PSEUDOCODE.map((line, i) => `
-        <div class="sl-pseudo-line ${activeSet.has(i) ? 'active' : ''}">${line}</div>
+        <div class="sl-pseudo-line ${activeSet.has(i) ? 'active' : ''}" data-idx="${i}">${line}</div>
       `).join('');
 
       bodyHTML = `
@@ -599,6 +599,13 @@ class SearchLectureUI {
     const nextBtn = this.conceptColEl.querySelector('#sl-step-next');
     if (prevBtn) prevBtn.addEventListener('click', () => this.setDsStep(this.dsStep - 1));
     if (nextBtn) nextBtn.addEventListener('click', () => this.setDsStep(this.dsStep + 1));
+    // Per the doc's stepper design, clicking any pseudocode line just
+    // advances one step (same as Next) — every step already highlights a
+    // block of lines together, so a line doesn't map to its own unique
+    // step the way a graph node does.
+    this.conceptColEl.querySelectorAll('.sl-pseudo-line').forEach(el => {
+      el.addEventListener('click', () => this.setDsStep(this.dsStep + 1));
+    });
   }
 
   renderDataStructuresGraph() {
@@ -710,12 +717,21 @@ class SearchLectureUI {
       ? step.order.map(([s, g]) => `${s}(${g})`).join(' &rarr; ')
       : step.order.join(' &rarr; ');
 
+    // Every node that is ever `current` at some point in THIS algorithm's
+    // full precomputed trace is a valid jump target — clicking it sets
+    // dsStep straight to that step, regardless of which step is showing
+    // now. Nodes never popped (e.g. H in BFS; F, H in UCS, since the goal
+    // is found first) have no step to jump to, so they stay unclickable.
+    const clickableNodes = steps.map(s => s.current);
+    const nodeStepMap = {};
+    steps.forEach((s, i) => { nodeStepMap[s.current] = i; });
+
     this.graphColEl.innerHTML = `
       <div class="sl-graph-illustration sl-graph-illustration-compact">
         <div class="sl-dual-diagrams">
           <div class="sl-diagram-block sl-diagram-block-graph">
             <div class="sl-tree-caption">State-Space Graph</div>
-            <div class="sl-graph-svg-wrap">${this.renderGraphSVG(nodeStates, step.edges)}</div>
+            <div class="sl-graph-svg-wrap">${this.renderGraphSVG(nodeStates, step.edges, clickableNodes)}</div>
           </div>
           <div class="sl-diagram-block sl-diagram-block-tree sl-stepper-panel">
             <div class="sl-tree-caption">${this.dsAlgo === 'bfs' ? 'BFS' : 'UCS'} Readout</div>
@@ -730,6 +746,10 @@ class SearchLectureUI {
         <div class="sl-illustration-note">${term.note}</div>
       </div>
     `;
+
+    this.graphColEl.querySelectorAll('.sl-gnode-clickable').forEach(el => {
+      el.addEventListener('click', () => this.setDsStep(nodeStepMap[el.dataset.state]));
+    });
   }
 
   // ---------- Other topics (not yet implemented) ----------
@@ -770,7 +790,7 @@ class SearchLectureUI {
     return { cx: layout.x * 100, cy: layout.y * 100 };
   }
 
-  renderGraphSVG(nodeStates = {}, edgeClasses = {}) {
+  renderGraphSVG(nodeStates = {}, edgeClasses = {}, clickableNodes = null) {
     let edgesSvg = '';
     Object.entries(SL_GRAPH).forEach(([from, succs]) => {
       const p1 = this.slNodeXY(from);
@@ -821,7 +841,13 @@ class SearchLectureUI {
         sublabelY = p.cy + 1;
       }
 
-      nodesSvg += `<g class="sl-gnode ${cls}">
+      // clickableNodes === null means "not an interactive diagram" (every
+      // other term's fixed illustration) — only the stepper passes an
+      // actual array, marking the nodes that appear as `current` at some
+      // point in that algorithm's precomputed trace as jump targets.
+      const isClickable = clickableNodes && clickableNodes.includes(n);
+
+      nodesSvg += `<g class="sl-gnode ${cls} ${isClickable ? 'sl-gnode-clickable' : ''}" data-state="${n}">
         <circle cx="${p.cx}" cy="${p.cy}" r="6.5"></circle>
         <text x="${p.cx}" y="${p.cy}" class="sl-gnode-label">${n}</text>
         ${state.badge ? `<text x="${p.cx + 6.8}" y="${p.cy - 6.5}" class="sl-gnode-badge">${state.badge}</text>` : ''}

@@ -3375,6 +3375,22 @@ body.sl-page::after {
   stroke-dasharray: 2 1.2;
 }
 
+/* Putting It Together's interactive graph: any node that was ever
+   POP'd/expanded in the current algorithm's trace is a jump target,
+   regardless of which step is showing right now. */
+.sl-gnode.sl-gnode-clickable {
+  cursor: pointer;
+}
+
+.sl-gnode.sl-gnode-clickable circle {
+  transition: var(--transition-fast);
+}
+
+.sl-gnode.sl-gnode-clickable:hover circle {
+  stroke: #4f46e5;
+  stroke-width: 2.2;
+}
+
 /* ---------- Search Data Structures (implemented) ---------- */
 
 /* Node Structure: a small key/value card listing node.STATE/PARENT/
@@ -3576,11 +3592,20 @@ body.sl-page::after {
   border-radius: 4px;
   padding: 0.02rem 0.3rem;
   margin: 0 -0.3rem;
+  cursor: pointer;
+}
+
+.sl-pseudo-line:hover {
+  background: rgba(148, 163, 184, 0.18);
 }
 
 .sl-pseudo-line.active {
   background: rgba(79, 70, 229, 0.35);
   color: #ffffff;
+}
+
+.sl-pseudo-line.active:hover {
+  background: rgba(79, 70, 229, 0.48);
 }
 
 .sl-step-controls {
