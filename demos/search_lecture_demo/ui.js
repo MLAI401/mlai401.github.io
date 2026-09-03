@@ -1,33 +1,58 @@
 /**
- * Search & Planning — Lecture Illustration
+ * Search & Planning — Lecture Page Controller
  *
- * This is NOT the Route-Finding Visualizer (playground.html#view-search,
- * specified in search.md) — that demo already lets a student pick
- * BFS/DFS/UCS/Greedy/A* and step it, node by node, across this same graph.
- * This page never runs a live frontier/expand stepper. It shows short,
- * already-computed snapshots instead, to explain WHY that cycle works and
- * how the strategies relate before a student opens the running demo.
+ * Built from instructions/search_lecture.md. The page has a simple 4-topic
+ * selector bar (NOT the 9-step flow-progress-bar used on Problem
+ * Formulation): Search Terminology | Search Data Structures |
+ * Search Strategies | Evaluating Search. Below it, a two-column area:
+ * Concept column (50%, left) and Illustration column (50%, right).
  *
- * Concepts (SL_STEPS, in order, matching instructions/search_lecture.md):
- * State Space vs. Search Tree, State vs. Node, Frontier & Node Expansion,
- * Search Strategy, Uninformed Search, Heuristics h(n), Informed Search,
- * Heuristic Properties, Evaluating Search. Grounded in
- * aima-python/aima/search.py — Node, best_first_graph_search /
- * best_first_tree_search, and the admissible/consistent heuristic notes in
- * astar_search / EightPuzzle.h / GridProblem / TravelingSalesman.
+ * Only "Search Terminology" is implemented so far. Per the spec: "Do not
+ * create separate pages or subtopics for each term" — so all terms live on
+ * one topic screen, picked with an in-place Concept Selector bar (shown
+ * inside the concept column, above Definition/Formula/Teaching Tip, per
+ * the doc's own ASCII layout diagram) rather than by navigating anywhere.
+ * The doc's table was consolidated from an earlier 14-row version down to
+ * 7 broader concepts (e.g. State/Initial State/Goal State merged into one
+ * "State: Initial -> Goal" row) so each selector tab covers more ground;
+ * with 7 concepts, the selector wraps into two balanced rows (4 + 3) per
+ * the doc's "two or three balanced rows" rule, instead of shrinking the
+ * chip font or overcrowding one row.
  *
- * Concepts 1, 2, 3, 4, 6, 8 use Shape A (definition + a fixed graph
- * snapshot, one per subtopic — every subtopic phrase in the spec's table
- * gets its own button). Concepts 5 and 7 use Shape B (strategy comparison:
- * a real, computed expansion order for each strategy). Concept 9 uses
- * Shape C (a single grouped comparison table — Solution / Search Effort /
- * Guarantees — no graph needed, no subtopic buttons).
+ * Selecting a term updates the Illustration column to a fixed-graph
+ * snapshot matching that term's "Illustration Note". Per the doc, every
+ * term shows the state-space graph AND a small search-tree diagram side
+ * by side — the tree is derived straight from that term's own
+ * edgeClasses, so its highlights always match the graph by construction.
+ * One term (Tree-Like vs. Graph Search) needs to show the *same* graph
+ * next to TWO trees (tree-like keeps a repeated state, graph search
+ * prunes it) — that term sets `secondTree`, which renders a third
+ * diagram block reusing the same edgeClasses/nodeStates but with its own
+ * treePruned list, so the two trees can never disagree with the graph or
+ * with each other's shared data.
  *
- * Same weighted map as the Route-Finding Visualizer (search.md), Start = A,
- * Goal = G, kept as an independent copy here so this page never loads the
- * running demo's code. All expansion orders, path costs, and node counts
- * below are real, computed values (see instructions/search_lecture.md and
- * the offline verification notes), not hand-authored guesses.
+ * Search Data Structures (4 concepts: Node Structure, Frontier Operations,
+ * Frontier Types, Putting It Together) is also implemented. Its selector
+ * has only 4 chips, so it stays a single row (the shared
+ * renderConceptSelectorHTML helper switches to two rows only above 6
+ * chips). Its four concepts don't share one illustration shape the way
+ * Search Terminology's do, so each term carries a `kind` that picks its
+ * renderer: 'nodecard' (graph + tree + a 4-field node card), 'frontierops'
+ * (graph + a frontier container + a static operation log), 'frontiertypes'
+ * (three side-by-side queue panels, no graph), and 'stepper' (BFS/UCS
+ * pseudocode with a step cursor, synced to the graph and a
+ * frontier/reached/order readout). The BFS and UCS traces are precomputed,
+ * cumulative step arrays (SDS_BFS_STEPS / SDS_UCS_STEPS) independently
+ * verified with a standalone Python simulation (deque for BFS, heapq for
+ * UCS) rather than computed live, so the stepper can't silently drift from
+ * a textbook-correct trace.
+ *
+ * Search Strategies and Evaluating Search remain placeholders until their
+ * content is implemented.
+ *
+ * Fixed graph: same A-H weighted network as the Route-Finding Visualizer
+ * (search.md), Start = A, Goal = G, kept as an independent copy so this
+ * page never loads the running demo's code.
  */
 
 const SL_GRAPH = {
@@ -55,523 +80,687 @@ const SL_NODE_LAYOUT = {
 const SL_START = 'A';
 const SL_GOAL = 'G';
 
-// True shortest remaining cost to G from each node (Dijkstra/Bellman-Ford
-// over SL_GRAPH). F and H cannot reach G at all on this graph.
-const SL_TRUE_DIST = { A: 8, B: 5, C: 7, D: 3, E: 1, F: null, G: 0, H: null };
-
-// h(n): straight-line distance from n to G in the layout's own coordinate
-// space, scaled by the largest factor that keeps it admissible everywhere.
-// Verified offline — admissible AND consistent on every edge of this graph.
-const SL_H = { A: 1.9, B: 1.3, C: 1.6, D: 0.6, E: 1, F: 1.1, G: 0, H: 0.7 };
-
-// A single deliberately-inflated alternative value, used only by Concept 8
-// to show a heuristic that is still admissible (5 <= true cost 8) but is
-// NOT consistent on edge A->C.
-const SL_H_BAD_A = 5;
-
-// Real, computed expansion orders (graph-search: goal-tested on pop, lowest
-// f expanded first, successors visited alphabetically, already-explored or
-// already-frontier states never re-added).
-const SL_ORDERS = {
-  BFS: {
-    order: [
-      { node: 'A', meta: 'depth 0' }, { node: 'B', meta: 'depth 1' },
-      { node: 'C', meta: 'depth 1' }, { node: 'E', meta: 'depth 1' },
-      { node: 'D', meta: 'depth 2' }, { node: 'F', meta: 'depth 2' },
-      { node: 'G', meta: 'depth 2' }
-    ],
-    expanded: 6, path: 'A → E → G', cost: 10,
-    caption: 'BFS expands shallowest-first: A, B, C, E, D, F, G &mdash; reaching G in 2 edges via A &rarr; E &rarr; G. That path costs 9 + 1 = 10; BFS ignores edge cost entirely.'
-  },
-  DFS: {
-    order: [
-      { node: 'A', meta: '' }, { node: 'B', meta: '' },
-      { node: 'D', meta: '' }, { node: 'G', meta: '' }
-    ],
-    expanded: 3, path: 'A → B → D → G', cost: 8,
-    caption: 'DFS dives into the alphabetically-first successor at each step and never backtracks once a path continues: A, B, D, G &mdash; the first path DFS finds, cost 3+2+3 = 8. It happens to be optimal here, but DFS never checks.'
-  },
-  UCS: {
-    order: [
-      { node: 'A', meta: 'g=0' }, { node: 'C', meta: 'g=2' },
-      { node: 'B', meta: 'g=3' }, { node: 'D', meta: 'g=5' },
-      { node: 'G', meta: 'g=8' }
-    ],
-    expanded: 4, path: 'A → B → D → G', cost: 8,
-    caption: 'UCS always expands the lowest accumulated cost g(n): A, C (g=2), B (g=3), D (g=5), G (g=8) &mdash; finds the truly cheapest path, cost 8, via A &rarr; B &rarr; D &rarr; G.'
-  },
-  IDS: {
-    order: [
-      { node: 'A', meta: '#1' }, { node: 'E', meta: '#2' }, { node: 'G', meta: '#3' }
-    ],
-    expanded: 5, path: 'A → E → G', cost: 10,
-    caption: 'IDS reruns depth-limited DFS with a growing limit: limit 0 fails (0 expansions), limit 1 fails (1), limit 2 succeeds (4 more) &mdash; finding A &rarr; E &rarr; G, the same shallowest path BFS finds. Unlike BFS, IDS can revisit a state more than once within one pass, since it keeps no explored set.'
-  },
-  GREEDY: {
-    order: [
-      { node: 'A', meta: 'h=1.9' }, { node: 'E', meta: 'h=1.0' }, { node: 'G', meta: 'h=0' }
-    ],
-    expanded: 2, path: 'A → E → G', cost: 10,
-    caption: 'Greedy always expands the lowest h(n): A, E (h=1.0), G (h=0) &mdash; only 2 expansions, but it walks straight onto the expensive A&rarr;E edge (cost 9) because E merely <em>looks</em> closest. Total cost 10, not optimal.'
-  },
-  ASTAR: {
-    order: [
-      { node: 'A', meta: 'f=1.9' }, { node: 'C', meta: 'f=3.6' },
-      { node: 'B', meta: 'f=4.3' }, { node: 'D', meta: 'f=5.6' },
-      { node: 'G', meta: 'f=8.0' }
-    ],
-    expanded: 4, path: 'A → B → D → G', cost: 8,
-    caption: 'A* expands the lowest g(n)+h(n): A, C (f=3.6), B (f=4.3), D (f=5.6), G (f=8.0) &mdash; the same optimal path as UCS, cost 8, with the heuristic guiding (not replacing) the search.'
-  }
-};
-
-const SL_STEPS = [
+// ---- Search Terminology (instructions/search_lecture.md table) ----
+// 7 consolidated concepts. Each term's snapshot is a fixed illustration on
+// SL_GRAPH matching that row's "Illustration Note" — a static picture,
+// never a running search.
+const SL_TERMS = [
   {
-    key: 'statetree', name: 'State Space vs. Search Tree', shape: 'A',
-    subtopics: [
-      { key: 'statespace', label: 'State Space', icon: 'network' },
-      { key: 'searchtree', label: 'Search Tree', icon: 'git-branch' },
-      { key: 'repeated', label: 'Repeated States', icon: 'copy' },
-      { key: 'treevsgraph', label: 'Tree vs. Graph Search', icon: 'share-2' },
-      { key: 'avoiding', label: 'Avoiding Repeated States', icon: 'shield-check' }
-    ]
+    key: 'searchtree', name: 'Search Tree',
+    definition: 'The tree built as search explores the state-space graph.',
+    formula: 'search tree &ne; state-space graph',
+    tip: 'The same state can appear in more than one search-tree node.',
+    note: 'Left: the state-space graph with both explored paths to E highlighted. Right: the corresponding search tree — E appears as two separate nodes, one per path, even though it is one state.',
+    showTree: true,
+    nodeStates: {
+      A: { cls: ['sl-explored'] }, B: { cls: ['sl-explored'] }, C: { cls: ['sl-explored'] },
+      E: { cls: ['sl-dup'], badge: '×2' }
+    },
+    edgeClasses: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'B-E': 'sl-gedge-dup', 'C-E': 'sl-gedge-dup' }
   },
   {
-    key: 'statenode', name: 'State vs. Node', shape: 'A',
-    subtopics: [
-      { key: 'statevsnode', label: 'State vs. Node', icon: 'tag' },
-      { key: 'parent', label: 'Parent', icon: 'corner-left-up' },
-      { key: 'action', label: 'Action', icon: 'move-right' },
-      { key: 'pathcost', label: 'Path Cost g(n)', icon: 'coins' },
-      { key: 'depth', label: 'Depth', icon: 'layers' },
-      { key: 'reconstruct', label: 'Reconstructing a Path', icon: 'route' }
-    ]
+    key: 'stateinitialgoal', name: 'State: Initial → Goal',
+    definition: 'A state represents a possible situation; search starts at the initial state and seeks a goal state.',
+    formula: 's &isin; S &middot; problem.INITIAL &middot; IS-GOAL(problem, s)',
+    tip: 'Think: where can I be? Where do I start? Where do I want to reach?',
+    note: 'Left: the initial state, an intermediate state, and the goal state, each identified. Right: the same path in the search tree — the initial state is the root, and the goal is the tree node that first passes the goal test.',
+    showTree: true,
+    nodeStates: {
+      A: { cls: ['sl-current', 'sl-start'], sublabel: 'initial' },
+      E: { cls: ['sl-frontier'], sublabel: 'intermediate' },
+      G: { cls: ['sl-current', 'sl-goal'], sublabel: 'goal' }
+    },
+    edgeClasses: { 'A-E': 'sl-gedge-highlight', 'E-G': 'sl-gedge-highlight' }
   },
   {
-    key: 'frontier', name: 'Frontier & Node Expansion', shape: 'A',
-    subtopics: [
-      { key: 'generated', label: 'Generated vs. Expanded', icon: 'git-fork' },
-      { key: 'frontierset', label: 'Frontier', icon: 'list' },
-      { key: 'reached', label: 'Reached States', icon: 'check-square' },
-      { key: 'select', label: 'Select', icon: 'mouse-pointer-click' },
-      { key: 'expand', label: 'Expand', icon: 'unfold-vertical' },
-      { key: 'update', label: 'Update Frontier', icon: 'list-plus' }
-    ]
+    key: 'expansionchild', name: 'Expansion: Successor & Child Node',
+    definition: 'Expanding a node applies available actions to produce successor states and corresponding child nodes.',
+    formula: 'EXPAND(node) &middot; RESULT(s,a)=s&prime; &middot; CHILD-NODE(...)',
+    tip: 'Successor is a state; child is the search-tree node for that state. After expanding A: frontier = {B, C, E}.',
+    note: 'Left: expanding A highlights all its successor states. Right: the matching search tree — each successor becomes one child node of A.',
+    showTree: true,
+    nodeStates: {
+      A: { cls: ['sl-current'], sublabel: 'expanded' }, B: { cls: ['sl-frontier'] },
+      C: { cls: ['sl-frontier'] }, E: { cls: ['sl-frontier'] }
+    },
+    edgeClasses: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight' }
   },
   {
-    key: 'strategy', name: 'Search Strategy', shape: 'A',
-    subtopics: [
-      { key: 'shallowest', label: 'Shallowest (BFS)', icon: 'align-start-vertical' },
-      { key: 'deepest', label: 'Deepest (DFS)', icon: 'corner-down-right' },
-      { key: 'lowestg', label: 'Lowest g(n) (UCS)', icon: 'coins' },
-      { key: 'lowesth', label: 'Lowest h(n) (Greedy)', icon: 'zap' },
-      { key: 'lowestgh', label: 'Lowest g(n)+h(n) (A*)', icon: 'star' }
-    ]
+    key: 'reachedexpandedfrontier', name: 'Reached, Expanded & Frontier',
+    definition: 'Reached states have been discovered; expanded nodes have generated their children; frontier nodes are reached but still waiting to be expanded.',
+    formula: 'reached = {A, B, C, E} &middot; expanded = {A} &middot; frontier = {B, C, E}',
+    tip: 'Reached does not mean expanded. Frontier nodes have been reached but are still waiting.',
+    note: 'Left: one search snapshot — A expanded (dark), B/C/E reached and waiting in the frontier (light), D/F/G/H not yet reached (gray). Right: the same snapshot in the search tree.',
+    showTree: true,
+    nodeStates: {
+      A: { cls: ['sl-explored'], sublabel: 'expanded' },
+      B: { cls: ['sl-frontier'], sublabel: 'frontier' },
+      C: { cls: ['sl-frontier'], sublabel: 'frontier' },
+      E: { cls: ['sl-frontier'], sublabel: 'frontier' }
+    },
+    edgeClasses: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight' }
   },
   {
-    key: 'uninformed', name: 'Uninformed Search', shape: 'B',
-    subtopics: [
-      { key: 'BFS', label: 'BFS', icon: 'layers' },
-      { key: 'DFS', label: 'DFS', icon: 'corner-down-right' },
-      { key: 'UCS', label: 'UCS', icon: 'coins' },
-      { key: 'IDS', label: 'IDS', icon: 'repeat' }
-    ]
+    key: 'expansionorder', name: 'Expansion Order',
+    definition: 'The order in which nodes are selected and expanded.',
+    formula: 'n&#8321; &rarr; n&#8322; &rarr; n&#8323; &rarr; ...',
+    tip: 'A &rarr; B &rarr; C means A was expanded first, then B, then C.',
+    note: 'Numbered badges 1, 2, 3, ... placed on the same nodes in both the graph and the search tree to show their expansion order.',
+    showTree: true,
+    nodeStates: {
+      A: { cls: ['sl-explored'], badge: '1' }, B: { cls: ['sl-explored'], badge: '2' },
+      C: { cls: ['sl-explored'], badge: '3' }, E: { cls: ['sl-current'], badge: '4' }
+    },
+    edgeClasses: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'B-E': 'sl-gedge-highlight' }
   },
   {
-    key: 'heuristics', name: 'Heuristics — h(n)', shape: 'A',
-    subtopics: [
-      { key: 'estimatedcost', label: 'Estimated Cost to Goal', icon: 'target' },
-      { key: 'domainknowledge', label: 'Problem-Specific Knowledge', icon: 'compass' },
-      { key: 'estimatevstrue', label: 'Estimate vs. True Cost', icon: 'help-circle' },
-      { key: 'examples', label: 'Example Heuristics', icon: 'map' }
-    ]
+    key: 'redundantpath', name: 'Redundant Path',
+    definition: 'A different path that reaches a state already reached.',
+    formula: 'node.STATE &isin; reached',
+    tip: 'Different paths can lead to the same state.',
+    note: 'Two different paths — A&rarr;B&rarr;E and A&rarr;C&rarr;E — both reach state E; the second (amber, dashed) is the redundant path. The search tree shows why it matters: E becomes two separate tree nodes for one state.',
+    showTree: true,
+    nodeStates: {
+      A: { cls: ['sl-explored'] },
+      B: { cls: ['sl-explored'], sublabel: 'path 1' },
+      C: { cls: ['sl-frontier'], sublabel: 'path 2' },
+      E: { cls: ['sl-dup'], sublabel: 'reached twice' }
+    },
+    edgeClasses: { 'A-B': 'sl-gedge-highlight', 'B-E': 'sl-gedge-highlight', 'A-C': 'sl-gedge-dup', 'C-E': 'sl-gedge-dup' }
   },
   {
-    key: 'informed', name: 'Informed Search', shape: 'B',
-    subtopics: [
-      { key: 'GREEDY', label: 'Greedy', icon: 'zap' },
-      { key: 'ASTAR', label: 'A*', icon: 'star' }
-    ]
-  },
-  {
-    key: 'properties', name: 'Heuristic Properties', shape: 'A',
-    subtopics: [
-      { key: 'admissibility', label: 'Admissibility', icon: 'shield-check' },
-      { key: 'truecost', label: 'True Cost h*(n)', icon: 'flag' },
-      { key: 'consistency', label: 'Consistency', icon: 'link' },
-      { key: 'triangle', label: 'Triangle Inequality', icon: 'triangle' },
-      { key: 'impliesadmissible', label: 'Consistency ⇒ Admissible', icon: 'arrow-right' },
-      { key: 'connectiontoastar', label: 'Connection to A*', icon: 'star' }
-    ]
-  },
-  {
-    key: 'evaluating', name: 'Evaluating Search', shape: 'C',
-    subtopics: []
+    key: 'treelikegraphsearch', name: 'Tree-Like vs. Graph Search',
+    definition: 'Tree-like search can revisit states; graph search uses reached to detect repeated states.',
+    formula: 'Tree-like: frontier only &middot; Graph: reached[state] = node',
+    tip: 'The key difference is whether previously reached states are remembered.',
+    note: 'Left: the same redundant path as before — both A→B→E and A→C→E are explored. Middle: tree-like search keeps E as two separate, equally real tree nodes. Right: graph search checks reached, detects the second path, and prunes it before it becomes a node.',
+    showTree: true,
+    treeCaption: 'Tree-Like Search',
+    secondTree: { caption: 'Graph Search', treePruned: ['C-E'] },
+    nodeStates: {
+      A: { cls: ['sl-explored'] },
+      B: { cls: ['sl-explored'], sublabel: 'path 1' },
+      C: { cls: ['sl-explored'], sublabel: 'path 2' },
+      E: { cls: ['sl-dup'], badge: '×2', sublabel: 'reached twice' }
+    },
+    edgeClasses: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'B-E': 'sl-gedge-highlight', 'C-E': 'sl-gedge-highlight' }
   }
 ];
 
-function slSuccessors(node) {
-  return [...(SL_GRAPH[node] || [])].sort((a, b) => a.to.localeCompare(b.to));
-}
+// ---- Search Data Structures (instructions/search_lecture.md table) ----
+// 4 concepts. Unlike Search Terminology, these don't share one
+// illustration shape, so each term carries a `kind` that its graph-column
+// renderer switches on.
+const SDS_TERMS = [
+  {
+    key: 'nodestructure', name: 'Node Structure', kind: 'nodecard',
+    definition: 'A search-tree node bundles four fields: the state it represents, its parent node, the action that produced it, and its path cost.',
+    formula: 'node.STATE &middot; node.PARENT &middot; node.ACTION &middot; node.PATH-COST = g(node)',
+    tip: 'Show actual values, e.g., STATE = C, PARENT = A, ACTION = Go(C), PATH-COST = 2.',
+    note: 'Left: the graph with parent A connected to child C by action Go(C). Middle: the search tree with node C highlighted. Right: C’s four fields.',
+    nodeStates: {
+      A: { cls: ['sl-explored'], sublabel: 'parent' },
+      C: { cls: ['sl-current'], sublabel: 'child' }
+    },
+    edgeClasses: { 'A-C': 'sl-gedge-highlight' },
+    nodeCard: [
+      { key: 'STATE', val: 'C' },
+      { key: 'PARENT', val: 'A' },
+      { key: 'ACTION', val: 'Go(C)' },
+      { key: 'PATH-COST', val: 'g(C) = 2' }
+    ]
+  },
+  {
+    key: 'frontierops', name: 'Frontier Operations', kind: 'frontierops',
+    definition: 'The frontier supports four operations: IS-EMPTY, TOP and POP to select and remove the next node, and ADD to insert a newly generated node.',
+    formula: 'IS-EMPTY(frontier) &middot; TOP(frontier) &middot; POP(frontier) &middot; ADD(node, frontier)',
+    tip: 'Every search algorithm calls the same four operations — only the frontier’s internal ordering changes.',
+    note: 'Left: A expanded, with B, C, E waiting in the frontier. Right: the frontier container and a log of each operation run against it, in sequence.',
+    nodeStates: {
+      A: { cls: ['sl-explored'], sublabel: 'expanded' },
+      B: { cls: ['sl-frontier'] }, C: { cls: ['sl-frontier'] }, E: { cls: ['sl-frontier'] }
+    },
+    edgeClasses: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight' },
+    frontierOps: {
+      initial: ['B', 'C', 'E'],
+      ops: [
+        { label: 'IS-EMPTY(frontier)', result: 'false' },
+        { label: 'TOP(frontier)', result: 'B' },
+        { label: 'POP(frontier)', result: 'B &nbsp;&rarr;&nbsp; frontier = {C, E}' },
+        { label: 'ADD(D, frontier)', result: 'frontier = {C, E, D}' }
+      ]
+    }
+  },
+  {
+    key: 'frontiertypes', name: 'Frontier Types', kind: 'frontiertypes',
+    definition: 'The frontier can be implemented as a FIFO queue (breadth-first), a LIFO stack (depth-first), or a priority queue (best-first / uniform-cost) — the choice determines which node is selected next.',
+    formula: 'FIFO Queue &middot; LIFO Queue &middot; Priority Queue (ordered by g(node))',
+    tip: 'Same three nodes, three different "next" choices: oldest in, newest in, or cheapest.',
+    note: 'The same frontier {B, C, E} shown as three different structures — the highlighted node is whichever one that structure selects next.',
+    frontierTypes: [
+      { label: 'FIFO Queue', sub: 'breadth-first', order: ['B', 'C', 'E'], popIdx: 0, popNote: 'oldest in, first out' },
+      { label: 'LIFO Queue', sub: 'depth-first', order: ['B', 'C', 'E'], popIdx: 2, popNote: 'newest in, first out' },
+      { label: 'Priority Queue', sub: 'uniform-cost', order: ['B', 'C', 'E'], popIdx: 1, popNote: 'lowest cost first', showCost: true, costs: { B: 3, C: 2, E: 9 } }
+    ]
+  },
+  {
+    key: 'puttingtogether', name: 'Putting It Together', kind: 'stepper',
+    definition: 'A search algorithm repeats one loop: pop the next node from the frontier, test whether it is the goal, otherwise expand it and add its children to the frontier.',
+    formula: 'loop: POP &rarr; GOAL-TEST &rarr; EXPAND &rarr; ADD / UPDATE',
+    tip: 'BFS and UCS run the exact same loop — only the frontier’s ordering (FIFO vs. priority-by-cost) differs.',
+    note: 'Step through breadth-first search or uniform-cost search on the same graph — the pseudocode cursor, the graph, and the frontier/reached readout all move together.'
+  }
+];
+
+// Generic best-first-search pseudocode (BFS = FIFO frontier, UCS =
+// priority-by-cost frontier; both are the same loop). `active` on a step
+// lists which line indices light up for that step.
+const SDS_PSEUDOCODE = [
+  'function BEST-FIRST-SEARCH(problem) returns a solution node or failure',
+  '&nbsp;&nbsp;node &larr; NODE(problem.INITIAL)',
+  '&nbsp;&nbsp;frontier &larr; a queue containing node',
+  '&nbsp;&nbsp;reached &larr; {problem.INITIAL: node}',
+  '&nbsp;&nbsp;while not IS-EMPTY(frontier) do',
+  '&nbsp;&nbsp;&nbsp;&nbsp;node &larr; POP(frontier)',
+  '&nbsp;&nbsp;&nbsp;&nbsp;if IS-GOAL(problem, node.STATE) then return node',
+  '&nbsp;&nbsp;&nbsp;&nbsp;for each child in EXPAND(node) do',
+  '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;if child.STATE not in reached or',
+  '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;child.PATH-COST &lt; reached[child.STATE].PATH-COST then',
+  '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;reached[child.STATE] &larr; child; ADD(child, frontier)'
+];
+
+// Precomputed BFS trace over SL_GRAPH (FIFO frontier, "reached" set blocks
+// duplicates), independently verified with Python's collections.deque:
+// expansion order A, B, C, E, D, F, G. Each step is a full CUMULATIVE
+// snapshot (nodeStates/edges/frontier/reached/order only ever grow) so the
+// graph always shows everything explored so far, not just this step's delta.
+const SDS_BFS_STEPS = [
+  { current: 'A', order: ['A'], frontier: ['B', 'C', 'E'], reached: ['A', 'B', 'C', 'E'],
+    edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight' },
+    isGoal: false, active: [5, 7, 8, 9, 10] },
+  { current: 'B', order: ['A', 'B'], frontier: ['C', 'E', 'D'], reached: ['A', 'B', 'C', 'E', 'D'],
+    edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight', 'B-D': 'sl-gedge-highlight' },
+    isGoal: false, active: [5, 7, 8, 9, 10] },
+  { current: 'C', order: ['A', 'B', 'C'], frontier: ['E', 'D', 'F'], reached: ['A', 'B', 'C', 'E', 'D', 'F'],
+    edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight', 'B-D': 'sl-gedge-highlight', 'C-F': 'sl-gedge-highlight' },
+    isGoal: false, active: [5, 7, 8, 9, 10] },
+  { current: 'E', order: ['A', 'B', 'C', 'E'], frontier: ['D', 'F', 'G', 'H'], reached: ['A', 'B', 'C', 'E', 'D', 'F', 'G', 'H'],
+    edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight', 'B-D': 'sl-gedge-highlight', 'C-F': 'sl-gedge-highlight', 'E-G': 'sl-gedge-highlight', 'E-H': 'sl-gedge-highlight' },
+    isGoal: false, active: [5, 7, 8, 9, 10] },
+  { current: 'D', order: ['A', 'B', 'C', 'E', 'D'], frontier: ['F', 'G', 'H'], reached: ['A', 'B', 'C', 'E', 'D', 'F', 'G', 'H'],
+    edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight', 'B-D': 'sl-gedge-highlight', 'C-F': 'sl-gedge-highlight', 'E-G': 'sl-gedge-highlight', 'E-H': 'sl-gedge-highlight' },
+    isGoal: false, active: [5, 7, 8, 9, 10] },
+  { current: 'F', order: ['A', 'B', 'C', 'E', 'D', 'F'], frontier: ['G', 'H'], reached: ['A', 'B', 'C', 'E', 'D', 'F', 'G', 'H'],
+    edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight', 'B-D': 'sl-gedge-highlight', 'C-F': 'sl-gedge-highlight', 'E-G': 'sl-gedge-highlight', 'E-H': 'sl-gedge-highlight' },
+    isGoal: false, active: [5, 7, 8, 9, 10] },
+  { current: 'G', order: ['A', 'B', 'C', 'E', 'D', 'F', 'G'], frontier: ['H'], reached: ['A', 'B', 'C', 'E', 'D', 'F', 'G', 'H'],
+    edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight', 'B-D': 'sl-gedge-highlight', 'C-F': 'sl-gedge-highlight', 'E-G': 'sl-gedge-highlight', 'E-H': 'sl-gedge-highlight' },
+    isGoal: true, active: [5, 6] }
+];
+
+// Precomputed UCS trace over SL_GRAPH (priority queue by path cost g,
+// "reached" stores the best cost seen and is UPDATED when a cheaper path
+// is found), independently verified with Python's heapq: expansion order
+// A(0), C(2), B(3), D(5), E(7), G(8) — optimal cost 8. An edge that was
+// once the best-known path to a state but got superseded by a cheaper one
+// is kept in `edges` as 'sl-gedge-dup' (amber dashed) rather than dropped,
+// so the graph visibly shows the UPDATE step, not just the final answer.
+const SDS_UCS_STEPS = [
+  { current: 'A', order: [['A', 0]], frontier: [['B', 3], ['C', 2], ['E', 9]], reached: ['A', 'B', 'C', 'E'],
+    edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight' },
+    isGoal: false, active: [5, 7, 8, 9, 10] },
+  { current: 'C', order: [['A', 0], ['C', 2]], frontier: [['B', 3], ['E', 8], ['F', 11]], reached: ['A', 'B', 'C', 'E', 'F'],
+    edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-dup', 'C-E': 'sl-gedge-highlight', 'C-F': 'sl-gedge-highlight' },
+    isGoal: false, active: [5, 7, 8, 9, 10] },
+  { current: 'B', order: [['A', 0], ['C', 2], ['B', 3]], frontier: [['D', 5], ['E', 7], ['F', 11]], reached: ['A', 'B', 'C', 'E', 'F', 'D'],
+    edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-dup', 'C-E': 'sl-gedge-dup', 'B-E': 'sl-gedge-highlight', 'C-F': 'sl-gedge-highlight', 'B-D': 'sl-gedge-highlight' },
+    isGoal: false, active: [5, 7, 8, 9, 10] },
+  { current: 'D', order: [['A', 0], ['C', 2], ['B', 3], ['D', 5]], frontier: [['E', 7], ['G', 8], ['F', 11]], reached: ['A', 'B', 'C', 'E', 'F', 'D', 'G'],
+    edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-dup', 'C-E': 'sl-gedge-dup', 'B-E': 'sl-gedge-highlight', 'C-F': 'sl-gedge-highlight', 'B-D': 'sl-gedge-highlight', 'D-G': 'sl-gedge-highlight' },
+    isGoal: false, active: [5, 7, 8, 9, 10] },
+  { current: 'E', order: [['A', 0], ['C', 2], ['B', 3], ['D', 5], ['E', 7]], frontier: [['G', 8], ['H', 9], ['F', 11]], reached: ['A', 'B', 'C', 'E', 'F', 'D', 'G', 'H'],
+    edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-dup', 'C-E': 'sl-gedge-dup', 'B-E': 'sl-gedge-highlight', 'C-F': 'sl-gedge-highlight', 'B-D': 'sl-gedge-highlight', 'D-G': 'sl-gedge-highlight', 'E-H': 'sl-gedge-highlight' },
+    isGoal: false, active: [5, 7, 8, 9, 10] },
+  { current: 'G', order: [['A', 0], ['C', 2], ['B', 3], ['D', 5], ['E', 7], ['G', 8]], frontier: [['H', 9], ['F', 11]], reached: ['A', 'B', 'C', 'E', 'F', 'D', 'G', 'H'],
+    edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-dup', 'C-E': 'sl-gedge-dup', 'B-E': 'sl-gedge-highlight', 'C-F': 'sl-gedge-highlight', 'B-D': 'sl-gedge-highlight', 'D-G': 'sl-gedge-highlight', 'E-H': 'sl-gedge-highlight' },
+    isGoal: true, active: [5, 6] }
+];
+
+const SL_TOPICS = [
+  { key: 'terminology', name: 'Search Terminology' },
+  { key: 'datastructures', name: 'Search Data Structures' },
+  { key: 'strategies', name: 'Search Strategies' },
+  { key: 'evaluating', name: 'Evaluating Search' }
+];
 
 class SearchLectureUI {
   constructor() {
-    this.stepIdx = 0;
-    this.subtopic = {
-      statetree: 'statespace',
-      statenode: 'statevsnode',
-      frontier: 'generated',
-      strategy: 'shallowest',
-      uninformed: 'BFS',
-      heuristics: 'estimatedcost',
-      informed: 'GREEDY',
-      properties: 'admissibility'
-    };
+    this.topicIdx = 0;
+    this.termIdx = 0;
+    this.dsIdx = 0;
+    this.dsAlgo = 'bfs';
+    this.dsStep = 0;
 
-    this.mainGridEl = document.getElementById('sl-main-grid');
-    this.flowBarEl = document.getElementById('sl-flow-bar');
-    this.panelsEl = document.getElementById('sl-panels');
-    this.graphColEl = document.getElementById('sl-graph');
-    this.btnPrev = document.getElementById('btn-sl-prev');
-    this.btnNext = document.getElementById('btn-sl-next');
+    this.tabsEl = document.getElementById('sl-topic-tabs');
+    this.conceptColEl = document.getElementById('sl-concept-col');
+    this.graphColEl = document.getElementById('sl-graph-col');
 
     this.bindEvents();
     this.render();
   }
 
   bindEvents() {
-    this.btnPrev.addEventListener('click', () => this.setStep(this.stepIdx - 1));
-    this.btnNext.addEventListener('click', () => this.setStep(this.stepIdx + 1));
-
     document.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowRight') this.setStep(this.stepIdx + 1);
-      if (e.key === 'ArrowLeft') this.setStep(this.stepIdx - 1);
+      if (e.key === 'ArrowRight') this.setTopic(this.topicIdx + 1);
+      if (e.key === 'ArrowLeft') this.setTopic(this.topicIdx - 1);
     });
   }
 
-  setStep(idx) {
-    if (idx < 0 || idx >= SL_STEPS.length) return;
-    this.stepIdx = idx;
+  setTopic(idx) {
+    if (idx < 0 || idx >= SL_TOPICS.length) return;
+    this.topicIdx = idx;
+    this.termIdx = 0;
+    this.dsIdx = 0;
+    this.dsAlgo = 'bfs';
+    this.dsStep = 0;
     this.render();
   }
 
-  setSubtopic(stepKey, subKey) {
-    if (this.subtopic[stepKey] === subKey) return;
-    this.subtopic[stepKey] = subKey;
+  setTerm(idx) {
+    if (idx < 0 || idx >= SL_TERMS.length || idx === this.termIdx) return;
+    this.termIdx = idx;
     this.render();
   }
 
-  // ---------- Shape A: fixed graph snapshots ----------
-  // One snapshot per (concept, subtopic) pair — every subtopic phrase in
-  // instructions/search_lecture.md's Concepts table gets its own button
-  // and its own caption (reused as the concept column's Teaching Tip, so
-  // both columns read as one fact).
+  setDsTerm(idx) {
+    if (idx < 0 || idx >= SDS_TERMS.length || idx === this.dsIdx) return;
+    this.dsIdx = idx;
+    this.dsStep = 0;
+    this.render();
+  }
 
-  slSnapshot(stepKey, subKey) {
-    const key = `${stepKey}.${subKey}`;
-    switch (key) {
+  setDsAlgo(algo) {
+    if (algo !== 'bfs' && algo !== 'ucs') return;
+    this.dsAlgo = algo;
+    this.dsStep = 0;
+    this.render();
+  }
 
-      // ---- 1. State Space vs. Search Tree ----
-      case 'statetree.statespace':
-        return {
-          nodeStates: { A: { cls: ['sl-start'] }, G: { cls: ['sl-goal'] } },
-          edgeClasses: {},
-          caption: 'The state space is every state (A&ndash;H) and every action connecting them &mdash; the whole graph, whether or not anyone ever searches it.'
-        };
-      case 'statetree.searchtree':
-        return {
-          nodeStates: {
-            A: { cls: ['sl-explored'] }, B: { cls: ['sl-explored'] }, C: { cls: ['sl-explored'] }, E: { cls: ['sl-explored'] },
-            D: { cls: ['sl-frontier'] }, F: { cls: ['sl-frontier'] }, G: { cls: ['sl-frontier'] }
-          },
-          edgeClasses: {},
-          caption: 'A search tree is built by expanding one action at a time from the start &mdash; here, two layers deep from A. Unlike the state space, which just exists, the search tree only contains what the search has actually generated so far.'
-        };
-      case 'statetree.repeated':
-        return {
-          nodeStates: {
-            A: { cls: ['sl-explored'] }, B: { cls: ['sl-explored'] }, C: { cls: ['sl-explored'] },
-            E: { cls: ['sl-dup'], badge: '×2' }
-          },
-          edgeClasses: { 'B-E': 'sl-gedge-dup', 'C-E': 'sl-gedge-dup' },
-          caption: 'State E can be reached by two different action sequences: A&rarr;B&rarr;E and A&rarr;C&rarr;E. Any search that doesn’t track this can end up doing the same work twice &mdash; or, on a graph with a cycle back to an ancestor, infinitely.'
-        };
-      case 'statetree.treevsgraph':
-        return {
-          nodeStates: {
-            A: { cls: ['sl-explored'] }, B: { cls: ['sl-explored'] }, C: { cls: ['sl-explored'] },
-            E: { cls: ['sl-dup'], badge: '×2' }
-          },
-          edgeClasses: { 'B-E': 'sl-gedge-dup', 'C-E': 'sl-gedge-dup' },
-          caption: 'Tree Search: no duplicate check &mdash; both B&rarr;E and C&rarr;E create separate nodes for state E. Graph Search: tracks Explored / Reached, so a repeated state is caught instead (see &ldquo;Avoiding Repeated States&rdquo;).'
-        };
-      case 'statetree.avoiding':
-        return {
-          nodeStates: {
-            A: { cls: ['sl-explored'] }, B: { cls: ['sl-explored'] },
-            C: { cls: ['sl-explored'] }, E: { cls: ['sl-explored'] }
-          },
-          edgeClasses: { 'B-E': 'sl-gedge-highlight', 'C-E': 'sl-gedge-skip' },
-          caption: 'Graph search avoids the repeat: once E is reached via B, it’s added to Explored/Reached, so C &rarr; E is skipped instead of creating a second node for the same state.'
-        };
+  setDsStep(idx) {
+    const steps = this.dsAlgo === 'bfs' ? SDS_BFS_STEPS : SDS_UCS_STEPS;
+    if (idx < 0 || idx >= steps.length) return;
+    this.dsStep = idx;
+    this.render();
+  }
 
-      // ---- 2. State vs. Node ----
-      case 'statenode.statevsnode':
-        return {
-          nodeStates: { C: { cls: ['sl-current'], sublabel: 'state = "C"' } },
-          edgeClasses: {},
-          caption: 'C by itself is just a label for a state &mdash; it says nothing about how the agent got there. A node bundles that state together with the path that reached it.'
-        };
-      case 'statenode.parent':
-        return {
-          nodeStates: { A: { cls: ['sl-explored'] }, C: { cls: ['sl-current'], sublabel: 'parent = A' } },
-          edgeClasses: { 'A-C': 'sl-gedge-highlight' },
-          caption: 'Node(C).PARENT = A &mdash; the node one step before C on the path that reached it. Following PARENT pointers back to the root reconstructs the whole path (see &ldquo;Reconstructing a Path&rdquo;).'
-        };
-      case 'statenode.action':
-        return {
-          nodeStates: { A: { cls: ['sl-explored'] }, C: { cls: ['sl-current'], sublabel: 'action = Go(C)' } },
-          edgeClasses: { 'A-C': 'sl-gedge-highlight' },
-          caption: 'Node(C).ACTION = Go(C) &mdash; the specific action applied to PARENT to produce this node. A different action from the same parent would create a different child node.'
-        };
-      case 'statenode.pathcost':
-        return {
-          nodeStates: { A: { cls: ['sl-explored'] }, C: { cls: ['sl-current'], sublabel: 'path-cost = 2' } },
-          edgeClasses: { 'A-C': 'sl-gedge-highlight' },
-          caption: 'Node(C).PATH-COST = 2 &mdash; the accumulated cost g(n) of every step from the start to C. This is exactly the g(n) that UCS and A* compare (Concept 4).'
-        };
-      case 'statenode.depth':
-        return {
-          nodeStates: { A: { cls: ['sl-explored'] }, C: { cls: ['sl-current'], sublabel: 'depth = 1' } },
-          edgeClasses: { 'A-C': 'sl-gedge-highlight' },
-          caption: 'Node(C).DEPTH = 1 &mdash; how many actions separate C’s node from the root. BFS compares depth directly (Concept 4); DFS’s memory bound depends on it too.'
-        };
-      case 'statenode.reconstruct':
-        return {
-          nodeStates: {
-            A: { cls: ['sl-explored'] }, B: { cls: ['sl-explored'] },
-            D: { cls: ['sl-explored'] }, G: { cls: ['sl-current', 'sl-goal'] }
-          },
-          edgeClasses: { 'A-B': 'sl-gedge-highlight', 'B-D': 'sl-gedge-highlight', 'D-G': 'sl-gedge-highlight' },
-          caption: 'Chase each node’s PARENT pointer back to the root: G &larr; D &larr; B &larr; A. Reversed, that chain is the solution path A &rarr; B &rarr; D &rarr; G &mdash; this is why a search tree is built from nodes, not bare states.'
-        };
+  render() {
+    this.renderTopicTabs();
+    this.renderConceptColumn();
+    this.renderGraphColumn();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  }
 
-      // ---- 3. Frontier & Node Expansion ----
-      case 'frontier.generated':
-        return {
-          nodeStates: {
-            A: { cls: ['sl-explored'] }, B: { cls: ['sl-frontier'] },
-            C: { cls: ['sl-frontier'] }, E: { cls: ['sl-frontier'] }
-          },
-          edgeClasses: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight' },
-          caption: 'A is expanded &mdash; its children were generated. B, C, E are generated but not yet expanded &mdash; they’re only waiting in the frontier.'
-        };
-      case 'frontier.frontierset':
-        return {
-          nodeStates: {
-            A: { cls: ['sl-explored'] }, B: { cls: ['sl-frontier'] },
-            C: { cls: ['sl-frontier'] }, E: { cls: ['sl-frontier'] }
-          },
-          edgeClasses: {},
-          caption: 'Frontier = {B, C, E} &mdash; every node generated so far that hasn’t been expanded yet. This is exactly the set a strategy’s f(n) chooses from (Concept 4).'
-        };
-      case 'frontier.reached':
-        return {
-          nodeStates: { A: { cls: ['sl-explored'] } },
-          edgeClasses: {},
-          caption: 'Reached (Explored) = {A} &mdash; every state the search has already expanded. Checking a new child against Reached is exactly what prevents the repeated-state problem from Concept 1.'
-        };
-      case 'frontier.select':
-        return {
-          nodeStates: { A: { cls: ['sl-current'] } },
-          edgeClasses: {},
-          caption: 'Frontier = {A}. Pop A and goal-test it: A ≠ G, so it isn’t a solution &mdash; select it for expansion.'
-        };
-      case 'frontier.expand':
-        return {
-          nodeStates: {
-            A: { cls: ['sl-explored'] }, B: { cls: ['sl-frontier'] },
-            C: { cls: ['sl-frontier'] }, E: { cls: ['sl-frontier'] }
-          },
-          edgeClasses: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight' },
-          caption: 'Expand A: apply ACTIONS(A) and RESULT(A, a) for each &mdash; this generates children B, C, and E.'
-        };
-      case 'frontier.update':
-        return {
-          nodeStates: {
-            A: { cls: ['sl-explored'] }, B: { cls: ['sl-frontier'] },
-            C: { cls: ['sl-frontier'] }, E: { cls: ['sl-frontier'] }
-          },
-          edgeClasses: {},
-          caption: 'Frontier = {B, C, E}, Explored = {A}. The cycle repeats: select the next node from the (now larger) frontier.'
-        };
+  renderTopicTabs() {
+    this.tabsEl.innerHTML = SL_TOPICS.map((topic, i) => `
+      <button class="sl-topic-tab ${i === this.topicIdx ? 'active' : ''}" data-idx="${i}">
+        ${topic.name}
+      </button>
+    `).join('');
 
-      // ---- 4. Search Strategy ----
-      // Same frontier every time — {B (g=3,h=1.3), C (g=2,h=1.6), E (g=9,h=1.0)}
-      // generated from A — with a different selection rule highlighting a
-      // different winner, so the five rules can be compared side by side.
-      case 'strategy.shallowest':
-        return {
-          nodeStates: {
-            A: { cls: ['sl-explored'] },
-            B: { cls: ['sl-current'], sublabel: 'depth=1 (first in)' },
-            C: { cls: ['sl-frontier'], sublabel: 'depth=1' },
-            E: { cls: ['sl-frontier'], sublabel: 'depth=1' }
-          },
-          edgeClasses: {},
-          caption: 'Shallowest-first (BFS): B, C, E all tie at depth 1 &mdash; BFS picks whichever entered the frontier first (here, B), since it doesn’t look at cost at all.'
-        };
-      case 'strategy.deepest':
-        return {
-          nodeStates: {
-            A: { cls: ['sl-explored'] },
-            B: { cls: ['sl-frontier'] },
-            C: { cls: ['sl-frontier'] },
-            E: { cls: ['sl-current'], sublabel: 'generated last' }
-          },
-          edgeClasses: {},
-          caption: 'Deepest-first (DFS): E was generated last, so a LIFO frontier pops it next &mdash; DFS dives into whatever it just generated, rather than working through the frontier in the order it was built.'
-        };
-      case 'strategy.lowestg':
-        return {
-          nodeStates: {
-            A: { cls: ['sl-explored'] },
-            B: { cls: ['sl-frontier'], sublabel: 'g=3' },
-            C: { cls: ['sl-current'], sublabel: 'g=2' },
-            E: { cls: ['sl-frontier'], sublabel: 'g=9' }
-          },
-          edgeClasses: {},
-          caption: 'Lowest g(n) (UCS): C has the lowest accumulated cost (g=2, vs. B’s 3 and E’s 9) &mdash; UCS always expands the cheapest-so-far node, regardless of when it was generated.'
-        };
-      case 'strategy.lowesth':
-        return {
-          nodeStates: {
-            A: { cls: ['sl-explored'] },
-            B: { cls: ['sl-frontier'], sublabel: 'h=1.3' },
-            C: { cls: ['sl-frontier'], sublabel: 'h=1.6' },
-            E: { cls: ['sl-current'], sublabel: 'h=1.0' }
-          },
-          edgeClasses: {},
-          caption: 'Lowest h(n) (Greedy): E looks closest to the goal (h=1.0, vs. B’s 1.3 and C’s 1.6) &mdash; Greedy picks it even though reaching E costs 9, far more than B or C.'
-        };
-      case 'strategy.lowestgh':
-        return {
-          nodeStates: {
-            A: { cls: ['sl-explored'] },
-            B: { cls: ['sl-frontier'], sublabel: 'f=4.3' },
-            C: { cls: ['sl-current'], sublabel: 'f=3.6' },
-            E: { cls: ['sl-frontier'], sublabel: 'f=10.0' }
-          },
-          edgeClasses: {},
-          caption: 'Lowest g(n)+h(n) (A*): C has the lowest combined score (f=2+1.6=3.6, vs. B’s 3+1.3=4.3 and E’s 9+1.0=10.0) &mdash; A* balances cost-so-far against the estimate, landing on C here just like UCS.'
-        };
+    this.tabsEl.querySelectorAll('.sl-topic-tab').forEach(el => {
+      el.addEventListener('click', () => this.setTopic(parseInt(el.dataset.idx, 10)));
+    });
+  }
 
-      // ---- 6. Heuristics — h(n) ----
-      case 'heuristics.estimatedcost':
-        return {
-          nodeStates: { C: { cls: ['sl-current'], sublabel: 'h=1.6' }, G: { cls: ['sl-goal'] } },
-          edgeClasses: {},
-          caption: 'h(C) = 1.6 is search’s own estimate of how far C is from the goal G &mdash; a number the algorithm computes without actually searching from C.'
-        };
-      case 'heuristics.domainknowledge':
-        return {
-          nodeStates: { C: { cls: ['sl-current'], sublabel: 'h=1.6 (map distance)' }, G: { cls: ['sl-goal'] } },
-          edgeClasses: {},
-          caption: 'Unlike g(n), which only uses edge costs the search has already paid, h(n) uses outside knowledge &mdash; here, the straight-line distance from n to G on the map, something the graph edges alone don’t tell you.'
-        };
-      case 'heuristics.estimatevstrue':
-        return {
-          nodeStates: { C: { cls: ['sl-current'], sublabel: 'h=1.6' }, G: { cls: ['sl-goal'] } },
-          edgeClasses: {},
-          caption: `h(C) = 1.6 estimates the remaining cost from C to G. The true shortest remaining cost is ${SL_TRUE_DIST.C} &mdash; h(n) is a guess that happens to be a good one here, not a guarantee.`
-        };
-      case 'heuristics.examples':
-        return {
-          nodeStates: Object.fromEntries(Object.keys(SL_H).map(n => [
-            n, { cls: n === SL_GOAL ? ['sl-goal'] : [], sublabel: `h=${SL_H[n]}` }
-          ])),
-          edgeClasses: {},
-          caption: 'h(n) here is the straight-line distance from n to G on the map, scaled &mdash; the same idea as AIMA’s straight-line-distance-to-Bucharest, or EightPuzzle’s count of misplaced tiles.'
-        };
+  // ---------- Search Terminology (implemented) ----------
 
-      // ---- 8. Heuristic Properties ----
-      case 'properties.admissibility':
-        return {
-          nodeStates: { A: { cls: ['sl-current'], sublabel: `h=1.9 ≤ ${SL_TRUE_DIST.A}` }, G: { cls: ['sl-goal'] } },
-          edgeClasses: {},
-          caption: `h(A) = 1.9 ≤ the true remaining cost of ${SL_TRUE_DIST.A} &mdash; admissible means a heuristic never overestimates. An overestimate could make A* skip over the actual optimal path.`
-        };
-      case 'properties.truecost':
-        return {
-          nodeStates: { A: { cls: ['sl-current'], sublabel: `h=1.9, h*=${SL_TRUE_DIST.A}` }, G: { cls: ['sl-goal'] } },
-          edgeClasses: {},
-          caption: `h*(n) is the TRUE optimal remaining cost &mdash; something a search normally doesn’t know in advance. h*(A) = ${SL_TRUE_DIST.A} here (the real cost of the best path A&rarr;B&rarr;D&rarr;G); h(A) = 1.9 is just an estimate of it.`
-        };
-      case 'properties.consistency':
-        return {
-          nodeStates: {
-            A: { cls: ['sl-current'], sublabel: 'h=1.9' },
-            C: { cls: ['sl-frontier'], sublabel: `h=${SL_H.C}` }
-          },
-          edgeClasses: { 'A-C': 'sl-gedge-highlight' },
-          caption: `On edge A &rarr; C (cost 2): h(A)=1.9 &le; cost + h(C) = 2 + ${SL_H.C} = ${(2 + SL_H.C).toFixed(1)} &mdash; consistent. f never drops by more than the edge allows for as you move along it.`
-        };
-      case 'properties.triangle':
-        return {
-          nodeStates: {
-            A: { cls: ['sl-current'], sublabel: 'h(n)' },
-            C: { cls: ['sl-frontier'], sublabel: 'h(n′)' }
-          },
-          edgeClasses: { 'A-C': 'sl-gedge-highlight' },
-          caption: 'h(n) &le; cost(n,a,n′) + h(n′) is a triangle inequality: going straight from n to the goal (estimated h(n)) can never cost more than going n &rarr; n′ (real cost) and then n′ &rarr; goal (estimated h(n′)).'
-        };
-      case 'properties.impliesadmissible':
-        return {
-          nodeStates: {
-            A: { cls: ['sl-current'], sublabel: `h′=${SL_H_BAD_A}` },
-            C: { cls: ['sl-frontier'], sublabel: `h=${SL_H.C}` }
-          },
-          edgeClasses: { 'A-C': 'sl-gedge-violation' },
-          caption: `Suppose instead h′(A) = ${SL_H_BAD_A}. On edge A &rarr; C: h′(A)=${SL_H_BAD_A} &gt; cost + h(C) = 2 + ${SL_H.C} = ${(2 + SL_H.C).toFixed(1)} &mdash; inconsistent, even though h′(A)=${SL_H_BAD_A} is still &le; the true cost of ${SL_TRUE_DIST.A} (still admissible). So consistent &rArr; admissible, but not the other way around.`
-        };
-      case 'properties.connectiontoastar':
-        return {
-          nodeStates: {
-            A: { cls: ['sl-explored'] }, B: { cls: ['sl-explored'] },
-            D: { cls: ['sl-explored'] }, G: { cls: ['sl-current', 'sl-goal'] }
-          },
-          edgeClasses: { 'A-B': 'sl-gedge-highlight', 'B-D': 'sl-gedge-highlight', 'D-G': 'sl-gedge-highlight' },
-          caption: 'With a consistent h(n), A* with graph search is guaranteed to find the optimal path the first time it reaches a state &mdash; no need to ever re-open an already-expanded node.'
-        };
-
-      default:
-        return { nodeStates: {}, edgeClasses: {}, caption: '' };
+  renderConceptColumn() {
+    const topic = SL_TOPICS[this.topicIdx];
+    if (topic.key === 'terminology') {
+      this.renderTerminologyConcept();
+    } else if (topic.key === 'datastructures') {
+      this.renderDataStructuresConcept();
+    } else {
+      this.renderPlaceholderConcept(topic);
     }
   }
 
-  // ---------- Shape B: strategy comparison ----------
-
-  slOrderHtml(subKey) {
-    const data = SL_ORDERS[subKey];
-    return data.order.map((o, i) => `
-      <div class="sl-order-item ${o.node === SL_GOAL ? 'sl-order-goal' : ''}">
-        <span class="sl-order-badge">${i + 1}</span> ${o.node}
-        ${o.meta ? `<span class="sl-order-meta">${o.meta}</span>` : ''}
-      </div>
-    `).join('<span class="sl-order-arrow">→</span>');
+  renderGraphColumn() {
+    const topic = SL_TOPICS[this.topicIdx];
+    if (topic.key === 'terminology') {
+      this.renderTerminologyGraph();
+    } else if (topic.key === 'datastructures') {
+      this.renderDataStructuresGraph();
+    } else {
+      this.renderPlaceholderGraph();
+    }
   }
 
-  slOrderNodeStates(subKey) {
-    const data = SL_ORDERS[subKey];
-    const states = {};
-    data.order.forEach((o, i) => {
-      const isLast = i === data.order.length - 1;
-      states[o.node] = {
-        cls: isLast ? ['sl-current', 'sl-goal'] : ['sl-explored'],
+  renderTerminologyConcept() {
+    const term = SL_TERMS[this.termIdx];
+
+    this.conceptColEl.innerHTML = `
+      <p class="sl-topic-intro">These terms describe how a search algorithm explores a state space and keeps track of what has already been explored and what remains to be explored.</p>
+
+      ${this.renderConceptSelectorHTML(SL_TERMS, this.termIdx)}
+
+      <div class="teaching-panel active">
+        <h3>${term.name}</h3>
+        <p>${term.definition}</p>
+        <div class="formula-box">${term.formula}</div>
+        <div class="teaching-tip"><i data-lucide="lightbulb"></i>${term.tip}</div>
+      </div>
+    `;
+
+    this.conceptColEl.querySelectorAll('.sl-concept-chip').forEach(el => {
+      el.addEventListener('click', () => this.setTerm(parseInt(el.dataset.idx, 10)));
+    });
+  }
+
+  // Shared concept-selector markup for any topic. Per the doc: once the
+  // selector has more than 6 concepts, wrap it into two balanced rows
+  // rather than shrinking the font or letting one long row overflow/
+  // scroll (Search Terminology: 7 -> 4+3); 6 or fewer stays one row
+  // (Search Data Structures: 4). Each row is a CSS grid with exactly as
+  // many columns as it has chips, so it's guaranteed to stay a single
+  // line (long names wrap to a second text line inside their own cell
+  // instead of pushing the row itself onto a 3rd/4th visual line).
+  renderConceptSelectorHTML(terms, activeIdx) {
+    const renderChip = (t, i) => `
+      <button class="sl-concept-chip ${i === activeIdx ? 'active' : ''}" data-idx="${i}">${t.name}</button>
+    `;
+    if (terms.length <= 6) {
+      const row = terms.map((t, i) => renderChip(t, i)).join('');
+      return `
+        <div class="sl-concept-selector" id="sl-concept-selector">
+          <div class="sl-concept-row" style="grid-template-columns: repeat(${terms.length}, minmax(0, 1fr));">${row}</div>
+        </div>
+      `;
+    }
+    const mid = Math.ceil(terms.length / 2);
+    const row1Terms = terms.slice(0, mid);
+    const row2Terms = terms.slice(mid);
+    const row1 = row1Terms.map((t, i) => renderChip(t, i)).join('');
+    const row2 = row2Terms.map((t, i) => renderChip(t, i + mid)).join('');
+    return `
+      <div class="sl-concept-selector" id="sl-concept-selector">
+        <div class="sl-concept-row" style="grid-template-columns: repeat(${row1Terms.length}, minmax(0, 1fr));">${row1}</div>
+        <div class="sl-concept-row" style="grid-template-columns: repeat(${row2Terms.length}, minmax(0, 1fr));">${row2}</div>
+      </div>
+    `;
+  }
+
+  renderTerminologyGraph() {
+    const term = SL_TERMS[this.termIdx];
+
+    const graphBlock = `
+      <div class="sl-diagram-block sl-diagram-block-graph">
+        <div class="sl-tree-caption">State-Space Graph</div>
+        <div class="sl-graph-svg-wrap">${this.renderGraphSVG(term.nodeStates, term.edgeClasses)}</div>
+      </div>
+    `;
+
+    let treeBlocks;
+    let illustrationExtraCls = '';
+    if (term.secondTree) {
+      // One term (Tree-Like vs. Graph Search) needs the same graph next
+      // to TWO trees. Both trees are derived from the SAME edgeClasses/
+      // nodeStates as the graph — only the treePruned list differs — so
+      // all three diagrams can never disagree with each other.
+      illustrationExtraCls = 'sl-graph-illustration-triple';
+      treeBlocks = `
+        <div class="sl-diagram-block sl-diagram-block-tree sl-diagram-block-tree-narrow">
+          <div class="sl-tree-caption">${term.treeCaption || 'Search Tree'}</div>
+          <div class="sl-tree-svg-wrap">${this.renderMiniTreeSVG(term, [])}</div>
+        </div>
+        <div class="sl-diagram-block sl-diagram-block-tree sl-diagram-block-tree-narrow">
+          <div class="sl-tree-caption">${term.secondTree.caption}</div>
+          <div class="sl-tree-svg-wrap">${this.renderMiniTreeSVG(term, term.secondTree.treePruned || [])}</div>
+        </div>
+      `;
+    } else {
+      treeBlocks = `
+        <div class="sl-diagram-block sl-diagram-block-tree">
+          <div class="sl-tree-caption">Search Tree</div>
+          <div class="sl-tree-svg-wrap">${this.renderMiniTreeSVG(term)}</div>
+        </div>
+      `;
+    }
+
+    this.graphColEl.innerHTML = `
+      <div class="sl-graph-illustration sl-graph-illustration-compact ${illustrationExtraCls}">
+        <div class="sl-dual-diagrams">
+          ${graphBlock}
+          ${treeBlocks}
+        </div>
+        <div class="sl-illustration-note">${term.note}</div>
+      </div>
+    `;
+  }
+
+  // ---------- Search Data Structures (implemented) ----------
+
+  renderDataStructuresConcept() {
+    const term = SDS_TERMS[this.dsIdx];
+    const selectorHTML = this.renderConceptSelectorHTML(SDS_TERMS, this.dsIdx);
+
+    let bodyHTML;
+    if (term.kind === 'stepper') {
+      const steps = this.dsAlgo === 'bfs' ? SDS_BFS_STEPS : SDS_UCS_STEPS;
+      const step = steps[this.dsStep];
+      const activeSet = new Set(step.active);
+      const pseudoHTML = SDS_PSEUDOCODE.map((line, i) => `
+        <div class="sl-pseudo-line ${activeSet.has(i) ? 'active' : ''}">${line}</div>
+      `).join('');
+
+      bodyHTML = `
+        <div class="teaching-panel active">
+          <h3>${term.name}</h3>
+          <p>${term.definition}</p>
+
+          <div class="sl-algo-toggle">
+            <button class="sl-algo-btn ${this.dsAlgo === 'bfs' ? 'active' : ''}" data-algo="bfs">Breadth-First Search</button>
+            <button class="sl-algo-btn ${this.dsAlgo === 'ucs' ? 'active' : ''}" data-algo="ucs">Uniform-Cost Search</button>
+          </div>
+
+          <div class="sl-pseudocode">${pseudoHTML}</div>
+
+          <div class="sl-step-controls">
+            <button class="sl-step-btn" id="sl-step-prev" ${this.dsStep === 0 ? 'disabled' : ''}>&larr; Prev</button>
+            <span class="sl-step-indicator">Step ${this.dsStep + 1} / ${steps.length}${step.isGoal ? ' &mdash; Goal!' : ''}</span>
+            <button class="sl-step-btn" id="sl-step-next" ${this.dsStep === steps.length - 1 ? 'disabled' : ''}>Next &rarr;</button>
+          </div>
+        </div>
+      `;
+    } else {
+      bodyHTML = `
+        <div class="teaching-panel active">
+          <h3>${term.name}</h3>
+          <p>${term.definition}</p>
+          <div class="formula-box">${term.formula}</div>
+          <div class="teaching-tip"><i data-lucide="lightbulb"></i>${term.tip}</div>
+        </div>
+      `;
+    }
+
+    this.conceptColEl.innerHTML = `
+      <p class="sl-topic-intro">These building blocks are what every search algorithm is made of: a node's fields, the frontier's four operations, the containers a frontier can be built from, and the loop that ties them together.</p>
+      ${selectorHTML}
+      ${bodyHTML}
+    `;
+
+    this.conceptColEl.querySelectorAll('.sl-concept-chip').forEach(el => {
+      el.addEventListener('click', () => this.setDsTerm(parseInt(el.dataset.idx, 10)));
+    });
+    this.conceptColEl.querySelectorAll('.sl-algo-btn').forEach(el => {
+      el.addEventListener('click', () => this.setDsAlgo(el.dataset.algo));
+    });
+    const prevBtn = this.conceptColEl.querySelector('#sl-step-prev');
+    const nextBtn = this.conceptColEl.querySelector('#sl-step-next');
+    if (prevBtn) prevBtn.addEventListener('click', () => this.setDsStep(this.dsStep - 1));
+    if (nextBtn) nextBtn.addEventListener('click', () => this.setDsStep(this.dsStep + 1));
+  }
+
+  renderDataStructuresGraph() {
+    const term = SDS_TERMS[this.dsIdx];
+
+    if (term.kind === 'nodecard') {
+      const cardRows = term.nodeCard.map(f => `
+        <div class="sl-nodecard-row"><span class="sl-nodecard-key">${f.key}</span><span class="sl-nodecard-val">${f.val}</span></div>
+      `).join('');
+      this.graphColEl.innerHTML = `
+        <div class="sl-graph-illustration sl-graph-illustration-compact">
+          <div class="sl-dual-diagrams">
+            <div class="sl-diagram-block sl-diagram-block-graph">
+              <div class="sl-tree-caption">State-Space Graph</div>
+              <div class="sl-graph-svg-wrap">${this.renderGraphSVG(term.nodeStates, term.edgeClasses)}</div>
+            </div>
+            <div class="sl-diagram-block sl-diagram-block-tree">
+              <div class="sl-tree-caption">Search Tree</div>
+              <div class="sl-tree-svg-wrap">${this.renderMiniTreeSVG(term)}</div>
+            </div>
+            <div class="sl-diagram-block sl-diagram-block-tree">
+              <div class="sl-tree-caption">node.* Fields</div>
+              <div class="sl-nodecard">${cardRows}</div>
+            </div>
+          </div>
+          <div class="sl-illustration-note">${term.note}</div>
+        </div>
+      `;
+      return;
+    }
+
+    if (term.kind === 'frontierops') {
+      const boxes = term.frontierOps.initial.map(s => `<div class="sl-frontier-box">${s}</div>`).join('');
+      const ops = term.frontierOps.ops.map(op => `
+        <div class="sl-frontier-op"><span class="sl-frontier-op-label">${op.label}</span><span class="sl-frontier-op-result">${op.result}</span></div>
+      `).join('');
+      this.graphColEl.innerHTML = `
+        <div class="sl-graph-illustration sl-graph-illustration-compact">
+          <div class="sl-dual-diagrams">
+            <div class="sl-diagram-block sl-diagram-block-graph">
+              <div class="sl-tree-caption">State-Space Graph</div>
+              <div class="sl-graph-svg-wrap">${this.renderGraphSVG(term.nodeStates, term.edgeClasses)}</div>
+            </div>
+            <div class="sl-diagram-block sl-diagram-block-tree">
+              <div class="sl-tree-caption">Frontier &amp; Operation Log</div>
+              <div class="sl-frontier-boxes">${boxes}</div>
+              <div class="sl-frontier-ops">${ops}</div>
+            </div>
+          </div>
+          <div class="sl-illustration-note">${term.note}</div>
+        </div>
+      `;
+      return;
+    }
+
+    if (term.kind === 'frontiertypes') {
+      const panels = term.frontierTypes.map(ft => {
+        const boxes = ft.order.map((s, i) => `
+          <div class="sl-frontier-box ${i === ft.popIdx ? 'sl-frontier-box-pop' : ''}">
+            ${s}${ft.showCost ? `<span class="sl-frontier-box-cost">g=${ft.costs[s]}</span>` : ''}
+          </div>
+        `).join('');
+        return `
+          <div class="sl-frontier-type-panel">
+            <div class="sl-tree-caption">${ft.label}</div>
+            <div class="sl-frontier-type-sub">${ft.sub}</div>
+            <div class="sl-frontier-boxes-vert">${boxes}</div>
+            <div class="sl-frontier-type-pop">next: <strong>${ft.order[ft.popIdx]}</strong> (${ft.popNote})</div>
+          </div>
+        `;
+      }).join('');
+      this.graphColEl.innerHTML = `
+        <div class="sl-graph-illustration sl-graph-illustration-compact">
+          <div class="sl-frontier-types-row">${panels}</div>
+          <div class="sl-illustration-note">${term.note}</div>
+        </div>
+      `;
+      return;
+    }
+
+    // kind === 'stepper'
+    const steps = this.dsAlgo === 'bfs' ? SDS_BFS_STEPS : SDS_UCS_STEPS;
+    const step = steps[this.dsStep];
+    const isUcs = this.dsAlgo === 'ucs';
+
+    const nodeStates = {};
+    const orderStates = isUcs ? step.order.map(([s]) => s) : step.order;
+    orderStates.forEach((s, i) => {
+      const isCurrent = s === step.current && i === orderStates.length - 1;
+      nodeStates[s] = {
+        cls: isCurrent ? ['sl-current'].concat(step.isGoal ? ['sl-goal'] : []) : ['sl-explored'],
         badge: String(i + 1)
       };
     });
-    return states;
+    const frontierStates = isUcs ? step.frontier.map(([s]) => s) : step.frontier;
+    frontierStates.forEach(s => {
+      if (!nodeStates[s]) nodeStates[s] = { cls: ['sl-frontier'] };
+    });
+    if (isUcs) {
+      step.order.forEach(([s, g]) => { if (nodeStates[s]) nodeStates[s].sublabel = `g=${g}`; });
+      step.frontier.forEach(([s, g]) => { if (nodeStates[s]) nodeStates[s].sublabel = `g=${g}`; });
+    }
+
+    const frontierLabel = isUcs
+      ? step.frontier.map(([s, g]) => `${s} (g=${g})`).join(', ')
+      : step.frontier.join(', ');
+    const reachedLabel = step.reached.join(', ');
+    const orderLabel = isUcs
+      ? step.order.map(([s, g]) => `${s}(${g})`).join(' &rarr; ')
+      : step.order.join(' &rarr; ');
+
+    this.graphColEl.innerHTML = `
+      <div class="sl-graph-illustration sl-graph-illustration-compact">
+        <div class="sl-dual-diagrams">
+          <div class="sl-diagram-block sl-diagram-block-graph">
+            <div class="sl-tree-caption">State-Space Graph</div>
+            <div class="sl-graph-svg-wrap">${this.renderGraphSVG(nodeStates, step.edges)}</div>
+          </div>
+          <div class="sl-diagram-block sl-diagram-block-tree sl-stepper-panel">
+            <div class="sl-tree-caption">${this.dsAlgo === 'bfs' ? 'BFS' : 'UCS'} Readout</div>
+            <div class="sl-stepper-readout">
+              <div class="sl-stepper-readout-row"><span class="sl-nodecard-key">current</span><span class="sl-nodecard-val">${step.current}${step.isGoal ? ' (goal!)' : ''}</span></div>
+              <div class="sl-stepper-readout-row"><span class="sl-nodecard-key">frontier</span><span class="sl-nodecard-val">{${frontierLabel}}</span></div>
+              <div class="sl-stepper-readout-row"><span class="sl-nodecard-key">reached</span><span class="sl-nodecard-val">{${reachedLabel}}</span></div>
+              <div class="sl-stepper-readout-row"><span class="sl-nodecard-key">order</span><span class="sl-nodecard-val">${orderLabel}</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="sl-illustration-note">${term.note}</div>
+      </div>
+    `;
+  }
+
+  // ---------- Other topics (not yet implemented) ----------
+
+  renderPlaceholderConcept(topic) {
+    this.conceptColEl.innerHTML = `
+      <div class="teaching-panel active">
+        <h3>${topic.name}</h3>
+        <div class="sl-placeholder-block">
+          <span class="sl-placeholder-label">Definition</span>
+          <span class="sl-placeholder-text">Not yet implemented</span>
+        </div>
+        <div class="sl-placeholder-block">
+          <span class="sl-placeholder-label">AIMA Formula / Notation</span>
+          <span class="sl-placeholder-text">Not yet implemented</span>
+        </div>
+        <div class="sl-placeholder-block">
+          <span class="sl-placeholder-label">Teaching Tip</span>
+          <span class="sl-placeholder-text">Not yet implemented</span>
+        </div>
+      </div>
+    `;
+  }
+
+  renderPlaceholderGraph() {
+    this.graphColEl.innerHTML = `
+      <div class="sl-placeholder-illustration">
+        <i data-lucide="image"></i>
+        <span>Illustration &mdash; not yet implemented</span>
+      </div>
+    `;
   }
 
   // ---------- SVG graph rendering ----------
@@ -602,222 +791,154 @@ class SearchLectureUI {
       const p = this.slNodeXY(n);
       const state = nodeStates[n] || {};
       const cls = (state.cls || []).join(' ');
+
+      // Sublabel placement, tuned for THIS fixed graph layout so a label
+      // never runs past the viewBox edge or straight through a nearby
+      // edge-cost badge:
+      //  - Nodes in the top band (B, D) get their label ABOVE (no edge
+      //    geometry up there); every other node defaults to BELOW,
+      //    clamped so it can never fall outside the viewBox.
+      //  - A sits right at the left edge with three edges fanning out to
+      //    its right (B, C, E), each with a cost badge roughly 15-20
+      //    units away in every direction except straight up — the empty
+      //    strip above the whole B/D row (y < ~25, clear across the full
+      //    width) is the only spot immune to A's own text length.
+      //  - E is the busiest node (five edges meet there); every zone
+      //    close to it hits a badge, but a small band running due right,
+      //    threaded between the E-G and E-H badges, stays clear no
+      //    matter how long the label text is.
+      const labelAbove = SL_NODE_LAYOUT[n].y <= 0.4;
+      let sublabelX = p.cx;
+      let sublabelY = labelAbove ? p.cy - 9 : Math.min(p.cy + 11, 80);
+      let sublabelStyle = '';
+      if (n === 'A') {
+        sublabelStyle = 'text-anchor:start;';
+        sublabelX = p.cx + 4;
+        sublabelY = 9;
+      } else if (n === 'E') {
+        sublabelStyle = 'text-anchor:start;';
+        sublabelX = p.cx + 9;
+        sublabelY = p.cy + 1;
+      }
+
       nodesSvg += `<g class="sl-gnode ${cls}">
         <circle cx="${p.cx}" cy="${p.cy}" r="6.5"></circle>
         <text x="${p.cx}" y="${p.cy}" class="sl-gnode-label">${n}</text>
         ${state.badge ? `<text x="${p.cx + 6.8}" y="${p.cy - 6.5}" class="sl-gnode-badge">${state.badge}</text>` : ''}
-        ${state.sublabel ? `<text x="${p.cx}" y="${p.cy + 11}" class="sl-gnode-sublabel">${state.sublabel}</text>` : ''}
+        ${state.sublabel ? `<text x="${sublabelX}" y="${sublabelY}" class="sl-gnode-sublabel" style="${sublabelStyle}">${state.sublabel}</text>` : ''}
       </g>`;
     });
 
     return `<svg class="sl-graph-svg" viewBox="0 0 100 82" xmlns="http://www.w3.org/2000/svg">${edgesSvg}${nodesSvg}</svg>`;
   }
 
-  // ---------- Render ----------
-
-  render() {
-    this.renderFlowBar();
-    this.renderPanels();
-    this.renderGraphColumn();
-    this.updateNavButtons();
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-  }
-
-  updateNavButtons() {
-    this.btnPrev.disabled = this.stepIdx === 0;
-    this.btnNext.disabled = this.stepIdx === SL_STEPS.length - 1;
-  }
-
-  renderFlowBar() {
-    this.flowBarEl.innerHTML = SL_STEPS.map((step, i) => `
-      <div class="flow-step ${i === this.stepIdx ? 'active' : ''} ${i < this.stepIdx ? 'completed' : ''}" data-idx="${i}">
-        <div class="flow-step-num">${i + 1}</div>
-        <div class="flow-step-name">${step.name}</div>
-      </div>
-    `).join('');
-
-    this.flowBarEl.querySelectorAll('.flow-step').forEach(el => {
-      el.addEventListener('click', () => this.setStep(parseInt(el.dataset.idx, 10)));
+  // Generic mini search-tree diagram, derived from a term's OWN
+  // edgeClasses (the same data that highlights the state-space graph) so
+  // the two diagrams can never disagree. Handles at most 2 levels below
+  // the root (root -> children -> grandchildren), which covers every
+  // Search Terminology term: parent-child edges become tree edges; a
+  // state reached via more than one edge becomes a separate leaf node
+  // per path (e.g. E under both B and C), linked by a dashed "same
+  // state" connector — UNLESS that edge is in the pruned list, in which
+  // case it's drawn as a faded, dashed "pruned" node instead (Graph
+  // Search: the redundant path never becomes a real tree node).
+  //
+  // `pruneOverride`, when given (including an empty array), replaces
+  // term.treePruned for this call — used by the Tree-Like vs. Graph
+  // Search term to render two different trees from the same term data.
+  renderMiniTreeSVG(term, pruneOverride) {
+    const edgeClasses = term.edgeClasses || {};
+    const treePruned = pruneOverride !== undefined ? pruneOverride : (term.treePruned || []);
+    const edgeList = Object.entries(edgeClasses).map(([key, cls]) => {
+      const [from, to] = key.split('-');
+      return { key, from, to, cls };
     });
-  }
-
-  renderPanels() {
-    const step = SL_STEPS[this.stepIdx];
-    this.panelsEl.innerHTML = `<div class="teaching-panel active">${this['panel_' + step.key]()}</div>`;
-  }
-
-  currentCaption() {
-    const step = SL_STEPS[this.stepIdx];
-    if (step.shape === 'A') return this.slSnapshot(step.key, this.subtopic[step.key]).caption;
-    if (step.shape === 'B') return SL_ORDERS[this.subtopic[step.key]].caption;
-    return '';
-  }
-
-  renderGraphColumn() {
-    const step = SL_STEPS[this.stepIdx];
-
-    if (step.shape === 'C') {
-      this.mainGridEl.classList.add('sl-single-col');
-      this.graphColEl.innerHTML = '';
-      return;
-    }
-    this.mainGridEl.classList.remove('sl-single-col');
-
-    const switchHtml = `
-      <div class="sl-subtopic-switch">
-        <span class="sl-subtopic-switch-label">Illustration</span>
-        <div class="sl-subtopic-tabs">
-          ${step.subtopics.map(st => `
-            <button class="sl-subtopic-tab ${st.key === this.subtopic[step.key] ? 'active' : ''}" data-sub="${st.key}">
-              <i data-lucide="${st.icon}"></i> ${st.label}
-            </button>
-          `).join('')}
-        </div>
-      </div>
-    `;
-
-    let bodyHtml;
-    if (step.shape === 'A') {
-      const snap = this.slSnapshot(step.key, this.subtopic[step.key]);
-      bodyHtml = `
-        <div class="sl-graph-illustration">
-          <div class="sl-graph-svg-wrap">${this.renderGraphSVG(snap.nodeStates, snap.edgeClasses)}</div>
-        </div>
-      `;
-    } else {
-      const subKey = this.subtopic[step.key];
-      bodyHtml = `
-        <div class="sl-graph-illustration">
-          <div class="sl-order-list">${this.slOrderHtml(subKey)}</div>
-          <div class="sl-graph-svg-wrap">${this.renderGraphSVG(this.slOrderNodeStates(subKey), {})}</div>
-        </div>
-      `;
+    if (!edgeList.length) {
+      // Terms that highlight a single state with no expansion path yet
+      // still get a tree: that one state, drawn as a single, standalone
+      // tree node.
+      const states = Object.keys(term.nodeStates || {});
+      if (!states.length) return '';
+      const rootState = states.find(s => (term.nodeStates[s].cls || []).includes('sl-current')) || states[0];
+      const state = term.nodeStates[rootState] || {};
+      const gcls = (state.cls || []).join(' ');
+      const nodeSvg = `<g class="sl-gnode ${gcls}">
+        <circle cx="50" cy="29" r="6.5"></circle>
+        <text x="50" y="29" class="sl-gnode-label">${rootState}</text>
+        ${state.badge ? `<text x="56.8" y="22.5" class="sl-gnode-badge">${state.badge}</text>` : ''}
+      </g>`;
+      return `<svg class="sl-graph-svg sl-tree-svg" viewBox="0 0 100 58" xmlns="http://www.w3.org/2000/svg">${nodeSvg}</svg>`;
     }
 
-    this.graphColEl.innerHTML = switchHtml + bodyHtml;
+    const targets = new Set(edgeList.map(e => e.to));
+    const root = edgeList.map(e => e.from).find(s => !targets.has(s)) || SL_START;
 
-    this.graphColEl.querySelectorAll('.sl-subtopic-tab').forEach(btn => {
-      btn.addEventListener('click', () => this.setSubtopic(step.key, btn.dataset.sub));
+    const level1 = edgeList.filter(e => e.from === root);
+    const level1Ids = level1.map(e => e.to);
+    const level2 = edgeList.filter(e => level1Ids.includes(e.from));
+
+    // How many tree instances each state ends up with, so a repeated
+    // state can be shown as separate leaves instead of merged into one.
+    const instanceCount = {};
+    [...level1, ...level2].forEach(e => {
+      instanceCount[e.to] = (instanceCount[e.to] || 0) + 1;
     });
-  }
 
-  // ---------- Concept panels ----------
+    const stateOf = (s) => term.nodeStates[s] || {};
+    const nodeProps = (state, isDup, pruned) => pruned
+      ? { gcls: 'sl-tree-pruned', badge: '&times;' }
+      : { gcls: (state.cls || []).join(' '), badge: isDup ? undefined : state.badge };
 
-  panel_statetree() {
-    return `
-      <h3>1. State Space vs. Search Tree</h3>
-      <p>The state space is every state and action there is &mdash; it exists whether or not anyone searches it. A search tree is only the paths a particular search has actually explored, built one action at a time from the start.</p>
-      <div class="formula-box">State Space: the whole graph &nbsp;|&nbsp; Search Tree: paths explored so far</div>
-      <div class="teaching-tip"><i data-lucide="lightbulb"></i>${this.currentCaption()}</div>
-    `;
-  }
+    const nodes = [];
+    const edgesOut = [];
 
-  panel_statenode() {
-    return `
-      <h3>2. State vs. Node</h3>
-      <p>A state is just a label, like C. A node wraps a state together with how the agent got there &mdash; enough to rebuild the whole path once a goal node is found.</p>
-      <div class="formula-box">Node = &#10216;STATE, PARENT, ACTION, PATH-COST, DEPTH&#10217;</div>
-      <div class="teaching-tip"><i data-lucide="lightbulb"></i>${this.currentCaption()}</div>
-    `;
-  }
+    nodes.push({ state: root, x: 50, y: 12, pruned: false, ...nodeProps(stateOf(root), false, false) });
 
-  panel_frontier() {
-    return `
-      <h3>3. Frontier & Node Expansion</h3>
-      <p>A node is generated the moment it's created as someone's child. It's expanded only once it's selected from the frontier and its own children are generated in turn.</p>
-      <div class="formula-box">Generated = Frontier &cup; Reached (Expanded)</div>
-      <div class="teaching-tip"><i data-lucide="lightbulb"></i>${this.currentCaption()}</div>
-    `;
-  }
+    const n1 = level1.length;
+    level1.forEach((e, i) => {
+      const x = n1 === 1 ? 50 : 12 + (76 * i) / (n1 - 1);
+      const pruned = treePruned.includes(e.key);
+      const isDup = !pruned && instanceCount[e.to] > 1;
+      e._x = x;
+      nodes.push({ state: e.to, x, y: 45, pruned, ...nodeProps(stateOf(e.to), isDup, pruned) });
+      edgesOut.push({ x1: 50, y1: 12, x2: x, y2: 45, cls: pruned ? 'sl-gedge-dup' : e.cls });
+    });
 
-  panel_strategy() {
-    return `
-      <h3>4. Search Strategy</h3>
-      <p>Every strategy below runs the exact same select &rarr; expand cycle from Concept 3. The only thing that changes is f(n) &mdash; the rule for which frontier node gets selected next.</p>
-      <div class="formula-box">expand argmin<sub>n&isin;frontier</sub> f(n)</div>
-      <div class="teaching-tip"><i data-lucide="lightbulb"></i>${this.currentCaption()}</div>
-    `;
-  }
+    level2.forEach(e => {
+      const parentEdge = level1.find(p => p.to === e.from);
+      if (!parentEdge) return;
+      const px = parentEdge._x;
+      const pruned = treePruned.includes(e.key);
+      const isDup = !pruned && instanceCount[e.to] > 1;
+      nodes.push({ state: e.to, x: px, y: 78, pruned, ...nodeProps(stateOf(e.to), isDup, pruned) });
+      edgesOut.push({ x1: px, y1: 45, x2: px, y2: 78, cls: pruned ? 'sl-gedge-dup' : e.cls });
+    });
 
-  panel_uninformed() {
-    return `
-      <h3>5. Uninformed Search</h3>
-      <p>No knowledge of the goal's location &mdash; only the graph seen so far. BFS expands shallowest-first, DFS deepest-first, UCS lowest-cost-first, IDS reruns depth-limited search with a growing limit.</p>
-      <div class="formula-box">BFS f=depth(n) &nbsp;&middot;&nbsp; DFS: LIFO &nbsp;&middot;&nbsp; UCS f=g(n) &nbsp;&middot;&nbsp; IDS: depth-limited, increasing limit</div>
-      <div class="teaching-tip"><i data-lucide="lightbulb"></i>${this.currentCaption()}</div>
-    `;
-  }
+    // A repeated, non-pruned leaf state gets a dashed "same state" link.
+    let connectorSvg = '';
+    const leafGroups = {};
+    nodes.filter(n => n.y === 78 && !n.pruned).forEach(n => {
+      (leafGroups[n.state] = leafGroups[n.state] || []).push(n);
+    });
+    Object.values(leafGroups).forEach(group => {
+      if (group.length >= 2) {
+        const [a, b] = group;
+        connectorSvg += `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" class="sl-gedge sl-gedge-dup"></line>`;
+        connectorSvg += `<text x="${(a.x + b.x) / 2}" y="${a.y + 8}" class="sl-gnode-sublabel">same state</text>`;
+      }
+    });
 
-  panel_heuristics() {
-    return `
-      <h3>6. Heuristics &mdash; h(n)</h3>
-      <p>A heuristic h(n) estimates the cost from n to the goal, using problem-specific knowledge the graph alone doesn't carry.</p>
-      <div class="formula-box">h(n) &asymp; cost(n &rarr; goal)</div>
-      <div class="teaching-tip"><i data-lucide="lightbulb"></i>${this.currentCaption()}</div>
-    `;
-  }
+    const edgesSvg = edgesOut.map(e =>
+      `<line x1="${e.x1}" y1="${e.y1}" x2="${e.x2}" y2="${e.y2}" class="sl-gedge ${e.cls}"></line>`
+    ).join('');
+    const nodesSvg = nodes.map(n => `<g class="sl-gnode ${n.gcls}">
+        <circle cx="${n.x}" cy="${n.y}" r="6.5"></circle>
+        <text x="${n.x}" y="${n.y}" class="sl-gnode-label">${n.state}</text>
+        ${n.badge ? `<text x="${n.x + 6.8}" y="${n.y - 6.5}" class="sl-gnode-badge">${n.badge}</text>` : ''}
+      </g>`).join('');
 
-  panel_informed() {
-    return `
-      <h3>7. Informed Search</h3>
-      <p>Greedy Best-First chases whatever looks closest to the goal; A* balances that estimate against the cost already paid.</p>
-      <div class="formula-box">Greedy: f(n) = h(n) &nbsp;&middot;&nbsp; A*: f(n) = g(n) + h(n)</div>
-      <div class="teaching-tip"><i data-lucide="lightbulb"></i>${this.currentCaption()}</div>
-    `;
-  }
-
-  panel_properties() {
-    return `
-      <h3>8. Heuristic Properties</h3>
-      <p>Admissible: h(n) never overestimates the true remaining cost h*(n). Consistent: h(n) never drops by more than an edge's own cost. Consistency is the stronger property, and it implies admissibility &mdash; never the other way around.</p>
-      <div class="formula-box">Admissible: h(n) &le; h*(n) &nbsp;|&nbsp; Consistent: h(n) &le; cost(n,a,n&prime;) + h(n&prime;)</div>
-      <div class="teaching-tip"><i data-lucide="lightbulb"></i>${this.currentCaption()}</div>
-    `;
-  }
-
-  panel_evaluating() {
-    const rows = [
-      { name: 'BFS', complete: 'Yes', optimal: 'Yes*', time: 'O(b<sup>d</sup>)', space: 'O(b<sup>d</sup>)' },
-      { name: 'DFS', complete: 'No&dagger;', optimal: 'No', time: 'O(b<sup>m</sup>)', space: 'O(bm)' },
-      { name: 'UCS', complete: 'Yes', optimal: 'Yes', time: '&asymp;O(b<sup>1+C*/&epsilon;</sup>)', space: 'same as time' },
-      { name: 'IDS', complete: 'Yes', optimal: 'Yes*', time: 'O(b<sup>d</sup>)', space: 'O(bd)' },
-      { name: 'Greedy', complete: 'No', optimal: 'No', time: 'O(b<sup>m</sup>)', space: 'O(b<sup>m</sup>)' },
-      { name: 'A*', complete: 'Yes', optimal: 'Yes&Dagger;', time: 'exponential (worst case)', space: 'O(b<sup>d</sup>)' }
-    ];
-    const cell = (v) => {
-      const isYes = /^Yes/.test(v);
-      const isNo = /^No/.test(v);
-      return `<td class="${isYes ? 'sl-cell-yes' : isNo ? 'sl-cell-no' : ''}">${v}</td>`;
-    };
-    return `
-      <h3>9. Evaluating Search</h3>
-      <p>Comparing strategies means comparing three different things at once: what solution they find, how much work it took, and what they guarantee in general. Adversarial Search (Topic 02.3) evaluates search differently &mdash; against an opponent, not toward a fixed goal &mdash; and is intentionally out of scope here.</p>
-      <div class="sl-complexity-table-wrap">
-        <table class="sl-complexity-table">
-          <thead>
-            <tr>
-              <th rowspan="2">Strategy</th>
-              <th colspan="2">Solution</th>
-              <th colspan="3">Search Effort</th>
-              <th colspan="2">Guarantees</th>
-            </tr>
-            <tr>
-              <th>Path</th><th>Cost</th>
-              <th>Expanded</th><th>Time</th><th>Space</th>
-              <th>Complete?</th><th>Optimal?</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${rows.map(r => {
-              const o = SL_ORDERS[r.name === 'A*' ? 'ASTAR' : r.name.toUpperCase()];
-              return `<tr><td>${r.name}</td><td>${o.path}</td><td>${o.cost}</td><td>${o.expanded}</td><td>${r.time}</td><td>${r.space}</td>${cell(r.complete)}${cell(r.optimal)}</tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>
-      <p class="sl-complexity-table-note">b = branching factor &middot; d = depth of the shallowest solution &middot; m = maximum depth of the tree &middot; * optimal only when step costs are equal &middot; &dagger; only when the state space is finite / has no infinite paths &middot; &Dagger; with an admissible heuristic (tree search) or a consistent heuristic (graph search). Path/Cost/Expanded are real values computed for this graph.</p>
-      <div class="teaching-tip"><i data-lucide="lightbulb"></i>UCS and A* both find the optimal path (cost 8) here, expanding the same 4 nodes &mdash; A*'s heuristic pays off more on larger graphs, where it prunes nodes UCS would still expand. Greedy expands the fewest nodes (2) but returns a worse solution (cost 10): Search Effort and Guarantees are a genuine trade-off.</div>
-    `;
+    const height = nodes.some(n => n.y === 78) ? 90 : 58;
+    return `<svg class="sl-graph-svg sl-tree-svg" viewBox="0 0 100 ${height}" xmlns="http://www.w3.org/2000/svg">${edgesSvg}${connectorSvg}${nodesSvg}</svg>`;
   }
 }
 

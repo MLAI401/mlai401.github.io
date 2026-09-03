@@ -6,12 +6,12 @@
   <title>Search & Planning - MLAI401 Foundational AI & ML</title>
 
   <!-- SEO Meta Tags -->
-  <meta name="description" content="An illustrated lecture page on search and planning: search tree vs. search graph, the Node data structure, the frontier expand/select cycle, f(n), uninformed strategies (BFS, DFS, UCS, IDS), heuristics, informed strategies (Greedy, A*), admissible and consistent heuristics, and completeness/optimality/complexity.">
-  <meta name="keywords" content="Search, Planning, Frontier, Node, BFS, DFS, Uniform-Cost Search, Iterative Deepening, Greedy Best-First, A*, Admissible Heuristic, Consistent Heuristic, AIMA">
+  <meta name="description" content="An illustrated lecture page on search and planning: terminology, data structures, strategies, and evaluating search.">
+  <meta name="keywords" content="Search, Planning, Frontier, Node, BFS, DFS, Uniform-Cost Search, Iterative Deepening, Greedy Best-First, A*, AIMA">
 
   <!-- Open Graph -->
   <meta property="og:title" content="MLAI401 - Search & Planning">
-  <meta property="og:description" content="Nine concepts, one screen: tree vs. graph search, node, the frontier cycle, f(n), uninformed and informed strategies, heuristics, admissibility/consistency, and completeness/optimality/complexity.">
+  <meta property="og:description" content="Search Terminology, Search Data Structures, Search Strategies, and Evaluating Search — one screen at a time.">
   <meta property="og:type" content="website">
 
   <!-- Style Sheet -->
@@ -55,26 +55,20 @@
       </div>
     </div>
 
-    <div class="sl-flow-bar-wrap">
-      <div class="flow-progress-bar" id="sl-flow-bar">
-        <!-- Rendered by demos/search_lecture_demo/ui.js -->
-      </div>
+    <!-- Simple topic selector bar — 4 topics, NOT the 9-step
+         flow-progress-bar used on Problem Formulation. Rendered by
+         demos/search_lecture_demo/ui.js -->
+    <div class="sl-topic-bar-wrap">
+      <div class="sl-topic-tabs" id="sl-topic-tabs"></div>
     </div>
 
     <div class="sl-main-grid" id="sl-main-grid">
 
-      <div class="sl-concept-col glass-panel">
-        <div class="teaching-panels-container" id="sl-panels">
-          <!-- Rendered by demos/search_lecture_demo/ui.js -->
-        </div>
-
-        <div class="sl-nav-buttons">
-          <button class="btn-ctrl" id="btn-sl-prev"><i data-lucide="chevron-left"></i> Prev</button>
-          <button class="btn-ctrl" id="btn-sl-next">Next <i data-lucide="chevron-right"></i></button>
-        </div>
+      <div class="sl-concept-col glass-panel" id="sl-concept-col">
+        <!-- Rendered by demos/search_lecture_demo/ui.js -->
       </div>
 
-      <div class="sl-graph-col glass-panel" id="sl-graph">
+      <div class="sl-graph-col glass-panel" id="sl-graph-col">
         <!-- Rendered by demos/search_lecture_demo/ui.js -->
       </div>
 
@@ -85,9 +79,9 @@
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
 
-  <!-- Page controller (independent copy of the Route-Finding Visualizer's
-       graph — see demos/search_lecture_demo/ui.js header comment) -->
-  <script src="demos/search_lecture_demo/ui.js?v=1"></script>
+  <!-- Page controller — layout + topic selector bar only for now;
+       per-topic content is not implemented yet. -->
+  <script src="demos/search_lecture_demo/ui.js?v=3"></script>
 
   <!-- Application JS -->
   <script src="main.js?v=2"></script>

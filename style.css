@@ -688,6 +688,7 @@ input[type="range"] {
 .btn-ctrl {
   padding: 0.75rem 1rem;
   border-radius: 10px;
+  font-family: 'Outfit', sans-serif;
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
@@ -2398,18 +2399,50 @@ body.pf-page::after {
   flex-shrink: 0;
 }
 
-/* Concept stepper — the page's primary navigation */
+/* Concept stepper — the page's primary navigation. Lives inside the
+   concept column (above the definition/formula/teaching-tip panel) and
+   wraps into two balanced rows (5 + 4, via a 5-column grid) instead of
+   one long row, since the column is only half the page width now. Each
+   step stacks its number circle above its (short, wrapping) name so it
+   still fits at that width. Scoped to .pf-flow-bar-wrap so the shared
+   .flow-progress-bar/.flow-step classes used by Playground are untouched. */
 .pf-flow-bar-wrap {
-  padding: 0 1.5rem;
+  padding: 0;
+  margin-bottom: 1.25rem;
 }
 
 .pf-flow-bar-wrap .flow-progress-bar {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  row-gap: 0.75rem;
+  column-gap: 0.4rem;
   margin-bottom: 0;
-  padding: 0.6rem 1rem;
+  padding: 0.75rem 0.5rem;
+  overflow: visible;
 }
 
-/* Main two-column area: a fixed 60/40 split — concept column (definition,
-   formula, teaching tip) at 60%, illustration column at 40% — kept
+.pf-flow-bar-wrap .flow-step {
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  white-space: normal;
+  text-align: center;
+}
+
+.pf-flow-bar-wrap .flow-step-name {
+  font-size: 0.62rem;
+  line-height: 1.15;
+  font-weight: 600;
+}
+
+.pf-flow-bar-wrap .flow-step-num {
+  width: 22px;
+  height: 22px;
+  font-size: 0.7rem;
+}
+
+/* Main two-column area: an equal 50/50 split — concept column (definition,
+   formula, teaching tip) and illustration column are the same size — kept
    proportional (not a fixed px sidebar) so the two stay visually balanced
    at any viewport width. minmax(0, ...) keeps each track from growing to
    fit its content and breaking the column's own overflow scroll. */
@@ -2417,7 +2450,7 @@ body.pf-page::after {
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1.25rem;
   padding: 1rem 1.5rem 1.25rem;
 }
@@ -2659,6 +2692,7 @@ body.pf-page::after {
   border: 1px solid var(--border-light);
   background: white;
   color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
   font-weight: 600;
   font-size: 0.78rem;
   cursor: pointer;
@@ -2877,12 +2911,14 @@ body.pf-page::after {
   }
 }
 
+
 /* ============================================================
    Search & Planning Lecture Page (search_lecture.html)
-   Same single-viewport, concept-first shell as the Problem
-   Formulation page (.pf-shell), reusing the generic
-   flow-progress-bar / teaching-panel / formula-box / teaching-tip
-   components. Prefixed .sl- to avoid colliding with .pf-.
+   SCAFFOLD ONLY: shell + topic selector bar + 60/40 two-column layout.
+   Per-topic content (terminology table, data structures, strategies,
+   evaluation) is not implemented yet — the placeholder styles below are
+   deliberately plain. Same single-viewport shell as the Problem
+   Formulation page (.pf-shell). Prefixed .sl- to avoid colliding with .pf-.
    ============================================================ */
 
 html:has(body.sl-page) {
@@ -2969,38 +3005,58 @@ body.sl-page::after {
   height: 14px;
 }
 
-/* Concept stepper — the page's primary navigation */
-.sl-flow-bar-wrap {
+/* Simple topic selector bar — 4 topics, not a numbered step flow like
+   Problem Formulation's flow-progress-bar. */
+.sl-topic-bar-wrap {
   padding: 0 1.5rem;
 }
 
-.sl-flow-bar-wrap .flow-progress-bar {
-  margin-bottom: 0;
-  padding: 0.6rem 1rem;
+.sl-topic-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--border-light);
 }
 
-/* Main two-column area: a fixed 60/40 split — concept column (definition,
-   formula, teaching tip) at 60%, graph illustration column at 40% — kept
-   proportional (not a fixed px sidebar) so the two stay visually balanced
-   at any viewport width. minmax(0, ...) keeps each track from growing to
-   fit its content and breaking the column's own overflow scroll. Collapses
-   to a single column entirely on Concept 9, which is a table, not a graph
-   (.sl-single-col). */
+.sl-topic-tab {
+  padding: 0.55rem 1rem;
+  border-radius: 10px;
+  border: 1px solid var(--border-light);
+  background: rgba(15, 23, 42, 0.02);
+  color: var(--text-secondary);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  white-space: nowrap;
+}
+
+.sl-topic-tab:hover {
+  color: var(--text-primary);
+  border-color: var(--border-focus);
+}
+
+.sl-topic-tab.active {
+  background: var(--gradient-main);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+}
+
+/* Main two-column area: an equal 50/50 split — concept column and
+   illustration column are the same size — kept proportional (not a fixed
+   px sidebar) so the two stay visually balanced at any viewport width.
+   minmax(0, ...) keeps each track from growing to fit its content and
+   breaking the column's own overflow scroll. */
 .sl-main-grid {
   flex: 1 1 auto;
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1.25rem;
   padding: 1rem 1.5rem 1.25rem;
-}
-
-.sl-main-grid.sl-single-col {
-  grid-template-columns: 1fr;
-}
-
-.sl-main-grid.sl-single-col .sl-graph-col {
-  display: none;
 }
 
 .sl-concept-col {
@@ -3009,109 +3065,84 @@ body.sl-page::after {
   padding: 1.75rem 2.25rem;
   display: flex;
   flex-direction: column;
-}
-
-.sl-concept-col .teaching-panels-container {
-  flex: 1 1 auto;
-  justify-content: center;
+  gap: 1rem;
+  justify-content: flex-start;
 }
 
 .sl-concept-col .teaching-panel h3 {
   font-size: 1.6rem;
-}
-
-.sl-concept-col .teaching-panel p {
-  font-size: 1rem;
-}
-
-.sl-concept-col .formula-box {
-  font-size: 1.05rem;
-  padding: 0.85rem 1.1rem;
-}
-
-.sl-nav-buttons {
-  display: flex;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding-top: 1rem;
-  margin-top: 1rem;
-  border-top: 1px solid var(--border-light);
+  margin-bottom: 0.25rem;
 }
 
 .sl-graph-col {
   min-height: 0;
   overflow: auto;
-  padding: 1.25rem;
+  padding: 1.25rem 0.6rem;
   display: flex;
   flex-direction: column;
   background: #ffffff;
 }
 
-/* Subtopic switch — lives INSIDE the graph column, above the
-   illustration itself, below the concept (topic) stepper. Secondary to
-   the concept stepper: small, quiet buttons, wrapping as needed since
-   concepts have between 2 and 4 subtopics. */
-.sl-subtopic-switch {
+/* Search Terminology (implemented) — brief intro line, then the in-place
+   Concept Selector bar for all 7 terms (per the spec: no separate pages
+   or subtopics per term), then the usual definition / formula / tip. */
+.sl-topic-intro {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin: 0 0 0.7rem;
+  line-height: 1.5;
+}
+
+/* Wraps into two balanced rows once there are more than ~6 concepts
+   (7 Search Terminology terms -> 4 + 3), per the doc, instead of
+   shrinking the chip font or letting one long row overflow/scroll. */
+.sl-concept-selector {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  padding-bottom: 0.85rem;
-  margin-bottom: 0.85rem;
+  padding-bottom: 0.7rem;
+  margin-bottom: 0.7rem;
   border-bottom: 1px solid var(--border-light);
 }
 
-.sl-subtopic-switch-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  text-align: center;
-}
-
-.sl-subtopic-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+/* Each row's column count is set inline per row (matching its exact
+   chip count), so a row is always exactly one line — long names wrap
+   to a second text line inside their own cell instead of the row
+   itself breaking onto extra visual lines. */
+.sl-concept-row {
+  display: grid;
   gap: 0.35rem;
 }
 
-.sl-subtopic-tab {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.35rem;
-  padding: 0.45rem 0.6rem;
+.sl-concept-chip {
+  padding: 0.55rem 0.6rem;
   border-radius: 10px;
   border: 1px solid var(--border-light);
   background: rgba(15, 23, 42, 0.02);
   color: var(--text-secondary);
   font-family: 'Outfit', sans-serif;
   font-weight: 600;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
+  line-height: 1.25;
   cursor: pointer;
   transition: var(--transition-fast);
-  white-space: nowrap;
+  white-space: normal;
+  text-align: center;
 }
 
-.sl-subtopic-tab:hover {
+.sl-concept-chip:hover {
   color: var(--text-primary);
   border-color: var(--border-focus);
 }
 
-.sl-subtopic-tab.active {
+.sl-concept-chip.active {
   background: var(--gradient-main);
   color: white;
   border-color: transparent;
   box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
 }
 
-.sl-subtopic-tab i {
-  width: 13px;
-  height: 13px;
-  flex-shrink: 0;
-}
-
+/* Fixed graph illustration (Search Terminology's Illustration column) */
 .sl-graph-illustration {
   flex: 1 1 auto;
   min-height: 0;
@@ -3121,64 +3152,6 @@ body.sl-page::after {
   gap: 0.85rem;
 }
 
-/* Strategy comparison order list (Shape B — Uninformed / Informed) */
-.sl-order-list {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 0.3rem;
-  padding-bottom: 0.85rem;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.sl-order-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  padding: 0.3rem 0.6rem;
-  border-radius: 100px;
-  background: rgba(15, 23, 42, 0.03);
-  font-family: 'Outfit', sans-serif;
-  font-weight: 700;
-  font-size: 0.78rem;
-  color: var(--text-primary);
-}
-
-.sl-order-item.sl-order-goal {
-  background: rgba(16, 185, 129, 0.12);
-  color: #047857;
-}
-
-.sl-order-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--gradient-main);
-  color: white;
-  font-size: 0.6rem;
-  font-weight: 700;
-}
-
-.sl-order-item.sl-order-goal .sl-order-badge {
-  background: var(--success);
-}
-
-.sl-order-meta {
-  color: var(--text-muted);
-  font-weight: 500;
-  font-size: 0.68rem;
-}
-
-.sl-order-arrow {
-  color: var(--text-muted);
-  font-size: 0.8rem;
-}
-
-/* Graph illustration SVG */
 .sl-graph-svg-wrap {
   width: 100%;
 }
@@ -3187,6 +3160,105 @@ body.sl-page::after {
   width: 100%;
   height: auto;
   display: block;
+}
+
+/* Used by the terms whose Illustration Note asks for both the
+   state-space graph AND the corresponding search tree (per the doc's
+   "Illustration" rule) — shown side by side rather than stacked, since
+   two diagrams next to each other need far less vertical room than one
+   on top of the other. Centered like the single-graph illustration for
+   visual consistency between the two modes; the pair is well within the
+   column's height at their current sizes, so centering carries no
+   clipping risk. */
+.sl-graph-illustration-compact {
+  gap: 0.6rem;
+  justify-content: center;
+}
+
+.sl-dual-diagrams {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+.sl-diagram-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  min-width: 160px;
+}
+
+/* Flex-basis is weighted (graph wider than tree, matching the graph's
+   wider aspect ratio) and grow/shrink is shared equally past that, so
+   both diagrams scale up together to fill the illustration column —
+   instead of stopping at small fixed caps that read as "shrunk" next
+   to the full-width single-graph view used by the other terms. */
+.sl-diagram-block-graph {
+  flex: 1 1 240px;
+  max-width: 420px;
+}
+
+.sl-diagram-block-tree {
+  flex: 1 1 180px;
+  max-width: 340px;
+}
+
+/* Tree-Like vs. Graph Search shows the graph next to TWO trees instead
+   of one, so all three need to be narrower to fit the same illustration
+   column without wrapping to a second row or overflowing horizontally. */
+.sl-graph-illustration-triple .sl-diagram-block-graph {
+  flex: 1 1 170px;
+  max-width: 230px;
+}
+
+.sl-diagram-block-tree-narrow {
+  flex: 1 1 130px;
+  max-width: 190px;
+}
+
+.sl-diagram-block .sl-graph-svg-wrap,
+.sl-diagram-block .sl-tree-svg-wrap {
+  width: 100%;
+}
+
+.sl-tree-caption {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* A pruned tree node: an attempted, rejected path (Graph Search) — drawn
+   as a faded, dashed ghost rather than a normal node or a duplicate
+   (which would both wrongly suggest it became a real tree node). */
+.sl-gnode.sl-tree-pruned circle {
+  fill: rgba(15, 23, 42, 0.03);
+  stroke: rgba(180, 83, 9, 0.4);
+  stroke-width: 1;
+  stroke-dasharray: 1.2 1;
+}
+
+.sl-gnode.sl-tree-pruned .sl-gnode-label {
+  fill: rgba(120, 53, 15, 0.55);
+}
+
+.sl-gnode.sl-tree-pruned .sl-gnode-badge {
+  fill: #b45309;
+}
+
+.sl-illustration-note {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  text-align: center;
+  line-height: 1.5;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-light);
 }
 
 .sl-gedge {
@@ -3205,18 +3277,6 @@ body.sl-page::after {
   stroke-dasharray: 1.6 1.1;
 }
 
-.sl-gedge.sl-gedge-skip {
-  stroke: #94a3b8;
-  stroke-width: 1;
-  stroke-dasharray: 1.2 1.2;
-}
-
-.sl-gedge.sl-gedge-violation {
-  stroke: var(--danger);
-  stroke-width: 1.6;
-  stroke-dasharray: 1.6 1.1;
-}
-
 .sl-gedge-cost-bg {
   fill: #ffffff;
   stroke: rgba(15, 23, 42, 0.15);
@@ -3229,10 +3289,6 @@ body.sl-page::after {
 
 .sl-gedge-cost-bg.sl-gedge-dup {
   stroke: #f59e0b;
-}
-
-.sl-gedge-cost-bg.sl-gedge-violation {
-  stroke: var(--danger);
 }
 
 .sl-gedge-cost-text {
@@ -3258,14 +3314,15 @@ body.sl-page::after {
 }
 
 .sl-gnode-badge {
-  font: 700 4rem 'Outfit', sans-serif;
   font-size: 4.2px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
   fill: var(--primary);
   text-anchor: middle;
 }
 
 .sl-gnode-sublabel {
-  font: 600 3.6px 'Outfit', sans-serif;
+  font: 600 3.4px 'Outfit', sans-serif;
   fill: var(--text-muted);
   text-anchor: middle;
 }
@@ -3318,54 +3375,330 @@ body.sl-page::after {
   stroke-dasharray: 2 1.2;
 }
 
-/* Completeness / Optimality / Complexity table (Shape C — Concept 9,
-   rendered inside the concept column; the graph column is hidden) */
-.sl-complexity-table-wrap {
-  overflow-x: auto;
-  margin-top: 0.75rem;
-}
+/* ---------- Search Data Structures (implemented) ---------- */
 
-.sl-complexity-table {
+/* Node Structure: a small key/value card listing node.STATE/PARENT/
+   ACTION/PATH-COST for the highlighted tree node, shown as a third
+   diagram block next to the graph and the tree. */
+.sl-nodecard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
   width: 100%;
-  border-collapse: collapse;
-  font-size: 0.82rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.02);
 }
 
-.sl-complexity-table th,
-.sl-complexity-table td {
-  padding: 0.55rem 0.7rem;
-  border-bottom: 1px solid var(--border-light);
-  text-align: left;
+.sl-nodecard-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-size: 0.78rem;
+}
+
+.sl-nodecard-key {
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 0.68rem;
   white-space: nowrap;
 }
 
-.sl-complexity-table th {
-  font-family: 'Outfit', sans-serif;
+.sl-nodecard-val {
+  color: var(--text-primary);
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Frontier Operations: a row of boxes for the frontier's current
+   contents, plus a static log of IS-EMPTY/TOP/POP/ADD calls and their
+   results, run in sequence. */
+.sl-frontier-boxes {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.sl-frontier-box {
+  min-width: 2.2rem;
+  padding: 0.4rem 0.6rem;
+  border: 1.5px solid #4f46e5;
+  border-radius: 8px;
+  background: #e0e7ff;
+  color: #3730a3;
+  font-weight: 700;
+  font-size: 0.85rem;
+  text-align: center;
+  position: relative;
+}
+
+.sl-frontier-ops {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: 100%;
+}
+
+.sl-frontier-op {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  padding: 0.35rem 0.55rem;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.02);
+  border: 1px solid var(--border-light);
+}
+
+.sl-frontier-op-label {
+  font-family: 'JetBrains Mono', monospace;
   font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-}
-
-.sl-complexity-table td.sl-cell-yes {
-  color: #047857;
   font-weight: 700;
+  color: var(--primary);
 }
 
-.sl-complexity-table td.sl-cell-no {
-  color: #b91c1c;
-  font-weight: 700;
-}
-
-.sl-complexity-table-note {
+.sl-frontier-op-result {
   font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+/* Frontier Types: three side-by-side panels comparing FIFO / LIFO /
+   Priority Queue over the same {B, C, E} frontier, no graph needed. */
+.sl-frontier-types-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.9rem;
+  width: 100%;
+}
+
+.sl-frontier-type-panel {
+  flex: 1 1 150px;
+  max-width: 220px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.7rem 0.6rem;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.02);
+}
+
+.sl-frontier-type-sub {
+  font-size: 0.68rem;
   color: var(--text-muted);
-  margin-top: 0.5rem;
-  line-height: 1.5;
+  font-style: italic;
+  margin-top: -0.25rem;
+}
+
+.sl-frontier-boxes-vert {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  width: 100%;
+}
+
+.sl-frontier-box-pop {
+  border-color: var(--success);
+  background: #dcfce7;
+  color: #166534;
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25);
+}
+
+.sl-frontier-box-cost {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.sl-frontier-type-pop {
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+/* Putting It Together: BFS/UCS algo toggle, pseudocode block with a
+   moving highlight, and step Prev/Next controls, all in the concept
+   column; the graph + frontier/reached/order readout live in the
+   illustration column via .sl-stepper-panel. */
+.sl-algo-toggle {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0.6rem 0 0.5rem;
+}
+
+.sl-algo-btn {
+  flex: 1 1 0;
+  padding: 0.4rem 0.6rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  background: rgba(15, 23, 42, 0.02);
+  color: var(--text-secondary);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 0.76rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.sl-algo-btn:hover {
+  color: var(--text-primary);
+  border-color: var(--border-focus);
+}
+
+.sl-algo-btn.active {
+  background: var(--gradient-main);
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+}
+
+.sl-pseudocode {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.66rem;
+  line-height: 1.42;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  background: #0f172a;
+  color: #cbd5e1;
+  overflow-x: auto;
+  margin-bottom: 0.5rem;
+}
+
+.sl-pseudo-line {
+  white-space: pre;
+  border-radius: 4px;
+  padding: 0.02rem 0.3rem;
+  margin: 0 -0.3rem;
+}
+
+.sl-pseudo-line.active {
+  background: rgba(79, 70, 229, 0.35);
+  color: #ffffff;
+}
+
+.sl-step-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.sl-step-btn {
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  background: #ffffff;
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+
+.sl-step-btn:hover:not(:disabled) {
+  border-color: var(--border-focus);
+  color: var(--primary);
+}
+
+.sl-step-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.sl-step-indicator {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.sl-stepper-panel {
+  justify-content: flex-start;
+}
+
+.sl-stepper-readout {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  width: 100%;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.02);
+}
+
+.sl-stepper-readout-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 0.76rem;
+}
+
+.sl-stepper-readout-row .sl-nodecard-val {
+  text-align: right;
+  word-break: break-word;
+}
+
+/* Placeholder styling — deliberately plain, to be replaced once each
+   topic's real content is implemented. */
+.sl-placeholder-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.85rem 1.1rem;
+  border: 1px dashed var(--border-light);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.02);
+}
+
+.sl-placeholder-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.sl-placeholder-text {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.sl-placeholder-illustration {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  border: 1px dashed var(--border-light);
+  border-radius: 10px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  font-style: italic;
+}
+
+.sl-placeholder-illustration i {
+  width: 28px;
+  height: 28px;
+  opacity: 0.5;
 }
 
 /* Below this width, fitting everything into one screen stops being
-   realistic — fall back to a normal scrolling stacked layout. */
+   realistic — fall back to a normal scrolling stacked layout (same
+   convention as the Problem Formulation page). */
 @media (max-width: 900px), (max-height: 640px) {
   html:has(body.sl-page) {
     height: auto;
