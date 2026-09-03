@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search & Planning - MLAI401 Foundational AI & ML</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="An illustrated lecture page on search and planning: search tree vs. search graph, the Node data structure, the frontier expand/select cycle, f(n), uninformed strategies (BFS, DFS, UCS, IDS), heuristics, informed strategies (Greedy, A*), admissible and consistent heuristics, and completeness/optimality/complexity.">
+  <meta name="keywords" content="Search, Planning, Frontier, Node, BFS, DFS, Uniform-Cost Search, Iterative Deepening, Greedy Best-First, A*, Admissible Heuristic, Consistent Heuristic, AIMA">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="MLAI401 - Search & Planning">
+  <meta property="og:description" content="Nine concepts, one screen: tree vs. graph search, node, the frontier cycle, f(n), uninformed and informed strategies, heuristics, admissibility/consistency, and completeness/optimality/complexity.">
+  <meta property="og:type" content="website">
+
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sl-page">
+
+  <!-- Navigation Header -->
+  <header class="navbar" id="navbar-header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo" id="logo-link">
+        <span class="logo-icon">M</span>
+        MLAI401
+      </a>
+
+      <button class="menu-toggle" id="menu-toggle-btn" aria-label="Toggle Navigation Menu">
+        <i data-lucide="menu"></i>
+      </button>
+
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="index.html" class="nav-link" id="nav-home">Home</a></li>
+        <li><a href="curriculum.html" class="nav-link active" id="nav-curr">Curriculum</a></li>
+        <li><a href="playground.html" class="nav-link" id="nav-play">Playground</a></li>
+        <li><a href="index.html#resources" class="nav-link" id="nav-res">Resources</a></li>
+      </ul>
+
+      <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="nav-btn" id="nav-github-btn">
+        <i data-lucide="github"></i> GitHub Profile
+      </a>
+    </div>
+  </header>
+
+  <!-- Single-screen lecture shell: no page scrolling on desktop widths -->
+  <main class="sl-shell">
+
+    <div class="sl-topbar">
+      <a href="curriculum.html" class="sl-breadcrumb"><i data-lucide="arrow-left"></i> Curriculum</a>
+      <div class="sl-title-block">
+        <span class="sl-topic-badge"><i data-lucide="route"></i> Topic 02</span>
+        <h1>Search &amp; Planning</h1>
+      </div>
+    </div>
+
+    <div class="sl-flow-bar-wrap">
+      <div class="flow-progress-bar" id="sl-flow-bar">
+        <!-- Rendered by demos/search_lecture_demo/ui.js -->
+      </div>
+    </div>
+
+    <div class="sl-main-grid" id="sl-main-grid">
+
+      <div class="sl-concept-col glass-panel">
+        <div class="teaching-panels-container" id="sl-panels">
+          <!-- Rendered by demos/search_lecture_demo/ui.js -->
+        </div>
+
+        <div class="sl-nav-buttons">
+          <button class="btn-ctrl" id="btn-sl-prev"><i data-lucide="chevron-left"></i> Prev</button>
+          <button class="btn-ctrl" id="btn-sl-next">Next <i data-lucide="chevron-right"></i></button>
+        </div>
+      </div>
+
+      <div class="sl-graph-col glass-panel" id="sl-graph">
+        <!-- Rendered by demos/search_lecture_demo/ui.js -->
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+
+  <!-- Page controller (independent copy of the Route-Finding Visualizer's
+       graph — see demos/search_lecture_demo/ui.js header comment) -->
+  <script src="demos/search_lecture_demo/ui.js?v=1"></script>
+
+  <!-- Application JS -->
+  <script src="main.js?v=2"></script>
+</body>
+</html>

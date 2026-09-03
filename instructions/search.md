@@ -1,7 +1,3 @@
-I would make search.demo explicitly about the mechanics of the frontier and node expansion, not just showing the final path. It should use the same graph across BFS, DFS, UCS, and IDS so students can see that the algorithms differ mainly in how they manage/select from the frontier.
-
-Junior Developer Instructions — search.demo
-
 Objective
 
 Develop an interactive Search Algorithm Demo for teaching how search algorithms explore a graph.
