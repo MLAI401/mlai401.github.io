@@ -3511,6 +3511,36 @@ body.sl-page::after {
   font-weight: 600;
 }
 
+/* Frontier Operations' CONCEPT column: a small badge naming which
+   operation the explanation below belongs to, and a highlight on that
+   operation's own notation inside the formula box — both change with
+   every click, so the left-hand explanation never goes stale while the
+   graph on the right moves. */
+.sl-frontier-op-stepbadge {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(79, 70, 229, 0.08);
+  color: var(--primary);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin: -0.3rem 0 -0.1rem;
+}
+
+.sl-formula-op {
+  transition: var(--transition-fast);
+}
+
+.sl-formula-op.active {
+  background: rgba(79, 70, 229, 0.14);
+  border-radius: 4px;
+  padding: 0.05rem 0.3rem;
+  margin: 0 -0.3rem;
+}
+
 /* Frontier Types: three side-by-side panels comparing FIFO / LIFO /
    Priority Queue over the same {B, C, E} frontier, no graph needed. */
 .sl-frontier-types-row {

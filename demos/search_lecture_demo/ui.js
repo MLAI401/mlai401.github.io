@@ -213,8 +213,8 @@ const SDS_TERMS = [
   {
     key: 'frontierops', name: 'Frontier Operations', kind: 'frontierops',
     definition: 'The frontier supports four operations: IS-EMPTY, TOP and POP to select and remove the next node, and ADD to insert a newly generated node.',
-    formula: 'IS-EMPTY(frontier) &middot; TOP(frontier) &middot; POP(frontier) &middot; ADD(node, frontier)',
-    tip: 'Click Run/Prev/Next, click a logged operation, or click node B or D on the graph to jump straight to that point in the run.',
+    formula: '<span class="sl-formula-op" data-op="ISEMPTY">IS-EMPTY(frontier)</span> &middot; <span class="sl-formula-op" data-op="TOP">TOP(frontier)</span> &middot; <span class="sl-formula-op" data-op="POP">POP(frontier)</span> &middot; <span class="sl-formula-op" data-op="ADD">ADD(node, frontier)</span>',
+    tip: 'Click Run/Prev/Next, click a logged operation, or click node B or D on the graph — the explanation on this side updates with every click too.',
     note: 'A expanded, with B, C, E waiting in the frontier. Run each operation in sequence — POP dequeues B, then ADD(D, frontier) inserts D (B’s child) — and watch the frontier container and the graph update together.'
   },
   {
@@ -246,32 +246,42 @@ const SDS_TERMS = [
 // for "no longer in the frontier"); ADD(D, frontier) then inserts D — the
 // child B would have produced by being expanded — so the sequence reads
 // as one coherent mini-run, not four disconnected examples.
+// `opKey` identifies which term in the formula box to highlight
+// (matches a data-op attribute on a <span> in SDS_TERMS.frontierops's
+// `formula`); `explain` is the sentence shown in the CONCEPT column in
+// place of the static definition, so the left-hand explanation changes
+// with every click, not just the graph on the right.
 const SDS_FRONTIER_OPS_STEPS = [
-  { op: null, label: 'Initial frontier', result: 'frontier = {B, C, E}', frontier: ['B', 'C', 'E'], changedNode: null,
+  { op: null, opKey: null, label: 'Initial frontier', result: 'frontier = {B, C, E}', frontier: ['B', 'C', 'E'], changedNode: null,
+    explain: 'Before any operation runs: A has already been expanded, so its successors B, C, and E are sitting in the frontier, waiting to be explored.',
     nodeStates: {
       A: { cls: ['sl-explored'], sublabel: 'expanded' },
       B: { cls: ['sl-frontier'] }, C: { cls: ['sl-frontier'] }, E: { cls: ['sl-frontier'] }
     },
     edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight' } },
-  { op: 'IS-EMPTY(frontier)', label: 'IS-EMPTY(frontier)', result: 'false', frontier: ['B', 'C', 'E'], changedNode: null,
+  { op: 'IS-EMPTY(frontier)', opKey: 'ISEMPTY', label: 'IS-EMPTY(frontier)', result: 'false', frontier: ['B', 'C', 'E'], changedNode: null,
+    explain: 'IS-EMPTY(frontier) only checks whether any nodes remain — it never changes the frontier. Since B, C, and E are still waiting, it returns false.',
     nodeStates: {
       A: { cls: ['sl-explored'], sublabel: 'expanded' },
       B: { cls: ['sl-frontier'] }, C: { cls: ['sl-frontier'] }, E: { cls: ['sl-frontier'] }
     },
     edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight' } },
-  { op: 'TOP(frontier)', label: 'TOP(frontier)', result: 'B', frontier: ['B', 'C', 'E'], changedNode: 'B',
+  { op: 'TOP(frontier)', opKey: 'TOP', label: 'TOP(frontier)', result: 'B', frontier: ['B', 'C', 'E'], changedNode: 'B',
+    explain: 'TOP(frontier) peeks at whichever node the frontier would give up next, WITHOUT removing it. Here that is B — still sitting in the frontier, just marked "next".',
     nodeStates: {
       A: { cls: ['sl-explored'], sublabel: 'expanded' },
       B: { cls: ['sl-frontier'], sublabel: 'next' }, C: { cls: ['sl-frontier'] }, E: { cls: ['sl-frontier'] }
     },
     edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight' } },
-  { op: 'POP(frontier)', label: 'POP(frontier)', result: 'B &nbsp;&rarr;&nbsp; frontier = {C, E}', frontier: ['C', 'E'], changedNode: 'B',
+  { op: 'POP(frontier)', opKey: 'POP', label: 'POP(frontier)', result: 'B &nbsp;&rarr;&nbsp; frontier = {C, E}', frontier: ['C', 'E'], changedNode: 'B',
+    explain: 'POP(frontier) removes AND returns the next node. B leaves the frontier — it is now the node being expanded — leaving frontier = {C, E}.',
     nodeStates: {
       A: { cls: ['sl-explored'], sublabel: 'expanded' },
       B: { cls: ['sl-explored'], sublabel: 'popped' }, C: { cls: ['sl-frontier'] }, E: { cls: ['sl-frontier'] }
     },
     edges: { 'A-B': 'sl-gedge-highlight', 'A-C': 'sl-gedge-highlight', 'A-E': 'sl-gedge-highlight' } },
-  { op: 'ADD(D, frontier)', label: 'ADD(D, frontier)', result: 'frontier = {C, E, D}', frontier: ['C', 'E', 'D'], changedNode: 'D',
+  { op: 'ADD(D, frontier)', opKey: 'ADD', label: 'ADD(D, frontier)', result: 'frontier = {C, E, D}', frontier: ['C', 'E', 'D'], changedNode: 'D',
+    explain: 'ADD(node, frontier) inserts a newly generated node. Expanding B produces child D, which is added: frontier = {C, E, D}.',
     nodeStates: {
       A: { cls: ['sl-explored'], sublabel: 'expanded' },
       B: { cls: ['sl-explored'], sublabel: 'popped' }, C: { cls: ['sl-frontier'] }, E: { cls: ['sl-frontier'] },
@@ -609,6 +619,22 @@ class SearchLectureUI {
           </div>
         </div>
       `;
+    } else if (term.kind === 'frontierops') {
+      // The explanation itself is part of the interactive illustration:
+      // each click (Run/Prev/Next, a logged operation, or a graph node)
+      // swaps in that operation's own sentence instead of leaving a
+      // single static definition on screen throughout the whole run.
+      const step = SDS_FRONTIER_OPS_STEPS[this.frOpsStep];
+      const stepLabel = this.frOpsStep === 0 ? 'Before any operation' : `Step ${this.frOpsStep} of ${SDS_FRONTIER_OPS_STEPS.length - 1}: ${step.label}`;
+      bodyHTML = `
+        <div class="teaching-panel active">
+          <h3>${term.name}</h3>
+          <div class="sl-frontier-op-stepbadge">${stepLabel}</div>
+          <p>${step.explain}</p>
+          <div class="formula-box">${term.formula}</div>
+          <div class="teaching-tip"><i data-lucide="lightbulb"></i>${term.tip}</div>
+        </div>
+      `;
     } else {
       bodyHTML = `
         <div class="teaching-panel active">
@@ -643,6 +669,14 @@ class SearchLectureUI {
     this.conceptColEl.querySelectorAll('.sl-pseudo-line').forEach(el => {
       el.addEventListener('click', () => this.setDsStep(this.dsStep + 1));
     });
+
+    if (term.kind === 'frontierops') {
+      const step = SDS_FRONTIER_OPS_STEPS[this.frOpsStep];
+      if (step.opKey) {
+        const activeOp = this.conceptColEl.querySelector(`.sl-formula-op[data-op="${step.opKey}"]`);
+        if (activeOp) activeOp.classList.add('active');
+      }
+    }
   }
 
   renderDataStructuresGraph() {
