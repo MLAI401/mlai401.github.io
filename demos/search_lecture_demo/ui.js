@@ -51,12 +51,26 @@
  * Python simulation (deque for BFS, heapq-equivalent dict scan for UCS) so
  * they can never disagree with each other or with a textbook-correct trace.
  *
- * Search Strategies and Evaluating Search remain placeholders until their
- * content is implemented.
+ * Search Strategies (11 concepts: Uninformed vs. Informed, the 8 algorithms,
+ * and Goal Test: Standard vs. Early) is also implemented. Unlike the other
+ * topics above, its 8 algorithm concepts are NOT fixed illustrations or
+ * precomputed traces — they run window.CityEngine (demos/search_lecture_demo/
+ * city_engine.js, a city-relabeled but otherwise byte-for-byte copy of the
+ * Playground's already-verified demos/search_demo/graph.js) LIVE, in the
+ * browser, for whatever start/goal city the user picks — exactly like the
+ * Playground's own Route-Finding Visualizer, just rendered with this page's
+ * SVG graph + concept-column layout instead of the Playground's canvas. Two
+ * concepts (Uninformed vs. Informed, Goal Test) stay fixed reference frames
+ * pulled from one cached NYC->LAX run, since they're meant to teach a fixed
+ * point of comparison rather than be explored. See the "Search Strategies
+ * (implemented)" section below for the live-run/normalize/render pipeline.
+ * Evaluating Search remains a placeholder until its content is implemented.
  *
  * Fixed graph: same A-H weighted network as the Route-Finding Visualizer
  * (search.md), Start = A, Goal = G, kept as an independent copy so this
- * page never loads the running demo's code.
+ * page never loads the running demo's code. (Search Strategies' city graph
+ * is the one exception — see above — since it deliberately DOES load a
+ * copy of that demo's engine, to guarantee it can never diverge from it.)
  */
 
 const SL_GRAPH = {
@@ -505,6 +519,250 @@ const SDS_FT_NARRATIVE = [
   'Tick 6: FIFO finally reaches the goal, G, after expanding every node breadth-first, level by level. LIFO and Priority are both long since finished.'
 ];
 
+// ---------------------------------------------------------------------
+// Search Strategies (implemented) — LIVE engine, not precomputed traces
+// ---------------------------------------------------------------------
+// SS_GRAPH/SS_NODE_LAYOUT are aliases onto window.CityEngine's own graph
+// data (demos/search_lecture_demo/city_engine.js) rather than a second,
+// separately-maintained copy — city_engine.js is the single source of
+// truth for the graph shape, so there is no way for this file's rendering
+// code and the live algorithm code to disagree about what the graph is.
+const SS_GRAPH = window.CityEngine.GRAPH;
+const SS_NODE_LAYOUT = window.CityEngine.NODE_LAYOUT;
+const SS_CITIES = Object.keys(SS_NODE_LAYOUT);
+const SS_DEFAULT_START = 'NYC';
+const SS_DEFAULT_GOAL = 'LAX';
+const SS_CITY_NAMES = {
+  NYC: 'New York', CHI: 'Chicago', DAL: 'Dallas', DEN: 'Denver',
+  ATL: 'Atlanta', MIA: 'Miami', LAX: 'Los Angeles', SEA: 'Seattle'
+};
+
+// algoKey -> the CityEngine run function, and which extra per-step fields
+// (frontier item shape) each one carries. Mirrors demos/search_demo/ui.js's
+// own generateTrace() dispatch exactly, just against window.CityEngine
+// instead of bare globals.
+const SS_RUNNERS = {
+  bfs: (s, g) => window.CityEngine.runBFS(s, g),
+  dfs: (s, g) => window.CityEngine.runDFS(s, g),
+  ucs: (s, g) => window.CityEngine.runUCS(s, g),
+  ids: (s, g) => window.CityEngine.runIDS(s, g),
+  astar: (s, g) => window.CityEngine.runAStar(s, g),
+  greedy: (s, g) => window.CityEngine.runGreedy(s, g),
+  bibf: (s, g) => window.CityEngine.runBIBF(s, g),
+  sma: (s, g, maxNodes) => window.CityEngine.runSMA(s, g, maxNodes)
+};
+
+// Actions that get their own row in the step table — the same filter
+// demos/search_demo/ui.js uses, so a run of e.g. UCS reads identically in
+// both places: only the moments where a node is chosen (or an iteration of
+// IDS restarts, or the goal is found) are "steps" a student needs to scan;
+// GENERATE_SUCCESSOR/UPDATE_FRONTIER/etc. still drive the graph+frontier
+// live between rows, they just don't each get their own table row.
+const SS_TABLE_ACTIONS = ['START', 'SELECT', 'GOAL_FOUND', 'ITERATION_START', 'FAIL'];
+
+function ssFrontierItem(item) {
+  const o = { state: item.node };
+  if (item.cost !== undefined) o.cost = item.cost;
+  if (item.h !== undefined) o.h = item.h;
+  if (item.f !== undefined) o.f = item.f;
+  if (item.dir !== undefined) o.dir = item.dir;
+  return o;
+}
+
+function ssNormReached(reached) {
+  if (!reached) return [];
+  if (reached instanceof Set) return Array.from(reached).map(state => ({ state, cost: null }));
+  if (reached instanceof Map) return Array.from(reached.entries()).map(([state, cost]) => ({ state, cost }));
+  return Object.entries(reached).map(([state, cost]) => ({ state, cost })); // BIBF/SMA plain object
+}
+
+// Builds the cumulative `edges` map for a live run, scanning the RAW steps
+// in order (never touching mutable .parent object chains — only the plain
+// currentNode/successorNode/action/dir strings every step already carries).
+// Ported unchanged from the offline generator that used to build SS_TRACES
+// ahead of time — the only difference is this now runs live, in the
+// browser, once per user-triggered run instead of once at build time.
+function ssBuildEdgesAccumulator(algoKey) {
+  const edges = {};
+  return (raw) => {
+    if (algoKey === 'sma') {
+      if (raw.action === 'GENERATE_SUCCESSOR' && raw.currentNode && raw.successorNode) {
+        edges[`${raw.currentNode}-${raw.successorNode}`] = 'sl-gedge-highlight';
+      } else if (raw.action === 'FORGET' && raw.currentNode && raw.successorNode) {
+        const key = `${raw.currentNode}-${raw.successorNode}`;
+        if (edges[key] === 'sl-gedge-highlight') edges[key] = 'sl-gedge-dup';
+      }
+    } else if (algoKey === 'bibf') {
+      if (raw.action === 'UPDATE_FRONTIER' && raw.currentNode && raw.successorNode) {
+        const key = raw.dir === 'B' ? `${raw.successorNode}-${raw.currentNode}` : `${raw.currentNode}-${raw.successorNode}`;
+        edges[key] = 'sl-gedge-highlight';
+      }
+    } else {
+      if (raw.action === 'UPDATE_FRONTIER' && raw.currentNode && raw.successorNode) {
+        const key = `${raw.currentNode}-${raw.successorNode}`;
+        Object.keys(edges).forEach(k => {
+          if (k.endsWith(`-${raw.successorNode}`) && k !== key && edges[k] === 'sl-gedge-highlight') {
+            edges[k] = 'sl-gedge-dup';
+          }
+        });
+        edges[key] = 'sl-gedge-highlight';
+      }
+    }
+    return { ...edges };
+  };
+}
+
+function ssNormalizeTrace(algoKey, rawSteps) {
+  const accumulate = ssBuildEdgesAccumulator(algoKey);
+  return rawSteps.map(raw => {
+    const out = {
+      action: raw.action,
+      currentNode: raw.currentNode || null,
+      successorNode: raw.successorNode || null,
+      explanation: raw.explanation,
+      frontier: (raw.frontier || []).map(ssFrontierItem),
+      reached: ssNormReached(raw.reached),
+      selected: raw.selected || [],
+      expanded: raw.expanded || [],
+      edges: accumulate(raw),
+      isGoal: raw.action === 'GOAL_FOUND'
+    };
+    if (raw.dir !== undefined) out.dir = raw.dir;
+    if (raw.path !== undefined) out.path = raw.path;
+    if (raw.cost !== undefined) out.cost = raw.cost;
+    if (raw.limit !== undefined) out.limit = raw.limit;
+    if (raw.depth !== undefined) out.depth = raw.depth;
+    if (raw.maxNodes !== undefined) out.maxNodes = raw.maxNodes;
+    if (raw.memoryUsed !== undefined) out.memoryUsed = raw.memoryUsed;
+    if (raw.meetNode !== undefined) out.meetNode = raw.meetNode;
+    if (raw.reachedDetail !== undefined) {
+      out.reachedF = Object.entries(raw.reachedDetail.f).map(([state, cost]) => ({ state, cost }));
+      out.reachedB = Object.entries(raw.reachedDetail.b).map(([state, cost]) => ({ state, cost }));
+    }
+    return out;
+  });
+}
+
+// Runs the real algorithm LIVE (window.CityEngine, the same trusted engine
+// the Playground uses) for whatever (start, goal[, maxNodes]) the user has
+// selected, then normalizes it into the step shape the rendering code
+// below expects. A tiny run-cache keyed on the full parameter tuple avoids
+// re-running the algorithm on every render tick (e.g. every Prev/Next
+// click re-renders the page, but shouldn't re-run BFS each time).
+const ssRunCache = new Map();
+function ssGenerateRun(algoKey, start, goal, maxNodes) {
+  const key = `${algoKey}|${start}|${goal}|${maxNodes || ''}`;
+  if (ssRunCache.has(key)) return ssRunCache.get(key);
+  const raw = SS_RUNNERS[algoKey](start, goal, maxNodes);
+  const steps = ssNormalizeTrace(algoKey, raw);
+  ssRunCache.set(key, steps);
+  return steps;
+}
+
+// Which frontier entry is "next to pop" for a given algorithm — mirrors
+// demos/search_demo/ui.js's own drawFrontierVisualizer() pop-order rules
+// exactly: FIFO/priority queues keep frontier[0] as the next item (the
+// engine re-sorts before every shift()); LIFO stacks (DFS/IDS) pop from the
+// END of the array; BIBF runs two interleaved priority queues at once and
+// pops whichever direction's cheapest item is lower cost (forward wins
+// ties). Used only to decide which box gets the "next" highlight.
+function ssNextFrontierKey(step, algoKey) {
+  const frontier = step.frontier || [];
+  if (frontier.length === 0) return null;
+  if (algoKey === 'dfs' || algoKey === 'ids') {
+    const item = frontier[frontier.length - 1];
+    return `${item.state}${item.dir || ''}`;
+  }
+  if (algoKey === 'bibf') {
+    const fFirst = frontier.find(it => it.dir === 'F');
+    const bFirst = frontier.find(it => it.dir === 'B');
+    const pick = (fFirst && (!bFirst || fFirst.cost <= bFirst.cost)) ? fFirst : bFirst;
+    return pick ? `${pick.state}${pick.dir}` : null;
+  }
+  const item = frontier[0];
+  return `${item.state}${item.dir || ''}`;
+}
+
+const SS_TERMS = [
+  {
+    key: 'uninformed-informed', kind: 'compare-cost', name: 'Uninformed vs. Informed Search',
+    definition: 'Uninformed search uses no heuristic; informed search uses an estimate of distance/cost to the goal.',
+    formula: 'Uninformed: no h(n) &middot; Informed: uses h(n)',
+    tip: 'g(n) = cost so far; h(n) = estimated cost remaining.',
+    note: 'The SAME frontier after NYC is expanded, shown two ways: uninformed search (left) tracks only g(n), the cost paid so far; informed search (right) adds h(n), the straight-line estimate of what is left, so f(n) = g(n) + h(n) can rank ATL above the others even though its g(n) alone looks worst.'
+  },
+  {
+    key: 'bfs', kind: 'algo-stepper', algoKey: 'bfs', name: 'Breadth-First Search (BFS)',
+    definition: 'Expands the shallowest node first.',
+    formula: 'f(n) = depth(n)',
+    tip: 'Explore cities one level away before going farther.',
+    note: 'FIFO frontier, uninformed. BFS also uses an EARLY goal test — a child is checked the moment it is generated, not when it is later selected — which is why it can return the very first time LAX is generated as a successor, even though that path (NYC-ATL-LAX, cost 10) is not the cheapest one.'
+  },
+  {
+    key: 'dfs', kind: 'algo-stepper', algoKey: 'dfs', name: 'Depth-First Search (DFS)',
+    definition: 'Expands the deepest node first.',
+    formula: 'f(n) = -depth(n)',
+    tip: 'Follow one route as far as possible before backtracking.',
+    note: 'LIFO frontier, uninformed, STANDARD goal test (checked only when a node is selected, not when generated). Successors are pushed in reverse alphabetical order so the stack still pops them alphabetically, matching BFS/UCS/A*/Greedy’s successor order convention.'
+  },
+  {
+    key: 'ucs', kind: 'algo-stepper', algoKey: 'ucs', name: 'Uniform-Cost Search (UCS)',
+    definition: 'Expands the node with the lowest path cost.',
+    formula: 'f(n) = g(n)',
+    tip: 'Select the city with the cheapest total travel cost so far.',
+    note: 'Priority queue ordered by g(n), STANDARD goal test. Unlike BFS, UCS re-checks a state whenever a cheaper path to it is found (watch NYC-ATL get superseded by the cheaper NYC-CHI-ATL route) and is guaranteed to find the truly optimal path: NYC-CHI-DEN-LAX at cost 8.'
+  },
+  {
+    key: 'ids', kind: 'algo-stepper', algoKey: 'ids', name: 'Iterative Deepening Search (IDS)',
+    definition: 'Repeats depth-limited search with increasing limits.',
+    formula: 'limit = 0, 1, 2, ...',
+    tip: 'Search nearby depths first, then gradually allow longer routes.',
+    note: 'Runs depth-limited DFS with limit = 0, then 1, then 2, ... restarting from scratch each time, until a limit deep enough to reach LAX is tried. Watch the limit badge climb and the frontier reset at the start of every iteration — IDS repeats a lot of work, but it gets BFS-like shallow solutions using only DFS-like memory.'
+  },
+  {
+    key: 'bidirectional', kind: 'algo-stepper', algoKey: 'bibf', name: 'Bidirectional Search',
+    definition: 'Searches from the start and goal until the two searches meet.',
+    formula: 'Forward &cap; Backward &ne; &empty;',
+    tip: 'Search from both cities and try to meet in the middle.',
+    note: 'Two searches run at once: a FORWARD search from NYC following successors, and a BACKWARD search from LAX following predecessors. The moment a city has been reached from BOTH directions, that is a candidate meeting point — the search keeps going only until no unexplored combination could possibly beat the best meeting cost found so far.'
+  },
+  {
+    key: 'greedy', kind: 'algo-stepper', algoKey: 'greedy', name: 'Greedy Best-First Search',
+    definition: 'Expands the node estimated to be closest to the goal.',
+    formula: 'f(n) = h(n)',
+    tip: 'Choose the city that appears closest to the destination.',
+    note: 'Priority queue ordered by h(n) alone — the straight-line estimate to LAX — completely ignoring g(n), the cost already paid. That makes it fast to a solution but not optimal: it lands on NYC-ATL-LAX (cost 10) because ATL LOOKS close to LAX, without ever weighing that against how expensive it was to reach ATL in the first place.'
+  },
+  {
+    key: 'astar', kind: 'algo-stepper', algoKey: 'astar', name: 'A*',
+    definition: 'Expands the node with the lowest estimated total solution cost.',
+    formula: 'f(n) = g(n) + h(n)',
+    tip: 'Balance distance already traveled with estimated distance remaining.',
+    note: 'Priority queue ordered by f(n) = g(n) + h(n) — cost so far PLUS estimated cost remaining. Combining both is what makes A* both fast (like Greedy) and optimal (like UCS): with this admissible heuristic it finds the same truly optimal path UCS does, NYC-CHI-DEN-LAX at cost 8, typically after generating fewer nodes.'
+  },
+  {
+    key: 'sma', kind: 'algo-stepper', algoKey: 'sma', name: 'SMA*',
+    definition: 'A* search that operates within a fixed memory limit.',
+    formula: 'f(n) = g(n) + h(n) + memory bound',
+    tip: 'Keep promising routes; forget less promising ones when memory is full.',
+    note: 'Same f(n) = g(n) + h(n) as A*, but capped at a fixed number of nodes in memory (6, here). When memory fills up, SMA* FORGETS its worst (highest-f) leaf and backs up that f-value to the leaf’s parent, so the parent is never mistaken for being as promising as it first looked — watch the memory-used counter and the FORGET/BACKUP steps as the search proceeds.'
+  },
+  {
+    key: 'bibf', kind: 'algo-stepper', algoKey: 'bibf', name: 'BiBF',
+    definition: 'Runs best-first search from both the start and goal directions.',
+    formula: 'Forward &harr; Backward',
+    tip: 'Both sides choose promising cities until their searches connect.',
+    note: 'The concrete best-first version of Bidirectional Search shown above: BOTH directions are priority queues ordered by path cost g(n), and at every step the search expands whichever direction currently has the cheaper frontier top — alternating as costs demand, rather than strictly taking turns.'
+  },
+  {
+    key: 'goaltest', kind: 'goaltest', name: 'Goal Test: Standard vs. Early',
+    definition: 'Standard tests when a node is selected; early tests when a child is generated.',
+    formula: 'Standard: IS-GOAL(node.STATE) &middot; Early: IS-GOAL(child.STATE)',
+    tip: 'BFS: early is safe. UCS/A*: use standard because the first generated goal may not be lowest-cost.',
+    note: 'Two frozen moments from the traces above, side by side. Left (BFS, EARLY): the instant LAX is GENERATED as ATL’s successor, it is immediately recognized as the goal — safe for BFS because every step costs the same, so the first-generated goal is guaranteed shallowest. Right (UCS, STANDARD): LAX is only goal-tested after being SELECTED as the cheapest frontier item — required whenever costs differ, since an early-generated goal (like the cost-10 NYC-ATL-LAX) might not be the cheapest one (cost 8 via NYC-CHI-DEN-LAX).'
+  }
+];
+
 const SL_TOPICS = [
   { key: 'terminology', name: 'Search Terminology' },
   { key: 'datastructures', name: 'Search Data Structures' },
@@ -521,6 +779,14 @@ class SearchLectureUI {
     this.dsStep = 0;
     this.frOpsStep = 0;
     this.ftTick = 0;
+    this.ssIdx = 0;
+    this.ssStep = 0;
+    this.ssStart = SS_DEFAULT_START;
+    this.ssGoal = SS_DEFAULT_GOAL;
+    this.ssSmaMaxNodes = 6;
+    this.ssPlaying = false;
+    this.ssPlayTimer = null;
+    this.ssPlaySpeed = 900; // ms per auto-run step
 
     this.tabsEl = document.getElementById('sl-topic-tabs');
     this.conceptColEl = document.getElementById('sl-concept-col');
@@ -539,6 +805,7 @@ class SearchLectureUI {
 
   setTopic(idx) {
     if (idx < 0 || idx >= SL_TOPICS.length) return;
+    if (this.ssPlayTimer) { clearInterval(this.ssPlayTimer); this.ssPlayTimer = null; this.ssPlaying = false; }
     this.topicIdx = idx;
     this.termIdx = 0;
     this.dsIdx = 0;
@@ -546,6 +813,8 @@ class SearchLectureUI {
     this.dsStep = 0;
     this.frOpsStep = 0;
     this.ftTick = 0;
+    this.ssIdx = 0;
+    this.ssStep = 0;
     this.render();
   }
 
@@ -561,6 +830,90 @@ class SearchLectureUI {
     this.dsStep = 0;
     this.frOpsStep = 0;
     this.ftTick = 0;
+    this.render();
+  }
+
+  setSsTerm(idx) {
+    if (idx < 0 || idx >= SS_TERMS.length || idx === this.ssIdx) return;
+    this.ssPause();
+    this.ssIdx = idx;
+    this.ssStep = 0;
+    this.render();
+  }
+
+  // Returns the live, normalized run for whichever algo-stepper concept is
+  // currently selected, generating (and cheaply re-using, via ssRunCache)
+  // it from window.CityEngine for the current start/goal/SMA-bound. Callers
+  // must only invoke this when SS_TERMS[this.ssIdx].kind === 'algo-stepper'.
+  ssCurrentSteps() {
+    const term = SS_TERMS[this.ssIdx];
+    return ssGenerateRun(term.algoKey, this.ssStart, this.ssGoal, this.ssSmaMaxNodes);
+  }
+
+  setSsStep(idx) {
+    const term = SS_TERMS[this.ssIdx];
+    if (term.kind !== 'algo-stepper') return;
+    const steps = this.ssCurrentSteps();
+    if (idx < 0 || idx >= steps.length) {
+      if (idx >= steps.length) this.ssPause(); // ran off the end during autoplay
+      return;
+    }
+    this.ssStep = idx;
+    this.render();
+  }
+
+  // Start/Goal/SMA-bound selectors: changing any of them invalidates the
+  // in-progress run and starts over at step 0, just like the Playground's
+  // own generateTrace()-on-change behavior.
+  setSsStart(city) {
+    if (!SS_NODE_LAYOUT[city] || city === this.ssStart) return;
+    this.ssPause();
+    this.ssStart = city;
+    this.ssStep = 0;
+    this.render();
+  }
+
+  setSsGoal(city) {
+    if (!SS_NODE_LAYOUT[city] || city === this.ssGoal) return;
+    this.ssPause();
+    this.ssGoal = city;
+    this.ssStep = 0;
+    this.render();
+  }
+
+  setSsSmaMaxNodes(n) {
+    const val = parseInt(n, 10);
+    if (!val || val === this.ssSmaMaxNodes) return;
+    this.ssPause();
+    this.ssSmaMaxNodes = val;
+    this.ssStep = 0;
+    this.render();
+  }
+
+  ssPlay() {
+    if (this.ssPlaying) return;
+    const term = SS_TERMS[this.ssIdx];
+    if (term.kind !== 'algo-stepper') return;
+    const steps = this.ssCurrentSteps();
+    if (this.ssStep >= steps.length - 1) this.ssStep = 0; // replay from the start
+    this.ssPlaying = true;
+    this.render();
+    this.ssPlayTimer = setInterval(() => {
+      const curSteps = this.ssCurrentSteps();
+      if (this.ssStep >= curSteps.length - 1) { this.ssPause(); return; }
+      this.ssStep++;
+      this.render();
+    }, this.ssPlaySpeed);
+  }
+
+  ssPause() {
+    if (this.ssPlayTimer) { clearInterval(this.ssPlayTimer); this.ssPlayTimer = null; }
+    if (this.ssPlaying) { this.ssPlaying = false; this.render(); }
+  }
+
+  ssReset() {
+    this.ssPause();
+    this.ssStep = 0;
     this.render();
   }
 
@@ -632,6 +985,8 @@ class SearchLectureUI {
       this.renderTerminologyConcept();
     } else if (topic.key === 'datastructures') {
       this.renderDataStructuresConcept();
+    } else if (topic.key === 'strategies') {
+      this.renderStrategiesConcept();
     } else {
       this.renderPlaceholderConcept(topic);
     }
@@ -643,6 +998,8 @@ class SearchLectureUI {
       this.renderTerminologyGraph();
     } else if (topic.key === 'datastructures') {
       this.renderDataStructuresGraph();
+    } else if (topic.key === 'strategies') {
+      this.renderStrategiesGraph();
     } else {
       this.renderPlaceholderGraph();
     }
@@ -1102,6 +1459,423 @@ class SearchLectureUI {
     });
   }
 
+  // ---------- Search Strategies (implemented) ----------
+
+  // Fixed graph-options bundle for every Search Strategies illustration:
+  // the city graph is the SAME relative layout as SL_GRAPH (just longer
+  // 3-letter labels), so it reuses renderGraphSVG's generic opts rather
+  // than a second copy of the SVG geometry code. ATL sits where the old
+  // A-H graph's hub node (E) sat — five edges meet there — so it gets the
+  // same "busiest node" label treatment; NYC is the start node.
+  ssGraphOpts() {
+    return {
+      // startNode/hubNode are LAYOUT hints only (which screen position needs
+      // special sublabel placement to dodge nearby edge-cost badges) — NOT
+      // tied to the live-selected start/goal city, which can be anything.
+      graph: SS_GRAPH, layout: SS_NODE_LAYOUT, nodeRadius: 8, viewBoxH: 82,
+      extraClass: 'sl-graph-svg-cities', startNode: SS_DEFAULT_START, hubNode: 'ATL'
+    };
+  }
+
+  renderSsStartGoalControls() {
+    const cityOption = (city, selected) =>
+      `<option value="${city}" ${city === selected ? 'selected' : ''}>${city} &mdash; ${SS_CITY_NAMES[city]}</option>`;
+    const smaRow = SS_TERMS[this.ssIdx].algoKey === 'sma' ? `
+      <div class="sl-ss-control-row">
+        <label for="sl-ss-sma-bound">Memory bound:</label>
+        <select id="sl-ss-sma-bound" class="sl-ss-select">
+          ${[3, 4, 5, 6, 7, 8].map(n => `<option value="${n}" ${n === this.ssSmaMaxNodes ? 'selected' : ''}>${n} nodes</option>`).join('')}
+        </select>
+      </div>` : '';
+    return `
+      <div class="sl-ss-controls">
+        <div class="sl-ss-control-row">
+          <label for="sl-ss-start">Start:</label>
+          <select id="sl-ss-start" class="sl-ss-select">${SS_CITIES.map(c => cityOption(c, this.ssStart)).join('')}</select>
+        </div>
+        <div class="sl-ss-control-row">
+          <label for="sl-ss-goal">Goal:</label>
+          <select id="sl-ss-goal" class="sl-ss-select">${SS_CITIES.map(c => cityOption(c, this.ssGoal)).join('')}</select>
+        </div>
+        ${smaRow}
+      </div>
+    `;
+  }
+
+  bindSsStartGoalControls(container) {
+    const startSel = container.querySelector('#sl-ss-start');
+    const goalSel = container.querySelector('#sl-ss-goal');
+    const smaSel = container.querySelector('#sl-ss-sma-bound');
+    if (startSel) startSel.addEventListener('change', (e) => this.setSsStart(e.target.value));
+    if (goalSel) goalSel.addEventListener('change', (e) => this.setSsGoal(e.target.value));
+    if (smaSel) smaSel.addEventListener('change', (e) => this.setSsSmaMaxNodes(e.target.value));
+  }
+
+  renderStrategiesConcept() {
+    const term = SS_TERMS[this.ssIdx];
+    const selectorHTML = this.renderConceptSelectorHTML(SS_TERMS, this.ssIdx);
+
+    let bodyHTML;
+    if (term.kind === 'algo-stepper') {
+      const steps = this.ssCurrentSteps();
+      const step = steps[Math.min(this.ssStep, steps.length - 1)];
+      bodyHTML = `
+        <div class="teaching-panel active">
+          <h3>${term.name}</h3>
+          <p>${term.definition}</p>
+          <div class="formula-box">${term.formula}</div>
+
+          ${this.renderSsStartGoalControls()}
+
+          <div class="sl-stepper-noteblock">
+            <div class="sl-frontier-op-stepbadge">Step ${this.ssStep + 1} / ${steps.length} &middot; ${step.action}</div>
+            <p class="sl-stepper-note">${step.explanation}</p>
+          </div>
+
+          <div class="sl-step-controls">
+            <button class="sl-step-btn" id="sl-ss-prev" ${this.ssStep === 0 ? 'disabled' : ''}>&larr; Prev</button>
+            <button class="sl-step-btn sl-step-btn-play" id="sl-ss-play" title="${this.ssPlaying ? 'Pause' : 'Auto-run'}">
+              ${this.ssPlaying ? '&#10074;&#10074; Pause' : '&#9654; Auto-Run'}
+            </button>
+            <button class="sl-step-btn" id="sl-ss-next" ${this.ssStep === steps.length - 1 ? 'disabled' : ''}>Next &rarr;</button>
+          </div>
+          <div class="sl-step-controls sl-step-controls-secondary">
+            <button class="sl-step-btn sl-step-btn-ghost" id="sl-ss-reset">&#8634; Reset</button>
+            <span class="sl-step-indicator">${step.isGoal ? 'Goal found!' : (step.action === 'FAIL' ? 'No path found' : step.action)}</span>
+          </div>
+        </div>
+      `;
+    } else {
+      // 'compare-cost' and 'goaltest' are fixed side-by-side illustrations
+      // (no per-algorithm stepper of their own) — see renderStrategiesGraph.
+      bodyHTML = `
+        <div class="teaching-panel active">
+          <h3>${term.name}</h3>
+          <p>${term.definition}</p>
+          <div class="formula-box">${term.formula}</div>
+          <div class="teaching-tip"><i data-lucide="lightbulb"></i>${term.tip}</div>
+        </div>
+      `;
+    }
+
+    this.conceptColEl.innerHTML = `
+      <p class="sl-topic-intro">Different search strategies decide which node to select next from the frontier. Every algorithm below runs LIVE in your browser (the same trusted engine behind the Playground) on the SAME city graph — pick any Start and Goal city and every strategy searches between the exact same two points, so their differing behavior is a real consequence of the strategy, not of a different problem.</p>
+      ${selectorHTML}
+      ${bodyHTML}
+    `;
+
+    this.conceptColEl.querySelectorAll('.sl-concept-chip').forEach(el => {
+      el.addEventListener('click', () => this.setSsTerm(parseInt(el.dataset.idx, 10)));
+    });
+    this.bindSsStartGoalControls(this.conceptColEl);
+    const prevBtn = this.conceptColEl.querySelector('#sl-ss-prev');
+    const nextBtn = this.conceptColEl.querySelector('#sl-ss-next');
+    const playBtn = this.conceptColEl.querySelector('#sl-ss-play');
+    const resetBtn = this.conceptColEl.querySelector('#sl-ss-reset');
+    if (prevBtn) prevBtn.addEventListener('click', () => this.setSsStep(this.ssStep - 1));
+    if (nextBtn) nextBtn.addEventListener('click', () => this.setSsStep(this.ssStep + 1));
+    if (playBtn) playBtn.addEventListener('click', () => this.ssPlaying ? this.ssPause() : this.ssPlay());
+    if (resetBtn) resetBtn.addEventListener('click', () => this.ssReset());
+  }
+
+  renderStrategiesGraph() {
+    const term = SS_TERMS[this.ssIdx];
+    const opts = this.ssGraphOpts();
+
+    if (term.kind === 'compare-cost') {
+      // Fixed snapshot: NYC just expanded, so its three successors sit in
+      // the frontier. Left panel labels each with g(n) only; right panel
+      // labels the SAME three nodes with f(n) = g(n) + h(n), using
+      // window.CityEngine.getHeuristic() live (the exact function the real
+      // algorithms call) rather than a separately hand-kept table.
+      const succs = SS_GRAPH[SS_DEFAULT_START];
+      const gStates = { [SS_DEFAULT_START]: { cls: ['sl-explored'], sublabel: 'expanded' } };
+      const fStates = { [SS_DEFAULT_START]: { cls: ['sl-explored'], sublabel: 'expanded' } };
+      succs.forEach(s => {
+        gStates[s.to] = { cls: ['sl-frontier'], sublabel: `g=${s.cost}` };
+        const h = window.CityEngine.getHeuristic(s.to, SS_DEFAULT_GOAL);
+        fStates[s.to] = { cls: ['sl-frontier'], sublabel: `f=${s.cost + h}` };
+      });
+
+      this.graphColEl.innerHTML = `
+        <div class="sl-graph-illustration sl-graph-illustration-compact">
+          <div class="sl-dual-diagrams">
+            <div class="sl-diagram-block sl-diagram-block-graph">
+              <div class="sl-tree-caption">Uninformed: g(n) only</div>
+              <div class="sl-graph-svg-wrap">${this.renderGraphSVG(gStates, {}, null, opts)}</div>
+            </div>
+            <div class="sl-diagram-block sl-diagram-block-graph">
+              <div class="sl-tree-caption">Informed: f(n) = g(n) + h(n)</div>
+              <div class="sl-graph-svg-wrap">${this.renderGraphSVG(fStates, {}, null, opts)}</div>
+            </div>
+          </div>
+          <div class="sl-illustration-note">${term.note}</div>
+        </div>
+      `;
+      return;
+    }
+
+    if (term.kind === 'goaltest') {
+      // Two frozen, independently-verified moments pulled from a cached
+      // LIVE default-run (NYC->LAX) of BFS and UCS — the same run every
+      // load produces, deterministically, since it's the same engine and
+      // graph either way: BFS's EARLY test (LAX recognized the instant
+      // it's generated) vs UCS's STANDARD test (LAX tested only after
+      // being selected as the cheapest frontier item).
+      const bfsRun = ssGenerateRun('bfs', SS_DEFAULT_START, SS_DEFAULT_GOAL);
+      const ucsRun = ssGenerateRun('ucs', SS_DEFAULT_START, SS_DEFAULT_GOAL);
+      const bfsStep = bfsRun[Math.min(14, bfsRun.length - 1)];
+      const ucsStep = ucsRun[Math.min(37, ucsRun.length - 1)];
+      const bfsStates = this.buildAlgoNodeStates(bfsStep, 'bfs', SS_DEFAULT_START, SS_DEFAULT_GOAL);
+      const ucsStates = this.buildAlgoNodeStates(ucsStep, 'ucs', SS_DEFAULT_START, SS_DEFAULT_GOAL);
+
+      this.graphColEl.innerHTML = `
+        <div class="sl-graph-illustration sl-graph-illustration-compact">
+          <div class="sl-dual-diagrams">
+            <div class="sl-diagram-block sl-diagram-block-graph">
+              <div class="sl-tree-caption">Early (BFS)</div>
+              <div class="sl-graph-svg-wrap">${this.renderGraphSVG(bfsStates, bfsStep.edges, null, opts)}</div>
+              <div class="sl-frontier-type-pop">${bfsStep.explanation}</div>
+            </div>
+            <div class="sl-diagram-block sl-diagram-block-graph">
+              <div class="sl-tree-caption">Standard (UCS)</div>
+              <div class="sl-graph-svg-wrap">${this.renderGraphSVG(ucsStates, ucsStep.edges, null, opts)}</div>
+              <div class="sl-frontier-type-pop">${ucsStep.explanation}</div>
+            </div>
+          </div>
+          <div class="sl-illustration-note">${term.note}</div>
+        </div>
+      `;
+      return;
+    }
+
+    // kind === 'algo-stepper' — live run for the user-selected start/goal.
+    const steps = this.ssCurrentSteps();
+    const step = steps[Math.min(this.ssStep, steps.length - 1)];
+    const nodeStates = this.buildAlgoNodeStates(step, term.algoKey, this.ssStart, this.ssGoal);
+    const readoutHTML = this.renderAlgoReadout(step);
+    const frontierBlocksHTML = this.renderSsFrontierBlocks(step, term.algoKey);
+    const stepTableHTML = this.renderSsStepTable(steps, Math.min(this.ssStep, steps.length - 1), term.algoKey);
+
+    this.graphColEl.innerHTML = `
+      <div class="sl-graph-illustration sl-graph-illustration-compact sl-ss-live">
+        <div class="sl-dual-diagrams">
+          <div class="sl-diagram-block sl-diagram-block-graph">
+            <div class="sl-tree-caption">City Graph (${this.ssStart} &rarr; ${this.ssGoal})</div>
+            <div class="sl-graph-svg-wrap">${this.renderGraphSVG(nodeStates, step.edges, null, opts)}</div>
+          </div>
+          <div class="sl-diagram-block sl-diagram-block-tree sl-stepper-panel">
+            <div class="sl-tree-caption">${term.name} Readout</div>
+            <div class="sl-stepper-readout">${readoutHTML}</div>
+            <div class="sl-ss-frontier-label">Frontier</div>
+            <div class="sl-ss-frontier-wrap">${frontierBlocksHTML}</div>
+          </div>
+        </div>
+        <div class="sl-ss-step-table-section">
+          <div class="sl-tree-caption">Step Table</div>
+          ${stepTableHTML}
+        </div>
+        <div class="sl-illustration-note">${term.note}</div>
+      </div>
+    `;
+
+    const tableWrap = this.graphColEl.querySelector('#sl-ss-step-table-wrap');
+    if (tableWrap) tableWrap.scrollTop = tableWrap.scrollHeight;
+  }
+
+  // Renders the frontier as visual blocks (reusing the same
+  // .sl-frontier-box(-pop)/.sl-frontier-boxes styling as Search Data
+  // Structures' Frontier Operations/Types demos) instead of a plain-text
+  // list. The item that would be POPped next is highlighted, using the
+  // same pop-order rule as ssNextFrontierKey/demos/search_demo/ui.js's
+  // drawFrontierVisualizer(): FIFO/priority queues pop frontier[0], LIFO
+  // stacks (DFS/IDS) pop the array's last element, and BIBF pops whichever
+  // direction's cheapest item is lower cost. BIBF's forward/backward
+  // frontiers are shown as two clearly separate rows.
+  renderSsFrontierBlocks(step, algoKey) {
+    const frontier = step.frontier || [];
+    if (frontier.length === 0) {
+      return `<div class="sl-frontier-empty-msg">Frontier is empty.</div>`;
+    }
+    const nextKey = ssNextFrontierKey(step, algoKey);
+    const fmtSub = (item) => {
+      if (item.f !== undefined) return `f=${item.f}`;
+      if (item.h !== undefined) return `h=${item.h}`;
+      if (item.cost !== undefined) return `g=${item.cost}`;
+      return '';
+    };
+    const box = (item) => {
+      const key = `${item.state}${item.dir || ''}`;
+      const sub = fmtSub(item);
+      const popCls = key === nextKey ? 'sl-frontier-box-pop' : '';
+      return `<div class="sl-frontier-box ${popCls}">${item.state}${sub ? `<span class="sl-frontier-box-cost">${sub}</span>` : ''}</div>`;
+    };
+
+    if (algoKey === 'bibf') {
+      const fwd = frontier.filter(it => it.dir === 'F');
+      const bwd = frontier.filter(it => it.dir === 'B');
+      return `
+        <div class="sl-frontier-dir-row">
+          <span class="sl-frontier-dir-label">Forward (from ${this.ssStart})</span>
+          <div class="sl-frontier-boxes">${fwd.length ? fwd.map(box).join('') : '<span class="sl-frontier-empty-msg">empty</span>'}</div>
+        </div>
+        <div class="sl-frontier-dir-row">
+          <span class="sl-frontier-dir-label">Backward (from ${this.ssGoal})</span>
+          <div class="sl-frontier-boxes">${bwd.length ? bwd.map(box).join('') : '<span class="sl-frontier-empty-msg">empty</span>'}</div>
+        </div>
+      `;
+    }
+
+    const isStack = algoKey === 'dfs' || algoKey === 'ids';
+    const ordered = isStack ? [...frontier].reverse() : frontier; // stack: TOP (next pop) first
+    const orderNote = isStack ? 'TOP of stack &rarr; pop next' : 'Front of queue &rarr; pop next';
+    return `
+      <div class="sl-frontier-order-note">${orderNote}</div>
+      <div class="sl-frontier-boxes">${ordered.map(box).join('')}</div>
+    `;
+  }
+
+  // Compact step table, filtered to the "significant" actions (matches
+  // demos/search_demo/ui.js's renderStepTableUpToCurrent()'s own filter) so
+  // a run reads as one row per real decision point rather than one row per
+  // internal event. Populated only up through the current step, current
+  // row highlighted, auto-scrolled to the bottom by the caller.
+  renderSsStepTable(steps, uptoIdx, algoKey) {
+    const fmtFrontierItem = (it) => {
+      const sub = it.f !== undefined ? `f:${it.f}` : it.h !== undefined ? `h:${it.h}` : it.cost !== undefined ? `g:${it.cost}` : '';
+      const dir = it.dir ? `[${it.dir}]` : '';
+      return `${it.state}${dir}${sub ? `(${sub})` : ''}`;
+    };
+    const fmtReachedItem = (it) => (it.cost !== null && it.cost !== undefined) ? `${it.state}:${it.cost}` : it.state;
+
+    let displayNum = 0;
+    const rows = [];
+    for (let i = 0; i <= uptoIdx; i++) {
+      const s = steps[i];
+      if (!SS_TABLE_ACTIONS.includes(s.action)) continue;
+
+      let selectedText = s.currentNode || '-';
+      if (s.action === 'START') selectedText = 'Start';
+      if (s.action === 'ITERATION_START') selectedText = `Restart, limit ${s.limit}`;
+      if (s.action === 'FAIL') selectedText = 'No solution';
+
+      let expandedText = 'No';
+      if (s.action === 'SELECT') {
+        for (let j = i + 1; j <= uptoIdx; j++) {
+          const sj = steps[j];
+          if (SS_TABLE_ACTIONS.includes(sj.action)) break;
+          if (sj.action === 'EXPAND' || sj.action === 'REGENERATE') { expandedText = 'Yes'; break; }
+        }
+      }
+      if (s.action === 'GOAL_FOUND') expandedText = 'Goal!';
+      if (s.action === 'FAIL') expandedText = '&mdash;';
+
+      const frontierText = (s.frontier && s.frontier.length) ? s.frontier.map(fmtFrontierItem).join(', ') : 'Empty';
+      const reachedText = (s.reached && s.reached.length) ? s.reached.map(fmtReachedItem).join(', ') : '&mdash;';
+      const numLabel = (algoKey === 'ids' && s.limit !== undefined) ? `${displayNum} (lim ${s.limit})` : `${displayNum}`;
+      displayNum++;
+
+      rows.push(`
+        <tr class="${i === uptoIdx ? 'sl-ss-table-row-active' : ''}">
+          <td>${numLabel}</td>
+          <td>${selectedText}</td>
+          <td>${expandedText}</td>
+          <td><small>${frontierText}</small></td>
+          <td><small>${reachedText}</small></td>
+        </tr>
+      `);
+    }
+
+    return `
+      <div class="sl-ss-step-table-wrap" id="sl-ss-step-table-wrap">
+        <table class="sl-ss-step-table">
+          <thead><tr><th>#</th><th>Selected</th><th>Expanded?</th><th>Frontier</th><th>Reached</th></tr></thead>
+          <tbody>${rows.join('')}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  // Turns one normalized SS step into a nodeStates map for renderGraphSVG.
+  // `selected` gives expansion-order badges (parsing off a trailing
+  // "(F)"/"(B)" direction tag for BIBF); `frontier` items carry whichever
+  // of cost/h/f that algorithm tracks, shown as the node's sublabel. BIBF's
+  // backward-direction nodes get a visually distinct "-b" class so the two
+  // simultaneous searches read as clearly separate. `start`/`goal`, when
+  // given, get a persistent dashed ring (like the Playground's cyan/red
+  // outlines) so the two endpoints stay visible throughout the run, not
+  // just at the moment the goal is actually found.
+  buildAlgoNodeStates(step, algoKey, start, goal) {
+    const nodeStates = {};
+    const parseDir = (s) => {
+      const m = /^(.*)\((F|B)\)$/.exec(s);
+      return m ? { state: m[1], dir: m[2] } : { state: s, dir: null };
+    };
+    const orderList = (step.selected || []).map(parseDir);
+    orderList.forEach((o, i) => {
+      const isCurrentNow = step.currentNode === o.state && i === orderList.length - 1 &&
+        (step.dir === undefined || o.dir === step.dir);
+      const exploredCls = o.dir === 'B' ? 'sl-explored-b' : 'sl-explored';
+      nodeStates[o.state] = {
+        cls: isCurrentNow ? ['sl-current'].concat(step.isGoal ? ['sl-goal'] : []) : [exploredCls],
+        badge: String(i + 1)
+      };
+    });
+    (step.frontier || []).forEach(item => {
+      if (!nodeStates[item.state]) {
+        const frontierCls = item.dir === 'B' ? 'sl-frontier-b' : 'sl-frontier';
+        nodeStates[item.state] = { cls: [frontierCls] };
+      }
+      let sub = null;
+      if (item.f !== undefined) sub = `f=${item.f}`;
+      else if (item.h !== undefined) sub = `h=${item.h}`;
+      else if (item.cost !== undefined) sub = `g=${item.cost}`;
+      if (sub) nodeStates[item.state].sublabel = sub;
+    });
+    if (step.meetNode) {
+      if (!nodeStates[step.meetNode]) nodeStates[step.meetNode] = { cls: [] };
+      if (!nodeStates[step.meetNode].cls.includes('sl-goal')) nodeStates[step.meetNode].cls.push('sl-goal');
+    }
+    if (start) {
+      if (!nodeStates[start]) nodeStates[start] = { cls: [] };
+      nodeStates[start].cls = [...nodeStates[start].cls, 'sl-start'];
+    }
+    if (goal) {
+      if (!nodeStates[goal]) nodeStates[goal] = { cls: [] };
+      if (!nodeStates[goal].cls.includes('sl-goal')) nodeStates[goal].cls = [...nodeStates[goal].cls, 'sl-goal-target'];
+    }
+    return nodeStates;
+  }
+
+  // Generic current/reached/order readout, plus a handful of fields that
+  // only some algorithms carry (IDS's limit/depth, SMA's memory bound,
+  // BIBF's meeting node) — each rendered only when the step actually has
+  // that field, so one readout works for all 8 algorithms. The frontier
+  // itself is NOT shown here as text — see renderSsFrontierBlocks, which
+  // shows it as visual blocks instead.
+  renderAlgoReadout(step) {
+    const fmtReachedItem = (item) => (item.cost !== null && item.cost !== undefined) ? `${item.state}(${item.cost})` : item.state;
+    const reachedLabel = (step.reached && step.reached.length) ? step.reached.map(fmtReachedItem).join(', ') : '(empty)';
+
+    const orderLabel = (step.selected && step.selected.length) ? step.selected.join(' &rarr; ') : '(none yet)';
+
+    let rows = `
+      <div class="sl-stepper-readout-row"><span class="sl-nodecard-key">current</span><span class="sl-nodecard-val">${step.currentNode || '(none yet)'}${step.isGoal ? ' (goal!)' : ''}</span></div>
+      <div class="sl-stepper-readout-row"><span class="sl-nodecard-key">reached</span><span class="sl-nodecard-val">{${reachedLabel}}</span></div>
+      <div class="sl-stepper-readout-row"><span class="sl-nodecard-key">order</span><span class="sl-nodecard-val">${orderLabel}</span></div>
+    `;
+    if (step.limit !== undefined) {
+      rows += `<div class="sl-stepper-readout-row"><span class="sl-nodecard-key">limit</span><span class="sl-nodecard-val">${step.limit}${step.depth !== undefined ? ` (depth ${step.depth})` : ''}</span></div>`;
+    }
+    if (step.maxNodes !== undefined) {
+      rows += `<div class="sl-stepper-readout-row"><span class="sl-nodecard-key">memory</span><span class="sl-nodecard-val">${step.memoryUsed} / ${step.maxNodes} nodes</span></div>`;
+    }
+    if (step.meetNode) {
+      rows += `<div class="sl-stepper-readout-row"><span class="sl-nodecard-key">meet</span><span class="sl-nodecard-val">${step.meetNode} (cost ${step.cost})</span></div>`;
+    }
+    return rows;
+  }
+
   // ---------- Other topics (not yet implemented) ----------
 
   renderPlaceholderConcept(topic) {
@@ -1135,17 +1909,30 @@ class SearchLectureUI {
 
   // ---------- SVG graph rendering ----------
 
-  slNodeXY(n) {
-    const layout = SL_NODE_LAYOUT[n];
-    return { cx: layout.x * 100, cy: layout.y * 100 };
+  slNodeXY(n, layout = SL_NODE_LAYOUT) {
+    const l = layout[n];
+    return { cx: l.x * 100, cy: l.y * 100 };
   }
 
-  renderGraphSVG(nodeStates = {}, edgeClasses = {}, clickableNodes = null) {
+  // `opts` generalizes this renderer beyond the fixed A-H Search
+  // Terminology/Data Structures graph so Search Strategies can reuse it
+  // with its own city-named graph (same relative layout, longer 3-letter
+  // labels): { graph, layout, nodeRadius, viewBoxH, extraClass,
+  // startNode, hubNode } all default to the original A-H graph's shape.
+  renderGraphSVG(nodeStates = {}, edgeClasses = {}, clickableNodes = null, opts = {}) {
+    const graph = opts.graph || SL_GRAPH;
+    const layout = opts.layout || SL_NODE_LAYOUT;
+    const r = opts.nodeRadius || 6.5;
+    const viewBoxH = opts.viewBoxH || 82;
+    const extraClass = opts.extraClass || '';
+    const startNode = opts.startNode || 'A';
+    const hubNode = opts.hubNode || 'E';
+
     let edgesSvg = '';
-    Object.entries(SL_GRAPH).forEach(([from, succs]) => {
-      const p1 = this.slNodeXY(from);
+    Object.entries(graph).forEach(([from, succs]) => {
+      const p1 = this.slNodeXY(from, layout);
       succs.forEach(s => {
-        const p2 = this.slNodeXY(s.to);
+        const p2 = this.slNodeXY(s.to, layout);
         const key = `${from}-${s.to}`;
         const cls = edgeClasses[key] || '';
         const mx = (p1.cx + p2.cx) / 2;
@@ -1157,8 +1944,8 @@ class SearchLectureUI {
     });
 
     let nodesSvg = '';
-    Object.keys(SL_NODE_LAYOUT).forEach(n => {
-      const p = this.slNodeXY(n);
+    Object.keys(layout).forEach(n => {
+      const p = this.slNodeXY(n, layout);
       const state = nodeStates[n] || {};
       const cls = (state.cls || []).join(' ');
 
@@ -1168,24 +1955,24 @@ class SearchLectureUI {
       //  - Nodes in the top band (B, D) get their label ABOVE (no edge
       //    geometry up there); every other node defaults to BELOW,
       //    clamped so it can never fall outside the viewBox.
-      //  - A sits right at the left edge with three edges fanning out to
-      //    its right (B, C, E), each with a cost badge roughly 15-20
-      //    units away in every direction except straight up — the empty
-      //    strip above the whole B/D row (y < ~25, clear across the full
-      //    width) is the only spot immune to A's own text length.
-      //  - E is the busiest node (five edges meet there); every zone
-      //    close to it hits a badge, but a small band running due right,
-      //    threaded between the E-G and E-H badges, stays clear no
-      //    matter how long the label text is.
-      const labelAbove = SL_NODE_LAYOUT[n].y <= 0.4;
+      //  - The start node sits right at the left edge with three edges
+      //    fanning out to its right, each with a cost badge roughly
+      //    15-20 units away in every direction except straight up — the
+      //    empty strip above the whole top row (y < ~25, clear across the
+      //    full width) is the only spot immune to its own text length.
+      //  - The hub node is the busiest (five edges meet there); every
+      //    zone close to it hits a badge, but a small band running due
+      //    right, threaded between its two rightward edges' badges, stays
+      //    clear no matter how long the label text is.
+      const labelAbove = layout[n].y <= 0.4;
       let sublabelX = p.cx;
-      let sublabelY = labelAbove ? p.cy - 9 : Math.min(p.cy + 11, 80);
+      let sublabelY = labelAbove ? p.cy - 9 : Math.min(p.cy + 11, viewBoxH - 2);
       let sublabelStyle = '';
-      if (n === 'A') {
+      if (n === startNode) {
         sublabelStyle = 'text-anchor:start;';
         sublabelX = p.cx + 4;
         sublabelY = 9;
-      } else if (n === 'E') {
+      } else if (n === hubNode) {
         sublabelStyle = 'text-anchor:start;';
         sublabelX = p.cx + 9;
         sublabelY = p.cy + 1;
@@ -1198,14 +1985,14 @@ class SearchLectureUI {
       const isClickable = clickableNodes && clickableNodes.includes(n);
 
       nodesSvg += `<g class="sl-gnode ${cls} ${isClickable ? 'sl-gnode-clickable' : ''}" data-state="${n}">
-        <circle cx="${p.cx}" cy="${p.cy}" r="6.5"></circle>
+        <circle cx="${p.cx}" cy="${p.cy}" r="${r}"></circle>
         <text x="${p.cx}" y="${p.cy}" class="sl-gnode-label">${n}</text>
-        ${state.badge ? `<text x="${p.cx + 6.8}" y="${p.cy - 6.5}" class="sl-gnode-badge">${state.badge}</text>` : ''}
+        ${state.badge ? `<text x="${p.cx + r + 0.3}" y="${p.cy - r}" class="sl-gnode-badge">${state.badge}</text>` : ''}
         ${state.sublabel ? `<text x="${sublabelX}" y="${sublabelY}" class="sl-gnode-sublabel" style="${sublabelStyle}">${state.sublabel}</text>` : ''}
       </g>`;
     });
 
-    return `<svg class="sl-graph-svg" viewBox="0 0 100 82" xmlns="http://www.w3.org/2000/svg">${edgesSvg}${nodesSvg}</svg>`;
+    return `<svg class="sl-graph-svg ${extraClass}" viewBox="0 0 100 ${viewBoxH}" xmlns="http://www.w3.org/2000/svg">${edgesSvg}${nodesSvg}</svg>`;
   }
 
   // Shared by the "Putting It Together" stepper AND Frontier Types'

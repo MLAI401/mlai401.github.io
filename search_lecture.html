@@ -79,9 +79,13 @@
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
 
-  <!-- Page controller — layout + topic selector bar only for now;
-       per-topic content is not implemented yet. -->
-  <script src="demos/search_lecture_demo/ui.js?v=3"></script>
+  <!-- Search Strategies' live algorithm engine (city-relabeled, direct copy
+       of demos/search_demo/graph.js's already-verified logic). Must load
+       before ui.js, which calls into window.CityEngine. -->
+  <script src="demos/search_lecture_demo/city_engine.js?v=1"></script>
+
+  <!-- Page controller — renders all four topics. -->
+  <script src="demos/search_lecture_demo/ui.js?v=4"></script>
 
   <!-- Application JS -->
   <script src="main.js?v=2"></script>

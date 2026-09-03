@@ -3375,6 +3375,232 @@ body.sl-page::after {
   stroke-dasharray: 2 1.2;
 }
 
+/* Search Strategies: the user-selected start/goal cities get a persistent
+   dashed ring (like the Playground's cyan/red outlines) so both endpoints
+   stay visible for the whole run, not just the instant the goal is found.
+   Reuses .sl-start's dashed pattern in green instead of primary so it
+   never gets confused with .sl-goal's SOLID ring (which specifically means
+   "the goal was just reached here"). */
+.sl-gnode.sl-goal-target circle {
+  stroke: var(--success);
+  stroke-width: 2;
+  stroke-dasharray: 2 1.2;
+}
+
+/* Search Strategies: BIBF runs two searches at once (forward from the
+   start, backward from the goal) — backward-direction nodes get a
+   visually distinct teal scheme so the two searches read as clearly
+   separate on the same graph. */
+.sl-gnode.sl-frontier-b circle {
+  fill: #ccfbf1;
+  stroke: #0d9488;
+}
+
+.sl-gnode.sl-frontier-b .sl-gnode-label {
+  fill: #0f766e;
+}
+
+.sl-gnode.sl-explored-b circle {
+  fill: #134e4a;
+  stroke: #134e4a;
+}
+
+.sl-gnode.sl-explored-b .sl-gnode-label {
+  fill: #ffffff;
+}
+
+/* Search Strategies' city graph reuses the same SVG geometry as the A-H
+   graph, just with 3-letter labels — shrink the text to fit the same
+   circle instead of widening the whole diagram. */
+.sl-graph-svg.sl-graph-svg-cities .sl-gnode-label {
+  font-size: 3.7px;
+}
+
+.sl-graph-svg.sl-graph-svg-cities .sl-gnode-badge {
+  font-size: 3.6px;
+}
+
+.sl-graph-svg.sl-graph-svg-cities .sl-gnode-sublabel {
+  font-size: 3px;
+}
+
+/* Search Strategies — Start/Goal (+ SMA* memory bound) selectors, live
+   above the algorithm's stepper controls. */
+.sl-ss-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 1rem;
+  align-items: center;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  background: rgba(79, 70, 229, 0.04);
+}
+
+.sl-ss-control-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.sl-ss-control-row label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.sl-ss-select {
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid var(--border-light);
+  background: #ffffff;
+  color: var(--text-primary);
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  font-size: 0.76rem;
+  cursor: pointer;
+}
+
+.sl-ss-select:hover {
+  border-color: var(--border-focus);
+}
+
+/* Auto-Run / Reset button variants, layered on top of .sl-step-btn */
+.sl-step-controls-secondary {
+  margin-top: -0.2rem;
+}
+
+.sl-step-btn-play {
+  border-color: rgba(79, 70, 229, 0.35);
+  color: var(--primary);
+}
+
+.sl-step-btn-play:hover {
+  background: rgba(79, 70, 229, 0.06);
+}
+
+.sl-step-btn-ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text-muted);
+  padding: 0.3rem 0.6rem;
+  font-size: 0.72rem;
+}
+
+.sl-step-btn-ghost:hover {
+  color: var(--text-secondary);
+  border-color: var(--border-light);
+}
+
+/* Frontier shown as visual blocks (reusing Search Data Structures'
+   .sl-frontier-box(-pop)/.sl-frontier-boxes styling) instead of plain
+   text, in the Search Strategies stepper's readout panel. */
+.sl-ss-frontier-label {
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-top: 0.3rem;
+}
+
+.sl-ss-frontier-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sl-frontier-order-note {
+  font-size: 0.64rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.sl-frontier-empty-msg {
+  font-size: 0.76rem;
+  font-style: italic;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 0.3rem 0;
+}
+
+/* BIBF's frontier splits into two clearly separate rows — forward (from
+   start) and backward (from goal) — since it's really two priority queues
+   running at once. */
+.sl-frontier-dir-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.sl-frontier-dir-label {
+  font-size: 0.64rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+}
+
+/* Step table — one row per significant decision point (START/SELECT/
+   GOAL_FOUND/ITERATION_START/FAIL), populated up through the current step
+   and auto-scrolled to the bottom, mirroring the Playground's own dynamic
+   step table. Height-bounded with its own scrollbar so a long run (IDS,
+   BIBF) never pushes the graph out of view. */
+.sl-ss-step-table-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-top: 0.4rem;
+}
+
+.sl-ss-step-table-wrap {
+  max-height: 130px;
+  overflow-y: auto;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+}
+
+.sl-ss-step-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.7rem;
+}
+
+.sl-ss-step-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f8fafc;
+  color: var(--text-muted);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  text-align: left;
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.sl-ss-step-table td {
+  padding: 0.3rem 0.5rem;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  color: var(--text-secondary);
+  vertical-align: top;
+}
+
+.sl-ss-step-table tr:last-child td {
+  border-bottom: none;
+}
+
+.sl-ss-table-row-active {
+  background: rgba(79, 70, 229, 0.07);
+}
+
+.sl-ss-table-row-active td {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
 /* Putting It Together's interactive graph: any node that was ever
    POP'd/expanded in the current algorithm's trace is a jump target,
    regardless of which step is showing right now. */
