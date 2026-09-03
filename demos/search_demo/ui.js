@@ -366,10 +366,16 @@ class SearchDemoUI {
 
         // Expanded? Column
         let expandedText = 'No';
-        if (step.action === 'SELECT' && i < this.currentStepIdx) {
-          // If we have advanced past this selection, check if it was expanded in the next steps
-          const nextStep = this.steps[i + 1];
-          if (nextStep && nextStep.action === 'EXPAND') expandedText = 'Yes';
+        if (step.action === 'SELECT') {
+          // Scan forward from this SELECT, through steps already revealed
+          // (up to the current index), until the next row-boundary action.
+          // GOAL_TEST (and, for BIBF, MEET) steps sit between SELECT and
+          // EXPAND, so checking only steps[i + 1] missed real expansions.
+          for (let j = i + 1; j <= this.currentStepIdx; j++) {
+            const s = this.steps[j];
+            if (['START', 'SELECT', 'GOAL_FOUND', 'ITERATION_START'].includes(s.action)) break;
+            if (s.action === 'EXPAND' || s.action === 'REGENERATE') { expandedText = 'Yes'; break; }
+          }
         }
         if (step.action === 'GOAL_FOUND') expandedText = 'Goal Match';
 
