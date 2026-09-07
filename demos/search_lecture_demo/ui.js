@@ -2034,9 +2034,24 @@ class SearchLectureUI {
     // per-algorithm readout in a second block, same slot Search Data
     // Structures' Node Structure concept uses for its node.* field card.
     if (!term.readout) {
+      // Terminology and Optimality are the only two concepts with no
+      // second (readout) block, so naively they would render treeBlock at
+      // the full illustration-column width (~570px) -- at this tree's
+      // viewBox aspect ratio that scales to a taller SVG than the fixed-
+      // height column has room for, clipping the root node and its b/
+      // epsilon labels off the top. Capping the block at the same
+      // narrow width the OTHER four topics already use for a tree
+      // sharing a row (sl-diagram-block-tree, 340px) keeps this one at
+      // the same proven-to-fit scale even though it has no sibling block
+      // to share the row with.
       this.graphColEl.innerHTML = `
-        <div class="sl-graph-illustration">
-          ${treeBlock}
+        <div class="sl-graph-illustration sl-graph-illustration-compact">
+          <div class="sl-dual-diagrams">
+            <div class="sl-diagram-block sl-diagram-block-tree" style="max-width: 320px;">
+              <div class="sl-tree-caption">Search Tree</div>
+              ${treeBlock}
+            </div>
+          </div>
           <div class="sl-illustration-note">${term.note}</div>
         </div>
       `;
