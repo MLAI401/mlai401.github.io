@@ -501,24 +501,74 @@
             <div class="rp-exercise-body">
               <p>Successors are generated alphabetically. Using the graph below (start <code>S</code>, goal <code>G</code>), find the expansion order, solution path, and path cost for:</p>
               <p>(a) UCS &middot; (b) Greedy &middot; (c) A*</p>
-              <div class="rp-table-wrap">
-                <table class="rp-table">
-                  <thead><tr><th>Edge</th><th>Cost</th></tr></thead>
-                  <tbody>
-                    <tr><td><code>S &rarr; A</code></td><td>1</td></tr>
-                    <tr><td><code>S &rarr; B</code></td><td>1</td></tr>
-                    <tr><td><code>A &rarr; C</code></td><td>1</td></tr>
-                    <tr><td><code>B &rarr; C</code></td><td>2</td></tr>
-                    <tr><td><code>C &rarr; G</code></td><td>3</td></tr>
-                  </tbody>
-                </table>
-              </div>
-              <div class="rp-table-wrap">
-                <table class="rp-table">
-                  <thead><tr><th><code>n</code></th><th>S</th><th>A</th><th>B</th><th>C</th><th>G</th></tr></thead>
-                  <tbody><tr><td><code>h(n)</code></td><td>2</td><td>4</td><td>1</td><td>1</td><td>0</td></tr></tbody>
-                </table>
-              </div>
+              <figure class="rp-ex-figure">
+                <svg class="rp-ex-graph-svg" viewBox="0 0 540 170" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <marker id="ex2-arrow" viewBox="0 0 10 10" refX="23" refY="5" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#94a3b8"></path>
+                    </marker>
+                  </defs>
+                  <!-- Edges -->
+                  <line x1="60" y1="85" x2="190" y2="45" class="rp-ex-edge" marker-end="url(#ex2-arrow)"></line>
+                  <circle cx="125" cy="65" r="10" class="rp-ex-edge-cost-bg"></circle>
+                  <text x="125" y="65" class="rp-ex-edge-cost-text">1</text>
+
+                  <line x1="60" y1="85" x2="190" y2="125" class="rp-ex-edge" marker-end="url(#ex2-arrow)"></line>
+                  <circle cx="125" cy="105" r="10" class="rp-ex-edge-cost-bg"></circle>
+                  <text x="125" y="105" class="rp-ex-edge-cost-text">1</text>
+
+                  <line x1="190" y1="45" x2="330" y2="85" class="rp-ex-edge" marker-end="url(#ex2-arrow)"></line>
+                  <circle cx="260" cy="65" r="10" class="rp-ex-edge-cost-bg"></circle>
+                  <text x="260" y="65" class="rp-ex-edge-cost-text">1</text>
+
+                  <line x1="190" y1="125" x2="330" y2="85" class="rp-ex-edge" marker-end="url(#ex2-arrow)"></line>
+                  <circle cx="260" cy="105" r="10" class="rp-ex-edge-cost-bg"></circle>
+                  <text x="260" y="105" class="rp-ex-edge-cost-text">2</text>
+
+                  <line x1="330" y1="85" x2="470" y2="85" class="rp-ex-edge" marker-end="url(#ex2-arrow)"></line>
+                  <circle cx="400" cy="85" r="10" class="rp-ex-edge-cost-bg"></circle>
+                  <text x="400" y="85" class="rp-ex-edge-cost-text">3</text>
+
+                  <!-- Nodes -->
+                  <!-- S (Start) -->
+                  <g class="rp-ex-node rp-ex-node-start">
+                    <circle cx="60" cy="85" r="16"></circle>
+                    <text x="60" y="85" class="rp-ex-node-label">S</text>
+                    <text x="60" y="58" class="rp-ex-node-tag rp-ex-node-tag-start">START</text>
+                    <text x="60" y="115" class="rp-ex-node-sub">h = 2</text>
+                  </g>
+
+                  <!-- A -->
+                  <g class="rp-ex-node">
+                    <circle cx="190" cy="45" r="16"></circle>
+                    <text x="190" y="45" class="rp-ex-node-label">A</text>
+                    <text x="190" y="20" class="rp-ex-node-sub">h = 4</text>
+                  </g>
+
+                  <!-- B -->
+                  <g class="rp-ex-node">
+                    <circle cx="190" cy="125" r="16"></circle>
+                    <text x="190" y="125" class="rp-ex-node-label">B</text>
+                    <text x="190" y="154" class="rp-ex-node-sub">h = 1</text>
+                  </g>
+
+                  <!-- C -->
+                  <g class="rp-ex-node">
+                    <circle cx="330" cy="85" r="16"></circle>
+                    <text x="330" y="85" class="rp-ex-node-label">C</text>
+                    <text x="330" y="115" class="rp-ex-node-sub">h = 1</text>
+                  </g>
+
+                  <!-- G (Goal) -->
+                  <g class="rp-ex-node rp-ex-node-goal">
+                    <circle cx="470" cy="85" r="16"></circle>
+                    <text x="470" y="85" class="rp-ex-node-label">G</text>
+                    <text x="470" y="115" class="rp-ex-node-goal-tag">GOAL</text>
+                    <text x="470" y="58" class="rp-ex-node-sub">h = 0</text>
+                  </g>
+                </svg>
+                <figcaption>Directed search graph with edge step costs (circled) and heuristic estimates <code>h(n)</code> beside each state. Start state <code>S</code>, goal state <code>G</code>.</figcaption>
+              </figure>
             </div>
 
             <details class="rp-answer">
@@ -580,16 +630,48 @@ f(G) via new C = 2+3+0 = 5 &lt; 6 &rarr; update, then G popped</pre>
               <summary class="rp-answer-toggle">Show Answer</summary>
               <div class="rp-answer-body">
 
-                <div class="rp-table-wrap">
-                  <table class="rp-table">
-                    <thead><tr><th>Edge</th><th>Cost</th></tr></thead>
-                    <tbody>
-                      <tr><td><code>S &rarr; G</code> (goal)</td><td>10</td></tr>
-                      <tr><td><code>S &rarr; A</code></td><td>1</td></tr>
-                      <tr><td><code>A &rarr; G</code></td><td>1</td></tr>
-                    </tbody>
-                  </table>
-                </div>
+                <figure class="rp-ex-figure">
+                  <svg class="rp-ex-graph-svg" viewBox="0 0 460 170" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <marker id="ex3-arrow" viewBox="0 0 10 10" refX="23" refY="5" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#94a3b8"></path>
+                      </marker>
+                    </defs>
+                    <!-- Edges -->
+                    <line x1="80" y1="55" x2="380" y2="55" class="rp-ex-edge" marker-end="url(#ex3-arrow)"></line>
+                    <circle cx="230" cy="55" r="11" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="230" y="55" class="rp-ex-edge-cost-text">10</text>
+
+                    <line x1="80" y1="55" x2="230" y2="125" class="rp-ex-edge" marker-end="url(#ex3-arrow)"></line>
+                    <circle cx="155" cy="90" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="155" y="90" class="rp-ex-edge-cost-text">1</text>
+
+                    <line x1="230" y1="125" x2="380" y2="55" class="rp-ex-edge" marker-end="url(#ex3-arrow)"></line>
+                    <circle cx="305" cy="90" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="305" y="90" class="rp-ex-edge-cost-text">1</text>
+
+                    <!-- Nodes -->
+                    <g class="rp-ex-node rp-ex-node-start">
+                      <circle cx="80" cy="55" r="16"></circle>
+                      <text x="80" y="55" class="rp-ex-node-label">S</text>
+                      <text x="80" y="28" class="rp-ex-node-tag rp-ex-node-tag-start">START</text>
+                    </g>
+
+                    <g class="rp-ex-node">
+                      <circle cx="230" cy="125" r="16"></circle>
+                      <text x="230" y="125" class="rp-ex-node-label">A</text>
+                      <text x="230" y="154" class="rp-ex-node-sub">cost = 1</text>
+                    </g>
+
+                    <g class="rp-ex-node rp-ex-node-goal">
+                      <circle cx="380" cy="55" r="16"></circle>
+                      <text x="380" y="55" class="rp-ex-node-label">G</text>
+                      <text x="380" y="28" class="rp-ex-node-goal-tag">GOAL</text>
+                      <text x="380" y="85" class="rp-ex-node-sub">opt. cost = 2</text>
+                    </g>
+                  </svg>
+                  <figcaption>Counterexample graph: <code>G</code> is generated at depth 1 with cost 10 (early test fires for BFS), whereas UCS finds the optimal depth-2 path <code>S &rarr; A &rarr; G</code> with cost 2.</figcaption>
+                </figure>
 
                 <div class="rp-pseudocode">
                   <div class="rp-pseudocode-title">BFS &mdash; orders by depth only</div>
@@ -624,16 +706,69 @@ late test: pop min(g) = A(1) first &rArr; g(G): 10 &rarr; 2 &rArr; G popped at c
               <summary class="rp-answer-toggle">Show Answer</summary>
               <div class="rp-answer-body">
 
-                <div class="rp-table-wrap">
-                  <table class="rp-table">
-                    <thead><tr><th>Node</th><th>Children</th></tr></thead>
-                    <tbody>
-                      <tr><td>root</td><td>A1, A2</td></tr>
-                      <tr><td>A1</td><td>B1, B2</td></tr>
-                      <tr><td>A2</td><td>B3, B4</td></tr>
-                    </tbody>
-                  </table>
-                </div>
+                <figure class="rp-ex-figure">
+                  <svg class="rp-ex-graph-svg" viewBox="0 0 520 210" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <marker id="ex4-arrow" viewBox="0 0 10 10" refX="23" refY="5" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#94a3b8"></path>
+                      </marker>
+                    </defs>
+                    <!-- Level guide lines -->
+                    <line x1="20" y1="40" x2="500" y2="40" class="rp-ex-tree-guide"></line>
+                    <text x="25" y="32" class="rp-ex-tree-level">Level 0: 1 node (b⁰)</text>
+
+                    <line x1="20" y1="105" x2="500" y2="105" class="rp-ex-tree-guide"></line>
+                    <text x="25" y="97" class="rp-ex-tree-level">Level 1: b nodes (b¹)</text>
+
+                    <line x1="20" y1="170" x2="500" y2="170" class="rp-ex-tree-guide"></line>
+                    <text x="25" y="162" class="rp-ex-tree-level">Level 2: b² nodes (b²)</text>
+
+                    <!-- Edges -->
+                    <line x1="260" y1="40" x2="180" y2="105" class="rp-ex-edge" marker-end="url(#ex4-arrow)"></line>
+                    <line x1="260" y1="40" x2="340" y2="105" class="rp-ex-edge" marker-end="url(#ex4-arrow)"></line>
+
+                    <line x1="180" y1="105" x2="135" y2="170" class="rp-ex-edge" marker-end="url(#ex4-arrow)"></line>
+                    <line x1="180" y1="105" x2="225" y2="170" class="rp-ex-edge" marker-end="url(#ex4-arrow)"></line>
+
+                    <line x1="340" y1="105" x2="295" y2="170" class="rp-ex-edge" marker-end="url(#ex4-arrow)"></line>
+                    <line x1="340" y1="105" x2="385" y2="170" class="rp-ex-edge" marker-end="url(#ex4-arrow)"></line>
+
+                    <!-- Level 0 Node -->
+                    <g class="rp-ex-node rp-ex-node-start">
+                      <circle cx="260" cy="40" r="16"></circle>
+                      <text x="260" y="40" class="rp-ex-node-label">root</text>
+                    </g>
+
+                    <!-- Level 1 Nodes -->
+                    <g class="rp-ex-node">
+                      <circle cx="180" cy="105" r="15"></circle>
+                      <text x="180" y="105" class="rp-ex-node-label">A1</text>
+                    </g>
+                    <g class="rp-ex-node">
+                      <circle cx="340" cy="105" r="15"></circle>
+                      <text x="340" y="105" class="rp-ex-node-label">A2</text>
+                    </g>
+
+                    <!-- Level 2 Nodes -->
+                    <g class="rp-ex-node">
+                      <circle cx="135" cy="170" r="14"></circle>
+                      <text x="135" y="170" class="rp-ex-node-label">B1</text>
+                    </g>
+                    <g class="rp-ex-node">
+                      <circle cx="225" cy="170" r="14"></circle>
+                      <text x="225" y="170" class="rp-ex-node-label">B2</text>
+                    </g>
+                    <g class="rp-ex-node">
+                      <circle cx="295" cy="170" r="14"></circle>
+                      <text x="295" y="170" class="rp-ex-node-label">B3</text>
+                    </g>
+                    <g class="rp-ex-node">
+                      <circle cx="385" cy="170" r="14"></circle>
+                      <text x="385" y="170" class="rp-ex-node-label">B4</text>
+                    </g>
+                  </svg>
+                  <figcaption>Generic branching tree with <code>b = 2</code>. Level <code>k</code> holds at most <code>b<sup>k</sup></code> nodes, establishing the inductive basis <code>N(k) &le; b<sup>k</sup></code> for time and space complexity proofs.</figcaption>
+                </figure>
                 <p><em>Generic branching tree: <code>b</code> children per node, level <code>k</code> holds &le; <code>b<sup>k</sup></code> nodes.</em> Notation: <code>b</code>=branching factor, <code>d</code>=shallowest-goal depth, <code>m</code>=max depth, <code>C*</code>=optimal cost, <code>&epsilon;</code>=min step cost.</p>
 
                 <div class="rp-pseudocode">
@@ -705,16 +840,57 @@ Greedy:  no cost pruning &rArr; worst case matches the DFS/tree bound
               <summary class="rp-answer-toggle">Show Answer</summary>
               <div class="rp-answer-body">
 
-                <div class="rp-table-wrap">
-                  <table class="rp-table">
-                    <thead><tr><th>Edge</th><th>Cost</th></tr></thead>
-                    <tbody>
-                      <tr><td><code>S &rarr; n</code></td><td>2</td></tr>
-                      <tr><td><code>n &rarr; G1</code> (optimal goal)</td><td>3</td></tr>
-                      <tr><td><code>S &rarr; G2</code></td><td>8</td></tr>
-                    </tbody>
-                  </table>
-                </div>
+                <figure class="rp-ex-figure">
+                  <svg class="rp-ex-graph-svg" viewBox="0 0 520 170" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <marker id="ex5-arrow" viewBox="0 0 10 10" refX="23" refY="5" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#94a3b8"></path>
+                      </marker>
+                    </defs>
+                    <!-- Edges -->
+                    <line x1="70" y1="85" x2="230" y2="45" class="rp-ex-edge" marker-end="url(#ex5-arrow)"></line>
+                    <circle cx="150" cy="65" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="150" y="65" class="rp-ex-edge-cost-text">2</text>
+
+                    <line x1="230" y1="45" x2="410" y2="45" class="rp-ex-edge" marker-end="url(#ex5-arrow)"></line>
+                    <circle cx="320" cy="45" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="320" y="45" class="rp-ex-edge-cost-text">3</text>
+
+                    <line x1="70" y1="85" x2="410" y2="125" class="rp-ex-edge" marker-end="url(#ex5-arrow)"></line>
+                    <circle cx="240" cy="105" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="240" y="105" class="rp-ex-edge-cost-text">8</text>
+
+                    <!-- Nodes -->
+                    <!-- S (Start) -->
+                    <g class="rp-ex-node rp-ex-node-start">
+                      <circle cx="70" cy="85" r="16"></circle>
+                      <text x="70" y="85" class="rp-ex-node-label">S</text>
+                      <text x="70" y="58" class="rp-ex-node-tag rp-ex-node-tag-start">START</text>
+                    </g>
+
+                    <!-- n (on optimal path) -->
+                    <g class="rp-ex-node">
+                      <circle cx="230" cy="45" r="16"></circle>
+                      <text x="230" y="45" class="rp-ex-node-label">n</text>
+                      <text x="230" y="20" class="rp-ex-node-sub">h(n) = 2 &middot; f(n) &le; 5</text>
+                    </g>
+
+                    <!-- G1 (Optimal Goal) -->
+                    <g class="rp-ex-node rp-ex-node-goal">
+                      <circle cx="410" cy="45" r="16"></circle>
+                      <text x="410" y="45" class="rp-ex-node-label">G1</text>
+                      <text x="410" y="20" class="rp-ex-node-goal-tag">OPTIMAL GOAL (C* = 5)</text>
+                    </g>
+
+                    <!-- G2 (Suboptimal Goal) -->
+                    <g class="rp-ex-node rp-ex-node-subopt">
+                      <circle cx="410" cy="125" r="16"></circle>
+                      <text x="410" y="125" class="rp-ex-node-label">G2</text>
+                      <text x="410" y="154" class="rp-ex-node-tag rp-ex-node-tag-subopt">SUBOPTIMAL (f = 8)</text>
+                    </g>
+                  </svg>
+                  <figcaption>Contradiction graph: node <code>n</code> on the optimal path has <code>f(n) = g(n) + h(n) &le; 2 + 3 = 5</code>. Since <code>f(n) &le; 5 &lt; 8 = f(G2)</code>, A* expands <code>n</code> before <code>G2</code>.</figcaption>
+                </figure>
                 <p><code>h(n)=2</code> (admissible: true remaining cost <code>h*(n)=3</code>, and <code>2 &le; 3</code>).</p>
 
                 <p>Assume A* selects <code>G2</code> first, with <code>g(G2)=8 &gt; C*=5</code> (<code>C*</code> via <code>S&rarr;n&rarr;G1</code>).</p>
@@ -748,16 +924,57 @@ therefore:              f(n) &le; 5 &lt; 8 = f(G2)</pre>
               <div class="rp-answer-body">
                 <p>Equal step cost <code>c</code>: <code>cost(path) = c &middot; depth(path)</code>, so <code>d1 &lt; d2 &rArr; c&middot;d1 &lt; c&middot;d2</code> &mdash; shallowest &hArr; cheapest, and IDS always returns the shallowest goal.</p>
 
-                <div class="rp-table-wrap">
-                  <table class="rp-table">
-                    <thead><tr><th>Edge</th><th>Cost</th></tr></thead>
-                    <tbody>
-                      <tr><td><code>S &rarr; G1</code> (goal)</td><td>10</td></tr>
-                      <tr><td><code>S &rarr; A</code></td><td>1</td></tr>
-                      <tr><td><code>A &rarr; G2</code> (goal)</td><td>1</td></tr>
-                    </tbody>
-                  </table>
-                </div>
+                <figure class="rp-ex-figure">
+                  <svg class="rp-ex-graph-svg" viewBox="0 0 500 170" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <marker id="ex6-arrow" viewBox="0 0 10 10" refX="23" refY="5" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#94a3b8"></path>
+                      </marker>
+                    </defs>
+                    <!-- Edges -->
+                    <line x1="70" y1="85" x2="250" y2="45" class="rp-ex-edge" marker-end="url(#ex6-arrow)"></line>
+                    <circle cx="160" cy="65" r="11" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="160" y="65" class="rp-ex-edge-cost-text">10</text>
+
+                    <line x1="70" y1="85" x2="250" y2="125" class="rp-ex-edge" marker-end="url(#ex6-arrow)"></line>
+                    <circle cx="160" cy="105" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="160" y="105" class="rp-ex-edge-cost-text">1</text>
+
+                    <line x1="250" y1="125" x2="410" y2="125" class="rp-ex-edge" marker-end="url(#ex6-arrow)"></line>
+                    <circle cx="330" cy="125" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="330" y="125" class="rp-ex-edge-cost-text">1</text>
+
+                    <!-- Nodes -->
+                    <!-- S (Start) -->
+                    <g class="rp-ex-node rp-ex-node-start">
+                      <circle cx="70" cy="85" r="16"></circle>
+                      <text x="70" y="85" class="rp-ex-node-label">S</text>
+                      <text x="70" y="58" class="rp-ex-node-tag rp-ex-node-tag-start">START</text>
+                    </g>
+
+                    <!-- G1 (Shallow Goal) -->
+                    <g class="rp-ex-node rp-ex-node-subopt">
+                      <circle cx="250" cy="45" r="16"></circle>
+                      <text x="250" y="45" class="rp-ex-node-label">G1</text>
+                      <text x="250" y="20" class="rp-ex-node-tag rp-ex-node-tag-subopt">SHALLOW GOAL (d=1, cost=10)</text>
+                    </g>
+
+                    <!-- A -->
+                    <g class="rp-ex-node">
+                      <circle cx="250" cy="125" r="16"></circle>
+                      <text x="250" y="125" class="rp-ex-node-label">A</text>
+                      <text x="250" y="154" class="rp-ex-node-sub">depth = 1</text>
+                    </g>
+
+                    <!-- G2 (Optimal Goal) -->
+                    <g class="rp-ex-node rp-ex-node-goal">
+                      <circle cx="410" cy="125" r="16"></circle>
+                      <text x="410" y="125" class="rp-ex-node-label">G2</text>
+                      <text x="410" y="100" class="rp-ex-node-goal-tag">OPTIMAL GOAL (d=2, cost=2)</text>
+                    </g>
+                  </svg>
+                  <figcaption>IDS counterexample: At depth limit <code>&ell; = 1</code>, IDS finds shallow goal <code>G1</code> (cost 10) and terminates, failing to discover the cheaper depth-2 goal <code>G2</code> (cost 2).</figcaption>
+                </figure>
 
                 <div class="rp-pseudocode">
                   <div class="rp-pseudocode-title">Counterexample when costs differ</div>
@@ -784,16 +1001,57 @@ true optimum: G2, cost 1+1 = 2
               <summary class="rp-answer-toggle">Show Answer</summary>
               <div class="rp-answer-body">
 
-                <div class="rp-table-wrap">
-                  <table class="rp-table">
-                    <thead><tr><th>Edge</th><th>Cost</th></tr></thead>
-                    <tbody>
-                      <tr><td><code>S &rarr; n</code></td><td>2</td></tr>
-                      <tr><td><code>n &rarr; G</code></td><td>3</td></tr>
-                      <tr><td><code>S &rarr; G2</code></td><td>8</td></tr>
-                    </tbody>
-                  </table>
-                </div>
+                <figure class="rp-ex-figure">
+                  <svg class="rp-ex-graph-svg" viewBox="0 0 520 170" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <marker id="ex7-arrow" viewBox="0 0 10 10" refX="23" refY="5" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#94a3b8"></path>
+                      </marker>
+                    </defs>
+                    <!-- Edges -->
+                    <line x1="70" y1="85" x2="230" y2="45" class="rp-ex-edge" marker-end="url(#ex7-arrow)"></line>
+                    <circle cx="150" cy="65" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="150" y="65" class="rp-ex-edge-cost-text">2</text>
+
+                    <line x1="230" y1="45" x2="410" y2="45" class="rp-ex-edge" marker-end="url(#ex7-arrow)"></line>
+                    <circle cx="320" cy="45" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="320" y="45" class="rp-ex-edge-cost-text">3</text>
+
+                    <line x1="70" y1="85" x2="410" y2="125" class="rp-ex-edge" marker-end="url(#ex7-arrow)"></line>
+                    <circle cx="240" cy="105" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="240" y="105" class="rp-ex-edge-cost-text">8</text>
+
+                    <!-- Nodes -->
+                    <!-- S (Start) -->
+                    <g class="rp-ex-node rp-ex-node-start">
+                      <circle cx="70" cy="85" r="16"></circle>
+                      <text x="70" y="85" class="rp-ex-node-label">S</text>
+                      <text x="70" y="58" class="rp-ex-node-tag rp-ex-node-tag-start">START</text>
+                    </g>
+
+                    <!-- n (on optimal path) -->
+                    <g class="rp-ex-node">
+                      <circle cx="230" cy="45" r="16"></circle>
+                      <text x="230" y="45" class="rp-ex-node-label">n</text>
+                      <text x="230" y="20" class="rp-ex-node-sub">g(n) = 2</text>
+                    </g>
+
+                    <!-- G (Optimal Goal) -->
+                    <g class="rp-ex-node rp-ex-node-goal">
+                      <circle cx="410" cy="45" r="16"></circle>
+                      <text x="410" y="45" class="rp-ex-node-label">G</text>
+                      <text x="410" y="20" class="rp-ex-node-goal-tag">OPTIMAL GOAL (C* = 5)</text>
+                    </g>
+
+                    <!-- G2 (Suboptimal Goal) -->
+                    <g class="rp-ex-node rp-ex-node-subopt">
+                      <circle cx="410" cy="125" r="16"></circle>
+                      <text x="410" y="125" class="rp-ex-node-label">G2</text>
+                      <text x="410" y="154" class="rp-ex-node-tag rp-ex-node-tag-subopt">SUBOPTIMAL (g = 8)</text>
+                    </g>
+                  </svg>
+                  <figcaption>UCS optimality graph: Node <code>n</code> on the optimal path has <code>g(n) = 2 &le; C* = 5 &lt; 8 = g(G2)</code>. UCS prioritizes lowest cumulative cost, expanding <code>n</code> before suboptimal goal <code>G2</code>.</figcaption>
+                </figure>
                 <p>Assume branching factor <code>b</code> finite, every step cost <code>&ge; &epsilon; &gt; 0</code>.</p>
 
                 <div class="rp-answer-part">
@@ -829,17 +1087,68 @@ true optimum: G2, cost 1+1 = 2
               <summary class="rp-answer-toggle">Show Answer</summary>
               <div class="rp-answer-body">
 
-                <div class="rp-table-wrap">
-                  <table class="rp-table">
-                    <thead><tr><th>Edge</th><th>Cost</th></tr></thead>
-                    <tbody>
-                      <tr><td><code>S &rarr; A</code></td><td>10</td></tr>
-                      <tr><td><code>A &rarr; G1</code> (goal)</td><td>0</td></tr>
-                      <tr><td><code>S &rarr; B</code></td><td>1</td></tr>
-                      <tr><td><code>B &rarr; G2</code> (goal)</td><td>1</td></tr>
-                    </tbody>
-                  </table>
-                </div>
+                <figure class="rp-ex-figure">
+                  <svg class="rp-ex-graph-svg" viewBox="0 0 520 170" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                      <marker id="ex8-arrow" viewBox="0 0 10 10" refX="23" refY="5" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+                        <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#94a3b8"></path>
+                      </marker>
+                    </defs>
+                    <!-- Edges -->
+                    <line x1="70" y1="85" x2="230" y2="45" class="rp-ex-edge" marker-end="url(#ex8-arrow)"></line>
+                    <circle cx="150" cy="65" r="11" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="150" y="65" class="rp-ex-edge-cost-text">10</text>
+
+                    <line x1="230" y1="45" x2="390" y2="45" class="rp-ex-edge" marker-end="url(#ex8-arrow)"></line>
+                    <circle cx="310" cy="45" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="310" y="45" class="rp-ex-edge-cost-text">0</text>
+
+                    <line x1="70" y1="85" x2="230" y2="125" class="rp-ex-edge" marker-end="url(#ex8-arrow)"></line>
+                    <circle cx="150" cy="105" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="150" y="105" class="rp-ex-edge-cost-text">1</text>
+
+                    <line x1="230" y1="125" x2="390" y2="125" class="rp-ex-edge" marker-end="url(#ex8-arrow)"></line>
+                    <circle cx="310" cy="125" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="310" y="125" class="rp-ex-edge-cost-text">1</text>
+
+                    <!-- Nodes -->
+                    <!-- S (Start) -->
+                    <g class="rp-ex-node rp-ex-node-start">
+                      <circle cx="70" cy="85" r="16"></circle>
+                      <text x="70" y="85" class="rp-ex-node-label">S</text>
+                      <text x="70" y="58" class="rp-ex-node-tag rp-ex-node-tag-start">START</text>
+                    </g>
+
+                    <!-- A (1st branch) -->
+                    <g class="rp-ex-node">
+                      <circle cx="230" cy="45" r="16"></circle>
+                      <text x="230" y="45" class="rp-ex-node-label">A</text>
+                      <text x="230" y="20" class="rp-ex-node-sub">(1st child)</text>
+                    </g>
+
+                    <!-- G1 (DFS Found) -->
+                    <g class="rp-ex-node rp-ex-node-subopt">
+                      <circle cx="390" cy="45" r="16"></circle>
+                      <text x="390" y="45" class="rp-ex-node-label">G1</text>
+                      <text x="390" y="20" class="rp-ex-node-tag rp-ex-node-tag-subopt">DFS FINDS FIRST (Cost = 10)</text>
+                    </g>
+
+                    <!-- B (2nd branch) -->
+                    <g class="rp-ex-node">
+                      <circle cx="230" cy="125" r="16"></circle>
+                      <text x="230" y="125" class="rp-ex-node-label">B</text>
+                      <text x="230" y="154" class="rp-ex-node-sub">(2nd child)</text>
+                    </g>
+
+                    <!-- G2 (Optimal Goal) -->
+                    <g class="rp-ex-node rp-ex-node-goal">
+                      <circle cx="390" cy="125" r="16"></circle>
+                      <text x="390" y="125" class="rp-ex-node-label">G2</text>
+                      <text x="390" y="154" class="rp-ex-node-goal-tag">OPTIMAL GOAL (Cost = 2)</text>
+                    </g>
+                  </svg>
+                  <figcaption>DFS non-optimality counterexample: Alphabetical order causes DFS to expand <code>A</code> before <code>B</code>, discovering <code>G1</code> (cost 10) and stopping before ever visiting <code>B</code> or optimal goal <code>G2</code> (cost 2).</figcaption>
+                </figure>
 
                 <div class="rp-pseudocode">
                   <div class="rp-pseudocode-title">Alphabetical order: A before B</div>

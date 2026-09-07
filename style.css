@@ -4672,6 +4672,52 @@ body.sl-page::after {
   text-anchor: middle;
 }
 
+.rp-ex-node-sub {
+  font: 600 11px 'Outfit', sans-serif;
+  fill: var(--text-muted);
+  text-anchor: middle;
+}
+
+.rp-ex-node-tag {
+  font: 700 9px 'Outfit', sans-serif;
+  letter-spacing: 0.05em;
+  text-anchor: middle;
+}
+
+.rp-ex-node-tag-start {
+  fill: var(--primary);
+}
+
+.rp-ex-node-tag-goal {
+  fill: var(--success);
+}
+
+.rp-ex-node-tag-subopt {
+  fill: #e11d48;
+}
+
+.rp-ex-node-subopt circle {
+  fill: #ffffff;
+  stroke: #e11d48;
+  stroke-width: 2.5;
+}
+
+.rp-ex-node-subopt .rp-ex-node-label {
+  fill: #e11d48;
+}
+
+.rp-ex-tree-level {
+  font: 600 10px 'Outfit', sans-serif;
+  fill: var(--text-muted);
+  text-anchor: start;
+}
+
+.rp-ex-tree-guide {
+  stroke: var(--border-light);
+  stroke-dasharray: 4 4;
+  stroke-width: 1;
+}
+
 /* ---- "Show Answer" disclosure ---- */
 .rp-answer {
   border-top: 1px solid var(--border-light);
