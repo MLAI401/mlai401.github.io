@@ -105,6 +105,16 @@
           <a class="rp-toc-h3" href="#completeness">4.4 Completeness</a>
           <a class="rp-toc-h3" href="#optimality">4.5 Optimality</a>
           <a class="rp-toc-h3" href="#summary-table">4.6 Comparing the Strategies</a>
+
+          <a class="rp-toc-h2" href="#exercises">5. Practice Exercises</a>
+          <a class="rp-toc-h3" href="#ex1">5.1 Tracing Four Algorithms</a>
+          <a class="rp-toc-h3" href="#ex2">5.2 UCS, Greedy &amp; A*</a>
+          <a class="rp-toc-h3" href="#ex3">5.3 Early vs. Late Goal Test</a>
+          <a class="rp-toc-h3" href="#ex4">5.4 Complexity by Induction</a>
+          <a class="rp-toc-h3" href="#ex5">5.5 A* Optimality</a>
+          <a class="rp-toc-h3" href="#ex6">5.6 IDS and Equal Step Costs</a>
+          <a class="rp-toc-h3" href="#ex7">5.7 UCS Completeness &amp; Optimality</a>
+          <a class="rp-toc-h3" href="#ex8">5.8 DFS Is Not Optimal</a>
         </nav>
       </aside>
 
@@ -411,6 +421,334 @@
           </div>
 
           <p>That is the full arc of Topic 02: a search problem's terminology (Section 1) gets implemented with a node and a frontier (Section 2), the frontier's ordering rule is what turns the same generic loop into eight different strategies (Section 3), and completeness, optimality, time, and space are the four questions that let you choose between them (Section 4). The <a href="search_planning.html">interactive lecture</a> covers the same ground with a live, clickable version of every example above.</p>
+        </section>
+
+        <!-- ================= 5. PRACTICE EXERCISES ================= -->
+        <section id="exercises">
+          <h2><span class="rp-num">5.</span>Practice Exercises</h2>
+
+          <p>The eight exercises below are drawn from the course's search-problem exercise set (<code>instructions/exercises.md</code>), in the same order and grouping used there &mdash; Exercises 1&ndash;2 trace algorithms on a graph, Exercises 3&ndash;8 prove properties of them. Each one is stated first, exactly as assigned; the worked solution stays hidden behind a <strong>Show Answer</strong> button so this section can double as a self-check rather than a spoiler.</p>
+
+          <div class="rp-exercise" id="ex1">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 1</span>
+              <h3 class="rp-exercise-title">Tracing Four Search Algorithms on a Tree</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Successors are considered in alphabetical order. For DFS and IDS, successors are pushed onto the stack in <em>reverse</em> alphabetical order, so that they still come off the stack in alphabetical order. Using the tree below (goal state <code>O</code>), find the expansion order, solution path, and path cost for each of:</p>
+              <p>(a) Breadth-First Search &middot; (b) Depth-First Search &middot; (c) Iterative Deepening Search &middot; (d) Uniform-Cost Search</p>
+              <figure class="rp-ex-figure">
+                <svg class="rp-ex-graph-svg" viewBox="0 0 1000 460" xmlns="http://www.w3.org/2000/svg"><line x1="673.2" y1="46.0" x2="501.3" y2="97.0" class="rp-ex-edge"></line><circle cx="587.2" cy="71.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="587.2" y="71.5" class="rp-ex-edge-cost-text">5</text><line x1="673.2" y1="46.0" x2="845.0" y2="97.0" class="rp-ex-edge"></line><circle cx="759.1" cy="71.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="759.1" y="71.5" class="rp-ex-edge-cost-text">1</text><line x1="501.3" y1="97.0" x2="419.0" y2="148.0" class="rp-ex-edge"></line><circle cx="460.1" cy="122.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="460.1" y="122.5" class="rp-ex-edge-cost-text">4</text><line x1="501.3" y1="97.0" x2="583.6" y2="148.0" class="rp-ex-edge"></line><circle cx="542.5" cy="122.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="542.5" y="122.5" class="rp-ex-edge-cost-text">3</text><line x1="845.0" y1="97.0" x2="771.8" y2="148.0" class="rp-ex-edge"></line><circle cx="808.4" cy="122.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="808.4" y="122.5" class="rp-ex-edge-cost-text">1</text><line x1="845.0" y1="97.0" x2="918.2" y2="148.0" class="rp-ex-edge"></line><circle cx="881.6" cy="122.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="881.6" y="122.5" class="rp-ex-edge-cost-text">5</text><line x1="419.0" y1="148.0" x2="338.0" y2="199.0" class="rp-ex-edge"></line><circle cx="378.5" cy="173.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="378.5" y="173.5" class="rp-ex-edge-cost-text">4</text><line x1="419.0" y1="148.0" x2="500.0" y2="199.0" class="rp-ex-edge"></line><circle cx="459.5" cy="173.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="459.5" y="173.5" class="rp-ex-edge-cost-text">3</text><line x1="771.8" y1="148.0" x2="709.1" y2="199.0" class="rp-ex-edge"></line><circle cx="740.5" cy="173.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="740.5" y="173.5" class="rp-ex-edge-cost-text">1</text><line x1="771.8" y1="148.0" x2="834.5" y2="199.0" class="rp-ex-edge"></line><circle cx="803.2" cy="173.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="803.2" y="173.5" class="rp-ex-edge-cost-text">4</text><line x1="338.0" y1="199.0" x2="259.5" y2="250.0" class="rp-ex-edge"></line><circle cx="298.8" cy="224.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="298.8" y="224.5" class="rp-ex-edge-cost-text">3</text><line x1="338.0" y1="199.0" x2="416.4" y2="250.0" class="rp-ex-edge"></line><circle cx="377.2" cy="224.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="377.2" y="224.5" class="rp-ex-edge-cost-text">2</text><line x1="709.1" y1="199.0" x2="667.3" y2="250.0" class="rp-ex-edge"></line><circle cx="688.2" cy="224.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="688.2" y="224.5" class="rp-ex-edge-cost-text">1</text><line x1="709.1" y1="199.0" x2="750.9" y2="250.0" class="rp-ex-edge"></line><circle cx="730.0" cy="224.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="730.0" y="224.5" class="rp-ex-edge-cost-text">3</text><line x1="259.5" y1="250.0" x2="186.4" y2="301.0" class="rp-ex-edge"></line><circle cx="223.0" cy="275.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="223.0" y="275.5" class="rp-ex-edge-cost-text">3</text><line x1="259.5" y1="250.0" x2="332.7" y2="301.0" class="rp-ex-edge"></line><circle cx="296.1" cy="275.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="296.1" y="275.5" class="rp-ex-edge-cost-text">2</text><line x1="186.4" y1="301.0" x2="123.6" y2="352.0" class="rp-ex-edge"></line><circle cx="155.0" cy="326.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="155.0" y="326.5" class="rp-ex-edge-cost-text">3</text><line x1="186.4" y1="301.0" x2="249.1" y2="352.0" class="rp-ex-edge"></line><circle cx="217.7" cy="326.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="217.7" y="326.5" class="rp-ex-edge-cost-text">2</text><line x1="123.6" y1="352.0" x2="81.8" y2="403.0" class="rp-ex-edge"></line><circle cx="102.7" cy="377.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="102.7" y="377.5" class="rp-ex-edge-cost-text">2</text><line x1="123.6" y1="352.0" x2="165.5" y2="403.0" class="rp-ex-edge"></line><circle cx="144.5" cy="377.5" r="11" class="rp-ex-edge-cost-bg"></circle><text x="144.5" y="377.5" class="rp-ex-edge-cost-text">2</text><g class="rp-ex-node"><circle cx="81.8" cy="403.0" r="16"></circle><text x="81.8" y="403.0" class="rp-ex-node-label">U</text></g><g class="rp-ex-node"><circle cx="165.5" cy="403.0" r="16"></circle><text x="165.5" y="403.0" class="rp-ex-node-label">V</text></g><g class="rp-ex-node"><circle cx="249.1" cy="352.0" r="16"></circle><text x="249.1" y="352.0" class="rp-ex-node-label">T</text></g><g class="rp-ex-node"><circle cx="332.7" cy="301.0" r="16"></circle><text x="332.7" y="301.0" class="rp-ex-node-label">R</text></g><g class="rp-ex-node"><circle cx="416.4" cy="250.0" r="16"></circle><text x="416.4" y="250.0" class="rp-ex-node-label">N</text></g><g class="rp-ex-node"><circle cx="500.0" cy="199.0" r="16"></circle><text x="500.0" y="199.0" class="rp-ex-node-label">H</text></g><g class="rp-ex-node"><circle cx="583.6" cy="148.0" r="16"></circle><text x="583.6" y="148.0" class="rp-ex-node-label">D</text></g><g class="rp-ex-node rp-ex-node-goal"><circle cx="667.3" cy="250.0" r="16"></circle><text x="667.3" y="250.0" class="rp-ex-node-label">O</text><text x="667.3" y="280.0" class="rp-ex-node-goal-tag">GOAL</text></g><g class="rp-ex-node"><circle cx="750.9" cy="250.0" r="16"></circle><text x="750.9" y="250.0" class="rp-ex-node-label">P</text></g><g class="rp-ex-node"><circle cx="834.5" cy="199.0" r="16"></circle><text x="834.5" y="199.0" class="rp-ex-node-label">J</text></g><g class="rp-ex-node"><circle cx="918.2" cy="148.0" r="16"></circle><text x="918.2" y="148.0" class="rp-ex-node-label">F</text></g><g class="rp-ex-node"><circle cx="123.6" cy="352.0" r="16"></circle><text x="123.6" y="352.0" class="rp-ex-node-label">S</text></g><g class="rp-ex-node"><circle cx="186.4" cy="301.0" r="16"></circle><text x="186.4" y="301.0" class="rp-ex-node-label">Q</text></g><g class="rp-ex-node"><circle cx="259.5" cy="250.0" r="16"></circle><text x="259.5" y="250.0" class="rp-ex-node-label">M</text></g><g class="rp-ex-node"><circle cx="338.0" cy="199.0" r="16"></circle><text x="338.0" y="199.0" class="rp-ex-node-label">G</text></g><g class="rp-ex-node"><circle cx="419.0" cy="148.0" r="16"></circle><text x="419.0" y="148.0" class="rp-ex-node-label">C</text></g><g class="rp-ex-node"><circle cx="501.3" cy="97.0" r="16"></circle><text x="501.3" y="97.0" class="rp-ex-node-label">A</text></g><g class="rp-ex-node"><circle cx="709.1" cy="199.0" r="16"></circle><text x="709.1" y="199.0" class="rp-ex-node-label">I</text></g><g class="rp-ex-node"><circle cx="771.8" cy="148.0" r="16"></circle><text x="771.8" y="148.0" class="rp-ex-node-label">E</text></g><g class="rp-ex-node"><circle cx="845.0" cy="97.0" r="16"></circle><text x="845.0" y="97.0" class="rp-ex-node-label">B</text></g><g class="rp-ex-node rp-ex-node-start"><circle cx="673.2" cy="46.0" r="9"></circle><text x="673.2" y="28.0" class="rp-ex-node-start-label">START</text></g></svg>
+                <figcaption>Every edge label is its step cost. <code>START</code> has two children, <code>A</code> (cost 5) and <code>B</code> (cost 1); the tree bottoms out in eleven leaves, <code>O</code> among them, four edges below <code>START</code> along the <code>B&rarr;E&rarr;I&rarr;O</code> branch.</figcaption>
+              </figure>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">(a) Breadth-First Search</span>
+                  <p>BFS expands level by level and uses the <strong>early</strong> goal test, so a child is checked the instant it is generated rather than waiting for its turn to be popped. It clears depth 1 (<code>A</code>, <code>B</code>), then depth 2 (<code>C</code>, <code>D</code>, <code>E</code>, <code>F</code>), then depth 3 (<code>G</code>, <code>H</code>, <code>I</code>, <code>J</code>) before expanding <code>I</code> at depth 3 turns up <code>O</code> as its first (alphabetically) successor — the search stops there, so <code>O</code> is never formally selected off the queue.</p>
+                  <div class="formula-box">Expansion order: START, A, B, C, D, E, F, G, H, I<br>Solution path: START &rarr; B &rarr; E &rarr; I &rarr; O &middot; Path cost: 1+1+1+1 = <strong>4</strong></div>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">(b) Depth-First Search</span>
+                  <p>Because successors are pushed in reverse alphabetical order, the stack still pops <code>A</code> before <code>B</code> — so DFS commits to <code>START</code>'s entire <code>A</code>-subtree (all thirteen nodes under it: <code>C, D, G, H, M, N, Q, R, S, T, U, V</code>) before ever backtracking to try <code>B</code>. Every one of those thirteen nodes is irrelevant to the goal, but DFS has no way to know that. Only once that whole branch is exhausted does it pop back to <code>START</code> and descend into <code>B</code>, where <code>E</code> and then <code>I</code> are each the alphabetically-first (and only newly-tried) child, so <code>O</code> — <code>I</code>'s first child — is reached immediately, with no detour through <code>P</code>.</p>
+                  <div class="formula-box">Expansion order: START, A, C, G, M, Q, S, U, V, T, R, N, H, D, B, E, I<br>Solution path: START &rarr; B &rarr; E &rarr; I &rarr; O &middot; Path cost: <strong>4</strong></div>
+                  <div class="teaching-tip"><i data-lucide="lightbulb"></i>DFS finds the <em>same</em> path as BFS here only because <code>O</code> happens to be the alphabetically-first descendant at every level of the <code>B</code> branch — a coincidence of this tree's labeling, not a property DFS can be relied on for in general.</div>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">(c) Iterative Deepening Search</span>
+                  <p>IDS reruns depth-limited DFS with the limit starting at 0 and increasing by one each time the previous attempt fails. <code>O</code> sits at depth 4 (<code>START&rarr;B&rarr;E&rarr;I&rarr;O</code>), so every limit below 4 fails outright — including limit 3, where <code>I</code> is reached and selected but sits exactly at the limit, so it is never expanded and <code>O</code> is never generated. Limit 4 repeats the same depth-limited traversal one level deeper and this time reaches, expands, and selects <code>O</code>.</p>
+                  <div class="rp-table-wrap">
+                    <table class="rp-table">
+                      <thead><tr><th>Limit</th><th>Nodes Selected This Iteration</th><th>Goal Found?</th></tr></thead>
+                      <tbody>
+                        <tr><td>0</td><td><code>START</code></td><td>No</td></tr>
+                        <tr><td>1</td><td><code>START, A, B</code></td><td>No</td></tr>
+                        <tr><td>2</td><td><code>START, A, C, D, B, E, F</code></td><td>No</td></tr>
+                        <tr><td>3</td><td><code>START, A, C, G, H, D, B, E, I, J, F</code></td><td>No</td></tr>
+                        <tr><td>4</td><td><code>START, A, C, G, M, N, H, D, B, E, I, O</code></td><td><strong>Yes</strong></td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div class="formula-box">Solution path: START &rarr; B &rarr; E &rarr; I &rarr; O &middot; Path cost: <strong>4</strong></div>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">(d) Uniform-Cost Search</span>
+                  <p>UCS always expands the frontier's cheapest node by <code>g(n)</code>. <code>B</code> (<code>g=1</code>) is far cheaper than <code>A</code> (<code>g=5</code>), so UCS clears <code>B</code>'s whole branch — <code>E</code> (<code>g=2</code>), then <code>I</code> (<code>g=3</code>) — while <code>A</code> sits untouched in the frontier at <code>g=5</code>. Expanding <code>I</code> generates <code>O</code> at <code>g=4</code>, which is now the cheapest frontier item (<code>4 &lt; 5</code>), so <code>O</code> is selected next and passes the standard goal test. <code>A</code> — and everything under it — is never expanded at all.</p>
+                  <div class="formula-box">Expansion order: START, B, E, I<br>Solution path: START &rarr; B &rarr; E &rarr; I &rarr; O &middot; Path cost: <strong>4</strong></div>
+                </div>
+
+                <div class="teaching-tip">
+                  <i data-lucide="lightbulb"></i>
+                  <span>Because this graph is a tree — every node has exactly one parent — <code>O</code> has only one possible path to it, so all four algorithms necessarily agree on the same cost-4 solution. What differs is not the <em>answer</em> but how much searching each algorithm does to find it: UCS is the cheapest here at 4 expansions, DFS the most wasteful at 17, purely because DFS commits to the wrong subtree first.</span>
+                </div>
+
+              </div>
+            </details>
+          </div>
+
+          <div class="rp-exercise" id="ex2">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 2</span>
+              <h3 class="rp-exercise-title">Tracing UCS, Greedy, and A* on a Weighted Graph</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Successors are generated in alphabetical order. Using the weighted graph below (start <code>A</code>, goal <code>G</code>) and the accompanying straight-line-distance heuristic &mdash; the same graph and <code>h(n)</code> table used by <code>demos/search_demo</code> and the city-map version in <code>demos/search_planning_demo</code> &mdash; find the expansion order, solution path, and path cost for:</p>
+              <p>(a) Uniform-Cost Search &middot; (b) Greedy Best-First Search &middot; (c) A* Search</p>
+              <div class="rp-table-wrap">
+                <table class="rp-table">
+                  <thead><tr><th>Edge</th><th>Cost</th><th>Edge</th><th>Cost</th></tr></thead>
+                  <tbody>
+                    <tr><td><code>A &rarr; B</code></td><td>3</td><td><code>C &rarr; F</code></td><td>9</td></tr>
+                    <tr><td><code>A &rarr; C</code></td><td>2</td><td><code>D &rarr; G</code></td><td>3</td></tr>
+                    <tr><td><code>A &rarr; E</code></td><td>9</td><td><code>E &rarr; G</code></td><td>1</td></tr>
+                    <tr><td><code>B &rarr; D</code></td><td>2</td><td><code>E &rarr; H</code></td><td>2</td></tr>
+                    <tr><td><code>B &rarr; E</code></td><td>4</td><td><code>F &rarr; H</code></td><td>1</td></tr>
+                    <tr><td><code>C &rarr; E</code></td><td>6</td><td><code>G &rarr; H</code></td><td>5</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="rp-table-wrap">
+                <table class="rp-table">
+                  <thead><tr><th><code>n</code></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th></tr></thead>
+                  <tbody><tr><td><code>h(n)</code></td><td>6</td><td>4</td><td>6</td><td>3</td><td>1</td><td>6</td><td>0</td><td>5</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">(a) Uniform-Cost Search</span>
+                  <p>Expanding <code>A</code> puts <code>C(g=2)</code> ahead of <code>B(g=3)</code> and <code>E(g=9)</code>, so UCS visits <code>C</code> next; expanding <code>C</code> lowers <code>E</code>'s cost to 8, but expanding <code>B</code> right after lowers it again to 7. <code>D(g=5)</code> is cheaper still, so it goes next and generates <code>G</code> at <code>g=8</code> &mdash; yet <code>E(g=7)</code> is still cheaper than that, so UCS is not done: it expands <code>E</code> first (which cannot beat the existing <code>g(G)=8</code>, so <code>G</code>'s cost is unchanged), and only then selects <code>G</code>.</p>
+                  <div class="formula-box">Expansion order: A, C, B, D, E<br>Solution path: A &rarr; B &rarr; D &rarr; G &middot; Path cost: <strong>8</strong></div>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">(b) Greedy Best-First Search</span>
+                  <p>Greedy ignores <code>g(n)</code> entirely and always chases the lowest <code>h(n)</code>. From <code>A</code>, <code>E</code> has the lowest heuristic (<code>h=1</code>) of the three children, even though the edge <code>A&rarr;E</code> costs a steep 9 &mdash; Greedy takes it anyway. From <code>E</code>, <code>G</code> has <code>h=0</code> and is selected immediately.</p>
+                  <div class="formula-box">Expansion order: A, E<br>Solution path: A &rarr; E &rarr; G &middot; Path cost: <strong>10</strong></div>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">(c) A* Search</span>
+                  <p>A* orders the frontier by <code>f(n)=g(n)+h(n)</code>. After expanding <code>A</code>, <code>f(B)=3+4=7</code> beats <code>f(C)=2+6=8</code>, so &mdash; unlike UCS &mdash; A* visits <code>B</code> before <code>C</code>. Expanding <code>B</code> gives <code>f(D)=5+3=8</code> and improves <code>E</code> to <code>f=7+1=8</code>. <code>C</code> is tied at <code>f=8</code> but loses the tie-break on lower <code>g</code>; expanding it cannot improve <code>E</code> (<code>g=8 &ge; 7</code>). <code>D(f=8,g=5)</code> goes next, generating <code>G</code> at <code>f=8</code>; <code>E(f=8,g=7)</code> goes after that but cannot beat <code>G</code>'s existing cost, and <code>G</code> is finally selected.</p>
+                  <div class="formula-box">Expansion order: A, B, C, D, E<br>Solution path: A &rarr; B &rarr; D &rarr; G &middot; Path cost: <strong>8</strong></div>
+                </div>
+
+                <div class="teaching-tip">
+                  <i data-lucide="lightbulb"></i>
+                  <span>UCS and A* agree on the optimal cost (8) &mdash; expected, since an admissible heuristic can only help A* find the true optimum, never a worse one (Exercise 5) &mdash; but they disagree on expansion order: UCS visits <code>C</code> before <code>B</code>, A* visits <code>B</code> before <code>C</code>, purely because <code>h(n)</code> reshapes the frontier's priority. Greedy is the cheapest to run (2 expansions) but the most expensive answer (10 vs. 8) &mdash; a reminder that ignoring <code>g(n)</code> buys speed at the cost of optimality.</span>
+                </div>
+
+              </div>
+            </details>
+          </div>
+
+          <div class="rp-exercise" id="ex3">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 3</span>
+              <h3 class="rp-exercise-title">Why Early Goal Test Works for BFS but Not UCS</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>An <strong>early goal test</strong> checks a node the instant it is <em>generated</em> as a successor, rather than waiting until it is <em>selected</em> (popped from the frontier). Explain why this shortcut is safe for Breadth-First Search, but not for Uniform-Cost Search.</p>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">BFS: generation order already equals cost order</span>
+                  <p>BFS expands nodes in strict order of non-decreasing depth, and every edge carries the same implicit unit cost, so path cost is a monotone function of depth alone &mdash; a goal one level shallower is always strictly cheaper. BFS's FIFO frontier guarantees no shallower node is ever left unexpanded while a deeper one is processed, so the very first time a goal is generated, no cheaper (shallower) goal could possibly still be waiting undiscovered. "First generated" and "cheapest" are the same moment, so testing at generation time is free of risk &mdash; and it saves the wasted work of queuing and later re-expanding the goal.</p>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">UCS: generation order and cost order can disagree</span>
+                  <p>UCS's frontier is ordered by cumulative cost <code>g(n)</code>, but nodes are not necessarily <em>generated</em> in that order. In Section 3.2's worked example, expanding <code>D</code> generates the goal <code>G</code> with <code>g(G)=8</code> &mdash; but <code>E</code> is still sitting in the frontier at that moment with <code>g(E)=7 &lt; 8</code>. Stopping the instant <code>G</code> was generated would report cost 8 as final, without ever checking whether continuing through <code>E</code> reveals something cheaper. The only way to certify a node's cost is minimal is to wait until it is popped as the frontier's current minimum &mdash; at that point, since all edge costs are non-negative, nothing left in the frontier (or still undiscovered) can produce a cheaper route to it. That is exactly the late-goal-test argument reused in Exercises 5 and 7.</p>
+                </div>
+
+                <div class="formula-box">Early goal test is safe only when frontier order = cost order.</div>
+
+              </div>
+            </details>
+          </div>
+
+          <div class="rp-exercise" id="ex4">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 4</span>
+              <h3 class="rp-exercise-title">Proving Time and Space Complexity by Induction</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Prove the time and space complexity of BFS, DFS, IDS, UCS, A*, and Greedy Best-First Search using mathematical induction.</p>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+                <p>Each proof below inducts on a notion of "layer" — depth for the uninformed algorithms, cost-band for the informed ones — and shows that layer <code>k+1</code>'s node count is bounded in terms of layer <code>k</code>'s, the way every one of these bounds is actually derived.</p>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">(a) BFS &mdash; O(b<sup>d</sup>) time and space</span>
+                  <p><strong>Claim:</strong> after BFS has processed every node through depth <code>k</code>, it has generated at most <code>1+b+b<sup>2</sup>+&hellip;+b<sup>k</sup></code> nodes.</p>
+                  <p><strong>Base case</strong> (<code>k=0</code>): only the root has been generated &mdash; <code>1 = b<sup>0</sup></code>. <strong>Inductive step:</strong> assume depth <code>k</code> holds at most <code>b<sup>k</sup></code> nodes. Each generates at most <code>b</code> children, so depth <code>k+1</code> holds at most <code>b&middot;b<sup>k</sup> = b<sup>k+1</sup></code> nodes, and the cumulative total becomes <code>(1+b+&hellip;+b<sup>k</sup>)+b<sup>k+1</sup> = 1+b+&hellip;+b<sup>k+1</sup></code> &mdash; exactly the claim at <code>k+1</code>.</p>
+                  <p><strong>Conclusion:</strong> through depth <code>d</code>, total nodes generated <code>= &sum;<sub>i=0</sub><sup>d</sup> b<sup>i</sup> = O(b<sup>d</sup>)</code>. Since BFS keeps every generated node in the frontier or <code>reached</code> until the search ends, space shares the same bound.</p>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">(b) DFS &mdash; O(b<sup>m</sup>) time, O(bm) space</span>
+                  <p><strong>Time:</strong> the identical induction from (a), carried out to the tree's maximum depth <code>m</code> instead of stopping at <code>d</code> (DFS has no preference for shallow goals), gives total nodes generated <code>&le; &sum;<sub>i=0</sub><sup>m</sup> b<sup>i</sup> = O(b<sup>m</sup>)</code>.</p>
+                  <p><strong>Space claim:</strong> when the deepest node expanded so far sits at depth <code>k</code>, the frontier holds at most <code>b&middot;k</code> nodes. <strong>Base case</strong> (<code>k=0</code>): the frontier holds at most <code>b</code> nodes (the root's own children). <strong>Inductive step:</strong> a stack discards a subtree's frontier entries once that subtree is fully explored, so descending to depth <code>k+1</code> adds at most one new sibling group (<code>&le; b</code> nodes) on top of the <code>&le; b&middot;k</code> already held from shallower levels, giving <code>&le; b&middot;(k+1)</code>.</p>
+                  <p><strong>Conclusion:</strong> at depth <code>m</code>, the frontier never exceeds <code>b&middot;m = O(bm)</code>.</p>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">(c) IDS &mdash; O(b<sup>d</sup>) time, O(bd) space</span>
+                  <p><strong>Time:</strong> IDS is <code>d+1</code> depth-limited DFS runs, one per limit <code>&#x2113;=0,&hellip;,d</code>, and by (a)/(b)'s induction restricted to depth <code>&#x2113;</code>, run <code>&#x2113;</code> costs <code>O(b<sup>&#x2113;</sup>)</code>. The total is <code>&sum;<sub>&#x2113;=0</sub><sup>d</sup> b<sup>&#x2113;</sup></code>. By induction on <code>d</code> (base case <code>d=0</code>: sum <code>=1=(b<sup>1</sup>-1)/(b-1)</code>; step: <code>(b<sup>k+1</sup>-1)/(b-1) + b<sup>k+1</sup> = (b<sup>k+2</sup>-1)/(b-1)</code>), this geometric sum equals <code>(b<sup>d+1</sup>-1)/(b-1) = O(b<sup>d</sup>)</code> &mdash; the same order as one BFS run, since the final iteration's cost dominates all the shallow work repeated before it.</p>
+                  <p><strong>Space:</strong> IDS never holds more than one iteration's stack at a time, so it inherits DFS's <code>O(bm)</code> bound from (b) applied at the final, deepest limit reached (<code>m=d</code> when a solution exists) &mdash; <code>O(bd)</code>.</p>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">(d) UCS &mdash; O(b<sup>1+&lfloor;C*/&epsilon;&rfloor;</sup>) time and space</span>
+                  <p>Define cost layer <code>j</code> as the nodes with optimal cost <code>g*(n) &isin; [j&epsilon;, (j+1)&epsilon;)</code>. <strong>Claim:</strong> layer <code>j</code> holds at most <code>b<sup>j</sup></code> nodes. <strong>Base case</strong> (<code>j=0</code>): only the start node has <code>g=0</code> &mdash; <code>1=b<sup>0</sup></code>. <strong>Inductive step:</strong> since <code>&epsilon;</code> is the minimum step cost, every child of a layer-<code>j</code> node has cost at least <code>(j+1)&epsilon;</code>, so it lands in layer <code>j+1</code> or later, never back in layer <code>j</code>. Each of the <code>&le; b<sup>j</sup></code> layer-<code>j</code> nodes has <code>&le; b</code> children, so layer <code>j+1</code> receives at most <code>b<sup>j+1</sup></code> of them.</p>
+                  <p><strong>Conclusion:</strong> UCS only ever expands nodes with <code>g(n) &le; C*</code> before reaching an optimal goal (it always takes the frontier's cheapest item first), so the nodes involved are bounded by layers <code>0</code> through <code>&lfloor;C*/&epsilon;&rfloor;</code>: <code>&sum;<sub>j=0</sub><sup>&lfloor;C*/&epsilon;&rfloor;</sup> b<sup>j</sup> = O(b<sup>1+&lfloor;C*/&epsilon;&rfloor;</sup>)</code>, by the same geometric-sum identity as (c). Time and space share this bound, since UCS keeps every generated node until it is expanded.</p>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">(e) A* &mdash; same worst-case bound as UCS</span>
+                  <p>By the lemma proved in Exercise 5 (an admissible <code>h</code> means A* only selects nodes with <code>f(n) &le; C*</code> before an optimal goal), define layers by <code>f(n)</code> instead of <code>g(n)</code>: layer <code>j = {n : f(n) &isin; [j&epsilon;, (j+1)&epsilon;)}</code>. Because <code>f = g+h</code> increases by at least <code>&epsilon;</code> per edge (g does, and <code>h &ge; 0</code>), the identical induction from (d) applies verbatim, giving layer <code>j &le; b<sup>j</sup></code> nodes.</p>
+                  <p><strong>Conclusion:</strong> A* touches only layers <code>0</code> through <code>&lfloor;C*/&epsilon;&rfloor;</code> before terminating, so its worst-case time and space share UCS's <code>O(b<sup>1+&lfloor;C*/&epsilon;&rfloor;</sup>)</code> bound &mdash; unsurprising, since <code>h&equiv;0</code> makes A* identical to UCS. A well-informed heuristic shrinks how many nodes actually reach a low <code>f</code>-layer in practice, but it cannot change this worst-case order.</p>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">(f) Greedy &mdash; O(b<sup>m</sup>) time <em>and</em> space</span>
+                  <p><strong>Time:</strong> a poor heuristic gives no useful guidance, so in the worst case greedy can be led down every branch to the maximum depth <code>m</code> before stumbling onto the goal &mdash; the identical induction from (b)'s time argument gives <code>&sum;<sub>i=0</sub><sup>m</sup> b<sup>i</sup> = O(b<sup>m</sup>)</code> nodes generated.</p>
+                  <p><strong>Space:</strong> unlike DFS, greedy's frontier is a priority queue, not a stack — a sibling is never discarded once a different branch is chosen; every generated node stays in the frontier until it happens to be popped. So the same induction that bounded generated-node <em>count</em> in the time argument also bounds frontier <em>size</em>, since nothing is ever freed except by expansion (which only adds more nodes): at depth <code>m</code> this gives <code>O(b<sup>m</sup>)</code> space too &mdash; DFS's linear-space trick does not carry over to a priority-queue frontier.</p>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <div class="rp-exercise" id="ex5">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 5</span>
+              <h3 class="rp-exercise-title">A* Is Cost-Optimal</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Using proof by contradiction, prove that A* is cost-optimal.</p>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+                <p><strong>Setup:</strong> let <code>h</code> be admissible (<code>h(n) &le; h*(n)</code>, the true cheapest cost from <code>n</code> to a goal, for every node), and let <code>C*</code> be the true optimal solution cost, achieved by goal <code>G1</code>. Assume, for contradiction, that A* (tree-like search, standard goal test) instead terminates by selecting a suboptimal goal <code>G2</code>, with <code>g(G2) &gt; C*</code>.</p>
+                <p><strong>Step 1.</strong> Because the optimal path to <code>G1</code> is finite, at the moment A* selects <code>G2</code> some node <code>n</code> on that optimal path must still be sitting in the frontier — either <code>G1</code> itself, or an ancestor of it whose subtree has not yet been fully explored.</p>
+                <p><strong>Step 2.</strong> Since <code>h</code> is admissible, <code>h(n) &le; h*(n)</code>, so <code>f(n) = g(n) + h(n) &le; g(n) + h*(n) = C*</code> &mdash; the cost of reaching <code>G1</code> via <code>n</code> is exactly <code>C*</code>, by definition of the optimal path.</p>
+                <p><strong>Step 3.</strong> A* always selects the frontier node with minimum <code>f</code>. Since it selected <code>G2</code> instead of <code>n</code>: <code>f(G2) &le; f(n) &le; C*</code>. But <code>h(G2)=0</code> at any goal, so <code>f(G2) = g(G2)</code>. This gives <code>g(G2) &le; C*</code>.</p>
+                <p><strong>Contradiction:</strong> Step 3's <code>g(G2) &le; C*</code> directly contradicts the assumption <code>g(G2) &gt; C*</code>. So the assumption was false — A* cannot terminate on a suboptimal goal. <strong>A* is cost-optimal.</strong></p>
+                <div class="teaching-tip"><i data-lucide="lightbulb"></i>This tree-search argument needs only admissibility. Graph search (with a shared <code>reached</code> set) needs the stronger <strong>consistency</strong> condition, because admissibility alone doesn't stop a later, cheaper path to an already-<code>reached</code> node from being wrongly discarded.</div>
+              </div>
+            </details>
+          </div>
+
+          <div class="rp-exercise" id="ex6">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 6</span>
+              <h3 class="rp-exercise-title">IDS and Equal Step Costs</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Prove that IDS is optimal only if all cost steps are equal.</p>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+                <p>Worth separating two different claims before proving anything: <strong>completeness</strong> (does IDS find <em>some</em> solution?) and <strong>optimality</strong> (is the solution it finds the <em>cheapest</em> one?) are not the same guarantee, and the question asked is specifically about the second one. As Section 4.4's summary table already shows, IDS is complete whenever the branching factor <code>b</code> is finite — regardless of step costs. What genuinely requires equal step costs is <strong>optimality</strong>. The proof below establishes both halves precisely.</p>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Completeness holds unconditionally (for finite b)</span>
+                  <p>If a solution exists at some finite depth <code>d</code>, IDS's outer loop tries every integer limit <code>0,1,2,&hellip;</code> in turn. Since <code>b</code> is finite, each depth-limited DFS run explores a finite tree and terminates (Exercise 4b). So the limit <code>=d</code> iteration is guaranteed to be reached eventually, and at that limit the depth-<code>d</code> solution is reachable and will be found. This argument never used the size of any step cost — only that <code>b</code> is finite and <code>d</code> is finite. So <strong>completeness does not depend on step costs at all.</strong></p>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Optimality requires equal step costs</span>
+                  <p>IDS returns whatever solution the first successful iteration finds — the <strong>shallowest</strong> one. Shallowest is only guaranteed <strong>cheapest</strong> when path cost is a non-decreasing function of depth, which holds unconditionally when every step has the same cost <code>c</code> (then cost <code>= c &times; depth</code>, so shallower is strictly cheaper). Proof by counterexample when costs are unequal: let node <code>P</code> be a goal at depth 1 reached by one step of cost 100, and node <code>Q</code> be a different goal at depth 2 reached by two steps of cost 1 each (total cost 2). IDS's limit-1 iteration finds <code>P</code> first and returns it immediately — cost 100 — despite <code>Q</code>, cost 2, being the true optimum. So without equal (or at least depth-monotonic) step costs, IDS is not optimal, even though it remains complete.</p>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <div class="rp-exercise" id="ex7">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 7</span>
+              <h3 class="rp-exercise-title">UCS Is Complete and Optimal</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Prove that UCS is complete and optimal.</p>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Completeness</span>
+                  <p>Assume step costs are <code>&ge; &epsilon; &gt; 0</code> and a goal exists at finite cost <code>C*</code>. UCS always expands the frontier's minimum-<code>g</code> node, so the minimum cost remaining on the frontier is non-decreasing over time, and it strictly increases by at least <code>&epsilon;</code> every time the previous minimum is expanded (Exercise 4d's layer argument: with <code>b</code> finite and step costs bounded below by <code>&epsilon;</code>, only finitely many nodes have <code>g(n) &le; C*</code>). Since UCS never skips over a cheaper node in favor of a more expensive one, and only finitely many nodes are cheaper than or equal to <code>C*</code>, UCS must reach the goal after expanding a finite number of nodes. <strong>UCS is complete.</strong></p>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Optimality</span>
+                  <p>Suppose UCS selects a goal <code>G</code> with <code>g(G) = g<sub>1</sub></code>. Because UCS always expands the frontier's cheapest node first, by the time <code>G</code> is selected, every node with cost strictly less than <code>g<sub>1</sub></code> has already been expanded and had its cheapest cost recorded in <code>reached</code> — so no undiscovered path cheaper than <code>g<sub>1</sub></code> can still exist to any node, <code>G</code> included. If a cheaper path to <code>G</code> existed, it would have produced a frontier item with cost <code>&lt; g<sub>1</sub></code>, which UCS would have expanded first, selecting <code>G</code> at that lower cost instead. This contradicts <code>G</code> being selected at cost <code>g<sub>1</sub></code>, so no such cheaper path exists: <code>g<sub>1</sub> = C*</code>. <strong>UCS is optimal.</strong></p>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <div class="rp-exercise" id="ex8">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 8</span>
+              <h3 class="rp-exercise-title">DFS Is Not Cost-Optimal</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Prove that Depth-First Search is not cost-optimal.</p>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+                <p>Disproving a universal claim &mdash; "DFS always returns the minimum-cost solution" &mdash; only takes one counterexample where it fails.</p>
+
+                <div class="rp-table-wrap">
+                  <table class="rp-table">
+                    <thead><tr><th>Edge</th><th>Cost</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>S &rarr; A</code></td><td>10</td></tr>
+                      <tr><td><code>A &rarr; G1</code> (goal)</td><td>0</td></tr>
+                      <tr><td><code>S &rarr; B</code></td><td>1</td></tr>
+                      <tr><td><code>B &rarr; G2</code> (goal)</td><td>1</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <p><code>S</code>'s successors, alphabetically, are <code>A</code> then <code>B</code>. DFS pushes them so <code>A</code> is explored first: pop <code>S</code>, expand, push <code>B</code> then <code>A</code>; pop <code>A</code>, expand &rarr; generates <code>G1</code>; pop <code>G1</code> &mdash; goal test succeeds &mdash; DFS stops and returns <code>S &rarr; A &rarr; G1</code> at cost 10. It never visits <code>B</code>, <code>G2</code>, or the path of cost <code>1+1=2</code> at all.</p>
+
+                <div class="formula-box">DFS returns: S &rarr; A &rarr; G1 &middot; Cost <strong>10</strong><br>True optimum: S &rarr; B &rarr; G2 &middot; Cost <strong>2</strong></div>
+
+                <p>Since <code>10 &gt; 2</code>, DFS returned a solution that is not the cheapest one reachable. Its stack discipline and late goal test only ever ask "is this the goal?" &mdash; never "is this the <em>cheapest</em> goal?" &mdash; so it has no mechanism to prefer a low-cost branch over whichever one it happens to explore first. <strong>DFS is not cost-optimal.</strong></p>
+
+                <div class="teaching-tip"><i data-lucide="lightbulb"></i><span>This is exactly why UCS exists: ordering the frontier by <code>g(n)</code> instead of stack order is what turns "first found" into "cheapest found" whenever step costs are unequal (Exercise 7).</span></div>
+              </div>
+            </details>
+          </div>
+
         </section>
 
       </article>

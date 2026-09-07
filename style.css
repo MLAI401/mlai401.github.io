@@ -4520,3 +4520,269 @@ body.sl-page::after {
     padding-top: 0;
   }
 }
+
+/* ============================================================
+   Section 5: Practice Exercises (topic02_reading.html)
+   Each exercise is a bordered card (.rp-exercise) with a prompt
+   (.rp-exercise-body) and a native <details>/<summary> disclosure
+   (.rp-answer) for the hidden solution -- <summary> is restyled to
+   read as a real "Show Answer" button (default marker removed, a
+   rotating chevron added) rather than a native triangle, and needs
+   no JS: the browser's own open/close state does the hiding.
+   Multi-part answers use .rp-answer-part/.rp-answer-part-label for
+   the (a)/(b)/(c) subpart structure. Exercise 1's tree figure reuses
+   its own small .rp-ex-* node/edge classes (a bespoke, larger-than-
+   usual viewBox for 21 nodes) rather than the shared .sl-gnode/
+   .sl-gedge classes, which are tuned for the 8-9 node diagrams
+   elsewhere on this page.
+   ============================================================ */
+
+.rp-exercise {
+  margin: 0 0 1.75rem;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  background: #ffffff;
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.rp-exercise-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  padding: 1.1rem 1.3rem 0;
+}
+
+.rp-exercise-num {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--primary);
+  background: rgba(79, 70, 229, 0.08);
+  padding: 0.2rem 0.55rem;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.rp-exercise-title {
+  margin: 0 !important;
+  font-size: 1.02rem !important;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.rp-exercise-body {
+  padding: 0.6rem 1.3rem 1.2rem;
+}
+
+.rp-exercise-body p {
+  font-size: 0.92rem;
+  margin-bottom: 0.7rem;
+}
+
+.rp-exercise-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* ---- Exercise 1's tree figure ---- */
+.rp-ex-figure {
+  margin: 0.9rem 0 0;
+  padding: 1rem 1rem 0.9rem;
+  background: rgba(15, 23, 42, 0.015);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  text-align: center;
+}
+
+.rp-ex-graph-svg {
+  width: 100%;
+  max-width: 640px;
+  height: auto;
+  margin: 0 auto;
+  display: block;
+}
+
+.rp-ex-figure figcaption {
+  margin-top: 0.65rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  text-align: left;
+}
+
+.rp-ex-edge {
+  stroke: #cbd5e1;
+  stroke-width: 1.6;
+}
+
+.rp-ex-edge-cost-bg {
+  fill: #ffffff;
+  stroke: #e2e8f0;
+  stroke-width: 1;
+}
+
+.rp-ex-edge-cost-text {
+  font: 700 11px 'Outfit', sans-serif;
+  fill: var(--text-muted);
+  text-anchor: middle;
+  dominant-baseline: middle;
+}
+
+.rp-ex-node circle {
+  fill: #1e293b;
+  stroke: #1e293b;
+  stroke-width: 1.5;
+}
+
+.rp-ex-node-label {
+  font: 700 13px 'Outfit', sans-serif;
+  fill: #ffffff;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  pointer-events: none;
+}
+
+.rp-ex-node-start circle {
+  fill: var(--primary);
+  stroke: var(--primary);
+}
+
+.rp-ex-node-start-label {
+  font: 700 13px 'Outfit', sans-serif;
+  fill: var(--primary);
+  text-anchor: middle;
+}
+
+.rp-ex-node-goal circle {
+  fill: #ffffff;
+  stroke: var(--success);
+  stroke-width: 3;
+}
+
+.rp-ex-node-goal .rp-ex-node-label {
+  fill: var(--success);
+}
+
+.rp-ex-node-goal-tag {
+  font: 700 9px 'Outfit', sans-serif;
+  letter-spacing: 0.05em;
+  fill: var(--success);
+  text-anchor: middle;
+}
+
+/* ---- "Show Answer" disclosure ---- */
+.rp-answer {
+  border-top: 1px solid var(--border-light);
+}
+
+.rp-answer-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  list-style: none;
+  cursor: pointer;
+  user-select: none;
+  padding: 0.75rem 1.3rem;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--primary);
+  background: rgba(79, 70, 229, 0.04);
+  transition: var(--transition-fast);
+}
+
+.rp-answer-toggle:hover {
+  background: rgba(79, 70, 229, 0.08);
+}
+
+.rp-answer-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.rp-answer-toggle::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.rp-answer[open] .rp-answer-toggle::before {
+  transform: rotate(45deg);
+}
+
+.rp-answer-toggle::after {
+  content: 'Show Answer';
+}
+
+.rp-answer[open] .rp-answer-toggle::after {
+  content: 'Hide Answer';
+}
+
+.rp-answer-body {
+  padding: 1rem 1.3rem 1.3rem;
+  border-top: 1px dashed var(--border-light);
+}
+
+.rp-answer-body > p {
+  font-size: 0.92rem;
+  margin-bottom: 0.9rem;
+}
+
+.rp-answer-body .rp-table-wrap,
+.rp-answer-body .formula-box,
+.rp-answer-body .teaching-tip {
+  font-size: 0.85rem;
+}
+
+.rp-answer-part {
+  margin: 0 0 1.3rem;
+  padding-left: 0.9rem;
+  border-left: 3px solid rgba(79, 70, 229, 0.18);
+}
+
+.rp-answer-part:last-child {
+  margin-bottom: 0;
+}
+
+.rp-answer-part-label {
+  display: block;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+  margin-bottom: 0.4rem;
+}
+
+.rp-answer-part p {
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  margin-bottom: 0.6rem;
+}
+
+.rp-answer-part p:last-child {
+  margin-bottom: 0;
+}
+
+.rp-answer-part .formula-box {
+  margin: 0.7rem 0 0;
+  text-align: left;
+}
+
+.rp-answer-part .teaching-tip,
+.rp-answer-part .rp-table-wrap {
+  margin-top: 0.7rem;
+}
+
+@media (max-width: 640px) {
+  .rp-exercise-head {
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+}
