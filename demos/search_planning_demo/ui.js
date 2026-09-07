@@ -1970,6 +1970,28 @@ class SearchPlanningUI {
       if (!nodeStates[goal]) nodeStates[goal] = { cls: [] };
       if (!nodeStates[goal].cls.includes('sl-goal')) nodeStates[goal].cls = [...nodeStates[goal].cls, 'sl-goal-target'];
     }
+    // Heuristic-based strategies (Greedy/A*/SMA*) label EVERY node on the
+    // graph with h(n) -- unlike g(n)/f(n), h(n) doesn't depend on the
+    // search's progress (it's a fixed straight-line estimate to the goal),
+    // so it stays visible before a node is ever generated, while it sits
+    // in the frontier, and after it's been expanded, instead of only
+    // showing up on frontier nodes and then disappearing once explored.
+    // A*/SMA*'s frontier nodes already carry an f=/g()+h() sublabel from
+    // above -- h(n) is appended there rather than replacing it, so both
+    // numbers stay visible.
+    if (goal && (algoKey === 'greedy' || algoKey === 'astar' || algoKey === 'sma')) {
+      Object.keys(SS_NODE_LAYOUT).forEach(n => {
+        const h = window.CityEngine.getHeuristic(n, goal);
+        const hLabel = `h=${h}`;
+        if (!nodeStates[n]) {
+          nodeStates[n] = { cls: [], sublabel: hLabel };
+        } else if (!nodeStates[n].sublabel) {
+          nodeStates[n].sublabel = hLabel;
+        } else if (!nodeStates[n].sublabel.includes('h=')) {
+          nodeStates[n].sublabel = `${nodeStates[n].sublabel} &middot; ${hLabel}`;
+        }
+      });
+    }
     return nodeStates;
   }
 
