@@ -701,7 +701,7 @@ const SS_TERMS = [
   {
     key: 'dfs', kind: 'algo-stepper', algoKey: 'dfs', name: 'Depth-First Search (DFS)',
     definition: 'Expands the deepest node first.',
-    formula: 'f(n) = -depth(n)',
+    formula: 'f(n) = depth(n)',
     tip: 'Follow one route as far as possible before backtracking.',
     note: 'LIFO frontier, uninformed, STANDARD goal test (checked only when a node is selected, not when generated). Successors are pushed in reverse alphabetical order so the stack still pops them alphabetically, matching BFS/UCS/A*/Greedy’s successor order convention.'
   },
