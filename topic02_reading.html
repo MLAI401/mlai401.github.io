@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search & Planning — Reading Notes - MLAI401 Foundational AI & ML</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Textbook-style reading notes for Topic 02, Search & Planning: search terminology, data structures, uninformed and informed search strategies, and how to evaluate a search algorithm. Adapted from Artificial Intelligence: A Modern Approach.">
+  <meta name="keywords" content="Search, Planning, Frontier, Node, BFS, DFS, Uniform-Cost Search, Iterative Deepening, Greedy Best-First, A*, SMA*, Completeness, Optimality, AIMA">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="MLAI401 - Search & Planning: Reading Notes">
+  <meta property="og:description" content="A textbook-style companion to the Search & Planning lecture, covering terminology, data structures, search strategies, and how search algorithms are evaluated.">
+  <meta property="og:type" content="article">
+
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navigation Header -->
+  <header class="navbar" id="navbar-header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo" id="logo-link">
+        <span class="logo-icon">M</span>
+        MLAI401
+      </a>
+
+      <button class="menu-toggle" id="menu-toggle-btn" aria-label="Toggle Navigation Menu">
+        <i data-lucide="menu"></i>
+      </button>
+
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="index.html" class="nav-link" id="nav-home">Home</a></li>
+        <li><a href="curriculum.html" class="nav-link active" id="nav-curr">Curriculum</a></li>
+        <li><a href="playground.html" class="nav-link" id="nav-play">Playground</a></li>
+        <li><a href="index.html#resources" class="nav-link" id="nav-res">Resources</a></li>
+      </ul>
+
+      <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="nav-btn" id="nav-github-btn">
+        <i data-lucide="github"></i> GitHub Profile
+      </a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Masthead -->
+    <section class="rp-masthead">
+      <div class="container rp-masthead-inner">
+        <a href="search_planning.html" class="sl-breadcrumb"><i data-lucide="arrow-left"></i> Search &amp; Planning</a>
+
+        <div class="rp-title-row">
+          <span class="sl-topic-badge"><i data-lucide="book-open"></i> Topic 02 &middot; Reading</span>
+        </div>
+        <h1>Search &amp; Planning — Reading Notes</h1>
+
+        <p class="rp-lede">These notes follow the same conceptual order as the interactive <a href="search_planning.html">Search &amp; Planning</a> lecture — search terminology, then the data structures a search algorithm is built from, then the strategies themselves, then how to compare one strategy against another. Where the lecture page lets you click through a live example, these notes spell the same ideas out in prose, with the same terminology, notation, and worked numbers, so the two pages read as one continuous text.</p>
+
+        <div class="rp-citation">
+          <i data-lucide="quote"></i>
+          <span>Materials and content adapted from <em>Artificial Intelligence: A Modern Approach</em>, 4th edition, by Stuart Russell and Peter Norvig — the source for the terminology, notation, and algorithms used throughout this page and the interactive lecture it accompanies.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOC + Article -->
+    <div class="container rp-layout">
+
+      <aside class="rp-toc" id="rp-toc">
+        <div class="rp-toc-label">On This Page</div>
+        <nav aria-label="Table of contents">
+          <a class="rp-toc-h2" href="#terminology">1. Search Problems &amp; Terminology</a>
+          <a class="rp-toc-h3" href="#search-tree">1.1 The Search Tree</a>
+          <a class="rp-toc-h3" href="#states">1.2 States: Initial and Goal</a>
+          <a class="rp-toc-h3" href="#expansion">1.3 Expansion: Successors &amp; Child Nodes</a>
+          <a class="rp-toc-h3" href="#reached-frontier">1.4 Reached, Expanded &amp; Frontier</a>
+          <a class="rp-toc-h3" href="#expansion-order">1.5 Expansion Order</a>
+          <a class="rp-toc-h3" href="#redundant-paths">1.6 Redundant Paths</a>
+          <a class="rp-toc-h3" href="#tree-vs-graph">1.7 Tree-Like vs. Graph Search</a>
+
+          <a class="rp-toc-h2" href="#data-structures">2. Search Data Structures</a>
+          <a class="rp-toc-h3" href="#search-node">2.1 The Search Node</a>
+          <a class="rp-toc-h3" href="#frontier-operations">2.2 Frontier Operations</a>
+          <a class="rp-toc-h3" href="#frontier-types">2.3 Frontier Types</a>
+          <a class="rp-toc-h3" href="#best-first-search">2.4 Best-First Search, in General</a>
+
+          <a class="rp-toc-h2" href="#strategies">3. Search Strategies</a>
+          <a class="rp-toc-h3" href="#uninformed-informed">3.1 Uninformed vs. Informed</a>
+          <a class="rp-toc-h3" href="#bfs">3.2 Breadth-First Search</a>
+          <a class="rp-toc-h3" href="#dfs">3.3 Depth-First Search</a>
+          <a class="rp-toc-h3" href="#ucs">3.4 Uniform-Cost Search</a>
+          <a class="rp-toc-h3" href="#ids">3.5 Iterative Deepening Search</a>
+          <a class="rp-toc-h3" href="#bidirectional">3.6 Bidirectional Search</a>
+          <a class="rp-toc-h3" href="#greedy">3.7 Greedy Best-First Search</a>
+          <a class="rp-toc-h3" href="#astar">3.8 A* Search</a>
+          <a class="rp-toc-h3" href="#sma">3.9 SMA*</a>
+          <a class="rp-toc-h3" href="#goal-test">3.10 Goal Testing: Standard vs. Early</a>
+
+          <a class="rp-toc-h2" href="#evaluating">4. Evaluating Search Algorithms</a>
+          <a class="rp-toc-h3" href="#eval-terms">4.1 b, d, m, C*, &epsilon;</a>
+          <a class="rp-toc-h3" href="#time-complexity">4.2 Time Complexity</a>
+          <a class="rp-toc-h3" href="#space-complexity">4.3 Space Complexity</a>
+          <a class="rp-toc-h3" href="#completeness">4.4 Completeness</a>
+          <a class="rp-toc-h3" href="#optimality">4.5 Optimality</a>
+          <a class="rp-toc-h3" href="#summary-table">4.6 Comparing the Strategies</a>
+        </nav>
+      </aside>
+
+      <article class="rp-article">
+
+        <!-- ================= 1. TERMINOLOGY ================= -->
+        <section id="terminology">
+          <h2><span class="rp-num">1.</span>Search Problems &amp; Terminology</h2>
+
+          <p>A search problem asks an agent to find a sequence of actions that gets it from where it is to where it wants to be. Solving one means exploring a <strong>state space</strong> — the set of all states reachable from the initial state by any sequence of actions — without necessarily building the whole thing in memory. The vocabulary below describes how a search algorithm keeps track of what it has explored and what it still has left to explore; it is the same vocabulary the interactive lecture's Search Terminology tab illustrates on a small eight-state graph, and the same vocabulary this page reuses throughout.</p>
+
+          <h3 id="search-tree"><span class="rp-num">1.1</span>The Search Tree</h3>
+          <p>A search algorithm does not explore the state-space graph directly. Instead it builds a <strong>search tree</strong> over that graph: a tree of paths extending outward from the initial state, where each edge corresponds to one action. The distinction matters because <code>search tree &ne; state-space graph</code> — a single state can be reached by more than one path, so the same state can appear as more than one node in the search tree, one for each path that reaches it. The state-space graph has one node per state; the search tree can have many.</p>
+
+          <h3 id="states"><span class="rp-num">1.2</span>States: Initial and Goal</h3>
+          <p>A <strong>state</strong> <code>s &isin; S</code> represents one possible configuration of the world the agent cares about. Every search problem names one state as <code>problem.INITIAL</code>, the state the agent starts in, and provides a test <code>IS-GOAL(problem, s)</code> that recognizes whether a given state counts as a solution. Three questions are worth keeping separate while reading a search trace: where can the agent be (any state), where does it start (the initial state), and where does it want to end up (any state that passes <code>IS-GOAL</code>)?</p>
+
+          <h3 id="expansion"><span class="rp-num">1.3</span>Expansion: Successors &amp; Child Nodes</h3>
+          <p><strong>Expanding</strong> a node means applying every action available in its state and looking at where each one leads. <code>EXPAND(node)</code> does this by calling <code>RESULT(s, a) = s&prime;</code> for each legal action <code>a</code>, then wrapping each resulting state in its own <code>CHILD-NODE(...)</code>. It is worth keeping the vocabulary precise: a <strong>successor</strong> is a state, produced by <code>RESULT</code>; a <strong>child</strong> is the search-tree node built around that state. Expanding a node with three legal actions produces three successor states and three child nodes, one per action.</p>
+
+          <h3 id="reached-frontier"><span class="rp-num">1.4</span>Reached, Expanded &amp; Frontier</h3>
+          <p>At any point during search, every state the algorithm knows about falls into one of three groups. A state is <strong>reached</strong> once some path to it has been found — it has a node, even if that node has done nothing yet. A node is <strong>expanded</strong> once its children have actually been generated. And a reached-but-not-yet-expanded node sits in the <strong>frontier</strong>: the set of nodes discovered but still waiting their turn. These three ideas are easy to blur together, so it is worth stating the one that trips people up most directly: <em>reached does not mean expanded</em>. A node can sit in <code>reached</code> and in <code>frontier</code> at the same time, waiting; only once it is popped and its children generated does it move into the expanded set. A typical mid-search snapshot might read <code>reached = {A, B, C, E}</code>, <code>expanded = {A}</code>, <code>frontier = {B, C, E}</code> — one node expanded, three more reached and waiting.</p>
+
+          <h3 id="expansion-order"><span class="rp-num">1.5</span>Expansion Order</h3>
+          <p>The <strong>expansion order</strong> is simply the sequence in which nodes are selected and expanded — <code>n&#8321; &rarr; n&#8322; &rarr; n&#8323; &rarr; &hellip;</code> — and it is the single most useful thing to track while reading a trace, since it is what actually distinguishes one search strategy from another. Two algorithms can explore the exact same state-space graph and disagree completely about expansion order: BFS empties the frontier roughly level by level; DFS drains one branch before ever coming back for a sibling; a priority-queue strategy expands in order of whatever quantity it is minimizing. The graph and the algorithm never change — only the order does.</p>
+
+          <h3 id="redundant-paths"><span class="rp-num">1.6</span>Redundant Paths</h3>
+          <p>A <strong>redundant path</strong> is a second path to a state that has already been reached — formally, a child node whose <code>node.STATE &isin; reached</code> already. Redundant paths are common whenever the state-space graph has more than one route between two states (a city reachable from two different neighboring cities, say). Left unmanaged, they cause the same state to show up as more than one node in the search tree — wasted work at best, and at worst a search that never terminates if a redundant path can lead back to a state that leads back to it again.</p>
+
+          <h3 id="tree-vs-graph"><span class="rp-num">1.7</span>Tree-Like vs. Graph Search</h3>
+          <p>Whether redundant paths get pruned is a design choice, not a law of nature — it is the difference between <strong>tree-like search</strong>, which keeps every path it finds as its own node (<code>frontier</code> only, no memory of what has already been reached), and <strong>graph search</strong>, which consults <code>reached[state] = node</code> before adding a child and discards the child outright if a path to that state already exists. Tree-like search is simpler but can re-explore the same state arbitrarily many times; graph search does more bookkeeping per node but guarantees each state is expanded at most once. Every strategy in Section 3 can be run either way — the pseudocode in Section 2.4 is written as graph search, since that is what the interactive lecture runs.</p>
+        </section>
+
+        <!-- ================= 2. DATA STRUCTURES ================= -->
+        <section id="data-structures">
+          <h2><span class="rp-num">2.</span>Search Data Structures</h2>
+
+          <p>Every strategy in Section 3 is really the same algorithm with one piece swapped out: the ordering rule used by its frontier. This section covers the two data structures that make that swap possible — the search node, and the frontier itself — and then assembles them into the one generic search loop that BFS, DFS, UCS, Greedy, and A* all turn out to be instances of.</p>
+
+          <h3 id="search-node"><span class="rp-num">2.1</span>The Search Node</h3>
+          <p>A search-tree node is a small bundle of four fields, not just a bare state: <code>node.STATE</code> (which state it represents), <code>node.PARENT</code> (the node it was expanded from), <code>node.ACTION</code> (the action that produced it from its parent), and <code>node.PATH-COST</code> (written <code>g(node)</code>, the total cost of the path from the initial state down to this node). A node for the state C reached from A via the action <code>Go(C)</code>, at a running cost of 2, would read <code>STATE = C</code>, <code>PARENT = A</code>, <code>ACTION = Go(C)</code>, <code>PATH-COST = g(C) = 2</code>. The parent pointers are what let a solved search recover the actual sequence of actions at the end — the algorithm just walks <code>node.PARENT</code> back up to the root.</p>
+
+          <h3 id="frontier-operations"><span class="rp-num">2.2</span>Frontier Operations</h3>
+          <p>Whatever data structure implements it, every frontier supports the same four operations: <code>IS-EMPTY(frontier)</code> tests whether any nodes remain; <code>TOP(frontier)</code> looks at whichever node would come out next, without removing it; <code>POP(frontier)</code> removes and returns that node; and <code>ADD(node, frontier)</code> inserts a newly generated node. <code>IS-EMPTY</code> and <code>TOP</code> only ever peek — the frontier's contents never change because of them. Only <code>POP</code> and <code>ADD</code> change what is actually waiting.</p>
+
+          <h3 id="frontier-types"><span class="rp-num">2.3</span>Frontier Types</h3>
+          <p>The frontier's <em>ordering rule</em> — which node <code>TOP</code>/<code>POP</code> hand back next — is the one thing that turns this generic algorithm into a specific strategy:</p>
+          <ul>
+            <li>A <strong>FIFO queue</strong> (first-in, first-out) always returns the node that has been waiting longest. This is breadth-first behavior.</li>
+            <li>A <strong>LIFO stack</strong> (last-in, first-out) always returns whichever node was added most recently. This is depth-first behavior.</li>
+            <li>A <strong>priority queue</strong> always returns whichever node scores lowest under some evaluation function — <code>g(node)</code> for uniform-cost search, <code>h(node)</code> for greedy search, <code>g(node) + h(node)</code> for A*.</li>
+          </ul>
+          <p>Run all three over the same graph from the same starting frontier and they diverge immediately: the FIFO queue's search tree grows level by level and tends to need the most expansions to find any particular goal; the LIFO stack's tree dives straight down whatever branch it discovered most recently, reaching a goal in very few expansions in the best case while never even looking at whole other branches; the priority queue's tree always grows toward whichever node is currently cheapest by its own measure.</p>
+
+          <h3 id="best-first-search"><span class="rp-num">2.4</span>Best-First Search, in General</h3>
+          <p>With a node structure and a swappable frontier, the entire search loop collapses to eleven lines. Starting from a node for the initial state, with the frontier and <code>reached</code> table both genuinely empty, the algorithm repeats one cycle until either the frontier runs dry (failure) or a popped node passes the goal test (success): pop the next node, test it, and if it is not the goal, expand it and push every child that is either newly reached or reached more cheaply than before.</p>
+
+          <div class="rp-pseudocode">
+            <div class="rp-pseudocode-title">Best-First-Search (graph-search form)</div>
+            <pre>function BEST-FIRST-SEARCH(problem) returns a solution node or failure
+    node ← NODE(problem.INITIAL)
+    frontier ← a queue containing node
+    reached ← {problem.INITIAL: node}
+    while not IS-EMPTY(frontier) do
+        node ← POP(frontier)
+        if IS-GOAL(problem, node.STATE) then return node
+        for each child in EXPAND(node) do
+            if child.STATE not in reached or
+                    child.PATH-COST &lt; reached[child.STATE].PATH-COST then
+                reached[child.STATE] ← child; ADD(child, frontier)
+    return failure</pre>
+          </div>
+
+          <p>Every strategy in Section 3 is <code>BEST-FIRST-SEARCH</code> with one line changed: the ordering rule inside <code>frontier</code>. Breadth-first search and uniform-cost search are exactly this algorithm with a FIFO queue and a <code>g(node)</code>-ordered priority queue, respectively; depth-first search is the same loop with a LIFO stack; greedy search and A* swap in priority queues ordered by <code>h(node)</code> and <code>g(node) + h(node)</code>. Nothing else about the loop changes — which is exactly why the interactive lecture's Putting It Together stepper can walk the same eleven lines for both BFS and UCS and only ever point at line 3 (<code>frontier &larr; a queue</code>) to explain why their traces diverge.</p>
+        </section>
+
+        <!-- ================= 3. STRATEGIES ================= -->
+        <section id="strategies">
+          <h2><span class="rp-num">3.</span>Search Strategies</h2>
+
+          <p>The strategies below are grouped, in the traditional way, by how much they know about the goal's location. <strong>Uninformed</strong> strategies (BFS, DFS, UCS, IDS, plain Bidirectional Search) only know the problem definition itself — the state space, the actions, and the goal test — and nothing about how close any given state is to a solution. <strong>Informed</strong> strategies (Greedy Best-First Search, A*, SMA*) additionally use a <strong>heuristic function</strong> <code>h(n)</code>, an estimate of the cost remaining from state <code>n</code> to the nearest goal, to guide the search toward the goal rather than outward in every direction at once.</p>
+
+          <h3 id="uninformed-informed"><span class="rp-num">3.1</span>Uninformed vs. Informed Search</h3>
+          <p>Every node a search algorithm holds can be scored by two quantities: <code>g(n)</code>, the cost already paid to reach it, and <code>h(n)</code>, the estimated cost still remaining. An uninformed strategy's frontier can only ever be ordered using <code>g(n)</code> or plain insertion order, since <code>h(n)</code> is not available to it; an informed strategy can combine the two, most commonly as <code>f(n) = g(n) + h(n)</code>, an estimate of the total cost of the cheapest solution that passes through <code>n</code>. The practical effect shows up immediately on the same frontier viewed both ways: a node that looks unremarkable by <code>g(n)</code> alone can rank at the top once <code>h(n)</code> is folded in, because the heuristic recognizes it as sitting close to the goal even though little has been spent to reach it yet.</p>
+          <div class="formula-box">Uninformed: no h(n) &middot; Informed: uses h(n) &middot; f(n) = g(n) + h(n)</div>
+
+          <h3 id="bfs"><span class="rp-num">3.2</span>Breadth-First Search</h3>
+          <p>Breadth-first search expands the shallowest unexpanded node first, which a FIFO frontier gives for free: nodes come out in exactly the order they went in, so the search finishes an entire depth level before starting the next one. BFS is also usually implemented with an <strong>early</strong> goal test — checking a child the instant it is generated, rather than waiting for it to be popped — since doing so returns a solution at the shallowest possible depth without any extra expansions. That shortcut has a cost, though: the first goal BFS generates is guaranteed to be <em>shallowest</em>, not necessarily <em>cheapest</em>, so on a graph with unequal step costs BFS can return a shallow, expensive path while a deeper, cheaper one still exists.</p>
+          <dl class="rp-spec">
+            <dt>Evaluation Function</dt><dd><code>f(n) = depth(n)</code></dd>
+            <dt>Frontier</dt><dd>FIFO queue</dd>
+            <dt>Goal Test</dt><dd>Early — tested when a child is generated</dd>
+            <dt>Complete?</dt><dd>Yes, if the branching factor <code>b</code> is finite</dd>
+            <dt>Optimal?</dt><dd>Only if all step costs are equal. With unequal costs it is not guaranteed — see Section 4.5.</dd>
+            <dt>Time Complexity</dt><dd><code>O(b<sup>d</sup>)</code></dd>
+            <dt>Space Complexity</dt><dd><code>O(b<sup>d</sup>)</code></dd>
+          </dl>
+
+          <h3 id="dfs"><span class="rp-num">3.3</span>Depth-First Search</h3>
+          <p>Depth-first search expands the deepest unexpanded node first. A LIFO stack produces this behavior automatically: whatever was added most recently comes out next, so the search commits to one branch and follows it as far as it goes before ever backtracking to try a sibling. DFS uses the <strong>standard</strong> goal test — a node is checked only once it is popped and selected, not the moment it is generated — and its successors are conventionally pushed in reverse order, so that the stack still pops them out in the same left-to-right order the other strategies use.</p>
+          <dl class="rp-spec">
+            <dt>Frontier</dt><dd>LIFO stack</dd>
+            <dt>Goal Test</dt><dd>Standard — tested when a node is popped and selected</dd>
+            <dt>Complete?</dt><dd>Not in general — it can loop forever down an infinite or cyclic branch unless graph search prunes repeated states in a finite space</dd>
+            <dt>Optimal?</dt><dd>No</dd>
+            <dt>Time Complexity</dt><dd><code>O(b<sup>m</sup>)</code>, where <code>m</code> is the maximum depth of the state space</dd>
+            <dt>Space Complexity</dt><dd><code>O(bm)</code> — only the current path and each level's unexplored siblings need to be kept</dd>
+          </dl>
+
+          <h3 id="ucs"><span class="rp-num">3.4</span>Uniform-Cost Search</h3>
+          <p>Uniform-cost search replaces the FIFO queue with a priority queue ordered by <code>g(n)</code>, the path cost accumulated so far, and always expands the cheapest node on the frontier. Because a later-discovered path to a state can turn out to be cheaper than an earlier one, UCS uses the <strong>standard</strong> goal test and continues to update <code>reached</code> whenever a cheaper path to a state is found, superseding the earlier, more expensive one. This is what guarantees optimality: UCS never returns a goal node until it is certain nothing cheaper remains on the frontier.</p>
+          <dl class="rp-spec">
+            <dt>Evaluation Function</dt><dd><code>f(n) = g(n)</code></dd>
+            <dt>Frontier</dt><dd>Priority queue, ordered by <code>g(n)</code></dd>
+            <dt>Goal Test</dt><dd>Standard — tested when a node is popped and selected</dd>
+            <dt>Complete?</dt><dd>Yes, if step costs are <code>&ge; &epsilon; &gt; 0</code></dd>
+            <dt>Optimal?</dt><dd>Yes</dd>
+            <dt>Time Complexity</dt><dd><code>O(b<sup>1+&lfloor;C*/&epsilon;&rfloor;</sup>)</code></dd>
+            <dt>Space Complexity</dt><dd><code>O(b<sup>1+&lfloor;C*/&epsilon;&rfloor;</sup>)</code></dd>
+          </dl>
+
+          <h3 id="ids"><span class="rp-num">3.5</span>Iterative Deepening Search</h3>
+          <p>Iterative deepening search runs depth-limited depth-first search — DFS that refuses to expand any node past a fixed depth limit — over and over, starting the limit at 0 and increasing it by one each time the previous attempt fails to find a goal. Every iteration restarts from scratch and re-explores the shallow levels it already searched, which sounds wasteful, but because the number of nodes at each depth grows exponentially, the repeated shallow work is dwarfed by the cost of the final, deepest iteration — IDS ends up asymptotically no worse than BFS in the nodes it generates, while needing only DFS's linear memory.</p>
+          <dl class="rp-spec">
+            <dt>Control Parameter</dt><dd><code>limit = 0, 1, 2, &hellip;</code></dd>
+            <dt>Frontier</dt><dd>LIFO stack (depth-limited), rebuilt fresh at the start of every iteration</dd>
+            <dt>Goal Test</dt><dd>Standard, within each depth-limited iteration</dd>
+            <dt>Complete?</dt><dd>Yes, if <code>b</code> is finite</dd>
+            <dt>Optimal?</dt><dd>Only if all step costs are equal — it finds the same shallowest solution BFS would</dd>
+            <dt>Time Complexity</dt><dd><code>O(b<sup>d</sup>)</code></dd>
+            <dt>Space Complexity</dt><dd><code>O(bd)</code></dd>
+          </dl>
+
+          <h3 id="bidirectional"><span class="rp-num">3.6</span>Bidirectional Search</h3>
+          <p>Bidirectional search runs two searches at once — a <strong>forward</strong> search from the initial state, following successors, and a <strong>backward</strong> search from the goal, following predecessors — and stops once some state has been reached by both. The appeal is asymptotic: if both searches expand outward from their respective ends at similar rates, they meet somewhere near the middle of the path, after roughly the square root of the nodes a single one-directional search of the same depth would have needed. A concrete, cost-ordered version of this idea is described below as <strong>BiBF</strong>: both directions run as priority queues ordered by <code>g(n)</code>, and at each step the search expands whichever direction's frontier currently holds the cheaper node, continuing past the first meeting point only until no remaining combination of a forward and a backward node could beat the best meeting cost already found. Run this way, bidirectional search inherits uniform-cost search's guarantees in each direction: complete when step costs are bounded below by <code>&epsilon; &gt; 0</code>, and optimal, since it never stops early on a meeting point that a cheaper combination could still beat.</p>
+          <dl class="rp-spec">
+            <dt>Meeting Condition</dt><dd><code>Forward &cap; Backward &ne; &empty;</code></dd>
+            <dt>Frontier</dt><dd>Two priority queues, one per direction, each ordered by <code>g(n)</code> (BiBF)</dd>
+            <dt>Complete?</dt><dd>Yes, under the same condition as UCS in each direction (<code>&ge; &epsilon; &gt; 0</code>)</dd>
+            <dt>Optimal?</dt><dd>Yes, as implemented here (BiBF) — the search does not stop at the first meeting point, only once no cheaper one remains possible</dd>
+            <dt>Time / Space</dt><dd>Substantially less than a single one-directional search to the same depth — informally, on the order of the square root of the one-directional node count when both searches expand at comparable rates</dd>
+          </dl>
+
+          <h3 id="greedy"><span class="rp-num">3.7</span>Greedy Best-First Search</h3>
+          <p>Greedy best-first search orders its priority queue by <code>h(n)</code> alone, always expanding whichever node the heuristic estimates is closest to the goal — completely ignoring <code>g(n)</code>, what it has already cost to get there. That single-mindedness makes it fast when the heuristic is good, but it is easy to mislead: a node that <em>looks</em> close to the goal by the heuristic's estimate can sit at the end of an expensive path, and greedy search has no mechanism to notice. It will happily commit to that path anyway.</p>
+          <dl class="rp-spec">
+            <dt>Evaluation Function</dt><dd><code>f(n) = h(n)</code></dd>
+            <dt>Frontier</dt><dd>Priority queue, ordered by <code>h(n)</code></dd>
+            <dt>Goal Test</dt><dd>Standard — tested when a node is popped and selected</dd>
+            <dt>Complete?</dt><dd>Not in general — a poor heuristic can lead it down an infinite path; complete in finite state spaces when repeated states are pruned (graph search)</dd>
+            <dt>Optimal?</dt><dd>No</dd>
+            <dt>Time Complexity</dt><dd><code>O(b<sup>m</sup>)</code> worst case — much better with an accurate heuristic</dd>
+            <dt>Space Complexity</dt><dd><code>O(b<sup>m</sup>)</code> worst case — generated nodes are kept, as in BFS</dd>
+          </dl>
+
+          <h3 id="astar"><span class="rp-num">3.8</span>A* Search</h3>
+          <p>A* orders its priority queue by <code>f(n) = g(n) + h(n)</code>, combining what greedy search and uniform-cost search each do alone: <code>g(n)</code> keeps it honest about cost already paid, and <code>h(n)</code> keeps it aimed at the goal instead of expanding outward in every direction. Provided the heuristic never overestimates the true remaining cost — it is <strong>admissible</strong> — A* run as tree-like search is guaranteed optimal; the slightly stronger condition of <strong>consistency</strong> (<code>h(n) &le; cost(n, a, n&prime;) + h(n&prime;)</code> for every edge) is what extends that guarantee to graph search. In practice A* with a good heuristic explores dramatically fewer nodes than uniform-cost search while still finding the same optimal solution.</p>
+          <dl class="rp-spec">
+            <dt>Evaluation Function</dt><dd><code>f(n) = g(n) + h(n)</code></dd>
+            <dt>Frontier</dt><dd>Priority queue, ordered by <code>f(n)</code></dd>
+            <dt>Goal Test</dt><dd>Standard — tested when a node is popped and selected</dd>
+            <dt>Complete?</dt><dd>Yes, if <code>b</code> is finite and step costs are <code>&ge; &epsilon; &gt; 0</code></dd>
+            <dt>Optimal?</dt><dd>Yes, if <code>h(n)</code> is admissible (tree-like search) or consistent (graph search)</dd>
+            <dt>Time Complexity</dt><dd>Exponential in the worst case, often written <code>O(b<sup>d</sup>)</code>; far better with an informative heuristic</dd>
+            <dt>Space Complexity</dt><dd><code>O(b<sup>d</sup>)</code> worst case — like BFS and UCS, A* keeps every generated node</dd>
+          </dl>
+
+          <h3 id="sma"><span class="rp-num">3.9</span>SMA*: Memory-Bounded A*</h3>
+          <p>SMA* (Simplified Memory-Bounded A*) is A* with a hard cap on how many nodes it may hold at once. When that cap is reached and a new node needs room, SMA* <strong>forgets</strong> its worst leaf — the one with the highest <code>f</code>-value, and therefore the least promising — and <strong>backs up</strong> that leaf's <code>f</code>-value to its parent. Recording the discarded value at the parent matters: it stops the parent from ever being mistaken for as cheap as it first looked, so if every other option turns out worse, SMA* can still regenerate the forgotten branch and pick up where it left off.</p>
+          <dl class="rp-spec">
+            <dt>Evaluation Function</dt><dd><code>f(n) = g(n) + h(n)</code>, plus a fixed memory bound</dd>
+            <dt>Frontier</dt><dd>Priority queue ordered by <code>f(n)</code>, capped at a fixed number of nodes; the worst leaf is forgotten (and its value backed up to its parent) whenever the cap is reached</dd>
+            <dt>Complete?</dt><dd>Yes, if a solution exists whose nodes fit within the memory bound</dd>
+            <dt>Optimal?</dt><dd>Yes, under the same memory condition as completeness</dd>
+            <dt>Time Complexity</dt><dd>Can exceed A*'s — a forgotten subtree that turns out to be needed again must be regenerated</dd>
+            <dt>Space Complexity</dt><dd>Bounded by construction — never exceeds the fixed memory limit</dd>
+          </dl>
+
+          <h3 id="goal-test"><span class="rp-num">3.10</span>Goal Testing: Standard vs. Early</h3>
+          <p>The generic algorithm in Section 2.4 tests <code>IS-GOAL</code> right after popping a node — the <strong>standard</strong> goal test. Some strategies instead test each child the moment <code>EXPAND</code> generates it, before it is even added to the frontier — the <strong>early</strong> goal test — trading a small amount of bookkeeping for the chance to stop one generation sooner. The early test is only <em>safe</em> when the first-generated goal is guaranteed to be the one the algorithm actually wants: true for BFS, since every step costs the same and the first-generated goal is therefore guaranteed shallowest. It is not safe for UCS or A*, where a goal generated early is not necessarily the cheapest one — using the early test there could return a correct-looking but suboptimal solution, exactly the failure mode the standard test is built to avoid.</p>
+          <div class="formula-box">Standard: IS-GOAL(node.STATE), tested on POP &middot; Early: IS-GOAL(child.STATE), tested on EXPAND</div>
+        </section>
+
+        <!-- ================= 4. EVALUATING SEARCH ================= -->
+        <section id="evaluating">
+          <h2><span class="rp-num">4.</span>Evaluating Search Algorithms</h2>
+
+          <p>With eight strategies on the table, the natural next question is how to compare them. Four criteria, applied consistently, do the job: whether a strategy is guaranteed to find a solution at all (<strong>completeness</strong>), whether it is guaranteed to find the cheapest one (<strong>optimality</strong>), and how much time and memory it may need along the way. All four are usually expressed in terms of five quantities that describe the shape and cost structure of the search tree itself.</p>
+
+          <h3 id="eval-terms"><span class="rp-num">4.1</span>b, d, m, C*, &epsilon;</h3>
+          <p>Two of these quantities describe <em>depth</em>, and two describe <em>cost</em> — worth keeping straight, since they measure different things and do not have to move together. The <strong>branching factor</strong> <code>b</code> is how many children a node typically has. The <strong>depth of the shallowest solution</strong> <code>d</code> and the <strong>maximum depth</strong> <code>m</code> of the state space are both depth quantities. The <strong>optimal solution cost</strong> <code>C*</code> and the <strong>minimum positive step cost</strong> <code>&epsilon; &gt; 0</code> are both cost quantities — and, as the figure below shows, the shallowest solution and the cheapest one are not required to be the same node.</p>
+
+          <figure class="rp-figure">
+            <svg class="sl-graph-svg sl-tree-svg" viewBox="0 0 100 104" xmlns="http://www.w3.org/2000/svg"><line x1="50" y1="10" x2="20" y2="38" class="sl-gedge sl-gedge-highlight"></line><circle cx="35" cy="24" r="3.6" class="sl-gedge-cost-bg sl-gedge-highlight"></circle><text x="35" y="24" class="sl-gedge-cost-text">1</text><text x="30.5" y="21" class="sl-gnode-sublabel">&epsilon;</text><line x1="50" y1="10" x2="50" y2="38" class="sl-gedge "></line><circle cx="50" cy="24" r="3.6" class="sl-gedge-cost-bg "></circle><text x="50" y="24" class="sl-gedge-cost-text">2</text><line x1="50" y1="10" x2="80" y2="38" class="sl-gedge "></line><circle cx="65" cy="24" r="3.6" class="sl-gedge-cost-bg "></circle><text x="65" y="24" class="sl-gedge-cost-text">2</text><line x1="20" y1="38" x2="10" y2="66" class="sl-gedge sl-gedge-highlight"></line><circle cx="15" cy="52" r="3.6" class="sl-gedge-cost-bg sl-gedge-highlight"></circle><text x="15" y="52" class="sl-gedge-cost-text">1</text><line x1="20" y1="38" x2="30" y2="66" class="sl-gedge "></line><circle cx="25" cy="52" r="3.6" class="sl-gedge-cost-bg "></circle><text x="25" y="52" class="sl-gedge-cost-text">3</text><line x1="50" y1="38" x2="50" y2="66" class="sl-gedge "></line><circle cx="50" cy="52" r="3.6" class="sl-gedge-cost-bg "></circle><text x="50" y="52" class="sl-gedge-cost-text">3</text><line x1="80" y1="38" x2="80" y2="66" class="sl-gedge "></line><circle cx="80" cy="52" r="3.6" class="sl-gedge-cost-bg "></circle><text x="80" y="52" class="sl-gedge-cost-text">2</text><line x1="10" y1="66" x2="10" y2="92" class="sl-gedge sl-gedge-highlight"></line><circle cx="10" cy="79" r="3.6" class="sl-gedge-cost-bg sl-gedge-highlight"></circle><text x="10" y="79" class="sl-gedge-cost-text">1</text><g class="sl-gnode sl-start" data-state="n0">
+      <circle cx="50" cy="10" r="6.5"></circle>
+      <text x="50" y="10" class="sl-gnode-label">n0</text>
+      <text x="56.9" y="3.5" class="sl-gnode-badge">b</text>
+      <text x="50" y="21" class="sl-gnode-sublabel">b = 3</text>
+    </g><g class="sl-gnode sl-explored" data-state="n1">
+      <circle cx="20" cy="38" r="6.5"></circle>
+      <text x="20" y="38" class="sl-gnode-label">n1</text>
+
+
+    </g><g class="sl-gnode sl-explored" data-state="n2">
+      <circle cx="50" cy="38" r="6.5"></circle>
+      <text x="50" y="38" class="sl-gnode-label">n2</text>
+
+
+    </g><g class="sl-gnode sl-explored" data-state="n3">
+      <circle cx="80" cy="38" r="6.5"></circle>
+      <text x="80" y="38" class="sl-gnode-label">n3</text>
+
+
+    </g><g class="sl-gnode sl-explored" data-state="n4">
+      <circle cx="10" cy="66" r="6.5"></circle>
+      <text x="10" y="66" class="sl-gnode-label">n4</text>
+
+
+    </g><g class="sl-gnode sl-explored" data-state="n5">
+      <circle cx="30" cy="66" r="6.5"></circle>
+      <text x="30" y="66" class="sl-gnode-label">n5</text>
+
+
+    </g><g class="sl-gnode sl-goal" data-state="n6">
+      <circle cx="50" cy="66" r="6.5"></circle>
+      <text x="50" y="66" class="sl-gnode-label">n6</text>
+      <text x="56.9" y="59.5" class="sl-gnode-badge">d</text>
+      <text x="50" y="77" class="sl-gnode-sublabel">goal &middot; cost 5</text>
+    </g><g class="sl-gnode sl-explored" data-state="n7">
+      <circle cx="80" cy="66" r="6.5"></circle>
+      <text x="80" y="66" class="sl-gnode-label">n7</text>
+
+
+    </g><g class="sl-gnode sl-goal" data-state="n8">
+      <circle cx="10" cy="92" r="6.5"></circle>
+      <text x="10" y="92" class="sl-gnode-label">n8</text>
+      <text x="16.9" y="85.5" class="sl-gnode-badge">m</text>
+      <text x="10" y="103" class="sl-gnode-sublabel">C* = 3</text>
+    </g></svg>
+            <figcaption><code>n0</code> has 3 children (<code>b = 3</code>). <code>n6</code> is the shallowest goal, at depth <code>d = 2</code>, but costs 5 to reach. <code>n8</code> sits one level deeper, at the tree's maximum depth <code>m = 3</code>, but costs only 3 — the true optimum, <code>C* = 3</code>. The smallest edge in the tree, cost 1, is <code>&epsilon;</code>. This is the same tree the interactive lecture's Evaluating Search tab uses for every concept below.</figcaption>
+          </figure>
+
+          <div class="formula-box">b = branching factor &middot; d = depth of shallowest solution &middot; m = maximum depth &middot; C* = optimal solution cost &middot; &epsilon; &gt; 0 = minimum positive step cost</div>
+
+          <h3 id="time-complexity"><span class="rp-num">4.2</span>Time Complexity</h3>
+          <p>A search algorithm's time complexity is normally expressed as however many nodes it may need to generate — not wall-clock time, since that depends on the hardware, but node count, which does not. BFS and IDS, which explore level by level (IDS by repetition), generate on the order of every node down to the shallowest solution: <code>O(b<sup>d</sup>)</code>. DFS and greedy search, in the worst case, can be forced down a branch all the way to the tree's maximum depth before finding anything: <code>O(b<sup>m</sup>)</code>. UCS's bound is stated in terms of cost rather than depth, since that is what it actually searches by: <code>O(b<sup>1+&lfloor;C*/&epsilon;&rfloor;</sup>)</code>, the branching factor raised to roughly how many <code>&epsilon;</code>-sized steps fit inside the optimal cost. A*'s worst case is exponential as well, often written <code>O(b<sup>d</sup>)</code>, but an informative heuristic can shrink the number of nodes actually generated well below that bound.</p>
+          <div class="rp-table-wrap">
+            <table class="rp-table">
+              <thead><tr><th>Strategy</th><th>Time Complexity</th></tr></thead>
+              <tbody>
+                <tr><td>BFS</td><td><code>O(b<sup>d</sup>)</code></td></tr>
+                <tr><td>DFS</td><td><code>O(b<sup>m</sup>)</code></td></tr>
+                <tr><td>IDS</td><td><code>O(b<sup>d</sup>)</code></td></tr>
+                <tr><td>UCS</td><td><code>O(b<sup>1+&lfloor;C*/&epsilon;&rfloor;</sup>)</code></td></tr>
+                <tr><td>Greedy</td><td><code>O(b<sup>m</sup>)</code> worst case</td></tr>
+                <tr><td>A*</td><td>Exponential worst case; often written <code>O(b<sup>d</sup>)</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 id="space-complexity"><span class="rp-num">4.3</span>Space Complexity</h3>
+          <p>Space complexity counts how many nodes an algorithm may need to hold in memory at once, and this is where the uninformed strategies split sharply into two camps. BFS, UCS, and A* all keep every node they generate — the entire frontier, plus everything in <code>reached</code> — so their space bounds match their time bounds exactly. DFS and IDS need only the current path from the root down to wherever they are now, plus each level's unexplored siblings along the way, which is why their space bounds — <code>O(bm)</code> and <code>O(bd)</code> respectively — are so much smaller than their time bounds. This is the whole reason iterative deepening exists: it accepts BFS's repeated shallow work in exchange for DFS's memory footprint.</p>
+          <div class="rp-table-wrap">
+            <table class="rp-table">
+              <thead><tr><th>Strategy</th><th>Space Complexity</th></tr></thead>
+              <tbody>
+                <tr><td>BFS</td><td><code>O(b<sup>d</sup>)</code></td></tr>
+                <tr><td>DFS</td><td><code>O(bm)</code></td></tr>
+                <tr><td>IDS</td><td><code>O(bd)</code></td></tr>
+                <tr><td>UCS</td><td><code>O(b<sup>1+&lfloor;C*/&epsilon;&rfloor;</sup>)</code></td></tr>
+                <tr><td>A*</td><td><code>O(b<sup>d</sup>)</code> worst case</td></tr>
+                <tr><td>SMA*</td><td>Bounded by a fixed memory limit, by design</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 id="completeness"><span class="rp-num">4.4</span>Completeness</h3>
+          <p>An algorithm is <strong>complete</strong> if it is guaranteed to find a solution whenever one exists — which also means correctly reporting failure whenever one does not, rather than searching forever. Completeness turns out to hinge on a small number of structural guarantees: a finite branching factor rules out an algorithm getting stuck expanding one node's infinitely many children; a positive lower bound <code>&epsilon;</code> on step cost rules out an infinite sequence of ever-cheaper paths that a cost-ordered strategy could chase forever without ever reaching the cheapest one. BFS, IDS, UCS, and A* each satisfy the conditions relevant to them and are complete. DFS and greedy search are not complete in general — both can be led down an infinite (or merely very long) branch with nothing to pull them back, unless the state space is finite and graph search prunes repeated states.</p>
+
+          <h3 id="optimality"><span class="rp-num">4.5</span>Optimality</h3>
+          <p>An algorithm is <strong>optimal</strong> if, whenever it returns a solution, that solution's cost equals the true optimal cost: <code>C(solution) = C*</code>. Finding <em>a</em> solution is not the same as finding <em>the best</em> one, and BFS is the clearest illustration of the gap: because it uses an early goal test and stops at the shallowest goal it generates, it can return a shallow, expensive path while ignoring a deeper, cheaper one still sitting unexplored on the frontier — exactly the situation the interactive lecture's BFS trace walks through, where the shallow route (cost 10) is found before the truly cheapest one (cost 8) would have been. UCS and A* avoid this by using the standard goal test and refusing to return a goal until nothing better remains possible on the frontier, which is precisely what makes them optimal.</p>
+
+          <h3 id="summary-table"><span class="rp-num">4.6</span>Comparing the Strategies</h3>
+          <p>Put together, the eight strategies trade completeness, optimality, time, and space against each other in different combinations — no single strategy dominates every column, which is exactly why the choice of strategy matters.</p>
+          <div class="rp-table-wrap">
+            <table class="rp-table">
+              <thead><tr><th>Strategy</th><th>Complete?</th><th>Optimal?</th><th>Time</th><th>Space</th></tr></thead>
+              <tbody>
+                <tr><td>BFS</td><td>Yes, if <code>b</code> finite</td><td>Only if step costs equal</td><td><code>O(b<sup>d</sup>)</code></td><td><code>O(b<sup>d</sup>)</code></td></tr>
+                <tr><td>DFS</td><td>No, in general</td><td>No</td><td><code>O(b<sup>m</sup>)</code></td><td><code>O(bm)</code></td></tr>
+                <tr><td>UCS</td><td>Yes, if costs <code>&ge; &epsilon; &gt; 0</code></td><td>Yes</td><td><code>O(b<sup>1+&lfloor;C*/&epsilon;&rfloor;</sup>)</code></td><td><code>O(b<sup>1+&lfloor;C*/&epsilon;&rfloor;</sup>)</code></td></tr>
+                <tr><td>IDS</td><td>Yes, if <code>b</code> finite</td><td>Only if step costs equal</td><td><code>O(b<sup>d</sup>)</code></td><td><code>O(bd)</code></td></tr>
+                <tr><td>Bidirectional (BiBF)</td><td>Yes, if costs <code>&ge; &epsilon; &gt; 0</code></td><td>Yes, as implemented (cost-ordered)</td><td>&asymp; &radic;(one-directional node count)</td><td>&asymp; &radic;(one-directional node count)</td></tr>
+                <tr><td>Greedy</td><td>No, in general</td><td>No</td><td><code>O(b<sup>m</sup>)</code> worst case</td><td><code>O(b<sup>m</sup>)</code> worst case</td></tr>
+                <tr><td>A*</td><td>Yes, if <code>b</code> finite, costs <code>&ge; &epsilon; &gt; 0</code></td><td>Yes, if <code>h</code> admissible/consistent</td><td>Exponential worst case</td><td><code>O(b<sup>d</sup>)</code> worst case</td></tr>
+                <tr><td>SMA*</td><td>Yes, if solution fits in memory</td><td>Yes, under the same condition</td><td>&ge; A*'s (may regenerate)</td><td>Bounded by memory limit</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="teaching-tip">
+            <i data-lucide="lightbulb"></i>
+            <span>Read this table alongside the interactive lecture's own Evaluating Search tab — the numbers here (<code>C* = 3</code>, <code>d = 2</code>, <code>m = 3</code>, <code>&epsilon; = 1</code>) come from the exact same worked tree, and the BFS/UCS cost-10-versus-cost-8 example referenced above is the same NYC&rarr;LAX run the Search Strategies tab lets you step through live.</span>
+          </div>
+
+          <p>That is the full arc of Topic 02: a search problem's terminology (Section 1) gets implemented with a node and a frontier (Section 2), the frontier's ordering rule is what turns the same generic loop into eight different strategies (Section 3), and completeness, optimality, time, and space are the four questions that let you choose between them (Section 4). The <a href="search_planning.html">interactive lecture</a> covers the same ground with a live, clickable version of every example above.</p>
+        </section>
+
+      </article>
+    </div>
+
+  </main>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+
+  <!-- Application JS -->
+  <script src="main.js?v=2"></script>
+</body>
+</html>
