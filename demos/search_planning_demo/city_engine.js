@@ -10,7 +10,7 @@
  *
  * Wrapped in an IIFE and exposed as a single `CityEngine` namespace object
  * (rather than bare globals like the Playground's graph.js) so it can be
- * safely loaded on the same page as search_lecture_demo/ui.js without name
+ * safely loaded on the same page as search_planning_demo/ui.js without name
  * collisions with that file's own SL- and SS- prefixed constants.
  *
  * Unlike the Playground's fixed goal, getHeuristic() below already supports

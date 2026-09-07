@@ -1,7 +1,7 @@
 /**
  * Search & Planning — Lecture Page Controller
  *
- * Built from instructions/search_lecture.md. The page has a simple 4-topic
+ * Built from instructions/search_planning.md. The page has a simple 4-topic
  * selector bar (NOT the 9-step flow-progress-bar used on Problem
  * Formulation): Search Terminology | Search Data Structures |
  * Search Strategies | Evaluating Search. Below it, a two-column area:
@@ -54,7 +54,7 @@
  * Search Strategies (11 concepts: Uninformed vs. Informed, the 8 algorithms,
  * and Goal Test: Standard vs. Early) is also implemented. Unlike the other
  * topics above, its 8 algorithm concepts are NOT fixed illustrations or
- * precomputed traces — they run window.CityEngine (demos/search_lecture_demo/
+ * precomputed traces — they run window.CityEngine (demos/search_planning_demo/
  * city_engine.js, a city-relabeled but otherwise byte-for-byte copy of the
  * Playground's already-verified demos/search_demo/graph.js) LIVE, in the
  * browser, for whatever start/goal city the user picks — exactly like the
@@ -110,7 +110,7 @@ const SL_NODE_LAYOUT = {
 const SL_START = 'A';
 const SL_GOAL = 'G';
 
-// ---- Search Terminology (instructions/search_lecture.md table) ----
+// ---- Search Terminology (instructions/search_planning.md table) ----
 // 7 consolidated concepts. Each term's snapshot is a fixed illustration on
 // SL_GRAPH matching that row's "Illustration Note" — a static picture,
 // never a running search.
@@ -217,7 +217,7 @@ const SL_TERMS = [
   }
 ];
 
-// ---- Search Data Structures (instructions/search_lecture.md table) ----
+// ---- Search Data Structures (instructions/search_planning.md table) ----
 // 4 concepts. Unlike Search Terminology, these don't share one
 // illustration shape, so each term carries a `kind` that its graph-column
 // renderer switches on.
@@ -535,7 +535,7 @@ const SDS_FT_NARRATIVE = [
 // Search Strategies (implemented) — LIVE engine, not precomputed traces
 // ---------------------------------------------------------------------
 // SS_GRAPH/SS_NODE_LAYOUT are aliases onto window.CityEngine's own graph
-// data (demos/search_lecture_demo/city_engine.js) rather than a second,
+// data (demos/search_planning_demo/city_engine.js) rather than a second,
 // separately-maintained copy — city_engine.js is the single source of
 // truth for the graph shape, so there is no way for this file's rendering
 // code and the live algorithm code to disagree about what the graph is.
@@ -775,7 +775,7 @@ const SS_TERMS = [
   }
 ];
 
-// ---- Evaluating Search (instructions/search_lecture.md table) ----
+// ---- Evaluating Search (instructions/search_planning.md table) ----
 // 5 concepts. Unlike the other three topics, this one isn't illustrated on
 // SL_GRAPH (the A-H graph) at all -- the doc asks for a tree that itself
 // exhibits b (branching factor), d (depth of shallowest solution), m
@@ -883,7 +883,7 @@ const SL_TOPICS = [
   { key: 'evaluating', name: 'Evaluating Search' }
 ];
 
-class SearchLectureUI {
+class SearchPlanningUI {
   constructor() {
     this.topicIdx = 0;
     this.termIdx = 0;
@@ -2517,5 +2517,5 @@ class SearchLectureUI {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  window.slUI = new SearchLectureUI();
+  window.slUI = new SearchPlanningUI();
 });
