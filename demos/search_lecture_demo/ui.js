@@ -64,7 +64,19 @@
  * pulled from one cached NYC->LAX run, since they're meant to teach a fixed
  * point of comparison rather than be explored. See the "Search Strategies
  * (implemented)" section below for the live-run/normalize/render pipeline.
- * Evaluating Search remains a placeholder until its content is implemented.
+ *
+ * Evaluating Search (5 concepts: Terminology, Time Complexity, Space
+ * Complexity, Completeness, Optimality) is also implemented. Its doc table
+ * asks for "one search tree" whose own shape exhibits b, d, m, C*, and epsilon --
+ * something the fixed A-H graph above can't cleanly do (no uniform
+ * branching factor, and no pair of goal-reaching paths that differ in both
+ * depth AND cost) -- so this topic gets its own small abstract tree
+ * (EVAL_TREE_EDGES/EVAL_TREE_POS, nodes n0..n8), reused with different
+ * highlighting per concept rather than redrawn each time, per the doc's own
+ * "use the same search tree" instruction. Time/Space Complexity and
+ * Completeness pair that tree with a compact per-algorithm readout (Big-O,
+ * or complete/not) shown alongside it, same visual slot as Search Data
+ * Structures' node.* field card.
  *
  * Fixed graph: same A-H weighted network as the Route-Finding Visualizer
  * (search.md), Start = A, Goal = G, kept as an independent copy so this
@@ -763,6 +775,107 @@ const SS_TERMS = [
   }
 ];
 
+// ---- Evaluating Search (instructions/search_lecture.md table) ----
+// 5 concepts. Unlike the other three topics, this one isn't illustrated on
+// SL_GRAPH (the A-H graph) at all -- the doc asks for a tree that itself
+// exhibits b (branching factor), d (depth of shallowest solution), m
+// (maximum depth), C* (optimal solution cost), and epsilon (smallest step
+// cost). SL_GRAPH has neither a uniform branching factor nor two
+// goal-reaching paths that differ in both depth and cost, so it can't
+// carry that lesson. EVAL_TREE_* below is a small, purpose-built,
+// abstract tree (nodes n0..n8) that can: n0 has 3 children (b = 3); n6 is
+// a goal at depth 2 (d = 2) costing 5; n8 is a goal one level deeper, at
+// depth 3 (m = 3), costing only 3 -- the true optimum (C* = 3), so
+// Optimality has a genuine "shallower found first, but not cheapest" case.
+// The smallest edge cost anywhere in the tree (1) is epsilon. Every
+// SL_EVAL concept reuses this one tree via renderEvalTreeSVG(kind), which
+// picks that concept's own highlighting -- never a fresh diagram per
+// concept -- per the doc's "use one search tree" / "use the same search
+// tree" instruction.
+const EVAL_TREE_EDGES = [
+  { from: 'n0', to: 'n1', cost: 1 },
+  { from: 'n0', to: 'n2', cost: 2 },
+  { from: 'n0', to: 'n3', cost: 2 },
+  { from: 'n1', to: 'n4', cost: 1 },
+  { from: 'n1', to: 'n5', cost: 3 },
+  { from: 'n2', to: 'n6', cost: 3 },
+  { from: 'n3', to: 'n7', cost: 2 },
+  { from: 'n4', to: 'n8', cost: 1 }
+];
+
+// n0-n2-n6 costs 2+3 = 5 (shallower goal, depth d = 2). n0-n1-n4-n8 costs
+// 1+1+1 = 3 (deeper goal, depth m = 3, but cheaper -- the optimal
+// solution, C* = 3).
+const EVAL_TREE_POS = {
+  n0: { x: 50, y: 10 },
+  n1: { x: 20, y: 38 }, n2: { x: 50, y: 38 }, n3: { x: 80, y: 38 },
+  n4: { x: 10, y: 66 }, n5: { x: 30, y: 66 }, n6: { x: 50, y: 66 }, n7: { x: 80, y: 66 },
+  n8: { x: 10, y: 92 }
+};
+
+const SL_EVAL = [
+  {
+    key: 'terminology', name: 'Terminology', kind: 'terminology',
+    definition: 'Key quantities used to describe the size, depth, and cost of a search problem when analyzing time and space complexity.',
+    formula: 'b = branching factor &middot; d = depth of shallowest solution &middot; m = maximum depth &middot; C* = optimal solution cost &middot; &epsilon; &gt; 0 = minimum positive step cost',
+    tip: 'd and m describe depth; C* and &epsilon; describe cost.',
+    note: 'One search tree, fully labeled: n0&rsquo;s 3 children mark the branching factor b. n6 is the shallowest goal (depth d = 2). n8 is the deepest node reached (depth m = 3). The highlighted path n0&rarr;n1&rarr;n4&rarr;n8 is the least-cost solution (C* = 3) &mdash; cheaper than the shallower goal n6 (cost 5). The smallest edge cost (1) is marked &epsilon;.'
+  },
+  {
+    key: 'time', name: 'Time Complexity', kind: 'time',
+    definition: 'How many nodes may the search generate/expand?',
+    formula: 'BFS: O(b^d) &middot; DFS: O(b^m) &middot; IDS: O(b^d) &middot; UCS: O(b^(1+&lfloor;C*/&epsilon;&rfloor;)) &middot; A*: exponential in the worst case, often written O(b^d) &middot; Greedy: O(b^m) worst case',
+    tip: 'Time depends on how far the algorithm may need to search and, for informed search, the quality of the heuristic.',
+    note: 'Shaded nodes (depth &le; d) are everything BFS or IDS may generate &mdash; O(b^d). n8 sits one level deeper, at m: DFS or Greedy can be forced to search that far down some branch &mdash; O(b^m).',
+    readoutTitle: 'Worst-Case Time',
+    readout: [
+      { label: 'BFS', value: 'O(b^d)' },
+      { label: 'DFS', value: 'O(b^m)' },
+      { label: 'IDS', value: 'O(b^d)' },
+      { label: 'UCS', value: 'O(b^(1+&lfloor;C*/&epsilon;&rfloor;))' },
+      { label: 'Greedy', value: 'O(b^m) worst case' },
+      { label: 'A*', value: 'exponential worst case; often O(b^d)' }
+    ]
+  },
+  {
+    key: 'space', name: 'Space Complexity', kind: 'space',
+    definition: 'How many nodes may the search need to keep in memory?',
+    formula: 'BFS: O(b^d) &middot; DFS: O(bm) &middot; IDS: O(bd) &middot; UCS: O(b^(1+&lfloor;C*/&epsilon;&rfloor;)) &middot; A*: O(b^d) worst case',
+    tip: 'BFS, UCS, and A* can require large amounts of memory because they keep many generated nodes; DFS/IDS mainly keep the current path and remaining siblings.',
+    note: 'Highlighted: the current path n0&rarr;n1&rarr;n4&rarr;n8 plus each level&rsquo;s remaining siblings (n2, n3, n5) &mdash; all DFS/IDS ever needs in memory at once, O(bm). The faded nodes (n6, n7) show what BFS/UCS/A* would ALSO be holding onto &mdash; the entire frontier/reached set down to depth d.',
+    readoutTitle: 'Worst-Case Space',
+    readout: [
+      { label: 'BFS', value: 'O(b^d)' },
+      { label: 'DFS', value: 'O(bm)' },
+      { label: 'IDS', value: 'O(bd)' },
+      { label: 'UCS', value: 'O(b^(1+&lfloor;C*/&epsilon;&rfloor;))' },
+      { label: 'A*', value: 'O(b^d) worst case' }
+    ]
+  },
+  {
+    key: 'completeness', name: 'Completeness', kind: 'completeness',
+    definition: 'Is the algorithm guaranteed to find a solution if one exists?',
+    formula: 'solution exists &rArr; algorithm finds one',
+    tip: 'Complete means find a solution or correctly report failure.',
+    note: 'Both goals (n6 and n8) are reachable, and the paths that reach them are highlighted. The readout marks whether each of 5 strategies is guaranteed to find one of them.',
+    readoutTitle: 'Complete?',
+    readout: [
+      { label: 'BFS', value: 'Yes &mdash; finite b' },
+      { label: 'DFS', value: 'No &mdash; can loop forever in infinite/cyclic spaces' },
+      { label: 'IDS', value: 'Yes &mdash; finite b' },
+      { label: 'UCS', value: 'Yes &mdash; if step costs &ge; &epsilon; &gt; 0' },
+      { label: 'A*', value: 'Yes &mdash; if b finite and costs &ge; &epsilon; &gt; 0' }
+    ]
+  },
+  {
+    key: 'optimality', name: 'Optimality', kind: 'optimality',
+    definition: 'Is the algorithm guaranteed to find the lowest-cost solution?',
+    formula: 'C(solution) = C*',
+    tip: 'Finding a solution does not necessarily mean finding the best one.',
+    note: 'Two goal paths, two costs: n0&rarr;n2&rarr;n6 costs 5 and is found without looking any deeper &mdash; but n0&rarr;n1&rarr;n4&rarr;n8 costs only 3. Only the cheaper path is optimal: C* = 3.'
+  }
+];
+
 const SL_TOPICS = [
   { key: 'terminology', name: 'Search Terminology' },
   { key: 'datastructures', name: 'Search Data Structures' },
@@ -787,6 +900,8 @@ class SearchLectureUI {
     this.ssPlaying = false;
     this.ssPlayTimer = null;
     this.ssPlaySpeed = 900; // ms per auto-run step
+
+    this.evalIdx = 0;
 
     this.tabsEl = document.getElementById('sl-topic-tabs');
     this.conceptColEl = document.getElementById('sl-concept-col');
@@ -815,6 +930,7 @@ class SearchLectureUI {
     this.ftTick = 0;
     this.ssIdx = 0;
     this.ssStep = 0;
+    this.evalIdx = 0;
     this.render();
   }
 
@@ -838,6 +954,12 @@ class SearchLectureUI {
     this.ssPause();
     this.ssIdx = idx;
     this.ssStep = 0;
+    this.render();
+  }
+
+  setEvalTerm(idx) {
+    if (idx < 0 || idx >= SL_EVAL.length || idx === this.evalIdx) return;
+    this.evalIdx = idx;
     this.render();
   }
 
@@ -987,6 +1109,8 @@ class SearchLectureUI {
       this.renderDataStructuresConcept();
     } else if (topic.key === 'strategies') {
       this.renderStrategiesConcept();
+    } else if (topic.key === 'evaluating') {
+      this.renderEvaluatingConcept();
     } else {
       this.renderPlaceholderConcept(topic);
     }
@@ -1000,6 +1124,8 @@ class SearchLectureUI {
       this.renderDataStructuresGraph();
     } else if (topic.key === 'strategies') {
       this.renderStrategiesGraph();
+    } else if (topic.key === 'evaluating') {
+      this.renderEvaluatingGraph();
     } else {
       this.renderPlaceholderGraph();
     }
@@ -1874,6 +2000,144 @@ class SearchLectureUI {
       rows += `<div class="sl-stepper-readout-row"><span class="sl-nodecard-key">meet</span><span class="sl-nodecard-val">${step.meetNode} (cost ${step.cost})</span></div>`;
     }
     return rows;
+  }
+
+  // ---------- Evaluating Search (implemented) ----------
+
+  renderEvaluatingConcept() {
+    const term = SL_EVAL[this.evalIdx];
+
+    this.conceptColEl.innerHTML = `
+      <p class="sl-topic-intro">Compare search strategies on whether they find a solution, whether that solution is the cheapest one, and how much time and memory the search takes.</p>
+
+      ${this.renderConceptSelectorHTML(SL_EVAL, this.evalIdx)}
+
+      <div class="teaching-panel active">
+        <h3>${term.name}</h3>
+        <p>${term.definition}</p>
+        <div class="formula-box">${term.formula}</div>
+        <div class="teaching-tip"><i data-lucide="lightbulb"></i>${term.tip}</div>
+      </div>
+    `;
+
+    this.conceptColEl.querySelectorAll('.sl-concept-chip').forEach(el => {
+      el.addEventListener('click', () => this.setEvalTerm(parseInt(el.dataset.idx, 10)));
+    });
+  }
+
+  renderEvaluatingGraph() {
+    const term = SL_EVAL[this.evalIdx];
+    const treeBlock = `<div class="sl-tree-svg-wrap">${this.renderEvalTreeSVG(term.kind)}</div>`;
+
+    // Terminology and Optimality are a single full-width tree; Time/Space
+    // Complexity and Completeness pair the same tree with a compact
+    // per-algorithm readout in a second block, same slot Search Data
+    // Structures' Node Structure concept uses for its node.* field card.
+    if (!term.readout) {
+      this.graphColEl.innerHTML = `
+        <div class="sl-graph-illustration">
+          ${treeBlock}
+          <div class="sl-illustration-note">${term.note}</div>
+        </div>
+      `;
+      return;
+    }
+
+    const rows = term.readout.map(r => `
+      <div class="sl-nodecard-row"><span class="sl-nodecard-key">${r.label}</span><span class="sl-nodecard-val">${r.value}</span></div>
+    `).join('');
+
+    this.graphColEl.innerHTML = `
+      <div class="sl-graph-illustration sl-graph-illustration-compact">
+        <div class="sl-dual-diagrams">
+          <div class="sl-diagram-block sl-diagram-block-graph">
+            <div class="sl-tree-caption">Search Tree</div>
+            ${treeBlock}
+          </div>
+          <div class="sl-diagram-block sl-diagram-block-tree">
+            <div class="sl-tree-caption">${term.readoutTitle}</div>
+            <div class="sl-nodecard">${rows}</div>
+          </div>
+        </div>
+        <div class="sl-illustration-note">${term.note}</div>
+      </div>
+    `;
+  }
+
+  // Renders EVAL_TREE_EDGES/EVAL_TREE_POS with per-concept highlighting.
+  // Every SL_EVAL concept calls this with its own `kind` rather than
+  // building a separate diagram, so the tree drawn for, say, Time
+  // Complexity can never disagree with the one drawn for Terminology --
+  // both come from the same 9 nodes and 8 edges.
+  renderEvalTreeSVG(kind) {
+    const nodeStates = {};
+    const edgeCls = {};
+    const mark = (n, cls, extra) => { nodeStates[n] = Object.assign({ cls }, extra); };
+
+    if (kind === 'terminology') {
+      mark('n0', ['sl-start'], { badge: 'b', sublabel: 'b = 3' });
+      ['n1', 'n2', 'n3', 'n4', 'n5', 'n7'].forEach(n => mark(n, ['sl-explored']));
+      mark('n6', ['sl-goal'], { badge: 'd', sublabel: 'goal &middot; cost 5' });
+      mark('n8', ['sl-goal'], { badge: 'm', sublabel: 'C* = 3' });
+      edgeCls['n0-n1'] = edgeCls['n1-n4'] = edgeCls['n4-n8'] = 'sl-gedge-highlight';
+    } else if (kind === 'time') {
+      mark('n0', ['sl-start']);
+      ['n1', 'n2', 'n3', 'n4', 'n5', 'n7'].forEach(n => mark(n, ['sl-explored']));
+      mark('n6', ['sl-goal'], { badge: 'd' });
+      mark('n8', ['sl-frontier'], { badge: 'm', sublabel: 'beyond depth d' });
+    } else if (kind === 'space') {
+      mark('n0', ['sl-start']);
+      ['n1', 'n2', 'n3', 'n4', 'n5'].forEach(n => mark(n, ['sl-explored']));
+      mark('n8', ['sl-current'], { badge: 'm', sublabel: 'current path' });
+      mark('n6', ['sl-frontier'], { badge: 'd', sublabel: 'also held by BFS/UCS/A*' });
+      mark('n7', ['sl-frontier']);
+      edgeCls['n0-n1'] = edgeCls['n1-n4'] = edgeCls['n4-n8'] = 'sl-gedge-highlight';
+    } else if (kind === 'completeness') {
+      mark('n0', ['sl-start']);
+      ['n1', 'n2', 'n3', 'n4', 'n5', 'n7'].forEach(n => mark(n, ['sl-explored']));
+      mark('n6', ['sl-goal'], { sublabel: 'reached' });
+      mark('n8', ['sl-goal'], { sublabel: 'reached' });
+      edgeCls['n0-n1'] = edgeCls['n1-n4'] = edgeCls['n4-n8'] = 'sl-gedge-highlight';
+      edgeCls['n0-n2'] = edgeCls['n2-n6'] = 'sl-gedge-highlight';
+    } else { // optimality
+      mark('n0', ['sl-start']);
+      ['n1', 'n2', 'n3', 'n4', 'n5', 'n7'].forEach(n => mark(n, ['sl-explored']));
+      mark('n6', ['sl-dup'], { sublabel: 'cost 5 &middot; not optimal' });
+      mark('n8', ['sl-goal'], { sublabel: 'cost 3 = C*' });
+      edgeCls['n0-n2'] = edgeCls['n2-n6'] = 'sl-gedge-dup';
+      edgeCls['n0-n1'] = edgeCls['n1-n4'] = edgeCls['n4-n8'] = 'sl-gedge-highlight';
+    }
+
+    let edgesSvg = '';
+    EVAL_TREE_EDGES.forEach(e => {
+      const p1 = EVAL_TREE_POS[e.from];
+      const p2 = EVAL_TREE_POS[e.to];
+      const key = `${e.from}-${e.to}`;
+      const cls = edgeCls[key] || '';
+      const mx = (p1.x + p2.x) / 2;
+      const my = (p1.y + p2.y) / 2;
+      edgesSvg += `<line x1="${p1.x}" y1="${p1.y}" x2="${p2.x}" y2="${p2.y}" class="sl-gedge ${cls}"></line>`;
+      edgesSvg += `<circle cx="${mx}" cy="${my}" r="3.6" class="sl-gedge-cost-bg ${cls}"></circle>`;
+      edgesSvg += `<text x="${mx}" y="${my}" class="sl-gedge-cost-text">${e.cost}</text>`;
+      if (kind === 'terminology' && key === 'n0-n1') {
+        edgesSvg += `<text x="${mx - 4.5}" y="${my - 3}" class="sl-gnode-sublabel">&epsilon;</text>`;
+      }
+    });
+
+    let nodesSvg = '';
+    Object.keys(EVAL_TREE_POS).forEach(n => {
+      const p = EVAL_TREE_POS[n];
+      const state = nodeStates[n] || { cls: ['sl-explored'] };
+      const cls = (state.cls || []).join(' ');
+      nodesSvg += `<g class="sl-gnode ${cls}" data-state="${n}">
+        <circle cx="${p.x}" cy="${p.y}" r="6.5"></circle>
+        <text x="${p.x}" y="${p.y}" class="sl-gnode-label">${n}</text>
+        ${state.badge ? `<text x="${p.x + 6.9}" y="${p.y - 6.5}" class="sl-gnode-badge">${state.badge}</text>` : ''}
+        ${state.sublabel ? `<text x="${p.x}" y="${p.y + 11}" class="sl-gnode-sublabel">${state.sublabel}</text>` : ''}
+      </g>`;
+    });
+
+    return `<svg class="sl-graph-svg sl-tree-svg" viewBox="0 0 100 104" xmlns="http://www.w3.org/2000/svg">${edgesSvg}${nodesSvg}</svg>`;
   }
 
   // ---------- Other topics (not yet implemented) ----------
