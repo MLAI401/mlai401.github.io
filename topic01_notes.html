@@ -1,0 +1,1211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Problem Formulation — Reading Notes - MLAI401 Foundational AI & ML</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Textbook-style reading notes for Topic 01, Problem Formulation: intelligent agents, rationality, PEAS framework, environment properties, the 5-component formal problem formulation, abstraction, and classic toy & real-world problems. Adapted from Artificial Intelligence: A Modern Approach (AIMA).">
+  <meta name="keywords" content="Problem Formulation, Intelligent Agents, Rationality, PEAS, Environment Dimensions, State Space, Abstraction, Transition Model, Goal Test, Path Cost, Vacuum World, 8-Puzzle, 8-Queens, Route Finding, AIMA">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="MLAI401 - Problem Formulation: Reading Notes">
+  <meta property="og:description" content="A comprehensive, textbook-style companion to the Problem Formulation lecture, covering agent theory, PEAS, environment taxonomy, the 5 formal problem components, abstraction, and benchmark state spaces.">
+  <meta property="og:type" content="article">
+
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navigation Header -->
+  <header class="navbar" id="navbar-header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo" id="logo-link">
+        <span class="logo-icon">M</span>
+        MLAI401
+      </a>
+
+      <button class="menu-toggle" id="menu-toggle-btn" aria-label="Toggle Navigation Menu">
+        <i data-lucide="menu"></i>
+      </button>
+
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="index.html" class="nav-link" id="nav-home">Home</a></li>
+        <li><a href="curriculum.html" class="nav-link active" id="nav-curr">Curriculum</a></li>
+        <li><a href="playground.html" class="nav-link" id="nav-play">Playground</a></li>
+        <li><a href="index.html#resources" class="nav-link" id="nav-res">Resources</a></li>
+      </ul>
+
+      <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="nav-btn" id="nav-github-btn">
+        <i data-lucide="github"></i> GitHub Profile
+      </a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Masthead -->
+    <section class="rp-masthead">
+      <div class="container rp-masthead-inner">
+        <a href="problem_formulation.html" class="sl-breadcrumb"><i data-lucide="arrow-left"></i> Problem Formulation</a>
+
+        <div class="rp-title-row">
+          <span class="sl-topic-badge"><i data-lucide="book-open"></i> Topic 01 &middot; Reading</span>
+        </div>
+        <h1>Problem Formulation — Reading Notes</h1>
+
+        <p class="rp-lede">These notes establish the foundational vocabulary and mathematical machinery of Artificial Intelligence: how an autonomous agent perceives and acts in an environment, how tasks are specified via the PEAS framework, how the continuous real world is abstracted into discrete state spaces, and how any goal-driven challenge is converted into a rigorous 5-component formal problem formulation. Where the interactive <a href="problem_formulation.html">Problem Formulation</a> lecture demonstrates the 9 core concepts through live, hands-on environments, these notes spell out the underlying principles, mathematical definitions, and canonical problem models in full prose.</p>
+
+        <div class="rp-citation">
+          <i data-lucide="quote"></i>
+          <span>Materials and content adapted from <em>Artificial Intelligence: A Modern Approach</em> (AIMA), 3rd &amp; 4th editions, by Stuart Russell and Peter Norvig &mdash; specifically Chapters 2 (Intelligent Agents, pp. 34&ndash;63) and 3 (Solving Problems by Searching &mdash; Problem-Solving Agents &amp; Formulations, pp. 64&ndash;74).</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOC + Article Layout -->
+    <div class="container rp-layout">
+
+      <aside class="rp-toc" id="rp-toc">
+        <div class="rp-toc-label">On This Page</div>
+        <nav aria-label="Table of contents">
+          <a class="rp-toc-h2" href="#agents-environments">1. Intelligent Agents &amp; Environments</a>
+          <a class="rp-toc-h3" href="#agent-concept">1.1 Agents, Percepts &amp; Actions</a>
+          <a class="rp-toc-h3" href="#rationality">1.2 Good Behavior: The Concept of Rationality</a>
+          <a class="rp-toc-h3" href="#peas">1.3 Specifying Task Environments: PEAS</a>
+          <a class="rp-toc-h3" href="#environment-dimensions">1.4 Environment Characteristics &amp; Dimensions</a>
+          <a class="rp-toc-h3" href="#agent-structures">1.5 Agent Architectures: From Reflex to Learning</a>
+
+          <a class="rp-toc-h2" href="#formal-framework">2. The Formal Problem Formulation Framework</a>
+          <a class="rp-toc-h3" href="#problem-solving-agent">2.1 Problem-Solving Agents &amp; Goal Formulation</a>
+          <a class="rp-toc-h3" href="#five-components">2.2 The 5 Components of a Search Problem</a>
+          <a class="rp-toc-h3" href="#abstraction-concept">2.3 States vs. Physical World: The Art of Abstraction</a>
+          <a class="rp-toc-h3" href="#state-space-graph">2.4 State Space &amp; Reachability</a>
+          <a class="rp-toc-h3" href="#solutions-optimality">2.5 Solutions, Path Costs &amp; Optimality</a>
+
+          <a class="rp-toc-h2" href="#benchmark-problems">3. Benchmark Problem Formulations</a>
+          <a class="rp-toc-h3" href="#vacuum-world">3.1 The Two-Room Vacuum World</a>
+          <a class="rp-toc-h3" href="#eight-puzzle">3.2 The 8-Puzzle &amp; Sliding Tile Puzzles</a>
+          <a class="rp-toc-h3" href="#grid-maze">3.3 2D Grid &amp; Maze Navigation</a>
+          <a class="rp-toc-h3" href="#route-finding">3.4 Route Finding &amp; Road Networks</a>
+          <a class="rp-toc-h3" href="#eight-queens">3.5 The 8-Queens Problem</a>
+          <a class="rp-toc-h3" href="#real-world-problems">3.6 Real-World Problem Formulations</a>
+
+          <a class="rp-toc-h2" href="#analyzing-formulations">4. Analyzing &amp; Comparing Formulations</a>
+          <a class="rp-toc-h3" href="#combinatorics-branching">4.1 State Space Size &amp; Branching Factor</a>
+          <a class="rp-toc-h3" href="#state-space-vs-search-tree">4.2 State Space Graph vs. Search Tree</a>
+          <a class="rp-toc-h3" href="#representation-types">4.3 Atomic, Factored &amp; Structured States</a>
+          <a class="rp-toc-h3" href="#summary-table">4.4 Problem Formulation Comparison Matrix</a>
+
+          <a class="rp-toc-h2" href="#exercises">5. Practice Exercises</a>
+          <a class="rp-toc-h3" href="#ex1">5.1 PEAS Task Specifications</a>
+          <a class="rp-toc-h3" href="#ex2">5.2 Environment Classification Matrix</a>
+          <a class="rp-toc-h3" href="#ex3">5.3 State Space Combinatorics in Vacuum Worlds</a>
+          <a class="rp-toc-h3" href="#ex4">5.4 8-Puzzle Invariant &amp; Reachability Proof</a>
+          <a class="rp-toc-h3" href="#ex5">5.5 8-Queens: Incremental vs. Complete-State</a>
+          <a class="rp-toc-h3" href="#ex6">5.6 River Crossing: Missionaries &amp; Cannibals</a>
+          <a class="rp-toc-h3" href="#ex7">5.7 Validating Abstractions &amp; the Real-World Gap</a>
+          <a class="rp-toc-h3" href="#ex8">5.8 Reflex vs. Problem-Solving Agent Limits</a>
+        </nav>
+      </aside>
+
+      <article class="rp-article">
+
+        <!-- ================= 1. INTELLIGENT AGENTS & ENVIRONMENTS ================= -->
+        <section id="agents-environments">
+          <h2><span class="rp-num">1.</span>Intelligent Agents &amp; Environments</h2>
+
+          <p>The central unifying concept of modern Artificial Intelligence is the <strong>intelligent agent</strong>. Rather than defining AI in terms of human thought processes or internal subjective consciousness, AI is formulated as the computational science of designing systems that <em>act rationally</em>. An agent interacts with an environment through a closed perceptual-action loop: it perceives the environment via sensors and alters that environment via actuators.</p>
+
+          <h3 id="agent-concept"><span class="rp-num">1.1</span>Agents, Percepts &amp; Actions</h3>
+          <p>Formally, an <strong>agent</strong> is anything that can view its environment through <strong>sensors</strong> and act upon that environment through <strong>actuators</strong>. A human agent has eyes, ears, and other organs for sensors; hands, legs, vocal tract for actuators. A robotic agent might substitute cameras, infrared range finders, and lidars for sensors, and electric motors or hydraulic joints for actuators. A software agent (or <em>softbot</em>) receives keystrokes, network packets, or file contents as sensor inputs and acts upon the environment by sending network packets, writing files, or displaying graphics.</p>
+
+          <p>We use the term <strong>percept</strong> to refer to the agent's perceptual inputs at any given instant. An agent's <strong>percept sequence</strong> is the complete history of everything the agent has ever perceived:</p>
+          <div class="formula-box">Percept Sequence: P* = (p&#8321;, p&#8322;, &hellip;, p&#8348;) &isin; P*</div>
+
+          <p>Mathematically, an agent's behavior is described by the <strong>agent function</strong> <code>f</code>, which maps any given percept sequence to an action <code>a &isin; A</code>:</p>
+          <div class="formula-box">Agent Function: f : P* &rarr; A</div>
+
+          <p>The agent function is an abstract mathematical description. The <strong>agent program</strong> is the concrete implementation of <code>f</code> that executes on a physical <strong>architecture</strong> (a computing device with physical sensors and actuators):</p>
+          <div class="formula-box">Agent = Architecture + Program</div>
+
+          <figure class="rp-figure">
+            <svg class="sl-graph-svg" viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="agent-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#4f46e5" stop-opacity="0.15"/>
+                  <stop offset="100%" stop-color="#06b6d4" stop-opacity="0.15"/>
+                </linearGradient>
+                <linearGradient id="env-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#10b981" stop-opacity="0.15"/>
+                  <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.15"/>
+                </linearGradient>
+                <marker id="rp-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#4f46e5"/>
+                </marker>
+                <marker id="rp-arrow-teal" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1 L 10 5 L 0 9 z" fill="#06b6d4"/>
+                </marker>
+              </defs>
+
+              <!-- Agent Box -->
+              <rect x="40" y="30" width="300" height="160" rx="12" fill="url(#agent-grad)" stroke="#4f46e5" stroke-width="2"/>
+              <text x="190" y="60" text-anchor="middle" font-family="'Outfit', sans-serif" font-weight="700" font-size="18" fill="#1e1b4b">AGENT</text>
+
+              <!-- Agent Sub-boxes -->
+              <rect x="60" y="80" width="110" height="42" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+              <text x="115" y="106" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">Sensors</text>
+
+              <rect x="210" y="80" width="110" height="42" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+              <text x="265" y="106" text-anchor="middle" font-size="13" font-weight="600" fill="#334155">Actuators</text>
+
+              <rect x="90" y="138" width="200" height="36" rx="6" fill="#e0e7ff" stroke="#6366f1" stroke-width="1.2"/>
+              <text x="190" y="161" text-anchor="middle" font-size="12" font-weight="600" fill="#4338ca">Agent Program ( f: P* &rarr; A )</text>
+
+              <!-- Environment Box -->
+              <rect x="440" y="30" width="280" height="160" rx="12" fill="url(#env-grad)" stroke="#10b981" stroke-width="2"/>
+              <text x="580" y="60" text-anchor="middle" font-family="'Outfit', sans-serif" font-weight="700" font-size="18" fill="#064e3b">ENVIRONMENT</text>
+              <text x="580" y="105" text-anchor="middle" font-size="13" fill="#0f766e">Physical or Virtual World</text>
+              <text x="580" y="130" text-anchor="middle" font-size="12" fill="#64748b">(State Space, Physics, Rules)</text>
+
+              <!-- Arrows -->
+              <!-- Percepts: Env -> Sensors -->
+              <path d="M 440 95 C 380 70, 240 70, 175 92" fill="none" stroke="#06b6d4" stroke-width="2.5" stroke-dasharray="4,3" marker-end="url(#rp-arrow-teal)"/>
+              <text x="370" y="66" text-anchor="middle" font-size="12" font-weight="700" fill="#0891b2">Percepts (Sensory Data)</text>
+
+              <!-- Actions: Actuators -> Env -->
+              <path d="M 325 105 C 360 125, 400 125, 435 110" fill="none" stroke="#4f46e5" stroke-width="2.5" marker-end="url(#rp-arrow)"/>
+              <text x="380" y="148" text-anchor="middle" font-size="12" font-weight="700" fill="#4f46e5">Actions (Effectors)</text>
+            </svg>
+            <figcaption>The agent-environment cycle: the agent observes percepts through sensors, processes them via its agent program, and executes actions through actuators, altering the state of the environment.</figcaption>
+          </figure>
+
+          <h3 id="rationality"><span class="rp-num">1.2</span>Good Behavior: The Concept of Rationality</h3>
+          <p>What does it mean for an agent to behave well? A <strong>rational agent</strong> is one that does the right thing &mdash; conceptually, every entry in the table for the agent function is filled out correctly. To make this precise, we define a <strong>performance measure</strong> that embodies the criterion for success.</p>
+
+          <div class="teaching-tip">
+            <i data-lucide="alert-circle"></i>
+            <span><strong>Rule of Thumb for Designers:</strong> Measure performance according to what one actually wants in the environment, rather than according to how one thinks the agent should behave. For example, a vacuum cleaner should be scored on how clean the floor is and how little power was consumed, NOT on how many times it swept or how many times it sucked up dirt (which would reward an agent for dropping dirt and sucking it back up repeatedly).</span>
+          </div>
+
+          <p>Formally, rationality is defined by four factors:</p>
+          <ol>
+            <li>The <strong>performance measure</strong> that defines the criterion of success.</li>
+            <li>The agent's <strong>prior knowledge</strong> of the environment.</li>
+            <li>The <strong>actions</strong> that the agent can perform.</li>
+            <li>The agent's <strong>percept sequence</strong> to date.</li>
+          </ol>
+
+          <div class="formula-box">Definition of Rationality: For each possible percept sequence, a rational agent selects an action that is expected to maximize its performance measure, given the evidence provided by the percept sequence and built-in prior knowledge.</div>
+
+          <p>Three critical distinctions must be maintained when discussing rationality:</p>
+          <ul>
+            <li><strong>Rationality vs. Omniscience:</strong> An <em>omniscient</em> agent knows the actual outcome of its actions and can act accordingly; but omniscience is impossible in reality. Rationality maximizes <em>expected</em> performance, whereas perfection maximizes <em>actual</em> outcome. If an agent looks both ways, sees a clear street, steps out, and is hit by an unforeseen meteorite falling from orbit, the agent was fully rational even though the outcome was tragic.</li>
+            <li><strong>Information Gathering &amp; Exploration:</strong> Doing actions in order to modify future percepts (e.g., looking both ways before crossing, exploring unfamiliar terrain) is a fundamental part of rationality.</li>
+            <li><strong>Autonomy:</strong> An agent is <strong>autonomous</strong> to the extent that its behavior is determined by its own experience (with ability to learn and adapt), rather than solely by the built-in knowledge of its designer. A truly autonomous agent should be able to operate across different environments given sufficient time to learn.</li>
+          </ul>
+
+          <h3 id="peas"><span class="rp-num">1.3</span>Specifying Task Environments: PEAS</h3>
+          <p>In designing an AI agent, the very first step is always to specify the <strong>task environment</strong> as fully as possible. AIMA organizes this specification under the <strong>PEAS</strong> framework:</p>
+          <ul>
+            <li><strong>P</strong>erformance Measure: The objective metrics used to evaluate the agent's behavior.</li>
+            <li><strong>E</strong>nvironment: The external world, context, physical systems, or software ecosystem the agent operates in.</li>
+            <li><strong>A</strong>ctuators: The devices or interfaces through which the agent acts.</li>
+            <li><strong>S</strong>ensors: The devices or interfaces through which the agent receives percepts.</li>
+          </ul>
+
+          <div class="rp-table-wrap">
+            <table class="rp-table">
+              <thead>
+                <tr>
+                  <th>Agent Type</th>
+                  <th>Performance Measure</th>
+                  <th>Environment</th>
+                  <th>Actuators</th>
+                  <th>Sensors</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Automated Taxi Driver</strong></td>
+                  <td>Safe, fast, legal, comfortable trip, maximize profits, minimize wear</td>
+                  <td>Roads, traffic, pedestrians, weather, customers, police</td>
+                  <td>Steering wheel, accelerator, brake, signal indicators, horn, display</td>
+                  <td>Cameras, sonar, radar, lidar, GPS, speedometer, engine sensors, accelerometer</td>
+                </tr>
+                <tr>
+                  <td><strong>Vacuum-Cleaner Agent</strong></td>
+                  <td>Cleanliness, time spent, electricity consumed, noise level</td>
+                  <td>Rooms, dirt, furniture, walls, floor types</td>
+                  <td>Wheels, brushes, vacuum motor, trash ejection mechanism</td>
+                  <td>Dirt sensor, bump sensor, infrared cliff sensor, wheel encoders</td>
+                </tr>
+                <tr>
+                  <td><strong>Medical Diagnosis System</strong></td>
+                  <td>Healthy patient, minimize costs, avoid malpractice/adverse reactions</td>
+                  <td>Patient, hospital staff, medical testing equipment</td>
+                  <td>Display screen (questions, test recommendations, diagnoses, prescriptions)</td>
+                  <td>Keyboard input (symptoms, lab results, patient vital signs, medical history)</td>
+                </tr>
+                <tr>
+                  <td><strong>Part-Picking Robot</strong></td>
+                  <td>Percentage of parts in correct bins, speed, avoid part damage</td>
+                  <td>Conveyor belt with parts, storage bins</td>
+                  <td>Jointed robotic arm, gripper hand</td>
+                  <td>Camera, tactile force sensors, joint angle encoders</td>
+                </tr>
+                <tr>
+                  <td><strong>Interactive English Tutor</strong></td>
+                  <td>Student test score improvement, engagement, student satisfaction</td>
+                  <td>Set of students, curriculum testing platform</td>
+                  <td>Screen display (exercises, explanations, corrections, suggestions)</td>
+                  <td>Keyboard and mouse input, audio microphone</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 id="environment-dimensions"><span class="rp-num">1.4</span>Environment Characteristics &amp; Dimensions</h3>
+          <p>The nature of the environment largely dictates the design of the agent program and the feasibility of different problem-solving methods. AIMA classifies task environments along seven primary dimensions:</p>
+
+          <dl class="rp-spec">
+            <dt>Fully Observable vs. Partially Observable</dt>
+            <dd>An environment is <strong>fully observable</strong> if the agent's sensors give it access to the complete state of the environment at each point in time (e.g., Chess, 8-Puzzle). It is <strong>partially observable</strong> if sensors are noisy, inaccurate, or missing state data (e.g., Poker, Driving in fog). An environment is <em>unobservable</em> if the agent has no sensors at all.</dd>
+
+            <dt>Single-Agent vs. Multi-Agent</dt>
+            <dd>An agent solving a Crossword puzzle is in a <strong>single-agent</strong> environment. Chess is a <strong>multi-agent competitive</strong> environment (zero-sum game). Autonomous driving is a <strong>multi-agent partially cooperative / partially competitive</strong> environment (avoiding collisions is cooperative; claiming a parking spot is competitive).</dd>
+
+            <dt>Deterministic vs. Stochastic</dt>
+            <dd>If the next state of the environment is completely determined by the current state and the action executed by the agent, the environment is <strong>deterministic</strong> (e.g., 8-Puzzle, Maze). If randomness or probabilities affect outcomes, it is <strong>stochastic</strong> (e.g., Backgammon dice rolls, Taxi driving). If the environment cannot be predicted deterministically but lacks explicit probabilities, it is <em>nondeterministic</em>.</dd>
+
+            <dt>Episodic vs. Sequential</dt>
+            <dd>In an <strong>episodic</strong> environment, the agent's experience is divided into atomic episodes; the choice of action in each episode depends only on the episode itself, and current decisions do not affect future episodes (e.g., classifying defective parts on an assembly line). In a <strong>sequential</strong> environment, current decisions affect all future decisions (e.g., Chess, Route Finding).</dd>
+
+            <dt>Static vs. Dynamic</dt>
+            <dd>If the environment can change while the agent is deliberating, it is <strong>dynamic</strong> (e.g., Taxi driving, real-time strategy games). If it does not change with the passage of time, it is <strong>static</strong> (e.g., Crossword puzzle, 8-Puzzle). An environment is <em>semidynamic</em> if the environment itself doesn't change, but the agent's performance score decreases over time (e.g., timed Chess).</dd>
+
+            <dt>Discrete vs. Continuous</dt>
+            <dd>Pertains to the state of the environment, the way time is handled, and the percepts and actions. Chess has a <strong>discrete</strong> state space and discrete turns; Taxi driving has <strong>continuous</strong> states (locations, speed, angles) and continuous time and actions.</dd>
+
+            <dt>Known vs. Unknown</dt>
+            <dd>Refers to the agent's knowledge of the <em>laws of physics</em> or rules of the environment. In a <strong>known</strong> environment, the outcomes for all actions are known (e.g., standard Solitaire); in an <strong>unknown</strong> environment, the agent must learn how the world works in order to make good decisions.</dd>
+          </dl>
+
+          <h3 id="agent-structures"><span class="rp-num">1.5</span>Agent Architectures: From Reflex to Learning</h3>
+          <p>AIMA defines five canonical agent program structures, arranged in increasing order of generality and sophistication:</p>
+
+          <ol>
+            <li><strong>Simple Reflex Agents:</strong> Select actions based <em>only</em> on the current percept, ignoring the history of percepts. Implemented using <code>condition-action rules</code> (e.g., <code>if car-in-front-is-braking then initiate-braking</code>). Only effective in fully observable environments; unrecoverable infinite loops occur in partially observable environments.</li>
+            <li><strong>Model-Based Reflex Agents:</strong> Maintain an internal <strong>state</strong> to track parts of the world they cannot see right now. They maintain two models: <em>transition model</em> ("how the world evolves independently and how my actions change it") and <em>sensor model</em> ("how the state of the world reflects into my percepts").</li>
+            <li><strong>Goal-Based Agents:</strong> Combine current state information with a <strong>goal</strong> description to select actions that achieve the desired outcome. This enables search and planning &mdash; the central topic of Chapter 3 and Topic 01.</li>
+            <li><strong>Utility-Based Agents:</strong> Use a real-valued <strong>utility function</strong> <code>U(s) &isin; &reals;</code> to measure how desirable a state is. Allows rational decision-making when goals conflict, when trade-offs must be made (e.g., speed vs. safety), or when multiple goals can only be achieved with uncertainty.</li>
+            <li><strong>Learning Agents:</strong> Can operate in initially unknown environments and become more competent than their initial programming. Divided into four components:
+              <ul>
+                <li><strong>Learning Element:</strong> Responsible for making improvements based on experience.</li>
+                <li><strong>Performance Element:</strong> Responsible for selecting external actions (corresponds to the entire agent in the previous structures).</li>
+                <li><strong>Critic:</strong> Evaluates how well the agent is doing against an external, fixed performance standard.</li>
+                <li><strong>Problem Generator:</strong> Suggests exploratory actions that lead to new experiences and improved long-term performance.</li>
+              </ul>
+            </li>
+          </ol>
+        </section>
+
+        <!-- ================= 2. FORMAL PROBLEM FORMULATION ================= -->
+        <section id="formal-framework">
+          <h2><span class="rp-num">2.</span>The Formal Problem Formulation Framework</h2>
+
+          <p>When an agent cannot simply react to its immediate environment with a single hard-coded reflex rule, it must look ahead and formulate a plan. A <strong>problem-solving agent</strong> is a goal-based agent that decides what to do by finding sequences of actions that lead to desirable states.</p>
+
+          <h3 id="problem-solving-agent"><span class="rp-num">2.1</span>Problem-Solving Agents &amp; Goal Formulation</h3>
+          <p>The problem-solving cycle follows a rigorous four-phase sequence:</p>
+
+          <div class="rp-pseudocode">
+            <div class="rp-pseudocode-title">Problem-Solving Agent Cycle</div>
+            <pre><span class="rp-pc-kw">1. Goal Formulation:</span> Organize objectives into a concrete target based on current situation.
+<span class="rp-pc-kw">2. Problem Formulation:</span> Decide what actions and states to consider, given the goal.
+<span class="rp-pc-kw">3. Search:</span> Simulate action sequences in the abstract state space until a goal path is found.
+<span class="rp-pc-kw">4. Execution:</span> Execute the planned actions one by one in the real physical world.</pre>
+          </div>
+
+          <p>Crucially, search is performed <strong>offline</strong>: the agent explores hypothetical paths within its mental model of the world before executing a single physical action. Once a solution is found, the execution phase begins.</p>
+
+          <h3 id="five-components"><span class="rp-num">2.2</span>The 5 Components of a Search Problem</h3>
+          <p>Formally, a search problem is defined by five mathematical components &mdash; often packaged as a formal 5-tuple <code>(s&#8320;, ACTIONS, RESULT, IS-GOAL, STEP-COST)</code>:</p>
+
+          <dl class="rp-spec">
+            <dt>1. Initial State</dt>
+            <dd>The state that the agent starts in, denoted <code>s&#8320; &isin; S</code>.</dd>
+
+            <dt>2. Actions</dt>
+            <dd>A function <code>ACTIONS(s)</code> that returns the set of legal actions that can be executed when in state <code>s</code>. If <code>a &isin; ACTIONS(s)</code>, action <code>a</code> is applicable in state <code>s</code>.</dd>
+
+            <dt>3. Transition Model</dt>
+            <dd>A function <code>RESULT(s, a) = s&prime;</code> that returns the state <code>s&prime;</code> that results from doing action <code>a</code> in state <code>s</code>. We say that <code>s&prime;</code> is a <strong>successor</strong> of <code>s</code>.</dd>
+
+            <dt>4. Goal Test</dt>
+            <dd>A predicate <code>IS-GOAL(s)</code> that determines whether a given state <code>s</code> is a goal state. The goal can be an explicit set of enumerated states <code>{g&#8321;, g&#8322;, &hellip;}</code> or an abstract property test (e.g., <code>no_two_queens_attack_each_other(board)</code>).</dd>
+
+            <dt>5. Path Cost &amp; Step Cost</dt>
+            <dd>A function <code>c(s, a, s&prime;)</code> that assigns a numeric cost to taking action <code>a</code> in state <code>s</code> to reach <code>s&prime;</code>. The total <strong>path cost</strong> <code>g(n)</code> of a sequence of actions is the sum of the individual step costs along the path.</dd>
+          </dl>
+
+          <div class="formula-box">Problem Definition: &lang; s&#8320;, ACTIONS(s), RESULT(s, a), IS-GOAL(s), c(s, a, s&prime;) &rang;</div>
+
+          <h3 id="abstraction-concept"><span class="rp-num">2.3</span>States vs. Physical World: The Art of Abstraction</h3>
+          <p>A physical environment is overwhelmingly complex, continuous, and filled with infinite irrelevant details. An agent navigating a city does not need to model the current tire air pressure, the song playing on the radio, the temperature of the asphalt, or the color of the adjacent vehicle. Including these details would make the state space infinitely large and completely unsearchable.</p>
+
+          <p><strong>Abstraction</strong> is the process of removing irrelevant detail from the state representation while preserving everything required to find a valid solution:</p>
+
+          <figure class="rp-figure">
+            <svg class="sl-graph-svg" viewBox="0 0 760 160" xmlns="http://www.w3.org/2000/svg">
+              <!-- Real World Box -->
+              <rect x="20" y="20" width="200" height="120" rx="10" fill="#fef2f2" stroke="#ef4444" stroke-width="1.8"/>
+              <text x="120" y="48" text-anchor="middle" font-size="14" font-weight="700" fill="#991b1b">REAL WORLD</text>
+              <text x="120" y="72" text-anchor="middle" font-size="11" fill="#7f1d1d">&bull; Continuous coordinates</text>
+              <text x="120" y="90" text-anchor="middle" font-size="11" fill="#7f1d1d">&bull; Wind, friction, mass</text>
+              <text x="120" y="108" text-anchor="middle" font-size="11" fill="#7f1d1d">&bull; Infinite microscopic states</text>
+
+              <!-- Abstraction Process Arrow -->
+              <path d="M 230 80 L 290 80" fill="none" stroke="#6366f1" stroke-width="3" marker-end="url(#rp-arrow)"/>
+              <text x="260" y="70" text-anchor="middle" font-size="11" font-weight="700" fill="#4338ca">ABSTRACTION</text>
+              <text x="260" y="102" text-anchor="middle" font-size="10" fill="#64748b">Remove detail</text>
+
+              <!-- Dropped Details Box -->
+              <rect x="300" y="20" width="200" height="120" rx="10" fill="#fffbeb" stroke="#f59e0b" stroke-width="1.8"/>
+              <text x="400" y="48" text-anchor="middle" font-size="14" font-weight="700" fill="#92400e">DROPPED DETAILS</text>
+              <text x="400" y="72" text-anchor="middle" font-size="11" fill="#b45309" text-decoration="line-through">&times; Radio station &amp; volume</text>
+              <text x="400" y="90" text-anchor="middle" font-size="11" fill="#b45309" text-decoration="line-through">&times; Robot battery exact mV</text>
+              <text x="400" y="108" text-anchor="middle" font-size="11" fill="#b45309" text-decoration="line-through">&times; Dust particle coordinates</text>
+
+              <!-- Final State Box -->
+              <path d="M 510 80 L 570 80" fill="none" stroke="#6366f1" stroke-width="3" marker-end="url(#rp-arrow)"/>
+              <rect x="580" y="20" width="160" height="120" rx="10" fill="#f0fdf4" stroke="#10b981" stroke-width="1.8"/>
+              <text x="660" y="48" text-anchor="middle" font-size="14" font-weight="700" fill="#065f46">FORMAL STATE</text>
+              <text x="660" y="75" text-anchor="middle" font-size="12" font-weight="700" fill="#047857">s = (Loc, A_dirty, B_dirty)</text>
+              <text x="660" y="100" text-anchor="middle" font-size="11" fill="#065f46">&bull; Finite, discrete, exact</text>
+            </svg>
+            <figcaption>The abstraction process: filtering out unneeded real-world details to yield a clean, discrete state representation suitable for search algorithms.</figcaption>
+          </figure>
+
+          <p>An abstraction is <strong>valid</strong> if any abstract action sequence can be translated into a sequence of physical actions that actually succeeds in the real world. An abstraction is <strong>useful</strong> if carrying out actions in the abstract representation is computationally easier than searching the raw physical environment.</p>
+
+          <h3 id="state-space-graph"><span class="rp-num">2.4</span>State Space &amp; Reachability</h3>
+          <p>Together, the initial state, actions, and transition model implicitly define the <strong>state space</strong> <code>S</code> of the problem. The state space is the set of all states reachable from the initial state by any sequence of valid actions.</p>
+          <p>The state space forms a directed graph in which the <strong>nodes</strong> are states and the <strong>directed edges</strong> (links) between them are actions. A <strong>path</strong> in the state space is a sequence of states connected by a sequence of actions.</p>
+
+          <h3 id="solutions-optimality"><span class="rp-num">2.5</span>Solutions, Path Costs &amp; Optimality</h3>
+          <p>A <strong>solution</strong> to a search problem is an action sequence that leads from the initial state <code>s&#8320;</code> to any state <code>s</code> satisfying <code>IS-GOAL(s) == true</code>.</p>
+          <p>An <strong>optimal solution</strong> is a solution that has the lowest path cost among all possible solutions. The cost of the optimal solution is denoted <code>C*</code>:</p>
+          <div class="formula-box">Optimal Solution: Path p* such that IS-GOAL(endpoint(p*)) and cost(p*) = C* = min { cost(p) : p is a solution }</div>
+        </section>
+
+        <!-- ================= 3. BENCHMARK PROBLEMS ================= -->
+        <section id="benchmark-problems">
+          <h2><span class="rp-num">3.</span>Benchmark Problem Formulations</h2>
+
+          <p>AI problems are traditionally divided into <strong>toy problems</strong> (intended to illustrate or exercise various problem-solving methods, with concise, exact descriptions) and <strong>real-world problems</strong> (whose solutions people actually care about, often requiring complex domain engineering). Below are the classic formulations from AIMA and the interactive lecture.</p>
+
+          <h3 id="vacuum-world"><span class="rp-num">3.1</span>The Two-Room Vacuum World</h3>
+          <p>The Two-Room Vacuum World is the quintessential toy problem introduced in AIMA Chapter 2. The environment consists of two locations: Room A (left) and Room B (right). Each room can be either <em>Clean</em> or <em>Dirty</em>. The vacuum agent is located in either Room A or Room B.</p>
+
+          <figure class="rp-figure">
+            <svg class="sl-graph-svg" viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg">
+              <!-- Background grid & 8 states -->
+              <!-- State 1: A, Dirty, Dirty -->
+              <g class="sl-gnode" transform="translate(60, 40)">
+                <rect x="0" y="0" width="120" height="70" rx="8" fill="#ffffff" stroke="#4f46e5" stroke-width="2"/>
+                <text x="60" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#312e81">State 1: (A, D, D)</text>
+                <rect x="10" y="32" width="45" height="28" fill="#fee2e2" stroke="#ef4444" rx="4"/>
+                <text x="32" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#b91c1c">[A*] D</text>
+                <rect x="65" y="32" width="45" height="28" fill="#fee2e2" stroke="#ef4444" rx="4"/>
+                <text x="87" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#b91c1c">[B] D</text>
+              </g>
+
+              <!-- State 2: B, Dirty, Dirty -->
+              <g class="sl-gnode" transform="translate(240, 40)">
+                <rect x="0" y="0" width="120" height="70" rx="8" fill="#ffffff" stroke="#4f46e5" stroke-width="2"/>
+                <text x="60" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#312e81">State 2: (B, D, D)</text>
+                <rect x="10" y="32" width="45" height="28" fill="#fee2e2" stroke="#ef4444" rx="4"/>
+                <text x="32" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#b91c1c">[A] D</text>
+                <rect x="65" y="32" width="45" height="28" fill="#fee2e2" stroke="#ef4444" rx="4"/>
+                <text x="87" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#b91c1c">[B*] D</text>
+              </g>
+
+              <!-- State 7: A, Clean, Clean (GOAL) -->
+              <g class="sl-gnode sl-goal" transform="translate(420, 180)">
+                <rect x="0" y="0" width="120" height="70" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="2.5"/>
+                <text x="60" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#065f46">State 7: (A, C, C) &star;</text>
+                <rect x="10" y="32" width="45" height="28" fill="#d1fae5" stroke="#10b981" rx="4"/>
+                <text x="32" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#047857">[A*] C</text>
+                <rect x="65" y="32" width="45" height="28" fill="#d1fae5" stroke="#10b981" rx="4"/>
+                <text x="87" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#047857">[B] C</text>
+              </g>
+
+              <!-- State 8: B, Clean, Clean (GOAL) -->
+              <g class="sl-gnode sl-goal" transform="translate(600, 180)">
+                <rect x="0" y="0" width="120" height="70" rx="8" fill="#ecfdf5" stroke="#10b981" stroke-width="2.5"/>
+                <text x="60" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#065f46">State 8: (B, C, C) &star;</text>
+                <rect x="10" y="32" width="45" height="28" fill="#d1fae5" stroke="#10b981" rx="4"/>
+                <text x="32" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#047857">[A] C</text>
+                <rect x="65" y="32" width="45" height="28" fill="#d1fae5" stroke="#10b981" rx="4"/>
+                <text x="87" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#047857">[B*] C</text>
+              </g>
+
+              <!-- State 3: A, Clean, Dirty -->
+              <g class="sl-gnode" transform="translate(420, 40)">
+                <rect x="0" y="0" width="120" height="70" rx="8" fill="#ffffff" stroke="#4f46e5" stroke-width="2"/>
+                <text x="60" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#312e81">State 3: (A, C, D)</text>
+                <rect x="10" y="32" width="45" height="28" fill="#d1fae5" stroke="#10b981" rx="4"/>
+                <text x="32" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#047857">[A*] C</text>
+                <rect x="65" y="32" width="45" height="28" fill="#fee2e2" stroke="#ef4444" rx="4"/>
+                <text x="87" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#b91c1c">[B] D</text>
+              </g>
+
+              <!-- State 4: B, Clean, Dirty -->
+              <g class="sl-gnode" transform="translate(600, 40)">
+                <rect x="0" y="0" width="120" height="70" rx="8" fill="#ffffff" stroke="#4f46e5" stroke-width="2"/>
+                <text x="60" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#312e81">State 4: (B, C, D)</text>
+                <rect x="10" y="32" width="45" height="28" fill="#d1fae5" stroke="#10b981" rx="4"/>
+                <text x="32" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#047857">[A] C</text>
+                <rect x="65" y="32" width="45" height="28" fill="#fee2e2" stroke="#ef4444" rx="4"/>
+                <text x="87" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#b91c1c">[B*] D</text>
+              </g>
+
+              <!-- State 5: A, Dirty, Clean -->
+              <g class="sl-gnode" transform="translate(60, 180)">
+                <rect x="0" y="0" width="120" height="70" rx="8" fill="#ffffff" stroke="#4f46e5" stroke-width="2"/>
+                <text x="60" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#312e81">State 5: (A, D, C)</text>
+                <rect x="10" y="32" width="45" height="28" fill="#fee2e2" stroke="#ef4444" rx="4"/>
+                <text x="32" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#b91c1c">[A*] D</text>
+                <rect x="65" y="32" width="45" height="28" fill="#d1fae5" stroke="#10b981" rx="4"/>
+                <text x="87" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#047857">[B] C</text>
+              </g>
+
+              <!-- State 6: B, Dirty, Clean -->
+              <g class="sl-gnode" transform="translate(240, 180)">
+                <rect x="0" y="0" width="120" height="70" rx="8" fill="#ffffff" stroke="#4f46e5" stroke-width="2"/>
+                <text x="60" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#312e81">State 6: (B, D, C)</text>
+                <rect x="10" y="32" width="45" height="28" fill="#fee2e2" stroke="#ef4444" rx="4"/>
+                <text x="32" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#b91c1c">[A] D</text>
+                <rect x="65" y="32" width="45" height="28" fill="#d1fae5" stroke="#10b981" rx="4"/>
+                <text x="87" y="50" text-anchor="middle" font-size="10" font-weight="700" fill="#047857">[B*] C</text>
+              </g>
+
+              <!-- Connecting arrows with actions -->
+              <line x1="180" y1="65" x2="240" y2="65" stroke="#4f46e5" stroke-width="2" marker-end="url(#rp-arrow)"/>
+              <text x="210" y="58" text-anchor="middle" font-size="10" font-weight="700" fill="#4f46e5">Right</text>
+
+              <line x1="120" y1="110" x2="420" y2="70" stroke="#059669" stroke-width="2" stroke-dasharray="3,3" marker-end="url(#rp-arrow)"/>
+              <text x="280" y="100" text-anchor="middle" font-size="10" font-weight="700" fill="#059669">Suck &rarr; (A, C, D)</text>
+
+              <line x1="660" y1="110" x2="660" y2="180" stroke="#059669" stroke-width="2" marker-end="url(#rp-arrow)"/>
+              <text x="690" y="145" text-anchor="middle" font-size="10" font-weight="700" fill="#059669">Suck</text>
+            </svg>
+            <figcaption>The complete 8-state space for the Two-Room Vacuum World. States 7 and 8 are goal states where both rooms are clean.</figcaption>
+          </figure>
+
+          <dl class="rp-spec">
+            <dt>States</dt><dd>Determined by agent location and status of both rooms: <code>2 &times; 2 &times; 2 = 8</code> discrete states: <code>(Location, RoomA_status, RoomB_status)</code>.</dd>
+            <dt>Initial State</dt><dd>Any of the 8 states (e.g., <code>(A, Dirty, Dirty)</code>).</dd>
+            <dt>Actions</dt><dd><code>{Left, Right, Suck}</code>.</dd>
+            <dt>Transition Model</dt><dd><code>Left</code> moves agent to A; <code>Right</code> moves agent to B; <code>Suck</code> cleans the current room. Moving into a wall has no effect.</dd>
+            <dt>Goal Test</dt><dd>Both rooms are clean: <code>RoomA == Clean &and; RoomB == Clean</code> (States 7 and 8).</dd>
+            <dt>Path Cost</dt><dd>Each step costs 1 (number of actions taken).</dd>
+          </dl>
+
+          <h3 id="eight-puzzle"><span class="rp-num">3.2</span>The 8-Puzzle &amp; Sliding Tile Puzzles</h3>
+          <p>The 8-puzzle consists of a <code>3 &times; 3</code> board with 8 numbered tiles and one blank space (represented by 0). A tile adjacent to the blank space can slide into the blank space.</p>
+
+          <figure class="rp-figure">
+            <svg class="sl-graph-svg" viewBox="0 0 540 180" xmlns="http://www.w3.org/2000/svg">
+              <!-- Initial State -->
+              <g transform="translate(60, 20)">
+                <text x="60" y="0" text-anchor="middle" font-size="13" font-weight="700" fill="#334155">Initial State s&#8320;</text>
+                <rect x="0" y="10" width="120" height="120" rx="8" fill="#f8fafc" stroke="#64748b" stroke-width="2"/>
+                <!-- 3x3 grid tiles -->
+                <rect x="6" y="16" width="34" height="34" rx="4" fill="#e0e7ff" stroke="#4f46e5"/><text x="23" y="39" text-anchor="middle" font-weight="700" fill="#312e81">7</text>
+                <rect x="43" y="16" width="34" height="34" rx="4" fill="#e0e7ff" stroke="#4f46e5"/><text x="60" y="39" text-anchor="middle" font-weight="700" fill="#312e81">2</text>
+                <rect x="80" y="16" width="34" height="34" rx="4" fill="#e0e7ff" stroke="#4f46e5"/><text x="97" y="39" text-anchor="middle" font-weight="700" fill="#312e81">4</text>
+
+                <rect x="6" y="53" width="34" height="34" rx="4" fill="#e0e7ff" stroke="#4f46e5"/><text x="23" y="76" text-anchor="middle" font-weight="700" fill="#312e81">5</text>
+                <rect x="43" y="53" width="34" height="34" rx="4" fill="#cbd5e1" stroke="#94a3b8"/><text x="60" y="76" text-anchor="middle" font-weight="700" fill="#64748b">_</text>
+                <rect x="80" y="53" width="34" height="34" rx="4" fill="#e0e7ff" stroke="#4f46e5"/><text x="97" y="76" text-anchor="middle" font-weight="700" fill="#312e81">6</text>
+
+                <rect x="6" y="90" width="34" height="34" rx="4" fill="#e0e7ff" stroke="#4f46e5"/><text x="23" y="113" text-anchor="middle" font-weight="700" fill="#312e81">8</text>
+                <rect x="43" y="90" width="34" height="34" rx="4" fill="#e0e7ff" stroke="#4f46e5"/><text x="60" y="113" text-anchor="middle" font-weight="700" fill="#312e81">3</text>
+                <rect x="80" y="90" width="34" height="34" rx="4" fill="#e0e7ff" stroke="#4f46e5"/><text x="97" y="113" text-anchor="middle" font-weight="700" fill="#312e81">1</text>
+              </g>
+
+              <!-- Actions Arrow -->
+              <path d="M 210 75 L 300 75" fill="none" stroke="#4f46e5" stroke-width="3" marker-end="url(#rp-arrow)"/>
+              <text x="255" y="65" text-anchor="middle" font-size="12" font-weight="700" fill="#4f46e5">Search Path</text>
+              <text x="255" y="95" text-anchor="middle" font-size="11" fill="#64748b">Move Blank</text>
+
+              <!-- Goal State -->
+              <g transform="translate(330, 20)">
+                <text x="60" y="0" text-anchor="middle" font-size="13" font-weight="700" fill="#047857">Goal State (Solved)</text>
+                <rect x="0" y="10" width="120" height="120" rx="8" fill="#f0fdf4" stroke="#10b981" stroke-width="2.5"/>
+                <rect x="6" y="16" width="34" height="34" rx="4" fill="#d1fae5" stroke="#10b981"/><text x="23" y="39" text-anchor="middle" font-weight="700" fill="#065f46">1</text>
+                <rect x="43" y="16" width="34" height="34" rx="4" fill="#d1fae5" stroke="#10b981"/><text x="60" y="39" text-anchor="middle" font-weight="700" fill="#065f46">2</text>
+                <rect x="80" y="16" width="34" height="34" rx="4" fill="#d1fae5" stroke="#10b981"/><text x="97" y="39" text-anchor="middle" font-weight="700" fill="#065f46">3</text>
+
+                <rect x="6" y="53" width="34" height="34" rx="4" fill="#d1fae5" stroke="#10b981"/><text x="23" y="76" text-anchor="middle" font-weight="700" fill="#065f46">4</text>
+                <rect x="43" y="53" width="34" height="34" rx="4" fill="#d1fae5" stroke="#10b981"/><text x="60" y="76" text-anchor="middle" font-weight="700" fill="#065f46">5</text>
+                <rect x="80" y="53" width="34" height="34" rx="4" fill="#d1fae5" stroke="#10b981"/><text x="97" y="76" text-anchor="middle" font-weight="700" fill="#065f46">6</text>
+
+                <rect x="6" y="90" width="34" height="34" rx="4" fill="#d1fae5" stroke="#10b981"/><text x="23" y="113" text-anchor="middle" font-weight="700" fill="#065f46">7</text>
+                <rect x="43" y="90" width="34" height="34" rx="4" fill="#d1fae5" stroke="#10b981"/><text x="60" y="113" text-anchor="middle" font-weight="700" fill="#065f46">8</text>
+                <rect x="80" y="90" width="34" height="34" rx="4" fill="#cbd5e1" stroke="#94a3b8"/><text x="97" y="113" text-anchor="middle" font-weight="700" fill="#64748b">_</text>
+              </g>
+            </svg>
+            <figcaption>The 8-Puzzle: finding an action sequence of blank sliding moves from an initial permutation to the canonical solved configuration.</figcaption>
+          </figure>
+
+          <dl class="rp-spec">
+            <dt>States</dt><dd>A configuration specifying the location of each of the 8 tiles and the blank in the nine squares. Total permutations: <code>9! = 362,880</code>. Exactly half (<code>9! / 2 = 181,440</code>) are reachable from any initial configuration due to the <strong>permutation parity invariant</strong>.</dd>
+            <dt>Initial State</dt><dd>Any designated valid board configuration.</dd>
+            <dt>Actions</dt><dd>Move the blank space <code>Left</code>, <code>Right</code>, <code>Up</code>, or <code>Down</code> (conventionally modeled as moving the blank rather than moving tiles, which keeps the action set fixed to &le; 4).</dd>
+            <dt>Transition Model</dt><dd>Swaps the blank with the tile in the target direction, returning the new board state.</dd>
+            <dt>Goal Test</dt><dd>Board matches the target solved configuration (e.g. <code>[1,2,3, 4,5,6, 7,8,0]</code>).</dd>
+            <dt>Path Cost</dt><dd>Each step costs 1 (total moves).</dd>
+          </dl>
+
+          <h3 id="grid-maze"><span class="rp-num">3.3</span>2D Grid &amp; Maze Navigation</h3>
+          <p>An agent navigates a discrete 2D grid from a starting cell to a goal cell, avoiding obstacles and walls.</p>
+          <dl class="rp-spec">
+            <dt>States</dt><dd>Grid coordinate <code>(x, y)</code> or <code>(row, col)</code> representing the agent's current location.</dd>
+            <dt>Initial State</dt><dd>Designated start coordinate <code>(row&#8320;, col&#8320;)</code>.</dd>
+            <dt>Actions</dt><dd>Move <code>{North, South, East, West}</code> to adjacent in-bounds, non-wall cells.</dd>
+            <dt>Transition Model</dt><dd><code>RESULT((r, c), North) = (r - 1, c)</code>, etc.</dd>
+            <dt>Goal Test</dt><dd><code>(r, c) == (r_goal, c_goal)</code>.</dd>
+            <dt>Path Cost</dt><dd>1 per movement step (or Manhattan/Euclidean distance in weighted terrain).</dd>
+          </dl>
+
+          <h3 id="route-finding"><span class="rp-num">3.4</span>Route Finding &amp; Road Networks</h3>
+          <p>The canonical route-finding problem from AIMA: an agent is in the city of Arad, Romania, and wishes to travel to Bucharest along a road network with specified distances.</p>
+          <dl class="rp-spec">
+            <dt>States</dt><dd>The name of the current city (e.g., <code>Arad</code>, <code>Sibiu</code>, <code>Bucharest</code>).</dd>
+            <dt>Initial State</dt><dd><code>In(Arad)</code>.</dd>
+            <dt>Actions</dt><dd><code>Go(c)</code> for any city <code>c</code> directly connected to the current city by a road.</dd>
+            <dt>Transition Model</dt><dd><code>RESULT(In(Arad), Go(Zerind)) = In(Zerind)</code>.</dd>
+            <dt>Goal Test</dt><dd><code>s == In(Bucharest)</code>.</dd>
+            <dt>Path Cost</dt><dd>Sum of the road distances in kilometers (e.g., <code>c(Arad, Go(Zerind), Zerind) = 75 km</code>). Note: Unlike the previous examples, step costs are <strong>non-unit</strong>, so number of actions and total path cost diverge!</dd>
+          </dl>
+
+          <h3 id="eight-queens"><span class="rp-num">3.5</span>The 8-Queens Problem</h3>
+          <p>The goal of the 8-Queens problem is to place 8 queens on a chessboard such that no queen attacks any other queen (no two queens share the same row, column, or diagonal).</p>
+          <p>This problem highlights the critical design choice between two formulation styles:</p>
+
+          <div class="rp-table-wrap">
+            <table class="rp-table">
+              <thead>
+                <tr>
+                  <th>Formulation Style</th>
+                  <th>State Representation</th>
+                  <th>Actions</th>
+                  <th>State Space Size</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Naive Incremental</strong></td>
+                  <td>Arrangement of 0 to 8 queens on the board</td>
+                  <td>Add a queen to any empty square</td>
+                  <td><code>64 &times; 63 &times; &hellip; &times; 57 &asymp; 1.8 &times; 10&#185;&#8308;</code> states</td>
+                </tr>
+                <tr>
+                  <td><strong>Refined Incremental (Column-by-column)</strong></td>
+                  <td>Placement of <code>k</code> queens in the leftmost <code>k</code> columns, 1 per column</td>
+                  <td>Add a queen to an unattacked square in column <code>k + 1</code></td>
+                  <td><code>2,057</code> reachable valid states</td>
+                </tr>
+                <tr>
+                  <td><strong>Complete-State Formulation</strong></td>
+                  <td>All 8 queens placed on board (1 per column)</td>
+                  <td>Move an attacked queen to another row in its column</td>
+                  <td><code>8&#8312; = 16,777,216</code> states (Local search / CSP)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 id="real-world-problems"><span class="rp-num">3.6</span>Real-World Problem Formulations</h3>
+          <p>While toy problems provide clean conceptual models, real-world problems drive industry applications:</p>
+          <ul>
+            <li><strong>Traveling Salesperson Problem (TSP):</strong> A touring problem where every city on a map must be visited exactly once with minimal total mileage. Total candidate tours for <code>n</code> cities is <code>(n - 1)! / 2</code> &mdash; NP-hard.</li>
+            <li><strong>VLSI Layout Design:</strong> Positioning millions of transistors and routing connecting wires on a silicon chip without wire overlap, minimizing chip area and electrical capacitance delay.</li>
+            <li><strong>Robot Navigation:</strong> Moving a continuous kinematic manipulator or autonomous vehicle through 3D space with continuous angles and obstacles &mdash; discretized into configuration spaces.</li>
+            <li><strong>Automatic Assembly Sequencing:</strong> Finding a valid order to assemble complex mechanical components (e.g., jet engines) without parts colliding during assembly.</li>
+            <li><strong>Protein Design &amp; Folding:</strong> Finding a sequence of amino acids that folds into a target 3D structure that cures disease or catalyzes a chemical reaction.</li>
+          </ul>
+        </section>
+
+        <!-- ================= 4. ANALYZING & COMPARING FORMULATIONS ================= -->
+        <section id="analyzing-formulations">
+          <h2><span class="rp-num">4.</span>Analyzing &amp; Comparing Formulations</h2>
+
+          <p>Formulating a problem is not merely about writing down definitions; it is about choosing the mathematical representation that makes searching for a solution computationally tractable.</p>
+
+          <h3 id="combinatorics-branching"><span class="rp-num">4.1</span>State Space Size &amp; Branching Factor</h3>
+          <p>Two metrics govern the difficulty of a search problem:</p>
+          <ul>
+            <li><strong>State Space Size <code>|S|</code>:</strong> The total number of reachable distinct configurations. If <code>|S|</code> is small (e.g., 8 states in Two-Room Vacuum), exhaustive enumeration is trivial. If <code>|S|</code> is massive (e.g., <code>10&#178;&#8304;</code> in 15-puzzle, <code>10&#185;&#178;&#8304;</code> in Chess), clever heuristics and pruning are mandatory.</li>
+            <li><strong>Branching Factor <code>b</code>:</strong> The number of legal actions available from a typical state. In an 8-puzzle, <code>b</code> ranges from 2 (corners) to 3 (edges) to 4 (center), with an average <code>b &asymp; 3</code>. In chess, average <code>b &asymp; 35</code>; in Go, average <code>b &asymp; 250</code>.</li>
+          </ul>
+
+          <h3 id="state-space-vs-search-tree"><span class="rp-num">4.2</span>State Space Graph vs. Search Tree</h3>
+          <p>A frequent point of confusion is the distinction between the <strong>state space graph</strong> and the <strong>search tree</strong>:</p>
+          <ul>
+            <li>The <strong>state space graph</strong> has exactly one node per unique physical state in <code>S</code>. Edges represent reversible or irreversible action transitions between states. If a graph has cycles (e.g., <code>Left &rarr; Right &rarr; Left</code>), the state space graph remains finite.</li>
+            <li>The <strong>search tree</strong> is a tree of unrolled paths generated by a search algorithm starting at the initial state. Because the same state can be reached by infinitely many paths in a cyclic graph, the search tree can be <em>infinite</em> even when the state space is tiny! Graph search maintains a <code>reached</code> table to prune these redundant paths.</li>
+          </ul>
+
+          <h3 id="representation-types"><span class="rp-num">4.3</span>Atomic, Factored &amp; Structured States</h3>
+          <p>AIMA Chapter 2 introduces the three fundamental paradigms for representing states:</p>
+          <div class="rp-table-wrap">
+            <table class="rp-table">
+              <thead>
+                <tr>
+                  <th>Representation</th>
+                  <th>Internal Structure</th>
+                  <th>Example</th>
+                  <th>Used In</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Atomic</strong></td>
+                  <td>State has no internal substructure &mdash; it is a black box / single opaque token</td>
+                  <td><code>Arad</code>, <code>State_4</code></td>
+                  <td>Standard classical search (BFS, DFS, A*)</td>
+                </tr>
+                <tr>
+                  <td><strong>Factored</strong></td>
+                  <td>State is split into fixed set of variables / attributes with specific values</td>
+                  <td><code>{Location: A, RoomA: Clean, RoomB: Dirty}</code></td>
+                  <td>Constraint Satisfaction (CSPs), Planning, Propositional Logic</td>
+                </tr>
+                <tr>
+                  <td><strong>Structured</strong></td>
+                  <td>State contains explicit objects, attributes, and relationships between objects</td>
+                  <td><code>On(BlockA, BlockB) &and; Clear(BlockA)</code></td>
+                  <td>First-Order Logic, Knowledge Graphs, Relational AI</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 id="summary-table"><span class="rp-num">4.4</span>Problem Formulation Comparison Matrix</h3>
+          <p>The table below summarizes the formal 5-component formulation across our benchmark domains:</p>
+
+          <div class="rp-table-wrap">
+            <table class="rp-table">
+              <thead>
+                <tr>
+                  <th>Problem</th>
+                  <th>State Representation</th>
+                  <th>Actions</th>
+                  <th>Goal Test</th>
+                  <th>Step Cost</th>
+                  <th>State Space Size</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Two-Room Vacuum</strong></td>
+                  <td><code>(AgentLoc, Status_A, Status_B)</code></td>
+                  <td><code>{Left, Right, Suck}</code></td>
+                  <td><code>Status_A == Clean &and; Status_B == Clean</code></td>
+                  <td><code>1</code> per action</td>
+                  <td><code>8</code> states</td>
+                </tr>
+                <tr>
+                  <td><strong>8-Puzzle</strong></td>
+                  <td><code>3 &times; 3</code> array of tiles <code>0..8</code></td>
+                  <td>Move blank <code>{Left, Right, Up, Down}</code></td>
+                  <td>Matching canonical solved board</td>
+                  <td><code>1</code> per slide</td>
+                  <td><code>181,440</code> (reachable)</td>
+                </tr>
+                <tr>
+                  <td><strong>5&times;5 Grid Maze</strong></td>
+                  <td>Coordinate tuple <code>(row, col)</code></td>
+                  <td>Move <code>{N, S, E, W}</code> into open cell</td>
+                  <td><code>(row, col) == (goal_r, goal_c)</code></td>
+                  <td><code>1</code> per step</td>
+                  <td><code>&le; 25</code> cells</td>
+                </tr>
+                <tr>
+                  <td><strong>Route Finding</strong></td>
+                  <td>City name <code>In(City)</code></td>
+                  <td><code>Go(ConnectedCity)</code></td>
+                  <td><code>In(DestinationCity)</code></td>
+                  <td>Road distance in km</td>
+                  <td>Number of cities (e.g. <code>20</code>)</td>
+                </tr>
+                <tr>
+                  <td><strong>8-Queens (Refined)</strong></td>
+                  <td>List of queen row positions <code>[r&#8321;, &hellip;, r_k]</code></td>
+                  <td>Place queen in next column</td>
+                  <td>8 queens placed without conflicts</td>
+                  <td><code>0</code> (or <code>1</code> per placement)</td>
+                  <td><code>2,057</code> valid states</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================= 5. PRACTICE EXERCISES ================= -->
+        <section id="exercises">
+          <h2><span class="rp-num">5.</span>Practice Exercises</h2>
+
+          <p>The eight exercises below provide deep conceptual and analytical practice on intelligent agents, PEAS task specifications, environment classification, state-space combinatorics, and rigorous 5-component problem formulation. Each problem is stated first; click <strong>Show Answer</strong> to view the complete worked mathematical solution.</p>
+
+          <!-- EXERCISE 1 -->
+          <div class="rp-exercise" id="ex1">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 1</span>
+              <h3 class="rp-exercise-title">PEAS Task Environment Specifications</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Provide complete <strong>PEAS</strong> (Performance measure, Environment, Actuators, Sensors) specifications for the following three autonomous systems:</p>
+              <p>(a) <strong>Autonomous Warehouse Forklift Robot</strong> moving pallets between trucks and shelving.<br>
+              (b) <strong>Automated High-Frequency Stock Trading Agent</strong> executing trades on digital financial exchanges.<br>
+              (c) <strong>Smart Thermostat &amp; Climate Control System</strong> managing energy and comfort in an office building.</p>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+
+                <div class="rp-answer-part">
+                  <div class="rp-answer-part-label">(a) Autonomous Warehouse Forklift Robot</div>
+                  <dl class="rp-spec">
+                    <dt>Performance Measure</dt><dd>Number of pallets successfully moved per hour, energy efficiency, zero collisions with human workers or shelving, zero pallet damage, optimal storage density.</dd>
+                    <dt>Environment</dt><dd>Warehouse floor, loading docks, delivery trucks, storage racks, static obstacles, moving human workers and other forklifts.</dd>
+                    <dt>Actuators</dt><dd>Electric drive motors (steering, throttle, regenerative braking), hydraulic lift mechanism for forks, safety horn, visual strobe lights, inventory logging RF transmitter.</dd>
+                    <dt>Sensors</dt><dd>2D/3D Lidar scanners, depth cameras, wheel odometry encoders, pallet barcode/RFID readers, fork weight/load pressure sensors, emergency bumper switches.</dd>
+                  </dl>
+                </div>
+
+                <div class="rp-answer-part">
+                  <div class="rp-answer-part-label">(b) Automated Stock Trading Agent</div>
+                  <dl class="rp-spec">
+                    <dt>Performance Measure</dt><dd>Total net return on investment (ROI), Sharpe ratio (risk-adjusted return), maximum drawdown minimization, transaction cost minimization, regulatory compliance.</dd>
+                    <dt>Environment</dt><dd>Global electronic exchanges (NYSE, NASDAQ, CME), order books, financial news wire feeds, economic indicator releases, competitor algorithms.</dd>
+                    <dt>Actuators</dt><dd>Electronic order submission (market, limit, stop orders, cancellations) via FIX protocol API, fund allocation adjustments.</dd>
+                    <dt>Sensors</dt><dd>Real-time Level 2/3 market data feeds (order book depth, trade ticks), financial news text parsers, historical price database feeds.</dd>
+                  </dl>
+                </div>
+
+                <div class="rp-answer-part">
+                  <div class="rp-answer-part-label">(c) Smart Building Climate Control System</div>
+                  <dl class="rp-spec">
+                    <dt>Performance Measure</dt><dd>Thermal comfort satisfaction percentage, kilowatt-hours consumed (energy cost minimization), peak electricity demand charge reduction, HVAC equipment lifespan preservation.</dd>
+                    <dt>Environment</dt><dd>Multi-zone office building, ambient outdoor weather, solar irradiation, occupant schedule, variable electricity tariff pricing.</dd>
+                    <dt>Actuators</dt><dd>HVAC compressor/furnace relays, variable-speed fan controllers, motorized zone air dampers, smart window shade motors.</dd>
+                    <dt>Sensors</dt><dd>Multi-room temperature sensors, relative humidity sensors, PIR motion / occupancy sensors, CO&#8322; air quality sensors, outdoor weather API, grid pricing signal.</dd>
+                  </dl>
+                </div>
+
+              </div>
+            </details>
+          </div>
+
+          <!-- EXERCISE 2 -->
+          <div class="rp-exercise" id="ex2">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 2</span>
+              <h3 class="rp-exercise-title">Environment Classification Matrix</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Classify the following six task environments across the 6 primary AIMA dimensions: <strong>Observability</strong> (Fully vs. Partially), <strong>Agents</strong> (Single vs. Multi), <strong>Determinism</strong> (Deterministic vs. Stochastic), <strong>Episodic</strong> (Episodic vs. Sequential), <strong>Static</strong> (Static vs. Dynamic), and <strong>Discreteness</strong> (Discrete vs. Continuous):</p>
+              <ol>
+                <li><strong>Chess (with a clock)</strong></li>
+                <li><strong>Texas Hold'em Poker</strong></li>
+                <li><strong>Autonomous Driving</strong></li>
+                <li><strong>Image Part-Defect Classifier</strong></li>
+                <li><strong>Crossword Puzzle</strong></li>
+                <li><strong>Medical Diagnosis System</strong></li>
+              </ol>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+                <div class="rp-table-wrap">
+                  <table class="rp-table">
+                    <thead>
+                      <tr>
+                        <th>Environment</th>
+                        <th>Observability</th>
+                        <th>Agents</th>
+                        <th>Determinism</th>
+                        <th>Episodic?</th>
+                        <th>Static/Dynamic</th>
+                        <th>Discreteness</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td><strong>Chess (with clock)</strong></td>
+                        <td>Fully</td>
+                        <td>Multi (Competitive)</td>
+                        <td>Deterministic</td>
+                        <td>Sequential</td>
+                        <td>Semi-dynamic</td>
+                        <td>Discrete</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Texas Hold'em Poker</strong></td>
+                        <td>Partially</td>
+                        <td>Multi (Competitive)</td>
+                        <td>Stochastic</td>
+                        <td>Sequential</td>
+                        <td>Static (on turn)</td>
+                        <td>Discrete</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Autonomous Driving</strong></td>
+                        <td>Partially</td>
+                        <td>Multi (Mixed)</td>
+                        <td>Stochastic</td>
+                        <td>Sequential</td>
+                        <td>Dynamic</td>
+                        <td>Continuous</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Image Defect Classifier</strong></td>
+                        <td>Fully</td>
+                        <td>Single</td>
+                        <td>Deterministic</td>
+                        <td>Episodic</td>
+                        <td>Static</td>
+                        <td>Continuous / Discrete</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Crossword Puzzle</strong></td>
+                        <td>Fully</td>
+                        <td>Single</td>
+                        <td>Deterministic</td>
+                        <td>Sequential</td>
+                        <td>Static</td>
+                        <td>Discrete</td>
+                      </tr>
+                      <tr>
+                        <td><strong>Medical Diagnosis</strong></td>
+                        <td>Partially</td>
+                        <td>Single (or Multi)</td>
+                        <td>Stochastic</td>
+                        <td>Sequential</td>
+                        <td>Dynamic</td>
+                        <td>Continuous / Discrete</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+                <p><strong>Key Takeaways:</strong> The hardest environments for an AI agent are <em>Partially observable, Multi-agent, Stochastic, Sequential, Dynamic, Continuous, and Unknown</em> (such as real-world autonomous driving).</p>
+              </div>
+            </details>
+          </div>
+
+          <!-- EXERCISE 3 -->
+          <div class="rp-exercise" id="ex3">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 3</span>
+              <h3 class="rp-exercise-title">State Space Combinatorics in Generalized Vacuum Worlds</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Consider a generalized Vacuum World with <code>N</code> distinct rooms arranged in a linear row (1 to <code>N</code>). The agent can be in any of the <code>N</code> rooms.</p>
+              <p>(a) If each room can be either <em>Clean</em> or <em>Dirty</em>, derive a formula for the total number of distinct states <code>|S|</code> in the state space.</p>
+              <p>(b) What is <code>|S|</code> for <code>N = 2</code>, <code>N = 5</code>, and <code>N = 10</code> rooms?</p>
+              <p>(c) Suppose each room can have <code>K</code> discrete levels of dirtiness (0 = Spotless, 1 = Light Dust, ..., <code>K - 1</code> = Filthy). What is the total state space size as a function of <code>N</code> and <code>K</code>?</p>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+
+                <div class="rp-answer-part">
+                  <div class="rp-answer-part-label">(a) Binary Dirt State Space Formula</div>
+                  <p>A state is specified by two independent components: the vacuum's current location and the dirt status of every room.</p>
+                  <ul>
+                    <li>Agent location choices: <code>N</code> possibilities (Room 1, Room 2, &hellip;, Room <code>N</code>).</li>
+                    <li>Dirt status per room: 2 possibilities (<code>Clean</code> or <code>Dirty</code>). For <code>N</code> independent rooms, there are <code>2<sup>N</sup></code> total room status configurations.</li>
+                  </ul>
+                  <div class="formula-box">|S| = N &times; 2<sup>N</sup></div>
+                </div>
+
+                <div class="rp-answer-part">
+                  <div class="rp-answer-part-label">(b) Numerical Evaluation</div>
+                  <ul>
+                    <li>For <code>N = 2</code>: <code>|S| = 2 &times; 2&#178; = 2 &times; 4 = 8</code> states (the standard Two-Room Vacuum World).</li>
+                    <li>For <code>N = 5</code>: <code>|S| = 5 &times; 2&#8309; = 5 &times; 32 = 160</code> states.</li>
+                    <li>For <code>N = 10</code>: <code>|S| = 10 &times; 2&#185;&#8304; = 10 &times; 1024 = 10,240</code> states.</li>
+                  </ul>
+                </div>
+
+                <div class="rp-answer-part">
+                  <div class="rp-answer-part-label">(c) Generalized K Dirt Levels</div>
+                  <p>If each room has <code>K</code> possible dirt levels, the number of environment configurations is <code>K<sup>N</sup></code>.</p>
+                  <div class="formula-box">|S| = N &times; K<sup>N</sup></div>
+                  <p>For example, with <code>N = 5</code> rooms and <code>K = 4</code> dirt levels: <code>|S| = 5 &times; 4&#8309; = 5 &times; 1024 = 5,120</code> states.</p>
+                </div>
+
+              </div>
+            </details>
+          </div>
+
+          <!-- EXERCISE 4 -->
+          <div class="rp-exercise" id="ex4">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 4</span>
+              <h3 class="rp-exercise-title">8-Puzzle Permutation Invariant &amp; Solvability Proof</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>The 8-puzzle state space consists of all permutations of the 9 symbols <code>{0, 1, 2, 3, 4, 5, 6, 7, 8}</code>, totaling <code>9! = 362,880</code> arrangements. Prove why exactly <strong>half</strong> of all possible random board permutations (<code>181,440</code>) are solvable to the standard goal state.</p>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+
+                <p><strong>Mathematical Proof via Permutation Inversions:</strong></p>
+                <p>1. Flatten the <code>3 &times; 3</code> grid into a 1D sequence of length 8, omitting the blank tile (0). For example, the board:</p>
+                <div class="rp-pseudocode">
+                  <pre>1  2  3
+8  _  4  &rarr;  Sequence: (1, 2, 3, 8, 4, 7, 6, 5)
+7  6  5</pre>
+                </div>
+
+                <p>2. Define an <strong>inversion</strong> as any pair of tiles <code>(a, b)</code> such that tile <code>a</code> appears before tile <code>b</code> in the sequence, but <code>a &gt; b</code>. In the sequence above, the inversions involving 8 are <code>(8,4)</code>, <code>(8,7)</code>, <code>(8,6)</code>, <code>(8,5)</code>; the inversions involving 7 are <code>(7,6)</code>, <code>(7,5)</code>; the inversion involving 6 is <code>(6,5)</code>. Total inversions = <code>4 + 2 + 1 = 7</code> (odd parity).</p>
+
+                <p>3. <strong>Effect of Legal Actions on Inversion Parity:</strong></p>
+                <ul>
+                  <li><strong>Horizontal Blank Move (Left / Right):</strong> Swapping the blank horizontally with an adjacent tile does not change the relative order of any numbered tiles in the 1D sequence. &Delta;Inversions = <code>0</code>. Parity is strictly conserved.</li>
+                  <li><strong>Vertical Blank Move (Up / Down):</strong> Moving the blank vertically swaps it with a tile 3 positions away in the grid, jumping over exactly 2 intervening numbered tiles in the 1D sequence.
+                    <ul>
+                      <li>If both skipped tiles were smaller (or both larger) than the moved tile, the number of inversions changes by <code>&plusmn;2</code>.</li>
+                      <li>If one skipped tile was larger and one smaller, one inversion is gained and one lost: &Delta;Inversions = <code>0</code>.</li>
+                      <li>In all cases, the change in the number of inversions is always an <strong>even integer</strong> (<code>&Delta; = -2, 0, +2</code>).</li>
+                    </ul>
+                  </li>
+                </ul>
+
+                <p>4. <strong>Conclusion:</strong> Every legal action in the 8-puzzle preserves the <strong>parity</strong> (evenness or oddness) of the number of inversions. The standard goal state <code>(1, 2, 3, 4, 5, 6, 7, 8)</code> has <code>0</code> inversions (an <strong>even</strong> parity).</p>
+
+                <div class="formula-box">Inversion Parity Invariant: Parity(s&prime;) &equiv; Parity(s) (mod 2) &rArr; Solvable &hArr; Inversions(s) is EVEN</div>
+
+                <p>Because exactly <code>9! / 2 = 181,440</code> permutations have even parity and <code>9! / 2 = 181,440</code> have odd parity, the state space is partitioned into two disjoint, unconnected graph components. No sequence of legal moves can ever cross from an odd parity state to an even parity goal state.</p>
+
+              </div>
+            </details>
+          </div>
+
+          <!-- EXERCISE 5 -->
+          <div class="rp-exercise" id="ex5">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 5</span>
+              <h3 class="rp-exercise-title">8-Queens: Incremental vs. Complete-State Formulations</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Compare two different problem formulations for the 8-Queens problem:</p>
+              <p>(a) <strong>Incremental Formulation A:</strong> Start with an empty board. Any action adds a queen to any empty square. Calculate the total number of candidate states explored up to depth 8.</p>
+              <p>(b) <strong>Incremental Formulation B (Column-by-column with conflict checking):</strong> Place a queen in column <code>k</code> (from left to right) only on a square that is not attacked by any previously placed queen. Why does this reduce the number of visited states to just <strong>2,057</strong>?</p>
+              <p>(c) <strong>Complete-State Formulation C:</strong> Start with 8 queens on the board (one per column). An action moves a queen within its column. What is the size of this state space?</p>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+
+                <div class="rp-answer-part">
+                  <div class="rp-answer-part-label">(a) Formulation A (Naive Incremental)</div>
+                  <p>At step 1, 64 empty squares exist; at step 2, 63 squares; ... at step 8, 57 squares. The total sequences of 8 placements is:</p>
+                  <div class="formula-box">64 &times; 63 &times; 62 &times; 61 &times; 60 &times; 59 &times; 58 &times; 57 = 64! / 56! &asymp; 1.78 &times; 10<sup>14</sup> paths</div>
+                  <p>Even ignoring placement order (combinations), <code>C(64, 8) = 4,426,165,368</code> candidate final states exist &mdash; an overwhelmingly large search space for a simple puzzle.</p>
+                </div>
+
+                <div class="rp-answer-part">
+                  <div class="rp-answer-part-label">(b) Formulation B (Pruned Column-by-Column)</div>
+                  <p>By enforcing two constraints into the <em>ACTIONS(s)</em> definition itself:</p>
+                  <ol>
+                    <li>Queen <code>k</code> must be placed in Column <code>k</code> (eliminates column conflicts by definition, shrinking initial space from <code>1.8 &times; 10&#185;&#8308;</code> to <code>8&#8312; = 16,777,216</code>).</li>
+                    <li>Queen <code>k</code> can only be placed on a square not attacked row-wise or diagonally by queens in columns <code>1..k-1</code>.</li>
+                  </ol>
+                  <p>Because illegal partial paths are pruned immediately upon generation, the total number of states at all depths in the search tree is reduced to exactly <strong>2,057 nodes</strong> (with only 92 leaf nodes reaching depth 8, representing the 92 solutions). This demonstrates how a refined formulation collapses search complexity by orders of magnitude.</p>
+                </div>
+
+                <div class="rp-answer-part">
+                  <div class="rp-answer-part-label">(c) Formulation C (Complete-State Local Search)</div>
+                  <p>Each of the 8 columns contains exactly one queen, which can be in any of the 8 rows. Total state space size:</p>
+                  <div class="formula-box">|S| = 8<sup>8</sup> = 16,777,216 states</div>
+                  <p>This formulation is ideally suited for local search algorithms (like Hill-Climbing, Simulated Annealing, and Min-Conflicts CSP) where all 8 queens are iteratively moved to minimize the number of conflicting pairs.</p>
+                </div>
+
+              </div>
+            </details>
+          </div>
+
+          <!-- EXERCISE 6 -->
+          <div class="rp-exercise" id="ex6">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 6</span>
+              <h3 class="rp-exercise-title">River Crossing: Missionaries &amp; Cannibals 5-Tuple Formulation</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Three missionaries and three cannibals are on the left bank of a river, along with a boat that can hold at most two people. If the cannibals ever outnumber the missionaries on either bank of the river (including when passengers disembark), the missionaries will be eaten. Everyone wishes to cross to the right bank safely.</p>
+              <p>Provide a rigorous formal 5-component formulation of this problem: State representation, Initial state, Actions, Transition model, Goal test, and Path cost.</p>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+
+                <dl class="rp-spec">
+                  <dt>1. State Representation</dt>
+                  <dd>A 3-tuple <code>(M, C, B)</code> representing the situation on the <strong>left bank</strong>:
+                    <ul>
+                      <li><code>M &isin; {0, 1, 2, 3}</code>: Number of missionaries on left bank.</li>
+                      <li><code>C &isin; {0, 1, 2, 3}</code>: Number of cannibals on left bank.</li>
+                      <li><code>B &isin; {1, 0}</code>: Boat position (<code>1</code> if on left bank, <code>0</code> if on right bank).</li>
+                    </ul>
+                    The right bank situation is implicitly <code>(3 - M, 3 - C, 1 - B)</code>.<br>
+                    <strong>Validity Constraint (Safety Condition):</strong> A state is legal if and only if:
+                    <code>(M == 0 &or; M &ge; C) &and; ((3 - M) == 0 &or; (3 - M) &ge; (3 - C))</code>.
+                  </dd>
+
+                  <dt>2. Initial State</dt>
+                  <dd><code>s&#8320; = (3, 3, 1)</code> (everyone and the boat on the left bank).</dd>
+
+                  <dt>3. Actions</dt>
+                  <dd>Move <code>(m, c)</code> people across the river where <code>1 &le; m + c &le; 2</code>. Possible boat loads:
+                    <code>{(1, 0), (2, 0), (0, 1), (0, 2), (1, 1)}</code>.
+                    <ul>
+                      <li>If <code>B == 1</code> (boat on left bank): <code>ACTIONS(s) = { Cross(m, c) : m &le; M, c &le; C, and RESULT is safe }</code>.</li>
+                      <li>If <code>B == 0</code> (boat on right bank): <code>ACTIONS(s) = { Return(m, c) : m &le; 3 - M, c &le; 3 - C, and RESULT is safe }</code>.</li>
+                    </ul>
+                  </dd>
+
+                  <dt>4. Transition Model</dt>
+                  <dd>
+                    <ul>
+                      <li>If <code>B == 1</code>: <code>RESULT((M, C, 1), Cross(m, c)) = (M - m, C - c, 0)</code>.</li>
+                      <li>If <code>B == 0</code>: <code>RESULT((M, C, 0), Return(m, c)) = (M + m, C + c, 1)</code>.</li>
+                    </ul>
+                  </dd>
+
+                  <dt>5. Goal Test</dt>
+                  <dd><code>IS-GOAL((M, C, B)) &equiv; (M == 0 &and; C == 0 &and; B == 0)</code> (everyone on right bank).</dd>
+
+                  <dt>6. Path Cost</dt>
+                  <dd>Unit cost <code>c = 1</code> per river crossing. (Optimal solution requires exactly 11 crossings).</dd>
+                </dl>
+
+              </div>
+            </details>
+          </div>
+
+          <!-- EXERCISE 7 -->
+          <div class="rp-exercise" id="ex7">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 7</span>
+              <h3 class="rp-exercise-title">Validating Abstractions &amp; the Real-World Gap</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>In AI problem formulation, abstraction removes irrelevant details. However, an <em>incorrect abstraction</em> can render a search problem either unsolvable or invalid in the real world.</p>
+              <p>(a) Explain the difference between an <strong>over-abstracted</strong> formulation and an <strong>under-abstracted</strong> formulation.<br>
+              (b) Suppose you formulate route finding for an Electric Vehicle (EV) by representing state solely as <code>s = In(City)</code> and actions as <code>Go(ConnectedCity)</code>. Identify why this abstraction fails for an EV, and write the corrected state formulation.</p>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+
+                <div class="rp-answer-part">
+                  <div class="rp-answer-part-label">(a) Over-Abstraction vs. Under-Abstraction</div>
+                  <ul>
+                    <li><strong>Under-Abstraction:</strong> Retaining too much physical detail (e.g., modeling tire pressure, seat temperature, millisecond wind gusts in route planning). Result: The state space explodes exponentially into infinite or computationally intractable sizes, causing search algorithms to exhaust memory and time.</li>
+                    <li><strong>Over-Abstraction:</strong> Discarding essential details required to ensure action validity in the physical world (e.g., omitting battery charge level for an electric vehicle, or omitting fuel constraints for an airplane). Result: The search algorithm finds an "optimal abstract solution" that physically fails or stalls halfway through execution in the real world.</li>
+                  </ul>
+                </div>
+
+                <div class="rp-answer-part">
+                  <div class="rp-answer-part-label">(b) Correcting the Electric Vehicle Route Formulation</div>
+                  <p><strong>Why the naive formulation fails:</strong> A standard gas vehicle can assume gas stations are plentiful and fill-up is rapid. An Electric Vehicle has limited battery capacity (e.g., 60 kWh), varying terrain energy consumption (uphill vs. downhill regenerative braking), and requires charging stations. If battery state is omitted from the state description, the agent may select a path between two cities with no charging stations that exceeds the vehicle's battery range, resulting in the car stranding.</p>
+
+                  <p><strong>Corrected Formal State Representation:</strong></p>
+                  <dl class="rp-spec">
+                    <dt>State</dt><dd><code>s = (City, BatteryLevel_kWh)</code></dd>
+                    <dt>Actions</dt><dd><code>{ Drive(City_next) : EnergyNeeded(City, City_next) &le; BatteryLevel }, { Charge(Target_kWh) : if City has charging station }</code></dd>
+                    <dt>Transition Model</dt><dd><code>RESULT((c, b), Drive(c&prime;)) = (c&prime;, b - EnergyNeeded(c, c&prime;) + Regen(c, c&prime;))</code></dd>
+                    <dt>Goal Test</dt><dd><code>City == Destination &and; BatteryLevel &ge; SafetyBuffer_kWh</code></dd>
+                    <dt>Path Cost</dt><dd>Weighted combination of travel time, charging time, and electricity cost ($).</dd>
+                  </dl>
+                </div>
+
+              </div>
+            </details>
+          </div>
+
+          <!-- EXERCISE 8 -->
+          <div class="rp-exercise" id="ex8">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 8</span>
+              <h3 class="rp-exercise-title">When Reflex Fails: Reflex vs. Problem-Solving Agent Limits</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>(a) Can a <strong>Simple Reflex Agent</strong> solve the Two-Room Vacuum World if its sensors can only perceive the status of the current room (Clean/Dirty) but <em>cannot</em> perceive which room it is in (A or B)? Prove your answer.</p>
+              <p>(b) How does a <strong>Model-Based Agent</strong> or a <strong>Problem-Solving Agent</strong> overcome this sensory limitation?</p>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+
+                <div class="rp-answer-part">
+                  <div class="rp-answer-part-label">(a) Failure of Simple Reflex in Partially Observable Worlds</div>
+                  <p><strong>Proof by Contradiction / Exhaustive Rule Enumeration:</strong></p>
+                  <p>If the agent only perceives <code>[Clean]</code> or <code>[Dirty]</code>, there are only 2 possible percepts. A deterministic simple reflex agent has only <code>3&#178; = 9</code> possible condition-action rule sets.</p>
+                  <ul>
+                    <li>When percept is <code>[Dirty]</code>, the rational reflex rule must be <code>Suck</code>.</li>
+                    <li>When percept is <code>[Clean]</code>, what action should the agent take?
+                      <ul>
+                        <li>If rule is <code>if Clean then Left</code>: When the agent cleans Room A, it perceives Clean and moves Left &rarr; bumps into the left wall &rarr; remains in Room A &rarr; perceives Clean &rarr; moves Left forever in an <strong>infinite loop</strong>. Room B is never cleaned!</li>
+                        <li>If rule is <code>if Clean then Right</code>: When the agent cleans Room B, it moves Right &rarr; bumps into the right wall &rarr; loops forever. Room A is never cleaned!</li>
+                        <li>If rule is <code>if Clean then Suck</code>: Agent does nothing and stays in the same room forever.</li>
+                      </ul>
+                    </li>
+                  </ul>
+                  <div class="formula-box">Conclusion: No deterministic simple reflex agent can achieve 100% rational behavior in a partially observable environment without internal state.</div>
+                </div>
+
+                <div class="rp-answer-part">
+                  <div class="rp-answer-part-label">(b) How Model-Based &amp; Problem-Solving Agents Solve It</div>
+                  <ul>
+                    <li><strong>Model-Based Reflex Agent:</strong> Maintains an internal state variable tracking its past actions. If it executed <code>Right</code> previously, it updates its internal state model to believe <code>Location = B</code>. Even if its raw sensor only says <code>Clean</code>, its internal state model knows it is in Room B and has already cleaned Room A, allowing it to halt or take appropriate actions.</li>
+                    <li><strong>Problem-Solving / Search Agent:</strong> Uses <strong>belief state search</strong> (searching in the power set of physical states &mdash; the set of all possible worlds the agent might be in). By planning a sequence of actions (e.g. <code>[Suck, Right, Suck]</code> or <code>[Suck, Left, Suck]</code>), the agent guarantees that regardless of which initial room it began in, all rooms will be cleaned upon sequence completion.</li>
+                  </ul>
+                </div>
+
+              </div>
+            </details>
+          </div>
+
+        </section>
+
+      </article>
+    </div>
+
+  </main>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+
+  <!-- Application JS -->
+  <script src="main.js?v=2"></script>
+</body>
+</html>
