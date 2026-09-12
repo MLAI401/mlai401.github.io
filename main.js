@@ -86,6 +86,10 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           window.searchDemo.resizeCanvas();
         }
+      } else if (targetId === 'view-adversarial') {
+        if (window.adversarialLab) {
+          window.adversarialLab.resizeCanvas();
+        }
       } else if (targetId === 'view-vaccum') {
         if (!window.vacuumDemo) {
           window.vacuumDemo = new VacuumDemoUI();
