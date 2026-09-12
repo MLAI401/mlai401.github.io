@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adversarial Search & Games - MLAI401 Foundational AI & ML</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="An illustrated lecture page on adversarial search and game playing: game terminology, minimax, alpha-beta pruning, heuristic evaluation, chance games, and Monte Carlo Tree Search (MCTS).">
+  <meta name="keywords" content="Adversarial Search, Game Theory, Minimax, Alpha-Beta Pruning, Evaluation Function, Cutoff, Expectiminimax, MCTS, UCB1, Zero-Sum, AIMA">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="MLAI401 - Adversarial Search & Games">
+  <meta property="og:description" content="Game Terminology, Minimax & Alpha-Beta, Heuristics & Resource Limits, Chance & MCTS, and Evaluating Game Search — one screen at a time.">
+  <meta property="og:type" content="website">
+
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sl-page adv-page">
+
+  <!-- Navigation Header -->
+  <header class="navbar" id="navbar-header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo" id="logo-link">
+        <span class="logo-icon">M</span>
+        MLAI401
+      </a>
+
+      <button class="menu-toggle" id="menu-toggle-btn" aria-label="Toggle Navigation Menu">
+        <i data-lucide="menu"></i>
+      </button>
+
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="index.html" class="nav-link" id="nav-home">Home</a></li>
+        <li><a href="curriculum.html" class="nav-link active" id="nav-curr">Curriculum</a></li>
+        <li><a href="playground.html" class="nav-link" id="nav-play">Playground</a></li>
+        <li><a href="index.html#resources" class="nav-link" id="nav-res">Resources</a></li>
+      </ul>
+
+      <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="nav-btn" id="nav-github-btn">
+        <i data-lucide="github"></i> GitHub Profile
+      </a>
+    </div>
+  </header>
+
+  <!-- Single-screen lecture shell: fixed height, no body scroll on desktop -->
+  <main class="sl-shell adv-shell">
+
+    <div class="sl-topbar">
+      <a href="curriculum.html" class="sl-breadcrumb"><i data-lucide="arrow-left"></i> Curriculum</a>
+      <div class="sl-title-block">
+        <span class="sl-topic-badge" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.25); color: #ef4444;"><i data-lucide="swords"></i> Topic 03</span>
+        <h1>Adversarial Search &amp; Games</h1>
+      </div>
+    </div>
+
+    <!-- Topic selector bar -->
+    <div class="sl-topic-bar-wrap">
+      <div class="sl-topic-tabs" id="adv-topic-tabs"></div>
+    </div>
+
+    <!-- Main two-column concept + illustration viewport -->
+    <div class="sl-main-grid" id="adv-main-grid">
+
+      <div class="sl-concept-col glass-panel" id="adv-concept-col">
+        <!-- Rendered by demos/adversarial_demo/ui.js -->
+      </div>
+
+      <div class="sl-graph-col glass-panel" id="adv-graph-col">
+        <!-- Rendered by demos/adversarial_demo/ui.js -->
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+
+  <!-- Page controller — renders topic tabs and illustrations -->
+  <script src="demos/adversarial_demo/ui.js?v=1"></script>
+
+  <!-- Application JS -->
+  <script src="main.js?v=2"></script>
+</body>
+</html>
