@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adversarial Search &amp; Games — Reading Notes - MLAI401 Foundational AI &amp; ML</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Textbook-style reading notes for Topic 03, Adversarial Search & Games: game terminology, minimax value propagation, alpha-beta pruning, heuristic evaluation, depth cutoffs, quiescence search, chance games, and Monte Carlo Tree Search (MCTS). Adapted from Artificial Intelligence: A Modern Approach.">
+  <meta name="keywords" content="Adversarial Search, Game Theory, Minimax, Alpha-Beta Pruning, Heuristic Evaluation, Quiescence Search, Horizon Effect, Expectiminimax, Monte Carlo Tree Search, MCTS, UCB1, Zero-Sum Games, AIMA">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="MLAI401 - Adversarial Search & Games: Reading Notes">
+  <meta property="og:description" content="A comprehensive, textbook-style companion to the Adversarial Search & Games lecture, covering game formulation, Minimax, Alpha-Beta pruning, evaluation functions, chance nodes, and MCTS.">
+  <meta property="og:type" content="article">
+
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navigation Header -->
+  <header class="navbar" id="navbar-header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo" id="logo-link">
+        <span class="logo-icon">M</span>
+        MLAI401
+      </a>
+
+      <button class="menu-toggle" id="menu-toggle-btn" aria-label="Toggle Navigation Menu">
+        <i data-lucide="menu"></i>
+      </button>
+
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="index.html" class="nav-link" id="nav-home">Home</a></li>
+        <li><a href="curriculum.html" class="nav-link active" id="nav-curr">Curriculum</a></li>
+        <li><a href="playground.html" class="nav-link" id="nav-play">Playground</a></li>
+        <li><a href="index.html#resources" class="nav-link" id="nav-res">Resources</a></li>
+      </ul>
+
+      <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="nav-btn" id="nav-github-btn">
+        <i data-lucide="github"></i> GitHub Profile
+      </a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Masthead -->
+    <section class="rp-masthead">
+      <div class="container rp-masthead-inner">
+        <a href="adversarial.html" class="sl-breadcrumb"><i data-lucide="arrow-left"></i> Adversarial Search &amp; Games</a>
+
+        <div class="rp-title-row">
+          <span class="sl-topic-badge" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.25); color: #ef4444;"><i data-lucide="book-open"></i> Topic 03 &middot; Reading</span>
+        </div>
+        <h1>Adversarial Search &amp; Games — Reading Notes</h1>
+
+        <p class="rp-lede">These notes mirror the conceptual progression of the interactive <a href="adversarial.html">Adversarial Search &amp; Games</a> lecture — from formal game definitions and zero-sum payoffs, to Minimax value propagation and Alpha-Beta pruning, to resource-limited heuristic evaluation, stochastic games with Expectiminimax, and simulation-based Monte Carlo Tree Search (MCTS). Where the interactive lecture provides live, responsive game trees and playable arenas, these notes formulate the underlying principles, mathematical theorems, algorithms, and analytical tradeoffs in rigorous textbook prose.</p>
+
+        <div class="rp-citation">
+          <i data-lucide="quote"></i>
+          <span>Materials and content adapted from <em>Artificial Intelligence: A Modern Approach</em> (AIMA), 4th edition, by Stuart Russell and Peter Norvig &mdash; specifically Chapter 5 (Adversarial Search and Games, pp. 146&ndash;179).</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOC + Article Layout -->
+    <div class="container rp-layout">
+
+      <aside class="rp-toc" id="rp-toc">
+        <div class="rp-toc-label">On This Page</div>
+        <nav aria-label="Table of contents">
+          <a class="rp-toc-h2" href="#terminology">1. Game Terminology &amp; Problem Formulation</a>
+          <a class="rp-toc-h3" href="#adversarial-env">1.1 Adversarial Environments</a>
+          <a class="rp-toc-h3" href="#formal-def">1.2 Formal Game Definition</a>
+          <a class="rp-toc-h3" href="#game-tree-plies">1.3 Game Trees &amp; Plies</a>
+          <a class="rp-toc-h3" href="#zero-sum">1.4 Zero-Sum vs. General-Sum</a>
+          <a class="rp-toc-h3" href="#perfect-info">1.5 Perfect vs. Imperfect Information</a>
+          <a class="rp-toc-h3" href="#deterministic-stochastic">1.6 Deterministic vs. Stochastic Games</a>
+
+          <a class="rp-toc-h2" href="#minimax-alphabeta">2. Minimax &amp; Alpha-Beta Pruning</a>
+          <a class="rp-toc-h3" href="#minimax-value">2.1 The Minimax Value</a>
+          <a class="rp-toc-h3" href="#minimax-algorithm">2.2 The Minimax Algorithm &amp; Value Trace</a>
+          <a class="rp-toc-h3" href="#alphabeta-bounds">2.3 Alpha (&alpha;) &amp; Beta (&beta;) Bounds</a>
+          <a class="rp-toc-h3" href="#alphabeta-pruning">2.4 Alpha-Beta Pruning Algorithm</a>
+          <a class="rp-toc-h3" href="#move-ordering">2.5 The Impact of Move Ordering</a>
+
+          <a class="rp-toc-h2" href="#heuristics-limits">3. Heuristic Evaluation &amp; Resource Limits</a>
+          <a class="rp-toc-h3" href="#depth-cutoffs">3.1 Depth Cutoffs &amp; Real-Time Limits</a>
+          <a class="rp-toc-h3" href="#eval-function">3.2 Evaluation Functions (EVAL)</a>
+          <a class="rp-toc-h3" href="#quiescence">3.3 Quiescence Search</a>
+          <a class="rp-toc-h3" href="#horizon-effect">3.4 The Horizon Effect</a>
+          <a class="rp-toc-h3" href="#transposition-tables">3.5 Transposition Tables &amp; Zobrist Hashing</a>
+
+          <a class="rp-toc-h2" href="#chance-mcts">4. Chance &amp; Monte Carlo Tree Search</a>
+          <a class="rp-toc-h3" href="#expectiminimax">4.1 Expectiminimax &amp; Chance Nodes</a>
+          <a class="rp-toc-h3" href="#utility-scale">4.2 Utility Scale &amp; Transformations</a>
+          <a class="rp-toc-h3" href="#mcts-overview">4.3 Monte Carlo Tree Search Overview</a>
+          <a class="rp-toc-h3" href="#mcts-phases">4.4 The 4-Phase MCTS Cycle</a>
+          <a class="rp-toc-h3" href="#asymmetric-growth">4.5 Asymmetric Tree Growth</a>
+
+          <a class="rp-toc-h2" href="#evaluating">5. Evaluating Game Search Algorithms</a>
+          <a class="rp-toc-h3" href="#eval-parameters">5.1 Game Complexity Parameters</a>
+          <a class="rp-toc-h3" href="#eval-complexity">5.2 Time &amp; Space Complexity</a>
+          <a class="rp-toc-h3" href="#eval-optimality">5.3 Completeness &amp; Optimality Guarantees</a>
+          <a class="rp-toc-h3" href="#eval-matrix">5.4 Search Strategy Comparison Matrix</a>
+
+          <a class="rp-toc-h2" href="#exercises">6. Practice Exercises</a>
+          <a class="rp-toc-h3" href="#ex1">6.1 Minimax Value Computation</a>
+          <a class="rp-toc-h3" href="#ex2">6.2 Alpha-Beta Pruning Trace</a>
+          <a class="rp-toc-h3" href="#ex3">6.3 Expectiminimax Decision</a>
+          <a class="rp-toc-h3" href="#ex4">6.4 MCTS UCB1 Calculation &amp; Selection</a>
+        </nav>
+      </aside>
+
+      <article class="rp-article">
+
+        <!-- ================= 1. TERMINOLOGY ================= -->
+        <section id="terminology">
+          <h2><span class="rp-num">1.</span>Game Terminology &amp; Problem Formulation</h2>
+
+          <p>In classical single-agent search (Topics 01 and 02), an agent plans a complete sequence of actions to reach a static goal in a predictable environment. The environment does not actively conspire against the agent, nor does it respond with counter-strategies. In an <strong>adversarial environment</strong>, however, two or more competitive agents with diametrically opposed goals make alternating decisions. The agent cannot simply find a single fixed path to victory; it must compute a <strong>contingency strategy</strong> specifying what move to make for every possible countermove the opponent could choose.</p>
+
+          <h3 id="adversarial-env"><span class="rp-num">1.1</span>Adversarial Environments</h3>
+          <p>An adversarial environment is a multi-agent setting where the goals of the agents are in direct conflict. In the classical two-player competitive setting, one player is conventionally named <strong>MAX</strong> (the agent seeking to maximize the terminal outcome) and the other is named <strong>MIN</strong> (the opponent seeking to minimize MAX's outcome, which is equivalent to maximizing their own outcome).</p>
+          <div class="formula-box">Multi-Agent Setting &middot; Zero-Sum Conflict: &sum;<sub>i</sub> U<sub>i</sub>(s) = 0 &middot; Payoff Vector: (U<sub>MAX</sub>, U<sub>MIN</sub>) = (+1, &minus;1)</div>
+          <p>The defining feature of adversarial search is the assumption of <strong>rationality</strong> on the part of the opponent: MAX assumes that MIN will always select the move that is worst for MAX. Planning under this assumption provides a worst-case theoretical guarantee.</p>
+
+          <h3 id="formal-def"><span class="rp-num">1.2</span>Formal Game Definition</h3>
+          <p>Following Russell &amp; Norvig (AIMA Chapter 5), a deterministic, two-player, turn-taking game is formally defined as a 6-tuple &lang;S<sub>0</sub>, PLAYER, ACTIONS, RESULT, TERMINAL-TEST, UTILITY&rang;:</p>
+          <dl class="rp-spec">
+            <dt>Initial State (S<sub>0</sub>)</dt>
+            <dd>Specifies the starting configuration of the board and identifies which player moves first (e.g., an empty 3&times;3 Tic-Tac-Toe grid with MAX to move).</dd>
+
+            <dt>PLAYER(s)</dt>
+            <dd>A function that returns which player (MAX or MIN) has the turn to move in state <code>s</code>.</dd>
+
+            <dt>ACTIONS(s)</dt>
+            <dd>Returns the set of legal moves available to the player whose turn it is in state <code>s</code>.</dd>
+
+            <dt>RESULT(s, a)</dt>
+            <dd>The transition model: returns the new state <code>s&prime;</code> resulting from taking legal action <code>a</code> in state <code>s</code>.</dd>
+
+            <dt>TERMINAL-TEST(s)</dt>
+            <dd>A boolean predicate returning <code>true</code> if the game has ended (by checkmate, three-in-a-row, stalemate, or exhaustion of moves) and <code>false</code> otherwise. States where <code>TERMINAL-TEST(s) = true</code> are called <strong>terminal states</strong>.</dd>
+
+            <dt>UTILITY(s, p)</dt>
+            <dd>A utility function (also called an objective function or payoff function) that assigns a definitive numeric score to player <code>p</code> when the game terminates in state <code>s</code>. In zero-sum games, utility is usually written from MAX's perspective: win = <code>+1</code> (or <code>+&infin;</code>), draw = <code>0</code>, loss = <code>&minus;1</code> (or <code>&minus;&infin;</code>).</dd>
+          </dl>
+
+          <p>Notice the direct correspondence to single-agent problem formulation (Topic 01):</p>
+          <ul>
+            <li><code>GOAL-TEST(s)</code> is replaced by <code>TERMINAL-TEST(s)</code> &mdash; search does not stop when MAX reaches a desired state, but only when the game officially terminates for both players.</li>
+            <li><code>PATH-COST(c)</code> is replaced by <code>UTILITY(s, p)</code> &mdash; step costs along intermediate moves are irrelevant in chess or tic-tac-toe; only the final terminal outcome matters.</li>
+          </ul>
+
+          <h3 id="game-tree-plies"><span class="rp-num">1.3</span>Game Trees &amp; Plies</h3>
+          <p>The state space of a game is structured as a <strong>game tree</strong>: a rooted tree where the root node represents <code>S<sub>0</sub></code>, directed edges represent legal moves produced by <code>ACTIONS(s)</code>, internal nodes represent intermediate game states labeled with the player to move (MAX or MIN), and leaves represent terminal states labeled with their numeric utility values.</p>
+          <p>Because games involve alternating turns, AI literature makes a strict distinction between a move and a ply:</p>
+          <ul>
+            <li>A <strong>ply</strong> (or half-move) represents one turn taken by a single player. In a game tree, each horizontal layer of edges corresponds to exactly 1 ply.</li>
+            <li>A <strong>full move</strong> consists of two plies: one move by MAX followed by one reply by MIN.</li>
+            <li>The <strong>branching factor</strong> <code>b</code> is the number of legal actions available at a given state. In chess, <code>b &approx; 35</code>; in Go, <code>b &approx; 250</code>.</li>
+            <li>The <strong>maximum depth</strong> <code>m</code> is the maximum number of plies in a game. In chess, <code>m &approx; 80</code> plies (40 full moves); in Go, <code>m &approx; 150</code> plies.</li>
+          </ul>
+
+          <h3 id="zero-sum"><span class="rp-num">1.4</span>Zero-Sum vs. General-Sum Games</h3>
+          <p>Games are classified by how the players' utility functions relate to one another:</p>
+          <ul>
+            <li><strong>Zero-Sum Games (Constant-Sum):</strong> The sum of all players' payoffs is constant across every possible terminal state. For two players, <code>U<sub>MAX</sub>(s) + U<sub>MIN</sub>(s) = 0 &rArr; U<sub>MIN</sub>(s) = &minus;U<sub>MAX</sub>(s)</code>. Pure competition: any gain for MAX is an equal, direct loss for MIN. There is no possibility of cooperation, mutual benefit, or compromise. Chess, Checkers, Go, and Tic-Tac-Toe are zero-sum games.</li>
+            <li><strong>General-Sum Games:</strong> Payoffs are independent vectors <code>(U<sub>1</sub>, U<sub>2</sub>)</code> where outcomes can be win-win (cooperative trade), lose-lose (nuclear war / mutual defect in Prisoner's Dilemma), or asymmetric. General-sum games require Nash equilibrium analysis rather than minimax search.</li>
+          </ul>
+
+          <h3 id="perfect-info"><span class="rp-num">1.5</span>Perfect vs. Imperfect Information</h3>
+          <p>Game environments differ fundamentally based on whether the state is fully observable:</p>
+          <ul>
+            <li><strong>Perfect Information:</strong> All players have full, unobstructed visibility of the entire game state at all times. There are no hidden variables, concealed cards, or private state. Chess, Checkers, Go, and Tic-Tac-Toe are perfect information games.</li>
+            <li><strong>Imperfect Information:</strong> Critical elements of the game state are concealed from players (e.g., facedown cards in Poker, hidden ship coordinates in Battleship, or fog-of-war in real-time strategy games). Players must reason over <strong>information sets</strong> &mdash; collections of possible states consistent with their current observations.</li>
+          </ul>
+
+          <h3 id="deterministic-stochastic"><span class="rp-num">1.6</span>Deterministic vs. Stochastic Games</h3>
+          <p>Games also differ based on how transitions are governed:</p>
+          <ul>
+            <li><strong>Deterministic Games:</strong> The execution of legal action <code>a</code> in state <code>s</code> deterministically produces state <code>s&prime; = RESULT(s, a)</code>. There is no randomness or luck.</li>
+            <li><strong>Stochastic Games:</strong> Actions involve elements of chance (dice rolls, card shuffling, tile draws). The transition model is probabilistic: <code>P(s&prime; | s, a)</code>. In game trees, this introduces <strong>chance nodes</strong> alongside MAX and MIN nodes. Backgammon, Monopoly, and Yahtzee are stochastic games.</li>
+          </ul>
+        </section>
+
+        <!-- ================= 2. MINIMAX & ALPHA-BETA ================= -->
+        <section id="minimax-alphabeta">
+          <h2><span class="rp-num">2.</span>Minimax &amp; Alpha-Beta Pruning</h2>
+
+          <p>When two rational players compete in a zero-sum, perfect-information, deterministic game, what constitutes an optimal move? The classic answer was formulated by John von Neumann in the Minimax Theorem (1928) and adapted to artificial intelligence search trees by Shannon (1950) and McCarthy (1956).</p>
+
+          <h3 id="minimax-value"><span class="rp-num">2.1</span>The Minimax Value</h3>
+          <p>The <strong>minimax value</strong> of a state <code>s</code>, written <code>MINIMAX(s)</code>, represents the best achievable utility for MAX from state <code>s</code>, under the fundamental assumption that both players play with perfect rationality from <code>s</code> until game termination.</p>
+          <div class="formula-box">
+            MINIMAX(s) =
+            <br>&bull; UTILITY(s) &emsp; if TERMINAL-TEST(s) is true
+            <br>&bull; max<sub>a &isin; ACTIONS(s)</sub> MINIMAX(RESULT(s, a)) &emsp; if PLAYER(s) = MAX
+            <br>&bull; min<sub>a &isin; ACTIONS(s)</sub> MINIMAX(RESULT(s, a)) &emsp; if PLAYER(s) = MIN
+          </div>
+          <p>The logic is symmetric: MAX chooses whichever legal move leads to the successor state with the <em>highest</em> minimax value; MIN chooses whichever legal move leads to the successor state with the <em>lowest</em> minimax value (which minimizes MAX's score and maximizes MIN's score).</p>
+
+          <h3 id="minimax-algorithm"><span class="rp-num">2.2</span>The Minimax Algorithm &amp; Value Trace</h3>
+          <p>The Minimax algorithm performs a complete depth-first search (DFS) traversal of the entire game tree. It recurses down to the terminal leaves, evaluates their true utility using <code>UTILITY(s, MAX)</code>, and then backs up (propagates) these values bottom-up through the tree:</p>
+
+          <div class="rp-pseudocode">
+            <div class="rp-pseudocode-title">The Minimax Algorithm (AIMA Figure 5.3)</div>
+            <pre>function MINIMAX-DECISION(state) returns an action
+    return argmax<sub>a &isin; ACTIONS(state)</sub> MIN-VALUE(RESULT(state, a))
+
+function MAX-VALUE(state) returns a utility value
+    if TERMINAL-TEST(state) then return UTILITY(state, MAX)
+    v &larr; &minus;&infin;
+    for each a in ACTIONS(state) do
+        v &larr; max(v, MIN-VALUE(RESULT(state, a)))
+    return v
+
+function MIN-VALUE(state) returns a utility value
+    if TERMINAL-TEST(state) then return UTILITY(state, MAX)
+    v &larr; +&infin;
+    for each a in ACTIONS(state) do
+        v &larr; min(v, MAX-VALUE(RESULT(state, a)))
+    return v</pre>
+          </div>
+
+          <p>Consider the classic AIMA Figure 5.2 two-ply game tree: Root A (MAX) has children B, C, D (all MIN nodes). Node B has leaves with utilities (3, 12, 8); Node C has leaves (2, 4, 6); Node D has leaves (14, 5, 2).</p>
+          <ul>
+            <li><code>MIN-VALUE(B) = min(3, 12, 8) = 3</code></li>
+            <li><code>MIN-VALUE(C) = min(2, 4, 6) = 2</code></li>
+            <li><code>MIN-VALUE(D) = min(14, 5, 2) = 2</code></li>
+            <li><code>MAX-VALUE(A) = max(3, 2, 2) = 3</code>, achieved by selecting action <code>a = Move(B)</code>.</li>
+          </ul>
+          <p>Even though Node D has a leaf with utility +14, MAX cannot reach it because MIN, acting rationally, would choose the reply yielding 2. The minimax decision at the root correctly selects branch B to guarantee a utility of at least 3.</p>
+
+          <dl class="rp-spec">
+            <dt>Time Complexity</dt>
+            <dd><code>O(b<sup>m</sup>)</code> &mdash; Minimax must visit every node in the game tree.</dd>
+            <dt>Space Complexity</dt>
+            <dd><code>O(bm)</code> &mdash; depth-first recursion stack storing active sibling nodes down to depth <code>m</code>.</dd>
+            <dt>Completeness</dt>
+            <dd>Yes, if the tree is finite.</dd>
+            <dt>Optimality</dt>
+            <dd>Yes, against an optimal opponent. Against a suboptimal opponent who makes mistakes, Minimax guarantees at least the minimax payoff, but does not take speculative risks to exploit blunders.</dd>
+          </dl>
+
+          <h3 id="alphabeta-bounds"><span class="rp-num">2.3</span>Alpha (&alpha;) &amp; Beta (&beta;) Bounds</h3>
+          <p>The exponential time complexity <code>O(b<sup>m</sup>)</code> renders exhaustive minimax search completely impractical for nontrivial games (e.g., chess has &approx; 10<sup>40</sup> nodes even at depth 10). However, it is possible to compute the <em>exact same minimax value</em> without evaluating every node in the tree.</p>
+          <p><strong>Alpha-Beta Pruning</strong> maintains two scalar bounds along the search path from the root to the current node:</p>
+          <ul>
+            <li><strong>&alpha; (Alpha):</strong> The value of the best (highest-value) choice found so far at any choice point along the path for MAX. Initialized to <code>&alpha; = &minus;&infin;</code> at the root.</li>
+            <li><strong>&beta; (Beta):</strong> The value of the best (lowest-value) choice found so far at any choice point along the path for MIN. Initialized to <code>&beta; = +&infin;</code> at the root.</li>
+          </ul>
+          <p>The interval <code>[&alpha;, &beta;]</code> represents the <strong>search window</strong> &mdash; the range of viable game values. If at any point the algorithm discovers that a child node's value falls outside this window, the remaining sibling branches cannot possibly affect the root's decision and can be pruned immediately.</p>
+
+          <h3 id="alphabeta-pruning"><span class="rp-num">2.4</span>Alpha-Beta Pruning Algorithm</h3>
+          <p>Pruning occurs whenever <code>&alpha; &ge; &beta;</code>:</p>
+          <ul>
+            <li><strong>At a MAX node:</strong> MAX seeks values greater than &alpha;. If MAX evaluates a child with value <code>v &ge; &beta;</code>, MAX immediately returns <code>v</code> without evaluating remaining children. <em>Reason:</em> MIN above this node already has a guaranteed option of value &beta;; MIN will never allow play to reach a state that awards MAX <code>v &ge; &beta;</code>.</li>
+            <li><strong>At a MIN node:</strong> MIN seeks values less than &beta;. If MIN evaluates a child with value <code>v &le; &alpha;</code>, MIN immediately returns <code>v</code> without evaluating remaining children. <em>Reason:</em> MAX above this node already has a guaranteed option of value &alpha;; MAX will never choose the branch that enters this MIN node.</li>
+          </ul>
+
+          <div class="rp-pseudocode">
+            <div class="rp-pseudocode-title">Alpha-Beta Search Algorithm (AIMA Figure 5.7)</div>
+            <pre>function ALPHA-BETA-SEARCH(state) returns an action
+    v &larr; MAX-VALUE(state, &minus;&infin;, +&infin;)
+    return the action in ACTIONS(state) with outcome value v
+
+function MAX-VALUE(state, &alpha;, &beta;) returns a utility value
+    if TERMINAL-TEST(state) then return UTILITY(state, MAX)
+    v &larr; &minus;&infin;
+    for each a in ACTIONS(state) do
+        v &larr; max(v, MIN-VALUE(RESULT(state, a), &alpha;, &beta;))
+        if v &ge; &beta; then return v   <span style="color: var(--danger);">// &beta;-cutoff (prune remaining MIN branches)</span>
+        &alpha; &larr; max(&alpha;, v)
+    return v
+
+function MIN-VALUE(state, &alpha;, &beta;) returns a utility value
+    if TERMINAL-TEST(state) then return UTILITY(state, MAX)
+    v &larr; +&infin;
+    for each a in ACTIONS(state) do
+        v &larr; min(v, MAX-VALUE(RESULT(state, a), &alpha;, &beta;))
+        if v &le; &alpha; then return v   <span style="color: var(--danger);">// &alpha;-cutoff (prune remaining MAX branches)</span>
+        &beta; &larr; min(&beta;, v)
+    return v</pre>
+          </div>
+
+          <div class="formula-box">Cutoff Condition: &alpha; &ge; &beta; &middot; At MAX: v &ge; &beta; &rArr; Return v &middot; At MIN: v &le; &alpha; &rArr; Return v</div>
+
+          <h3 id="move-ordering"><span class="rp-num">2.5</span>The Impact of Move Ordering</h3>
+          <p>Alpha-Beta pruning never changes the final returned move or minimax value &mdash; it is mathematically exact. However, the <em>number of nodes examined</em> depends entirely on the order in which child moves are evaluated:</p>
+          <ul>
+            <li><strong>Worst-Case Ordering:</strong> If children are ordered from worst to best, no pruning occurs at all. The algorithm visits all <code>O(b<sup>m</sup>)</code> nodes, identical to standard Minimax.</li>
+            <li><strong>Random Ordering:</strong> With random move ordering, Alpha-Beta evaluates approximately <code>O(b<sup>3m/4</sup>)</code> nodes.</li>
+            <li><strong>Optimal Move Ordering:</strong> If the best move is always examined first, Alpha-Beta evaluates only <code>O(b<sup>m/2</sup>) = O((\sqrt{b})<sup>m</sup>)</code> nodes.</li>
+          </ul>
+
+          <p>This is a profound result: with optimal move ordering, the effective branching factor drops from <code>b</code> to <code>&radic;b</code>. In chess (<code>b &approx; 35</code>), the effective branching factor drops to <code>&radic;35 &approx; 6</code>. This means <strong>Alpha-Beta can search twice as deep as Minimax in the same amount of computation time</strong>.</p>
+          <p>Practical game engines employ domain-independent heuristics to achieve near-optimal move ordering:</p>
+          <ul>
+            <li><strong>Principal Variation / Iterative Deepening:</strong> Use the best move discovered in the previous shallow iteration (depth <code>d&minus;1</code>) as the first move examined at depth <code>d</code>.</li>
+            <li><strong>Killer Moves:</strong> Moves that caused a &beta;-cutoff in a sibling position at the same depth are tried early.</li>
+            <li><strong>Captures &amp; Tactical Moves (MVV-LVA):</strong> Most Valuable Victim &ndash; Least Valuable Attacker (e.g., Pawn taking Queen is evaluated before Queen taking Pawn).</li>
+            <li><strong>History Heuristic:</strong> Maintain a table counting how often each action caused a cutoff across all search positions.</li>
+          </ul>
+        </section>
+
+        <!-- ================= 3. HEURISTICS & LIMITS ================= -->
+        <section id="heuristics-limits">
+          <h2><span class="rp-num">3.</span>Heuristic Evaluation &amp; Resource Limits</h2>
+
+          <p>Even with Alpha-Beta pruning, searching to the true terminal leaves of games like Chess (10<sup>40</sup> nodes) or Go (10<sup>360</sup> states) is computationally impossible. Real-time game engines must make a decision within seconds or minutes. In 1950, Claude Shannon proposed replacing the exhaustive search with a <strong>heuristic depth cutoff</strong>.</p>
+
+          <h3 id="depth-cutoffs"><span class="rp-num">3.1</span>Depth Cutoffs &amp; Real-Time Limits</h3>
+          <p>A resource-limited game search replaces the exact <code>TERMINAL-TEST(state)</code> with a <code>CUTOFF-TEST(state, depth)</code>:</p>
+          <div class="formula-box">CUTOFF-TEST(s, depth) = true &emsp; if depth &ge; d &ensp;&or;&ensp; TERMINAL-TEST(s) is true &ensp;&or;&ensp; TimeExhausted()</div>
+          <p>When <code>CUTOFF-TEST</code> evaluates to true on a non-terminal state at depth <code>d</code> (the <strong>search horizon</strong>), the search does not continue downward. Instead, it calls a heuristic <strong>evaluation function</strong> <code>EVAL(s)</code> that estimates the expected utility of state <code>s</code>.</p>
+
+          <h3 id="eval-function"><span class="rp-num">3.2</span>Evaluation Functions (EVAL)</h3>
+          <p>An evaluation function <code>EVAL(s)</code> maps a non-terminal board configuration to a real number estimating the winning chances of MAX. A valid evaluation function must satisfy three fundamental properties:</p>
+          <ol>
+            <li><strong>Agreement with Terminal Utilities:</strong> <code>EVAL(s)</code> must order terminal states identically to <code>UTILITY(s)</code> (e.g., a checkmate win must score higher than any non-terminal advantage).</li>
+            <li><strong>Fast Computation:</strong> <code>EVAL(s)</code> is called millions of times per second; computing it must be computationally lightweight.</li>
+            <li><strong>Strong Correlation with True Winning Chances:</strong> For non-terminal states, higher values must reliably correspond to higher probabilities of winning.</li>
+          </ol>
+
+          <p>Evaluation functions are traditionally formulated as a <strong>weighted linear combination of board features</strong>:</p>
+          <div class="formula-box">EVAL(s) = w<sub>1</sub> f<sub>1</sub>(s) + w<sub>2</sub> f<sub>2</sub>(s) + &hellip; + w<sub>n</sub> f<sub>n</sub>(s) = &sum;<sub>i=1</sub><sup>n</sup> w<sub>i</sub> f<sub>i</sub>(s)</div>
+
+          <p>In chess, classic features <code>f<sub>i</sub>(s)</code> include:</p>
+          <ul>
+            <li><strong>Material Balance:</strong> <code>f<sub>1</sub> = (Q<sub>MAX</sub> &minus; Q<sub>MIN</sub>)</code>, with standard piece weights <code>w<sub>Pawn</sub> = 1</code>, <code>w<sub>Knight</sub> = 3</code>, <code>w<sub>Bishop</sub> = 3.25</code>, <code>w<sub>Rook</sub> = 5</code>, <code>w<sub>Queen</sub> = 9</code>.</li>
+            <li><strong>Piece-Square Tables:</strong> Positional bonuses rewarding Knights in the center and Pawns on advanced squares.</li>
+            <li><strong>Mobility:</strong> Number of legal moves available (restricting opponent mobility is advantageous).</li>
+            <li><strong>King Safety:</strong> Castling status, pawn shield integrity, and enemy open attacking files.</li>
+            <li><strong>Pawn Structure:</strong> Penalties for isolated, doubled, or backward pawns; bonuses for passed pawns.</li>
+          </ul>
+
+          <h3 id="quiescence"><span class="rp-num">3.3</span>Quiescence Search</h3>
+          <p>Evaluating an arbitrary board state strictly when <code>depth = d</code> causes disastrous blunders if the position is in the middle of an unresolved tactical trade. For example, if MAX captures MIN's Queen on ply <code>d</code>, a raw cutoff evaluates MAX as having a massive +9 material advantage &mdash; completely unaware that MIN recaptures MAX's Queen on ply <code>d+1</code>.</p>
+          <p>Positions with active captures, checks, or threats are called <strong>turbulent (non-quiescent)</strong>. A robust engine applies <strong>Quiescence Search</strong>:</p>
+          <ul>
+            <li>At depth <code>d</code>, test <code>QUIESCENT(s)</code>. If the state is quiet (no pending captures or forced tactical moves), return <code>EVAL(s)</code>.</li>
+            <li>If the state is non-quiescent, extend search deeper along capture and check moves only, until tactical equilibrium is restored.</li>
+          </ul>
+
+          <h3 id="horizon-effect"><span class="rp-num">3.4</span>The Horizon Effect</h3>
+          <p>The <strong>horizon effect</strong> occurs when an inevitable, damaging move by the opponent is delayed beyond the search horizon <code>d</code> by playing useless stalling moves or sacrificial checks.</p>
+          <p><em>Example:</em> MAX's Bishop is trapped and unavoidably lost. But MAX has several meaningless checks with other pieces. By playing check on move 1, check on move 2, etc., MAX pushes the capture of the Bishop past depth <code>d</code>. At the search horizon, the Bishop appears safe, but MAX has ruined its position by sacrificing pawns and pieces purely to postpone the inevitable.</p>
+
+          <h3 id="transposition-tables"><span class="rp-num">3.5</span>Transposition Tables &amp; Zobrist Hashing</h3>
+          <p>Game state spaces are directed acyclic graphs (DAGs), not trees. Different move orders (e.g., <code>1. e4 e5 2. Nf3</code> vs. <code>1. Nf3 e5 2. e4</code>) reach the exact same board configuration &mdash; called a <strong>transposition</strong>.</p>
+          <p>A <strong>Transposition Table</strong> is a high-speed hash table caching previously evaluated states:</p>
+          <div class="formula-box">Key(s) = ZobristHash(s) &ensp;&rarr;&ensp; &lang;depth, value, flag (&alpha;-bound, &beta;-bound, exact), best_move&rang;</div>
+          <ul>
+            <li><strong>Zobrist Hashing:</strong> Each board square and piece type is assigned an independent 64-bit random number. The hash of a board position is computed in <code>O(1)</code> time via XOR operations on piece moves: <code>hash&prime; = hash &oplus; table[piece, from] &oplus; table[piece, to]</code>.</li>
+            <li><strong>Cache Hits:</strong> If a state is encountered at equal or greater depth, its stored value and bounds are returned immediately, eliminating entire subtrees of redundant search.</li>
+          </ul>
+        </section>
+
+        <!-- ================= 4. CHANCE & MCTS ================= -->
+        <section id="chance-mcts">
+          <h2><span class="rp-num">4.</span>Chance &amp; Monte Carlo Tree Search</h2>
+
+          <p>Classical Minimax assumes deterministic outcomes. Many real-world games incorporate random chance (Backgammon, Monopoly, Pig, Poker). Furthermore, games with massive branching factors like Go (<code>b &approx; 250</code>) defied heuristic evaluation functions for decades until the invention of <strong>Monte Carlo Tree Search (MCTS)</strong>.</p>
+
+          <h3 id="expectiminimax"><span class="rp-num">4.1</span>Expectiminimax &amp; Chance Nodes</h3>
+          <p>To model games with dice rolls, card shuffling, or coin flips, the game tree introduces <strong>chance nodes</strong> (traditionally drawn as circles &bigcirc;) alongside MAX nodes (&triangle;) and MIN nodes (&Del;).</p>
+          <div class="formula-box">
+            EXPECTIMINIMAX(s) =
+            <br>&bull; UTILITY(s) &emsp; if TERMINAL-TEST(s) is true
+            <br>&bull; max<sub>a &isin; ACTIONS(s)</sub> EXPECTIMINIMAX(RESULT(s, a)) &emsp; if PLAYER(s) = MAX
+            <br>&bull; min<sub>a &isin; ACTIONS(s)</sub> EXPECTIMINIMAX(RESULT(s, a)) &emsp; if PLAYER(s) = MIN
+            <br>&bull; &sum;<sub>s&prime;</sub> P(s&prime; | s) &middot; EXPECTIMINIMAX(s&prime;) &emsp; if PLAYER(s) = CHANCE
+          </div>
+          <p>While MAX and MIN nodes compute extreme values (<code>max</code> and <code>min</code>), chance nodes compute the <strong>mathematical expectation</strong> (weighted average) over all possible random outcomes weighted by their transition probabilities <code>P(s&prime; | s)</code>.</p>
+          <p><em>Complexity:</em> If there are <code>n</code> distinct chance outcomes per chance node, the time complexity scales to <code>O(b<sup>m</sup> &middot; n<sup>m</sup>) = O((bn)<sup>m</sup>)</code>. Standard Alpha-Beta pruning cannot easily prune chance nodes without strict mathematical bounds on leaf utilities.</p>
+
+          <h3 id="utility-scale"><span class="rp-num">4.2</span>Utility Scale &amp; Transformations</h3>
+          <p>In deterministic Minimax, any <strong>monotonic (order-preserving) transformation</strong> <code>f(u)</code> where <code>u<sub>1</sub> &gt; u<sub>2</sub> &rArr; f(u<sub>1</sub>) &gt; f(u<sub>2</sub>)</code> produces the exact same moves, because <code>max(f(x), f(y)) = f(max(x, y))</code>.</p>
+          <p>In Expectiminimax, however, this property breaks down! Expected values are sensitive to nonlinear scaling:</p>
+          <div class="formula-box">Positive Linear Transforms Allowed: U&prime;(s) = a U(s) + b &emsp; (a &gt; 0)
+          <br>Nonlinear Transforms NOT Allowed: E[f(X)] &ne; f(E[X])</div>
+          <p><em>Example:</em> Consider two chance actions. Action A gives 1.0 with certainty (Expected = 1.0). Action B gives 0 with probability 0.5 and 3.0 with probability 0.5 (Expected = 1.5). Under original utilities, Action B is preferred (<code>1.5 &gt; 1.0</code>). If we apply monotonic transform <code>f(u) = &radic;u</code>, Action A yields <code>&radic;1 = 1.0</code>, while Action B yields <code>0.5(0) + 0.5(&radic;3) &approx; 0.866</code>. The preference flips to Action A! Utilities in stochastic games must be genuine cardinal values, not arbitrary ordinal rankings.</p>
+
+          <h3 id="mcts-overview"><span class="rp-num">4.3</span>Monte Carlo Tree Search Overview</h3>
+          <p>In games like Go, chess evaluation functions fail because subtle stone liberties and territory boundaries cannot be captured by linear feature sums. <strong>Monte Carlo Tree Search (MCTS)</strong>, developed by Coulom (2006) and Kocsis &amp; Szepesv&aacute;ri (2006), solves this without requiring any evaluation function.</p>
+          <p>Instead of computing static heuristics, MCTS evaluates a board position by playing out thousands of fast, random simulated games (<strong>rollouts</strong>) to the very end and recording the win/loss frequency.</p>
+
+          <h3 id="mcts-phases"><span class="rp-num">4.4</span>The 4-Phase MCTS Cycle</h3>
+          <p>MCTS builds a search tree incrementally through four iterative steps:</p>
+
+          <figure class="rp-ex-figure">
+            <svg class="rp-ex-graph-svg" viewBox="0 0 680 160" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <marker id="mcts-arrow" viewBox="0 0 10 10" refX="22" refY="5" markerUnits="userSpaceOnUse" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                  <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#6366f1"></path>
+                </marker>
+              </defs>
+              <!-- 4 Step Boxes -->
+              <g transform="translate(10, 20)">
+                <rect width="145" height="110" rx="8" fill="rgba(79, 70, 229, 0.08)" stroke="#6366f1" stroke-width="1.5"></rect>
+                <text x="72" y="32" text-anchor="middle" font-weight="700" fill="#4f46e5" font-size="14">1. Selection</text>
+                <text x="72" y="58" text-anchor="middle" fill="#475569" font-size="11">Traverse tree</text>
+                <text x="72" y="76" text-anchor="middle" fill="#475569" font-size="11">from root using</text>
+                <text x="72" y="94" text-anchor="middle" font-weight="600" fill="#0f172a" font-size="12">UCB1 formula</text>
+              </g>
+              <line x1="160" y1="75" x2="180" y2="75" stroke="#6366f1" stroke-width="2" marker-end="url(#mcts-arrow)"></line>
+
+              <g transform="translate(185, 20)">
+                <rect width="145" height="110" rx="8" fill="rgba(16, 185, 129, 0.08)" stroke="#10b981" stroke-width="1.5"></rect>
+                <text x="72" y="32" text-anchor="middle" font-weight="700" fill="#059669" font-size="14">2. Expansion</text>
+                <text x="72" y="58" text-anchor="middle" fill="#475569" font-size="11">Create one or</text>
+                <text x="72" y="76" text-anchor="middle" fill="#475569" font-size="11">more child nodes</text>
+                <text x="72" y="94" text-anchor="middle" font-weight="600" fill="#0f172a" font-size="12">for legal actions</text>
+              </g>
+              <line x1="335" y1="75" x2="355" y2="75" stroke="#6366f1" stroke-width="2" marker-end="url(#mcts-arrow)"></line>
+
+              <g transform="translate(360, 20)">
+                <rect width="145" height="110" rx="8" fill="rgba(245, 158, 11, 0.08)" stroke="#f59e0b" stroke-width="1.5"></rect>
+                <text x="72" y="32" text-anchor="middle" font-weight="700" fill="#d97706" font-size="14">3. Simulation</text>
+                <text x="72" y="58" text-anchor="middle" fill="#475569" font-size="11">Run fast rollout</text>
+                <text x="72" y="76" text-anchor="middle" fill="#475569" font-size="11">to terminal state</text>
+                <text x="72" y="94" text-anchor="middle" font-weight="600" fill="#0f172a" font-size="12">Default policy</text>
+              </g>
+              <line x1="510" y1="75" x2="530" y2="75" stroke="#6366f1" stroke-width="2" marker-end="url(#mcts-arrow)"></line>
+
+              <g transform="translate(535, 20)">
+                <rect width="135" height="110" rx="8" fill="rgba(139, 92, 246, 0.08)" stroke="#8b5cf6" stroke-width="1.5"></rect>
+                <text x="67" y="32" text-anchor="middle" font-weight="700" fill="#7c3aed" font-size="14">4. Backprop</text>
+                <text x="67" y="58" text-anchor="middle" fill="#475569" font-size="11">Update stats up</text>
+                <text x="67" y="76" text-anchor="middle" fill="#475569" font-size="11">to root node:</text>
+                <text x="67" y="94" text-anchor="middle" font-weight="600" fill="#0f172a" font-size="12">N += 1, U += v</text>
+              </g>
+            </svg>
+            <figcaption>The 4-phase iterative cycle of Monte Carlo Tree Search (MCTS).</figcaption>
+          </figure>
+
+          <h4>Phase 1: Selection &amp; UCB1</h4>
+          <p>Starting at the root, the algorithm traverses the existing search tree by selecting child nodes that maximize the <strong>Upper Confidence Bound for Trees (UCB1)</strong> formula:</p>
+          <div class="formula-box">
+            UCB1(n) = &frac;{U(n)}{N(n)} + C &middot; &radic;(&frac;{ln N(parent)}{N(n)}) = &text;{Exploitation Term} + &text;{Exploration Term}
+          </div>
+          <ul>
+            <li><strong>Exploitation Term (<code>U(n)/N(n)</code>):</strong> The average win rate / utility of node <code>n</code>. Encourages choosing moves that have proven successful.</li>
+            <li><strong>Exploration Term (<code>C &middot; &radic;(ln N<sub>parent</sub> / N<sub>n</sub>)</code>):</strong> Gives a statistical bonus to moves with low visit counts <code>N(n)</code>. As parent visits grow, rarely explored branches become increasingly attractive.</li>
+            <li><strong>Exploration Constant (<code>C</code>):</strong> Balances exploration vs. exploitation. Theoretically <code>C = &radic;2 &approx; 1.414</code> for rewards in <code>[0, 1]</code>.</li>
+          </ul>
+
+          <h4>Phase 2: Expansion</h4>
+          <p>When the selection step reaches a node that has unvisited legal actions (or a leaf node that is non-terminal), one or more new child nodes are added to the search tree.</p>
+
+          <h4>Phase 3: Simulation (Rollout)</h4>
+          <p>From the newly added node, a simulation is played out to the end of the game using a fast <strong>rollout policy</strong> (e.g., choosing legal actions uniformly at random, or with lightweight heuristic preferences). No tree nodes are stored during simulation &mdash; it executes rapidly to produce a single terminal payoff <code>v &isin; {+1, 0, &minus;1}</code>.</p>
+
+          <h4>Phase 4: Backpropagation &amp; Final Decision</h4>
+          <p>The outcome <code>v</code> is propagated back up the search path from the newly expanded node to the root. For every ancestor node <code>n</code> along the path:</p>
+          <div class="formula-box">N(n) &larr; N(n) + 1 &emsp;&middot;&emsp; U(n) &larr; U(n) + v(player)</div>
+          <p><strong>Move Selection at the Root:</strong> After thousands of MCTS iterations (when time expires), the agent chooses the action corresponding to the <strong>most-visited child node</strong> (<code>argmax<sub>a</sub> N(child<sub>a</sub>)</code>), <em>not</em> the child with the highest single win rate. Visit count is far more stable and resistant to statistical variance.</p>
+
+          <h3 id="asymmetric-growth"><span class="rp-num">4.5</span>Asymmetric Tree Growth</h3>
+          <p>Traditional Minimax builds a uniform, symmetric search tree exploring every branch to depth <code>d</code>. In contrast, MCTS exhibits <strong>asymmetric tree growth</strong>: the UCB1 formula naturally directs computation down heavily contested, high-promise variations (growing trees to depth 50+ along critical lines) while abandoning poor moves after just 2 or 3 simulations.</p>
+        </section>
+
+        <!-- ================= 5. EVALUATING ================= -->
+        <section id="evaluating">
+          <h2><span class="rp-num">5.</span>Evaluating Game Search Algorithms</h2>
+
+          <p>This section synthesizes the theoretical properties, computational bounds, and real-world applicability of all game search strategies.</p>
+
+          <h3 id="eval-parameters"><span class="rp-num">5.1</span>Game Complexity Parameters</h3>
+          <p>The complexity of game search algorithms is parameterized by four core quantities:</p>
+          <ul>
+            <li><code>b</code>: Branching factor (number of legal actions per state).</li>
+            <li><code>m</code>: Maximum depth of the game tree (number of plies to terminal states).</li>
+            <li><code>d</code>: Search cutoff depth (the search horizon).</li>
+            <li><code>N</code>: Total number of MCTS simulation rollouts.</li>
+            <li><code>n</code>: Number of distinct random outcomes per chance node in stochastic games.</li>
+          </ul>
+
+          <h3 id="eval-complexity"><span class="rp-num">5.2</span>Time &amp; Space Complexity</h3>
+          <p>Because Minimax and Alpha-Beta are depth-first search algorithms, their space complexity is strictly linear in depth: <code>O(bm)</code> or <code>O(bd)</code>. They only need to hold the active search path and unexplored siblings in memory.</p>
+          <p>MCTS, however, stores every expanded node in memory. Its space complexity is proportional to the tree size: <code>O(N)</code> for <code>N</code> iterations.</p>
+
+          <h3 id="eval-optimality"><span class="rp-num">5.3</span>Completeness &amp; Optimality Guarantees</h3>
+          <ul>
+            <li><strong>Minimax &amp; Alpha-Beta:</strong> Guaranteed complete on finite trees and optimal against an optimal opponent. Against a fallible opponent who makes mistakes, Minimax guarantees the game-theoretic value, but does not actively set traps or exploit blunders.</li>
+            <li><strong>Expectiminimax:</strong> Optimal in the sense of maximizing expected utility against a rational opponent in stochastic settings.</li>
+            <li><strong>MCTS:</strong> As the number of rollouts <code>N &rarr; &infin;</code>, UCB1 guarantees that the probability of choosing a suboptimal move converges to zero &mdash; MCTS converges asymptotically to the true Minimax value.</li>
+          </ul>
+
+          <h3 id="eval-matrix"><span class="rp-num">5.4</span>Search Strategy Comparison Matrix</h3>
+
+          <div class="rp-table-wrap">
+            <table class="rp-table">
+              <thead>
+                <tr>
+                  <th>Algorithm</th>
+                  <th>Time Complexity</th>
+                  <th>Space Complexity</th>
+                  <th>Evaluation Requirement</th>
+                  <th>Opponent Model</th>
+                  <th>Dominant Domain</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Standard Minimax</strong></td>
+                  <td><code>O(b<sup>m</sup>)</code></td>
+                  <td><code>O(bm)</code></td>
+                  <td>Exact terminal utilities</td>
+                  <td>Worst-case rational MAX/MIN</td>
+                  <td>Small games (Tic-Tac-Toe, Nim)</td>
+                </tr>
+                <tr>
+                  <td><strong>Alpha-Beta Pruning (Optimal)</strong></td>
+                  <td><code>O(b<sup>m/2</sup>)</code></td>
+                  <td><code>O(bm)</code></td>
+                  <td>Exact terminal utilities</td>
+                  <td>Worst-case rational MAX/MIN</td>
+                  <td>Connect-4, Checkers endgames</td>
+                </tr>
+                <tr>
+                  <td><strong>Alpha-Beta (Cutoff + EVAL)</strong></td>
+                  <td><code>O(b<sup>d</sup>)</code></td>
+                  <td><code>O(bd)</code></td>
+                  <td>Heuristic linear sum <code>EVAL(s)</code></td>
+                  <td>Worst-case bounded by horizon</td>
+                  <td>Chess, Checkers, Othello engines</td>
+                </tr>
+                <tr>
+                  <td><strong>Expectiminimax</strong></td>
+                  <td><code>O((bn)<sup>m</sup>)</code></td>
+                  <td><code>O(bm)</code></td>
+                  <td>Expected utility &middot; cardinal scale</td>
+                  <td>Rational players + chance nodes</td>
+                  <td>Backgammon, Monopoly, Pig</td>
+                </tr>
+                <tr>
+                  <td><strong>MCTS (UCB1)</strong></td>
+                  <td><code>O(N &middot; length)</code></td>
+                  <td><code>O(N)</code> (tree storage)</td>
+                  <td>None (estimates via simulation rollouts)</td>
+                  <td>Adaptive / statistical convergence</td>
+                  <td>Go, Shogi, Hex, General Game Playing</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================= 6. EXERCISES ================= -->
+        <section id="exercises">
+          <h2><span class="rp-num">6.</span>Practice Exercises</h2>
+          <p>These four worked exercises test your mastery of minimax propagation, alpha-beta pruning derivation, expectiminimax decision making, and MCTS UCB1 calculations.</p>
+
+          <!-- Exercise 1 -->
+          <div class="rp-exercise" id="ex1">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 1</span>
+              <h3 class="rp-exercise-title">Minimax Value Computation &amp; Propagation</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Consider the 3-ply zero-sum game tree shown below where leaf utilities for MAX are given at the terminal layer. Calculate the backed-up minimax values for all internal nodes (<code>D, E, F, G, B, C, A</code>) and state the optimal opening action for MAX at the root.</p>
+
+              <figure class="rp-ex-figure">
+                <svg class="rp-ex-graph-svg" viewBox="0 0 540 220" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Edges -->
+                  <line x1="270" y1="30" x2="150" y2="85" class="rp-ex-edge"></line>
+                  <line x1="270" y1="30" x2="390" y2="85" class="rp-ex-edge"></line>
+
+                  <line x1="150" y1="85" x2="90" y2="140" class="rp-ex-edge"></line>
+                  <line x1="150" y1="85" x2="210" y2="140" class="rp-ex-edge"></line>
+                  <line x1="390" y1="85" x2="330" y2="140" class="rp-ex-edge"></line>
+                  <line x1="390" y1="85" x2="450" y2="140" class="rp-ex-edge"></line>
+
+                  <line x1="90" y1="140" x2="60" y2="190" class="rp-ex-edge"></line>
+                  <line x1="90" y1="140" x2="120" y2="190" class="rp-ex-edge"></line>
+                  <line x1="210" y1="140" x2="180" y2="190" class="rp-ex-edge"></line>
+                  <line x1="210" y1="140" x2="240" y2="190" class="rp-ex-edge"></line>
+                  <line x1="330" y1="140" x2="300" y2="190" class="rp-ex-edge"></line>
+                  <line x1="330" y1="140" x2="360" y2="190" class="rp-ex-edge"></line>
+                  <line x1="450" y1="140" x2="420" y2="190" class="rp-ex-edge"></line>
+                  <line x1="450" y1="140" x2="480" y2="190" class="rp-ex-edge"></line>
+
+                  <!-- Nodes -->
+                  <!-- Root A (MAX) -->
+                  <polygon points="270,12 254,42 286,42" fill="#4f46e5"></polygon>
+                  <text x="270" y="36" fill="white" font-weight="700" font-size="11" text-anchor="middle">A</text>
+                  <text x="298" y="28" font-size="10" fill="#4f46e5" font-weight="700">MAX</text>
+
+                  <!-- Level 1 (MIN): B, C -->
+                  <polygon points="150,98 134,68 166,68" fill="#ef4444"></polygon>
+                  <text x="150" y="80" fill="white" font-weight="700" font-size="11" text-anchor="middle">B</text>
+                  <text x="176" y="82" font-size="10" fill="#ef4444" font-weight="700">MIN</text>
+
+                  <polygon points="390,98 374,68 406,68" fill="#ef4444"></polygon>
+                  <text x="390" y="80" fill="white" font-weight="700" font-size="11" text-anchor="middle">C</text>
+                  <text x="416" y="82" font-size="10" fill="#ef4444" font-weight="700">MIN</text>
+
+                  <!-- Level 2 (MAX): D, E, F, G -->
+                  <polygon points="90,122 74,152 106,152" fill="#4f46e5"></polygon>
+                  <text x="90" y="146" fill="white" font-weight="700" font-size="11" text-anchor="middle">D</text>
+
+                  <polygon points="210,122 194,152 226,152" fill="#4f46e5"></polygon>
+                  <text x="210" y="146" fill="white" font-weight="700" font-size="11" text-anchor="middle">E</text>
+
+                  <polygon points="330,122 314,152 346,152" fill="#4f46e5"></polygon>
+                  <text x="330" y="146" fill="white" font-weight="700" font-size="11" text-anchor="middle">F</text>
+
+                  <polygon points="450,122 434,152 466,152" fill="#4f46e5"></polygon>
+                  <text x="450" y="146" fill="white" font-weight="700" font-size="11" text-anchor="middle">G</text>
+
+                  <!-- Leaves (Level 3) -->
+                  <circle cx="60" cy="190" r="12" fill="#f1f5f9" stroke="#cbd5e1"></circle>
+                  <text x="60" y="194" text-anchor="middle" font-size="11" font-weight="700">4</text>
+
+                  <circle cx="120" cy="190" r="12" fill="#f1f5f9" stroke="#cbd5e1"></circle>
+                  <text x="120" y="194" text-anchor="middle" font-size="11" font-weight="700">7</text>
+
+                  <circle cx="180" cy="190" r="12" fill="#f1f5f9" stroke="#cbd5e1"></circle>
+                  <text x="180" y="194" text-anchor="middle" font-size="11" font-weight="700">2</text>
+
+                  <circle cx="240" cy="190" r="12" fill="#f1f5f9" stroke="#cbd5e1"></circle>
+                  <text x="240" y="194" text-anchor="middle" font-size="11" font-weight="700">8</text>
+
+                  <circle cx="300" cy="190" r="12" fill="#f1f5f9" stroke="#cbd5e1"></circle>
+                  <text x="300" y="194" text-anchor="middle" font-size="11" font-weight="700">1</text>
+
+                  <circle cx="360" cy="190" r="12" fill="#f1f5f9" stroke="#cbd5e1"></circle>
+                  <text x="360" y="194" text-anchor="middle" font-size="11" font-weight="700">5</text>
+
+                  <circle cx="420" cy="190" r="12" fill="#f1f5f9" stroke="#cbd5e1"></circle>
+                  <text x="420" y="194" text-anchor="middle" font-size="11" font-weight="700">3</text>
+
+                  <circle cx="480" cy="190" r="12" fill="#f1f5f9" stroke="#cbd5e1"></circle>
+                  <text x="480" y="194" text-anchor="middle" font-size="11" font-weight="700">6</text>
+                </svg>
+                <figcaption>A 3-ply zero-sum game tree with MAX nodes (&triangle;) and MIN nodes (&Del;).</figcaption>
+              </figure>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+                <p>We compute minimax values bottom-up using the post-order depth-first traversal:</p>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Step 1: Level 2 (MAX Nodes D, E, F, G)</span>
+                  <div class="rp-pseudocode">
+                    <pre>Value(D) = max(4, 7) = 7
+Value(E) = max(2, 8) = 8
+Value(F) = max(1, 5) = 5
+Value(G) = max(3, 6) = 6</pre>
+                  </div>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Step 2: Level 1 (MIN Nodes B, C)</span>
+                  <div class="rp-pseudocode">
+                    <pre>Value(B) = min(Value(D), Value(E)) = min(7, 8) = 7
+Value(C) = min(Value(F), Value(G)) = min(5, 6) = 5</pre>
+                  </div>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Step 3: Level 0 (MAX Root A) &amp; Decision</span>
+                  <div class="rp-pseudocode">
+                    <pre>Value(A) = max(Value(B), Value(C)) = max(7, 5) = 7
+Optimal Move: MAX chooses action A &rarr; B (guaranteeing utility &ge; 7).</pre>
+                  </div>
+                </div>
+
+                <div class="formula-box">Node Values: D=7, E=8, F=5, G=6 &rArr; B=7, C=5 &rArr; A=7 &middot; Optimal Action: A &rarr; B</div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Exercise 2 -->
+          <div class="rp-exercise" id="ex2">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 2</span>
+              <h3 class="rp-exercise-title">Alpha-Beta Pruning Step-by-Step Trace</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Trace the Alpha-Beta search algorithm on the game tree below, traversing children strictly from left to right. Provide:</p>
+              <ol>
+                <li>The backed-up values for all evaluated nodes.</li>
+                <li>The active <code>[&alpha;, &beta;]</code> search window passed to each node.</li>
+                <li>The exact nodes and subtrees that are pruned (never evaluated) and the cutoff condition that triggers each prune.</li>
+              </ol>
+
+              <figure class="rp-ex-figure">
+                <svg class="rp-ex-graph-svg" viewBox="0 0 540 220" xmlns="http://www.w3.org/2000/svg">
+                  <!-- Edges -->
+                  <line x1="270" y1="30" x2="150" y2="85" class="rp-ex-edge"></line>
+                  <line x1="270" y1="30" x2="390" y2="85" class="rp-ex-edge"></line>
+
+                  <line x1="150" y1="85" x2="90" y2="140" class="rp-ex-edge"></line>
+                  <line x1="150" y1="85" x2="210" y2="140" class="rp-ex-edge"></line>
+                  <line x1="390" y1="85" x2="330" y2="140" class="rp-ex-edge"></line>
+                  <line x1="390" y1="85" x2="450" y2="140" class="rp-ex-edge" stroke-dasharray="4,4" opacity="0.4"></line>
+
+                  <line x1="90" y1="140" x2="60" y2="190" class="rp-ex-edge"></line>
+                  <line x1="90" y1="140" x2="120" y2="190" class="rp-ex-edge"></line>
+                  <line x1="210" y1="140" x2="180" y2="190" class="rp-ex-edge"></line>
+                  <line x1="210" y1="140" x2="240" y2="190" class="rp-ex-edge"></line>
+                  <line x1="330" y1="140" x2="300" y2="190" class="rp-ex-edge"></line>
+                  <line x1="330" y1="140" x2="360" y2="190" class="rp-ex-edge"></line>
+                  <line x1="450" y1="140" x2="420" y2="190" class="rp-ex-edge" stroke-dasharray="4,4" opacity="0.4"></line>
+                  <line x1="450" y1="140" x2="480" y2="190" class="rp-ex-edge" stroke-dasharray="4,4" opacity="0.4"></line>
+
+                  <!-- Nodes -->
+                  <polygon points="270,12 254,42 286,42" fill="#4f46e5"></polygon>
+                  <text x="270" y="36" fill="white" font-weight="700" font-size="11" text-anchor="middle">A</text>
+
+                  <polygon points="150,98 134,68 166,68" fill="#ef4444"></polygon>
+                  <text x="150" y="80" fill="white" font-weight="700" font-size="11" text-anchor="middle">B</text>
+
+                  <polygon points="390,98 374,68 406,68" fill="#ef4444"></polygon>
+                  <text x="390" y="80" fill="white" font-weight="700" font-size="11" text-anchor="middle">C</text>
+
+                  <polygon points="90,122 74,152 106,152" fill="#4f46e5"></polygon>
+                  <text x="90" y="146" fill="white" font-weight="700" font-size="11" text-anchor="middle">B1</text>
+
+                  <polygon points="210,122 194,152 226,152" fill="#4f46e5"></polygon>
+                  <text x="210" y="146" fill="white" font-weight="700" font-size="11" text-anchor="middle">B2</text>
+
+                  <polygon points="330,122 314,152 346,152" fill="#4f46e5"></polygon>
+                  <text x="330" y="146" fill="white" font-weight="700" font-size="11" text-anchor="middle">C1</text>
+
+                  <!-- Pruned Subtree C2 -->
+                  <polygon points="450,122 434,152 466,152" fill="#94a3b8" opacity="0.4"></polygon>
+                  <text x="450" y="146" fill="white" font-weight="700" font-size="11" text-anchor="middle">C2</text>
+                  <text x="450" y="112" fill="#ef4444" font-weight="700" font-size="10" text-anchor="middle">PRUNED</text>
+
+                  <!-- Leaves -->
+                  <circle cx="60" cy="190" r="12" fill="#f1f5f9" stroke="#cbd5e1"></circle>
+                  <text x="60" y="194" text-anchor="middle" font-size="11" font-weight="700">3</text>
+
+                  <circle cx="120" cy="190" r="12" fill="#f1f5f9" stroke="#cbd5e1"></circle>
+                  <text x="120" y="194" text-anchor="middle" font-size="11" font-weight="700">5</text>
+
+                  <circle cx="180" cy="190" r="12" fill="#f1f5f9" stroke="#cbd5e1"></circle>
+                  <text x="180" y="194" text-anchor="middle" font-size="11" font-weight="700">2</text>
+
+                  <circle cx="240" cy="190" r="12" fill="#f1f5f9" stroke="#cbd5e1"></circle>
+                  <text x="240" y="194" text-anchor="middle" font-size="11" font-weight="700">9</text>
+
+                  <circle cx="300" cy="190" r="12" fill="#f1f5f9" stroke="#cbd5e1"></circle>
+                  <text x="300" y="194" text-anchor="middle" font-size="11" font-weight="700">1</text>
+
+                  <circle cx="360" cy="190" r="12" fill="#f1f5f9" stroke="#cbd5e1"></circle>
+                  <text x="360" y="194" text-anchor="middle" font-size="11" font-weight="700">4</text>
+
+                  <circle cx="420" cy="190" r="12" fill="#f1f5f9" stroke="#cbd5e1" opacity="0.3"></circle>
+                  <text x="420" y="194" text-anchor="middle" font-size="11" font-weight="700" fill="#94a3b8">8</text>
+
+                  <circle cx="480" cy="190" r="12" fill="#f1f5f9" stroke="#cbd5e1" opacity="0.3"></circle>
+                  <text x="480" y="194" text-anchor="middle" font-size="11" font-weight="700" fill="#94a3b8">7</text>
+                </svg>
+                <figcaption>Alpha-Beta pruning trace: Subtree C2 is pruned when &alpha; &ge; &beta; at node C.</figcaption>
+              </figure>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Full Step-by-Step Execution Trace</span>
+                  <div class="rp-pseudocode">
+                    <pre>1. At Root A (MAX): [&alpha; = &minus;&infin;, &beta; = +&infin;]. Recurse into child B.
+2. At Node B (MIN): [&alpha; = &minus;&infin;, &beta; = +&infin;]. Recurse into child B1.
+3. At Node B1 (MAX): [&alpha; = &minus;&infin;, &beta; = +&infin;].
+   - Leaf 3: v = max(&minus;&infin;, 3) = 3 &rArr; &alpha; = max(&minus;&infin;, 3) = 3.
+   - Leaf 5: v = max(3, 5) = 5 &rArr; &alpha; = max(3, 5) = 5.
+   - Return v = 5 to B.
+4. At Node B (MIN): v = min(+&infin;, 5) = 5 &rArr; &beta; = min(+&infin;, 5) = 5. Window at B is [&minus;&infin;, 5].
+5. At Node B2 (MAX): Passed [&alpha; = &minus;&infin;, &beta; = 5].
+   - Leaf 2: v = max(&minus;&infin;, 2) = 2 &rArr; &alpha; = 2.
+   - Leaf 9: v = max(2, 9) = 9. Since v=9 &ge; &beta;=5, &beta;-cutoff triggers! Return 9.
+6. At Node B (MIN): v = min(5, 9) = 5. Return v = 5 to Root A.
+7. At Root A (MAX): v = max(&minus;&infin;, 5) = 5 &rArr; &alpha; = max(&minus;&infin;, 5) = 5. Window at A is [&alpha; = 5, &beta; = +&infin;].
+8. At Node C (MIN): Passed [&alpha; = 5, &beta; = +&infin;]. Recurse into child C1.
+9. At Node C1 (MAX): Passed [&alpha; = 5, &beta; = +&infin;].
+   - Leaf 1: v = max(&minus;&infin;, 1) = 1.
+   - Leaf 4: v = max(1, 4) = 4.
+   - Return v = 4 to C.
+10. At Node C (MIN): v = min(+&infin;, 4) = 4 &rArr; &beta; = min(+&infin;, 4) = 4.
+    - Check Pruning Condition: &alpha; = 5 &ge; &beta; = 4  (&alpha; &ge; &beta;).
+    - PRUNE! The entire remaining subtree of C (node C2 and leaves 8, 7) is PRUNED!
+11. At Root A (MAX): v = max(5, 4) = 5. Minimax decision is action A &rarr; B with value 5.</pre>
+                  </div>
+                </div>
+
+                <div class="formula-box">Pruned Nodes: Subtree C2 (leaves 8, 7) &middot; Cutoff Cause: &alpha; = 5 &ge; &beta; = 4 at node C &middot; Final Root Value = 5</div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Exercise 3 -->
+          <div class="rp-exercise" id="ex3">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 3</span>
+              <h3 class="rp-exercise-title">Expectiminimax Decision Under Stochastic Transitions</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Consider a game where MAX chooses between two actions at the root:</p>
+              <ul>
+                <li><strong>Action a<sub>1</sub> (Fair Coin Flip):</strong> Leads to Chance Node C<sub>1</sub>. Heads (probability 0.5) gives terminal utility <code>+10</code>; Tails (probability 0.5) gives terminal utility <code>&minus;4</code>.</li>
+                <li><strong>Action a<sub>2</sub> (4-Sided Die Roll):</strong> Leads to Chance Node C<sub>2</sub> with four equally likely outcomes (probability 0.25 each):
+                  <ul>
+                    <li>Roll 1: utility <code>+20</code></li>
+                    <li>Roll 2: utility <code>&minus;10</code></li>
+                    <li>Roll 3: utility <code>+4</code></li>
+                    <li>Roll 4: utility <code>0</code></li>
+                  </ul>
+                </li>
+              </ul>
+              <p>Calculate the expected utility of chance nodes C<sub>1</sub> and C<sub>2</sub>, and determine MAX's optimal expectiminimax decision.</p>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Step 1: Expected Utility for Chance Node C<sub>1</sub> (Action a<sub>1</sub>)</span>
+                  <div class="rp-pseudocode">
+                    <pre>EV(C<sub>1</sub>) = &sum; P(s&prime;) &middot; Utility(s&prime;)
+       = 0.5 &times; (+10) + 0.5 &times; (&minus;4)
+       = +5.0 &minus; 2.0 = +3.0</pre>
+                  </div>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Step 2: Expected Utility for Chance Node C<sub>2</sub> (Action a<sub>2</sub>)</span>
+                  <div class="rp-pseudocode">
+                    <pre>EV(C<sub>2</sub>) = &sum; P(s&prime;) &middot; Utility(s&prime;)
+       = 0.25 &times; (+20) + 0.25 &times; (&minus;10) + 0.25 &times; (+4) + 0.25 &times; (0)
+       = +5.0 &minus; 2.5 + 1.0 + 0 = +3.5</pre>
+                  </div>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Step 3: Root Decision</span>
+                  <p>MAX maximizes expected utility at the root:</p>
+                  <div class="rp-pseudocode">
+                    <pre>Decision = argmax(EV(C<sub>1</sub>), EV(C<sub>2</sub>)) = argmax(3.0, 3.5) = a<sub>2</sub></pre>
+                  </div>
+                </div>
+
+                <div class="formula-box">EV(a<sub>1</sub>) = +3.0 &middot; EV(a<sub>2</sub>) = +3.5 &rArr; MAX chooses Action a<sub>2</sub></div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Exercise 4 -->
+          <div class="rp-exercise" id="ex4">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 4</span>
+              <h3 class="rp-exercise-title">MCTS UCB1 Calculation &amp; Node Selection</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>In a Monte Carlo Tree Search (MCTS) tree, the root node has been visited <code>N<sub>parent</sub> = 100</code> times. Three legal actions (A<sub>1</sub>, A<sub>2</sub>, A<sub>3</sub>) have the following recorded statistics:</p>
+              <ul>
+                <li><strong>Action A<sub>1</sub>:</strong> Visited <code>N<sub>1</sub> = 40</code> times, total utility <code>U<sub>1</sub> = 28</code> wins.</li>
+                <li><strong>Action A<sub>2</sub>:</strong> Visited <code>N<sub>2</sub> = 50</code> times, total utility <code>U<sub>2</sub> = 30</code> wins.</li>
+                <li><strong>Action A<sub>3</sub>:</strong> Visited <code>N<sub>3</sub> = 10</code> times, total utility <code>U<sub>3</sub> = 8</code> wins.</li>
+              </ul>
+              <p>Using exploration constant <code>C = &radic;2 &approx; 1.414</code> and given <code>ln(100) &approx; 4.6052</code>, calculate the UCB1 value for each child action and determine which node MCTS will select for the next rollout.</p>
+            </div>
+
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle">Show Answer</summary>
+              <div class="rp-answer-body">
+
+                <p>The UCB1 formula is defined as:</p>
+                <div class="formula-box">UCB1(i) = &frac;{U<sub>i</sub>}{N<sub>i</sub>} + C &middot; &radic;(&frac;{ln N<sub>parent</sub>}{N<sub>i</sub>})</div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Action A<sub>1</sub> Calculation</span>
+                  <div class="rp-pseudocode">
+                    <pre>Exploitation:  28 / 40 = 0.7000
+Exploration:   1.414 &times; &radic;(4.6052 / 40) = 1.414 &times; &radic;(0.11513) = 1.414 &times; 0.33931 = 0.4798
+UCB1(A<sub>1</sub>)     = 0.7000 + 0.4798 = 1.1798</pre>
+                  </div>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Action A<sub>2</sub> Calculation</span>
+                  <div class="rp-pseudocode">
+                    <pre>Exploitation:  30 / 50 = 0.6000
+Exploration:   1.414 &times; &radic;(4.6052 / 50) = 1.414 &times; &radic;(0.09210) = 1.414 &times; 0.30349 = 0.4291
+UCB1(A<sub>2</sub>)     = 0.6000 + 0.4291 = 1.0291</pre>
+                  </div>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Action A<sub>3</sub> Calculation</span>
+                  <div class="rp-pseudocode">
+                    <pre>Exploitation:  8 / 10 = 0.8000
+Exploration:   1.414 &times; &radic;(4.6052 / 10) = 1.414 &times; &radic;(0.46052) = 1.414 &times; 0.67862 = 0.9596
+UCB1(A<sub>3</sub>)     = 0.8000 + 0.9596 = 1.7596</pre>
+                  </div>
+                </div>
+
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Selection Result</span>
+                  <p>MCTS selects <strong>Action A<sub>3</sub></strong> because it achieves the highest UCB1 score (<code>1.7596</code>). Although A<sub>3</sub> has the fewest visits, its combination of high empirical win rate (80%) and strong exploration bonus drives the algorithm to explore it further.</p>
+                </div>
+
+                <div class="formula-box">UCB1(A<sub>1</sub>) &approx; 1.18 &middot; UCB1(A<sub>2</sub>) &approx; 1.03 &middot; UCB1(A<sub>3</sub>) &approx; 1.76 &rArr; Select Action A<sub>3</sub></div>
+              </div>
+            </details>
+          </div>
+
+        </section>
+
+      </article>
+    </div>
+
+  </main>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+
+  <!-- Application JS -->
+  <script src="main.js?v=2"></script>
+</body>
+</html>
