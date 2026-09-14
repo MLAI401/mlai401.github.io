@@ -4598,7 +4598,7 @@ body.sl-page::after {
 
 .rp-ex-graph-svg {
   width: 100%;
-  max-width: 640px;
+  max-width: 760px;
   height: auto;
   margin: 0 auto;
   display: block;
@@ -4612,9 +4612,28 @@ body.sl-page::after {
   text-align: left;
 }
 
+.rp-ex-panel-title {
+  font: 800 10px 'Outfit', sans-serif;
+  letter-spacing: 0.08em;
+  fill: var(--text-muted);
+  text-anchor: middle;
+}
+
+.rp-ex-divider {
+  stroke: var(--border-light);
+  stroke-dasharray: 4 4;
+  stroke-width: 1.2;
+}
+
 .rp-ex-edge {
   stroke: #cbd5e1;
   stroke-width: 1.6;
+}
+
+.rp-ex-edge-pruned {
+  stroke: #cbd5e1;
+  stroke-dasharray: 4 4;
+  stroke-width: 1.4;
 }
 
 .rp-ex-edge-cost-bg {
@@ -4704,6 +4723,37 @@ body.sl-page::after {
 
 .rp-ex-node-subopt .rp-ex-node-label {
   fill: #e11d48;
+}
+
+.rp-ex-node-pruned circle {
+  fill: #ffffff;
+  stroke: #94a3b8;
+  stroke-dasharray: 3.5 3.5;
+  stroke-width: 1.5;
+}
+
+.rp-ex-node-pruned .rp-ex-node-label {
+  fill: #94a3b8;
+}
+
+.rp-ex-node-pruned-goal circle {
+  fill: #ffffff;
+  stroke: var(--success);
+  stroke-dasharray: 3.5 3.5;
+  stroke-width: 2;
+  opacity: 0.7;
+}
+
+.rp-ex-node-pruned-goal .rp-ex-node-label {
+  fill: var(--success);
+  opacity: 0.7;
+}
+
+.rp-ex-node-tag-pruned {
+  font: 700 8.5px 'Outfit', sans-serif;
+  letter-spacing: 0.04em;
+  fill: #94a3b8;
+  text-anchor: middle;
 }
 
 .rp-ex-tree-level {

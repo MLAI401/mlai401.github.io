@@ -841,55 +841,93 @@ Greedy:  no cost pruning &rArr; worst case matches the DFS/tree bound
               <div class="rp-answer-body">
 
                 <figure class="rp-ex-figure">
-                  <svg class="rp-ex-graph-svg" viewBox="0 0 520 170" xmlns="http://www.w3.org/2000/svg">
+                  <svg class="rp-ex-graph-svg" viewBox="0 0 760 190" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                       <marker id="ex5-arrow" viewBox="0 0 10 10" refX="23" refY="5" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                         <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#94a3b8"></path>
                       </marker>
                     </defs>
-                    <!-- Edges -->
-                    <line x1="70" y1="85" x2="230" y2="45" class="rp-ex-edge" marker-end="url(#ex5-arrow)"></line>
-                    <circle cx="150" cy="65" r="10" class="rp-ex-edge-cost-bg"></circle>
-                    <text x="150" y="65" class="rp-ex-edge-cost-text">2</text>
 
-                    <line x1="230" y1="45" x2="410" y2="45" class="rp-ex-edge" marker-end="url(#ex5-arrow)"></line>
-                    <circle cx="320" cy="45" r="10" class="rp-ex-edge-cost-bg"></circle>
-                    <text x="320" y="45" class="rp-ex-edge-cost-text">3</text>
+                    <!-- Panel Headers -->
+                    <text x="175" y="22" class="rp-ex-panel-title">STATE SPACE GRAPH</text>
+                    <text x="560" y="22" class="rp-ex-panel-title">A* SEARCH TREE (EXPANSION ORDER)</text>
+                    <line x1="365" y1="12" x2="365" y2="182" class="rp-ex-divider"></line>
 
-                    <line x1="70" y1="85" x2="410" y2="125" class="rp-ex-edge" marker-end="url(#ex5-arrow)"></line>
-                    <circle cx="240" cy="105" r="10" class="rp-ex-edge-cost-bg"></circle>
-                    <text x="240" y="105" class="rp-ex-edge-cost-text">8</text>
+                    <!-- LEFT PANEL: STATE GRAPH (Fully Connected) -->
+                    <!-- Graph Edges -->
+                    <line x1="60" y1="100" x2="180" y2="50" class="rp-ex-edge" marker-end="url(#ex5-arrow)"></line>
+                    <circle cx="120" cy="75" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="120" y="75" class="rp-ex-edge-cost-text">2</text>
 
-                    <!-- Nodes -->
-                    <!-- S (Start) -->
+                    <line x1="180" y1="50" x2="300" y2="100" class="rp-ex-edge" marker-end="url(#ex5-arrow)"></line>
+                    <circle cx="240" cy="75" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="240" y="75" class="rp-ex-edge-cost-text">3</text>
+
+                    <path d="M 60 100 Q 180 165 300 100" class="rp-ex-edge" marker-end="url(#ex5-arrow)" fill="none"></path>
+                    <circle cx="180" cy="145" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="180" y="145" class="rp-ex-edge-cost-text">8</text>
+                    <text x="180" y="170" class="rp-ex-node-sub">suboptimal path (cost 8)</text>
+
+                    <!-- Graph Nodes -->
                     <g class="rp-ex-node rp-ex-node-start">
-                      <circle cx="70" cy="85" r="16"></circle>
-                      <text x="70" y="85" class="rp-ex-node-label">S</text>
-                      <text x="70" y="58" class="rp-ex-node-tag rp-ex-node-tag-start">START</text>
+                      <circle cx="60" cy="100" r="16"></circle>
+                      <text x="60" y="100" class="rp-ex-node-label">S</text>
+                      <text x="60" y="73" class="rp-ex-node-tag rp-ex-node-tag-start">START</text>
                     </g>
 
-                    <!-- n (on optimal path) -->
                     <g class="rp-ex-node">
-                      <circle cx="230" cy="45" r="16"></circle>
-                      <text x="230" y="45" class="rp-ex-node-label">n</text>
-                      <text x="230" y="20" class="rp-ex-node-sub">h(n) = 2 &middot; f(n) &le; 5</text>
+                      <circle cx="180" cy="50" r="16"></circle>
+                      <text x="180" y="50" class="rp-ex-node-label">n</text>
+                      <text x="180" y="25" class="rp-ex-node-sub">h(n) = 2 &middot; h*(n) = 3</text>
                     </g>
 
-                    <!-- G1 (Optimal Goal) -->
                     <g class="rp-ex-node rp-ex-node-goal">
-                      <circle cx="410" cy="45" r="16"></circle>
-                      <text x="410" y="45" class="rp-ex-node-label">G1</text>
-                      <text x="410" y="20" class="rp-ex-node-goal-tag">OPTIMAL GOAL (C* = 5)</text>
+                      <circle cx="300" cy="100" r="16"></circle>
+                      <text x="300" y="100" class="rp-ex-node-label">G</text>
+                      <text x="300" y="73" class="rp-ex-node-goal-tag">GOAL (C* = 5)</text>
+                      <text x="300" y="128" class="rp-ex-node-sub">h = 0</text>
                     </g>
 
-                    <!-- G2 (Suboptimal Goal) -->
+                    <!-- RIGHT PANEL: SEARCH TREE -->
+                    <!-- Tree Edges -->
+                    <line x1="420" y1="100" x2="540" y2="60" class="rp-ex-edge" marker-end="url(#ex5-arrow)"></line>
+                    <circle cx="480" cy="80" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="480" y="80" class="rp-ex-edge-cost-text">2</text>
+
+                    <line x1="540" y1="60" x2="670" y2="60" class="rp-ex-edge" marker-end="url(#ex5-arrow)"></line>
+                    <circle cx="605" cy="60" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="605" y="60" class="rp-ex-edge-cost-text">3</text>
+
+                    <line x1="420" y1="100" x2="540" y2="140" class="rp-ex-edge" marker-end="url(#ex5-arrow)"></line>
+                    <circle cx="480" cy="120" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="480" y="120" class="rp-ex-edge-cost-text">8</text>
+
+                    <!-- Tree Nodes -->
+                    <g class="rp-ex-node rp-ex-node-start">
+                      <circle cx="420" cy="100" r="16"></circle>
+                      <text x="420" y="100" class="rp-ex-node-label">S</text>
+                      <text x="420" y="73" class="rp-ex-node-tag rp-ex-node-tag-start">ROOT</text>
+                    </g>
+
+                    <g class="rp-ex-node">
+                      <circle cx="540" cy="60" r="16"></circle>
+                      <text x="540" y="60" class="rp-ex-node-label">n</text>
+                      <text x="540" y="35" class="rp-ex-node-sub">1. POPPED: f(n) &le; 5</text>
+                    </g>
+
+                    <g class="rp-ex-node rp-ex-node-goal">
+                      <circle cx="670" cy="60" r="16"></circle>
+                      <text x="670" y="60" class="rp-ex-node-label">G1</text>
+                      <text x="670" y="35" class="rp-ex-node-goal-tag">2. GOAL FOUND (f = 5)</text>
+                    </g>
+
                     <g class="rp-ex-node rp-ex-node-subopt">
-                      <circle cx="410" cy="125" r="16"></circle>
-                      <text x="410" y="125" class="rp-ex-node-label">G2</text>
-                      <text x="410" y="154" class="rp-ex-node-tag rp-ex-node-tag-subopt">SUBOPTIMAL (f = 8)</text>
+                      <circle cx="540" cy="140" r="16"></circle>
+                      <text x="540" y="140" class="rp-ex-node-label">G2</text>
+                      <text x="540" y="169" class="rp-ex-node-tag rp-ex-node-tag-subopt">IN QUEUE: f=8 &gt; 5 (Never Popped)</text>
                     </g>
                   </svg>
-                  <figcaption>Contradiction graph: node <code>n</code> on the optimal path has <code>f(n) = g(n) + h(n) &le; 2 + 3 = 5</code>. Since <code>f(n) &le; 5 &lt; 8 = f(G2)</code>, A* expands <code>n</code> before <code>G2</code>.</figcaption>
+                  <figcaption>Contradiction proof: <strong>(Left)</strong> Fully connected state space graph with start <code>S</code> and single goal <code>G</code> reachable via optimal path (cost 5) and direct suboptimal path (cost 8). <strong>(Right)</strong> A* search tree: node <code>n</code> on the optimal path has <code>f(n) = g(n) + h(n) &le; 2 + 3 = 5</code>. Because <code>f(n) &le; 5 &lt; 8 = f(G2)</code>, A* expands <code>n</code> and reaches optimal goal <code>G1</code> before suboptimal goal <code>G2</code> can ever be popped.</figcaption>
                 </figure>
                 <p><code>h(n)=2</code> (admissible: true remaining cost <code>h*(n)=3</code>, and <code>2 &le; 3</code>).</p>
 
@@ -925,55 +963,102 @@ therefore:              f(n) &le; 5 &lt; 8 = f(G2)</pre>
                 <p>Equal step cost <code>c</code>: <code>cost(path) = c &middot; depth(path)</code>, so <code>d1 &lt; d2 &rArr; c&middot;d1 &lt; c&middot;d2</code> &mdash; shallowest &hArr; cheapest, and IDS always returns the shallowest goal.</p>
 
                 <figure class="rp-ex-figure">
-                  <svg class="rp-ex-graph-svg" viewBox="0 0 500 170" xmlns="http://www.w3.org/2000/svg">
+                  <svg class="rp-ex-graph-svg" viewBox="0 0 760 190" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                       <marker id="ex6-arrow" viewBox="0 0 10 10" refX="23" refY="5" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                         <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#94a3b8"></path>
                       </marker>
                     </defs>
+
+                    <!-- Panel Headers -->
+                    <text x="175" y="22" class="rp-ex-panel-title">STATE SPACE GRAPH</text>
+                    <text x="560" y="22" class="rp-ex-panel-title">IDS SEARCH TREE (LIMIT &ell; = 1)</text>
+                    <line x1="365" y1="12" x2="365" y2="182" class="rp-ex-divider"></line>
+
+                    <!-- LEFT PANEL: STATE GRAPH (Fully Connected) -->
                     <!-- Edges -->
-                    <line x1="70" y1="85" x2="250" y2="45" class="rp-ex-edge" marker-end="url(#ex6-arrow)"></line>
-                    <circle cx="160" cy="65" r="11" class="rp-ex-edge-cost-bg"></circle>
-                    <text x="160" y="65" class="rp-ex-edge-cost-text">10</text>
+                    <path d="M 60 100 Q 180 35 300 100" class="rp-ex-edge" marker-end="url(#ex6-arrow)" fill="none"></path>
+                    <circle cx="180" cy="55" r="11" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="180" y="55" class="rp-ex-edge-cost-text">10</text>
+                    <text x="180" y="32" class="rp-ex-node-sub">shallow path (d=1, cost=10)</text>
 
-                    <line x1="70" y1="85" x2="250" y2="125" class="rp-ex-edge" marker-end="url(#ex6-arrow)"></line>
-                    <circle cx="160" cy="105" r="10" class="rp-ex-edge-cost-bg"></circle>
-                    <text x="160" y="105" class="rp-ex-edge-cost-text">1</text>
+                    <line x1="60" y1="100" x2="180" y2="150" class="rp-ex-edge" marker-end="url(#ex6-arrow)"></line>
+                    <circle cx="120" cy="125" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="120" y="125" class="rp-ex-edge-cost-text">1</text>
 
-                    <line x1="250" y1="125" x2="410" y2="125" class="rp-ex-edge" marker-end="url(#ex6-arrow)"></line>
-                    <circle cx="330" cy="125" r="10" class="rp-ex-edge-cost-bg"></circle>
-                    <text x="330" y="125" class="rp-ex-edge-cost-text">1</text>
+                    <line x1="180" y1="150" x2="300" y2="100" class="rp-ex-edge" marker-end="url(#ex6-arrow)"></line>
+                    <circle cx="240" cy="125" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="240" y="125" class="rp-ex-edge-cost-text">1</text>
 
                     <!-- Nodes -->
-                    <!-- S (Start) -->
                     <g class="rp-ex-node rp-ex-node-start">
-                      <circle cx="70" cy="85" r="16"></circle>
-                      <text x="70" y="85" class="rp-ex-node-label">S</text>
-                      <text x="70" y="58" class="rp-ex-node-tag rp-ex-node-tag-start">START</text>
+                      <circle cx="60" cy="100" r="16"></circle>
+                      <text x="60" y="100" class="rp-ex-node-label">S</text>
+                      <text x="60" y="73" class="rp-ex-node-tag rp-ex-node-tag-start">START</text>
                     </g>
 
-                    <!-- G1 (Shallow Goal) -->
-                    <g class="rp-ex-node rp-ex-node-subopt">
-                      <circle cx="250" cy="45" r="16"></circle>
-                      <text x="250" y="45" class="rp-ex-node-label">G1</text>
-                      <text x="250" y="20" class="rp-ex-node-tag rp-ex-node-tag-subopt">SHALLOW GOAL (d=1, cost=10)</text>
-                    </g>
-
-                    <!-- A -->
                     <g class="rp-ex-node">
-                      <circle cx="250" cy="125" r="16"></circle>
-                      <text x="250" y="125" class="rp-ex-node-label">A</text>
-                      <text x="250" y="154" class="rp-ex-node-sub">depth = 1</text>
+                      <circle cx="180" cy="150" r="16"></circle>
+                      <text x="180" y="150" class="rp-ex-node-label">A</text>
+                      <text x="180" y="178" class="rp-ex-node-sub">depth = 1</text>
                     </g>
 
-                    <!-- G2 (Optimal Goal) -->
                     <g class="rp-ex-node rp-ex-node-goal">
-                      <circle cx="410" cy="125" r="16"></circle>
-                      <text x="410" y="125" class="rp-ex-node-label">G2</text>
-                      <text x="410" y="100" class="rp-ex-node-goal-tag">OPTIMAL GOAL (d=2, cost=2)</text>
+                      <circle cx="300" cy="100" r="16"></circle>
+                      <text x="300" y="100" class="rp-ex-node-label">G</text>
+                      <text x="300" y="73" class="rp-ex-node-goal-tag">GOAL</text>
+                      <text x="300" y="128" class="rp-ex-node-sub">opt. cost = 2</text>
+                    </g>
+
+                    <!-- RIGHT PANEL: SEARCH TREE -->
+                    <!-- Depth Guide Lines -->
+                    <line x1="390" y1="46" x2="735" y2="46" class="rp-ex-tree-guide"></line>
+                    <text x="395" y="40" class="rp-ex-tree-level">Depth 0</text>
+
+                    <line x1="390" y1="106" x2="735" y2="106" class="rp-ex-tree-guide"></line>
+                    <text x="395" y="100" class="rp-ex-tree-level">Depth 1 (limit &ell;=1)</text>
+
+                    <line x1="390" y1="166" x2="735" y2="166" class="rp-ex-tree-guide"></line>
+                    <text x="395" y="160" class="rp-ex-tree-level">Depth 2 (cutoff)</text>
+
+                    <!-- Tree Edges -->
+                    <line x1="560" y1="46" x2="475" y2="106" class="rp-ex-edge" marker-end="url(#ex6-arrow)"></line>
+                    <circle cx="517" cy="76" r="11" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="517" y="76" class="rp-ex-edge-cost-text">10</text>
+
+                    <line x1="560" y1="46" x2="645" y2="106" class="rp-ex-edge" marker-end="url(#ex6-arrow)"></line>
+                    <circle cx="602" cy="76" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="602" y="76" class="rp-ex-edge-cost-text">1</text>
+
+                    <line x1="645" y1="106" x2="645" y2="166" class="rp-ex-edge-pruned" marker-end="url(#ex6-arrow)"></line>
+                    <circle cx="645" cy="136" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="645" y="136" class="rp-ex-edge-cost-text">1</text>
+
+                    <!-- Tree Nodes -->
+                    <g class="rp-ex-node rp-ex-node-start">
+                      <circle cx="560" cy="46" r="16"></circle>
+                      <text x="560" y="46" class="rp-ex-node-label">S</text>
+                    </g>
+
+                    <g class="rp-ex-node rp-ex-node-subopt">
+                      <circle cx="475" cy="106" r="16"></circle>
+                      <text x="475" y="106" class="rp-ex-node-label">G1</text>
+                      <text x="475" y="133" class="rp-ex-node-tag rp-ex-node-tag-subopt">FOUND! STOPS (Cost = 10)</text>
+                    </g>
+
+                    <g class="rp-ex-node">
+                      <circle cx="645" cy="106" r="16"></circle>
+                      <text x="645" y="106" class="rp-ex-node-label">A</text>
+                      <text x="645" y="90" class="rp-ex-node-sub">limit reached</text>
+                    </g>
+
+                    <g class="rp-ex-node rp-ex-node-pruned-goal">
+                      <circle cx="645" cy="166" r="16"></circle>
+                      <text x="645" y="166" class="rp-ex-node-label">G2</text>
+                      <text x="645" y="185" class="rp-ex-node-tag-pruned">CUT OFF (Cost = 2)</text>
                     </g>
                   </svg>
-                  <figcaption>IDS counterexample: At depth limit <code>&ell; = 1</code>, IDS finds shallow goal <code>G1</code> (cost 10) and terminates, failing to discover the cheaper depth-2 goal <code>G2</code> (cost 2).</figcaption>
+                  <figcaption>IDS counterexample: <strong>(Left)</strong> Fully connected state space graph with shallow path (cost 10, depth 1) and optimal path (cost 2, depth 2) into goal <code>G</code>. <strong>(Right)</strong> IDS search tree at depth limit <code>&ell; = 1</code>: IDS finds shallow goal <code>G1</code> (cost 10) and terminates, failing to discover the cheaper depth-2 goal <code>G2</code> (cost 2).</figcaption>
                 </figure>
 
                 <div class="rp-pseudocode">
@@ -1002,55 +1087,92 @@ true optimum: G2, cost 1+1 = 2
               <div class="rp-answer-body">
 
                 <figure class="rp-ex-figure">
-                  <svg class="rp-ex-graph-svg" viewBox="0 0 520 170" xmlns="http://www.w3.org/2000/svg">
+                  <svg class="rp-ex-graph-svg" viewBox="0 0 760 190" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                       <marker id="ex7-arrow" viewBox="0 0 10 10" refX="23" refY="5" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                         <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#94a3b8"></path>
                       </marker>
                     </defs>
+
+                    <!-- Panel Headers -->
+                    <text x="175" y="22" class="rp-ex-panel-title">STATE SPACE GRAPH</text>
+                    <text x="560" y="22" class="rp-ex-panel-title">UCS SEARCH TREE (PRIORITY QUEUE ORDER)</text>
+                    <line x1="365" y1="12" x2="365" y2="182" class="rp-ex-divider"></line>
+
+                    <!-- LEFT PANEL: STATE GRAPH (Fully Connected) -->
                     <!-- Edges -->
-                    <line x1="70" y1="85" x2="230" y2="45" class="rp-ex-edge" marker-end="url(#ex7-arrow)"></line>
-                    <circle cx="150" cy="65" r="10" class="rp-ex-edge-cost-bg"></circle>
-                    <text x="150" y="65" class="rp-ex-edge-cost-text">2</text>
+                    <line x1="60" y1="100" x2="180" y2="50" class="rp-ex-edge" marker-end="url(#ex7-arrow)"></line>
+                    <circle cx="120" cy="75" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="120" y="75" class="rp-ex-edge-cost-text">2</text>
 
-                    <line x1="230" y1="45" x2="410" y2="45" class="rp-ex-edge" marker-end="url(#ex7-arrow)"></line>
-                    <circle cx="320" cy="45" r="10" class="rp-ex-edge-cost-bg"></circle>
-                    <text x="320" y="45" class="rp-ex-edge-cost-text">3</text>
+                    <line x1="180" y1="50" x2="300" y2="100" class="rp-ex-edge" marker-end="url(#ex7-arrow)"></line>
+                    <circle cx="240" cy="75" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="240" y="75" class="rp-ex-edge-cost-text">3</text>
 
-                    <line x1="70" y1="85" x2="410" y2="125" class="rp-ex-edge" marker-end="url(#ex7-arrow)"></line>
-                    <circle cx="240" cy="105" r="10" class="rp-ex-edge-cost-bg"></circle>
-                    <text x="240" y="105" class="rp-ex-edge-cost-text">8</text>
+                    <path d="M 60 100 Q 180 165 300 100" class="rp-ex-edge" marker-end="url(#ex7-arrow)" fill="none"></path>
+                    <circle cx="180" cy="145" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="180" y="145" class="rp-ex-edge-cost-text">8</text>
+                    <text x="180" y="170" class="rp-ex-node-sub">suboptimal path (g = 8)</text>
 
                     <!-- Nodes -->
-                    <!-- S (Start) -->
                     <g class="rp-ex-node rp-ex-node-start">
-                      <circle cx="70" cy="85" r="16"></circle>
-                      <text x="70" y="85" class="rp-ex-node-label">S</text>
-                      <text x="70" y="58" class="rp-ex-node-tag rp-ex-node-tag-start">START</text>
+                      <circle cx="60" cy="100" r="16"></circle>
+                      <text x="60" y="100" class="rp-ex-node-label">S</text>
+                      <text x="60" y="73" class="rp-ex-node-tag rp-ex-node-tag-start">START</text>
                     </g>
 
-                    <!-- n (on optimal path) -->
                     <g class="rp-ex-node">
-                      <circle cx="230" cy="45" r="16"></circle>
-                      <text x="230" y="45" class="rp-ex-node-label">n</text>
-                      <text x="230" y="20" class="rp-ex-node-sub">g(n) = 2</text>
+                      <circle cx="180" cy="50" r="16"></circle>
+                      <text x="180" y="50" class="rp-ex-node-label">n</text>
+                      <text x="180" y="25" class="rp-ex-node-sub">g(n) = 2</text>
                     </g>
 
-                    <!-- G (Optimal Goal) -->
                     <g class="rp-ex-node rp-ex-node-goal">
-                      <circle cx="410" cy="45" r="16"></circle>
-                      <text x="410" y="45" class="rp-ex-node-label">G</text>
-                      <text x="410" y="20" class="rp-ex-node-goal-tag">OPTIMAL GOAL (C* = 5)</text>
+                      <circle cx="300" cy="100" r="16"></circle>
+                      <text x="300" y="100" class="rp-ex-node-label">G</text>
+                      <text x="300" y="73" class="rp-ex-node-goal-tag">GOAL (C* = 5)</text>
                     </g>
 
-                    <!-- G2 (Suboptimal Goal) -->
+                    <!-- RIGHT PANEL: SEARCH TREE -->
+                    <!-- Tree Edges -->
+                    <line x1="420" y1="100" x2="540" y2="60" class="rp-ex-edge" marker-end="url(#ex7-arrow)"></line>
+                    <circle cx="480" cy="80" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="480" y="80" class="rp-ex-edge-cost-text">2</text>
+
+                    <line x1="540" y1="60" x2="670" y2="60" class="rp-ex-edge" marker-end="url(#ex7-arrow)"></line>
+                    <circle cx="605" cy="60" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="605" y="60" class="rp-ex-edge-cost-text">3</text>
+
+                    <line x1="420" y1="100" x2="540" y2="140" class="rp-ex-edge" marker-end="url(#ex7-arrow)"></line>
+                    <circle cx="480" cy="120" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="480" y="120" class="rp-ex-edge-cost-text">8</text>
+
+                    <!-- Tree Nodes -->
+                    <g class="rp-ex-node rp-ex-node-start">
+                      <circle cx="420" cy="100" r="16"></circle>
+                      <text x="420" y="100" class="rp-ex-node-label">S</text>
+                      <text x="420" y="73" class="rp-ex-node-tag rp-ex-node-tag-start">ROOT (g=0)</text>
+                    </g>
+
+                    <g class="rp-ex-node">
+                      <circle cx="540" cy="60" r="16"></circle>
+                      <text x="540" y="60" class="rp-ex-node-label">n</text>
+                      <text x="540" y="35" class="rp-ex-node-sub">1. POPPED: g(n) = 2</text>
+                    </g>
+
+                    <g class="rp-ex-node rp-ex-node-goal">
+                      <circle cx="670" cy="60" r="16"></circle>
+                      <text x="670" y="60" class="rp-ex-node-label">G</text>
+                      <text x="670" y="35" class="rp-ex-node-goal-tag">2. GOAL FOUND: g(G) = 5</text>
+                    </g>
+
                     <g class="rp-ex-node rp-ex-node-subopt">
-                      <circle cx="410" cy="125" r="16"></circle>
-                      <text x="410" y="125" class="rp-ex-node-label">G2</text>
-                      <text x="410" y="154" class="rp-ex-node-tag rp-ex-node-tag-subopt">SUBOPTIMAL (g = 8)</text>
+                      <circle cx="540" cy="140" r="16"></circle>
+                      <text x="540" y="140" class="rp-ex-node-label">G2</text>
+                      <text x="540" y="169" class="rp-ex-node-tag rp-ex-node-tag-subopt">IN QUEUE: g=8 &gt; 5 (Never Popped)</text>
                     </g>
                   </svg>
-                  <figcaption>UCS optimality graph: Node <code>n</code> on the optimal path has <code>g(n) = 2 &le; C* = 5 &lt; 8 = g(G2)</code>. UCS prioritizes lowest cumulative cost, expanding <code>n</code> before suboptimal goal <code>G2</code>.</figcaption>
+                  <figcaption>UCS optimality graph: <strong>(Left)</strong> Fully connected state space graph with optimal path (cost 5) and suboptimal path (cost 8) into goal <code>G</code>. <strong>(Right)</strong> UCS search tree: node <code>n</code> on the optimal path has <code>g(n) = 2 &le; C* = 5 &lt; 8 = g(G2)</code>. UCS prioritizes lowest cumulative cost, expanding <code>n</code> and reaching optimal goal <code>G</code> before suboptimal goal <code>G2</code>.</figcaption>
                 </figure>
                 <p>Assume branching factor <code>b</code> finite, every step cost <code>&ge; &epsilon; &gt; 0</code>.</p>
 
@@ -1088,66 +1210,112 @@ true optimum: G2, cost 1+1 = 2
               <div class="rp-answer-body">
 
                 <figure class="rp-ex-figure">
-                  <svg class="rp-ex-graph-svg" viewBox="0 0 520 170" xmlns="http://www.w3.org/2000/svg">
+                  <svg class="rp-ex-graph-svg" viewBox="0 0 760 190" xmlns="http://www.w3.org/2000/svg">
                     <defs>
                       <marker id="ex8-arrow" viewBox="0 0 10 10" refX="23" refY="5" markerUnits="userSpaceOnUse" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
                         <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#94a3b8"></path>
                       </marker>
                     </defs>
+
+                    <!-- Panel Headers -->
+                    <text x="175" y="22" class="rp-ex-panel-title">STATE SPACE GRAPH</text>
+                    <text x="560" y="22" class="rp-ex-panel-title">DFS SEARCH TREE (LIFO STACK ORDER)</text>
+                    <line x1="365" y1="12" x2="365" y2="182" class="rp-ex-divider"></line>
+
+                    <!-- LEFT PANEL: STATE GRAPH (Fully Connected) -->
                     <!-- Edges -->
-                    <line x1="70" y1="85" x2="230" y2="45" class="rp-ex-edge" marker-end="url(#ex8-arrow)"></line>
-                    <circle cx="150" cy="65" r="11" class="rp-ex-edge-cost-bg"></circle>
-                    <text x="150" y="65" class="rp-ex-edge-cost-text">10</text>
+                    <line x1="60" y1="100" x2="180" y2="50" class="rp-ex-edge" marker-end="url(#ex8-arrow)"></line>
+                    <circle cx="120" cy="75" r="11" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="120" y="75" class="rp-ex-edge-cost-text">10</text>
 
-                    <line x1="230" y1="45" x2="390" y2="45" class="rp-ex-edge" marker-end="url(#ex8-arrow)"></line>
-                    <circle cx="310" cy="45" r="10" class="rp-ex-edge-cost-bg"></circle>
-                    <text x="310" y="45" class="rp-ex-edge-cost-text">0</text>
+                    <line x1="180" y1="50" x2="300" y2="100" class="rp-ex-edge" marker-end="url(#ex8-arrow)"></line>
+                    <circle cx="240" cy="75" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="240" y="75" class="rp-ex-edge-cost-text">0</text>
 
-                    <line x1="70" y1="85" x2="230" y2="125" class="rp-ex-edge" marker-end="url(#ex8-arrow)"></line>
-                    <circle cx="150" cy="105" r="10" class="rp-ex-edge-cost-bg"></circle>
-                    <text x="150" y="105" class="rp-ex-edge-cost-text">1</text>
+                    <line x1="60" y1="100" x2="180" y2="150" class="rp-ex-edge" marker-end="url(#ex8-arrow)"></line>
+                    <circle cx="120" cy="125" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="120" y="125" class="rp-ex-edge-cost-text">1</text>
 
-                    <line x1="230" y1="125" x2="390" y2="125" class="rp-ex-edge" marker-end="url(#ex8-arrow)"></line>
-                    <circle cx="310" cy="125" r="10" class="rp-ex-edge-cost-bg"></circle>
-                    <text x="310" y="125" class="rp-ex-edge-cost-text">1</text>
+                    <line x1="180" y1="150" x2="300" y2="100" class="rp-ex-edge" marker-end="url(#ex8-arrow)"></line>
+                    <circle cx="240" cy="125" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="240" y="125" class="rp-ex-edge-cost-text">1</text>
 
                     <!-- Nodes -->
-                    <!-- S (Start) -->
                     <g class="rp-ex-node rp-ex-node-start">
-                      <circle cx="70" cy="85" r="16"></circle>
-                      <text x="70" y="85" class="rp-ex-node-label">S</text>
-                      <text x="70" y="58" class="rp-ex-node-tag rp-ex-node-tag-start">START</text>
+                      <circle cx="60" cy="100" r="16"></circle>
+                      <text x="60" y="100" class="rp-ex-node-label">S</text>
+                      <text x="60" y="73" class="rp-ex-node-tag rp-ex-node-tag-start">START</text>
                     </g>
 
-                    <!-- A (1st branch) -->
                     <g class="rp-ex-node">
-                      <circle cx="230" cy="45" r="16"></circle>
-                      <text x="230" y="45" class="rp-ex-node-label">A</text>
-                      <text x="230" y="20" class="rp-ex-node-sub">(1st child)</text>
+                      <circle cx="180" cy="50" r="16"></circle>
+                      <text x="180" y="50" class="rp-ex-node-label">A</text>
+                      <text x="180" y="25" class="rp-ex-node-sub">1st child</text>
                     </g>
 
-                    <!-- G1 (DFS Found) -->
-                    <g class="rp-ex-node rp-ex-node-subopt">
-                      <circle cx="390" cy="45" r="16"></circle>
-                      <text x="390" y="45" class="rp-ex-node-label">G1</text>
-                      <text x="390" y="20" class="rp-ex-node-tag rp-ex-node-tag-subopt">DFS FINDS FIRST (Cost = 10)</text>
-                    </g>
-
-                    <!-- B (2nd branch) -->
                     <g class="rp-ex-node">
-                      <circle cx="230" cy="125" r="16"></circle>
-                      <text x="230" y="125" class="rp-ex-node-label">B</text>
-                      <text x="230" y="154" class="rp-ex-node-sub">(2nd child)</text>
+                      <circle cx="180" cy="150" r="16"></circle>
+                      <text x="180" y="150" class="rp-ex-node-label">B</text>
+                      <text x="180" y="178" class="rp-ex-node-sub">2nd child</text>
                     </g>
 
-                    <!-- G2 (Optimal Goal) -->
                     <g class="rp-ex-node rp-ex-node-goal">
-                      <circle cx="390" cy="125" r="16"></circle>
-                      <text x="390" y="125" class="rp-ex-node-label">G2</text>
-                      <text x="390" y="154" class="rp-ex-node-goal-tag">OPTIMAL GOAL (Cost = 2)</text>
+                      <circle cx="300" cy="100" r="16"></circle>
+                      <text x="300" y="100" class="rp-ex-node-label">G</text>
+                      <text x="300" y="73" class="rp-ex-node-goal-tag">GOAL</text>
+                      <text x="300" y="128" class="rp-ex-node-sub">opt. cost = 2</text>
+                    </g>
+
+                    <!-- RIGHT PANEL: SEARCH TREE -->
+                    <!-- Tree Edges -->
+                    <line x1="420" y1="100" x2="540" y2="60" class="rp-ex-edge" marker-end="url(#ex8-arrow)"></line>
+                    <circle cx="480" cy="80" r="11" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="480" y="80" class="rp-ex-edge-cost-text">10</text>
+
+                    <line x1="540" y1="60" x2="670" y2="60" class="rp-ex-edge" marker-end="url(#ex8-arrow)"></line>
+                    <circle cx="605" cy="60" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="605" y="60" class="rp-ex-edge-cost-text">0</text>
+
+                    <line x1="420" y1="100" x2="540" y2="140" class="rp-ex-edge-pruned" marker-end="url(#ex8-arrow)"></line>
+                    <circle cx="480" cy="120" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="480" y="120" class="rp-ex-edge-cost-text">1</text>
+
+                    <line x1="540" y1="140" x2="670" y2="140" class="rp-ex-edge-pruned" marker-end="url(#ex8-arrow)"></line>
+                    <circle cx="605" cy="140" r="10" class="rp-ex-edge-cost-bg"></circle>
+                    <text x="605" y="140" class="rp-ex-edge-cost-text">1</text>
+
+                    <!-- Tree Nodes -->
+                    <g class="rp-ex-node rp-ex-node-start">
+                      <circle cx="420" cy="100" r="16"></circle>
+                      <text x="420" y="100" class="rp-ex-node-label">S</text>
+                      <text x="420" y="73" class="rp-ex-node-tag rp-ex-node-tag-start">ROOT</text>
+                    </g>
+
+                    <g class="rp-ex-node">
+                      <circle cx="540" cy="60" r="16"></circle>
+                      <text x="540" y="60" class="rp-ex-node-label">A</text>
+                      <text x="540" y="35" class="rp-ex-node-sub">1. POPPED (A on top)</text>
+                    </g>
+
+                    <g class="rp-ex-node rp-ex-node-subopt">
+                      <circle cx="670" cy="60" r="16"></circle>
+                      <text x="670" y="60" class="rp-ex-node-label">G1</text>
+                      <text x="670" y="35" class="rp-ex-node-tag rp-ex-node-tag-subopt">2. GOAL FOUND! STOPS (Cost = 10)</text>
+                    </g>
+
+                    <g class="rp-ex-node rp-ex-node-pruned">
+                      <circle cx="540" cy="140" r="16"></circle>
+                      <text x="540" y="140" class="rp-ex-node-label">B</text>
+                      <text x="540" y="169" class="rp-ex-node-tag-pruned">Unvisited (in stack)</text>
+                    </g>
+
+                    <g class="rp-ex-node rp-ex-node-pruned-goal">
+                      <circle cx="670" cy="140" r="16"></circle>
+                      <text x="670" y="140" class="rp-ex-node-label">G2</text>
+                      <text x="670" y="169" class="rp-ex-node-tag-pruned">OPTIMAL (NEVER VISITED)</text>
                     </g>
                   </svg>
-                  <figcaption>DFS non-optimality counterexample: Alphabetical order causes DFS to expand <code>A</code> before <code>B</code>, discovering <code>G1</code> (cost 10) and stopping before ever visiting <code>B</code> or optimal goal <code>G2</code> (cost 2).</figcaption>
+                  <figcaption>DFS non-optimality counterexample: <strong>(Left)</strong> Fully connected state space graph where optimal path reaches <code>G</code> via <code>B</code> (cost 2) while high-cost path reaches <code>G</code> via <code>A</code> (cost 10). <strong>(Right)</strong> DFS search tree: alphabetical order causes DFS to expand <code>A</code> before <code>B</code>, discovering <code>G1</code> (cost 10) and stopping before ever visiting <code>B</code> or optimal goal <code>G2</code> (cost 2).</figcaption>
                 </figure>
 
                 <div class="rp-pseudocode">
