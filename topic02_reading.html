@@ -77,9 +77,9 @@
           <a class="rp-toc-h3" href="#expansion">1.3 Expansion: Successors &amp; Child Nodes</a>
           <a class="rp-toc-h3" href="#reached-frontier">1.4 Reached, Expanded &amp; Frontier</a>
           <a class="rp-toc-h3" href="#expansion-order">1.5 Expansion Order</a>
-          <a class="rp-toc-h3" href="#redundant-paths">1.6 Redundant Paths</a>
-          <a class="rp-toc-h3" href="#tree-vs-graph">1.7 Tree-Like vs. Graph Search</a>
-          <a class="rp-toc-h3" href="#solution-path">1.8 The Solution Path &amp; Path Cost</a>
+          <a class="rp-toc-h3" href="#solution-path">1.6 The Solution Path &amp; Path Cost</a>
+          <a class="rp-toc-h3" href="#redundant-paths">1.7 Redundant Paths</a>
+          <a class="rp-toc-h3" href="#tree-vs-graph">1.8 Tree-Like vs. Graph Search</a>
 
           <a class="rp-toc-h2" href="#data-structures">2. Search Data Structures</a>
           <a class="rp-toc-h3" href="#search-node">2.1 The Search Node</a>
@@ -142,19 +142,19 @@
           <h3 id="expansion-order"><span class="rp-num">1.5</span>Expansion Order</h3>
           <p>The <strong>expansion order</strong> is simply the sequence in which nodes are selected and expanded — <code>n&#8321; &rarr; n&#8322; &rarr; n&#8323; &rarr; &hellip;</code> — and it is the single most useful thing to track while reading a trace, since it is what actually distinguishes one search strategy from another. Two algorithms can explore the exact same state-space graph and disagree completely about expansion order: BFS empties the frontier roughly level by level; DFS drains one branch before ever coming back for a sibling; a priority-queue strategy expands in order of whatever quantity it is minimizing. The graph and the algorithm never change — only the order does.</p>
 
-          <h3 id="redundant-paths"><span class="rp-num">1.6</span>Redundant Paths</h3>
-          <p>A <strong>redundant path</strong> is a second path to a state that has already been reached — formally, a child node whose <code>node.STATE &isin; reached</code> already. Redundant paths are common whenever the state-space graph has more than one route between two states (a city reachable from two different neighboring cities, say). Left unmanaged, they cause the same state to show up as more than one node in the search tree — wasted work at best, and at worst a search that never terminates if a redundant path can lead back to a state that leads back to it again.</p>
-
-          <h3 id="tree-vs-graph"><span class="rp-num">1.7</span>Tree-Like vs. Graph Search</h3>
-          <p>Whether redundant paths get pruned is a design choice, not a law of nature — it is the difference between <strong>tree-like search</strong>, which keeps every path it finds as its own node (<code>frontier</code> only, no memory of what has already been reached), and <strong>graph search</strong>, which consults <code>reached[state] = node</code> before adding a child and discards the child outright if a path to that state already exists. Tree-like search is simpler but can re-explore the same state arbitrarily many times; graph search does more bookkeeping per node but guarantees each state is expanded at most once. Every strategy in Section 3 can be run either way — the pseudocode in Section 2.4 is written as graph search, since that is what the interactive lecture runs.</p>
-
-          <h3 id="solution-path"><span class="rp-num">1.8</span>The Solution Path &amp; Path Cost</h3>
+          <h3 id="solution-path"><span class="rp-num">1.6</span>The Solution Path &amp; Path Cost</h3>
           <p>A <strong>solution path</strong> (or simply a <em>solution</em>) is an unbroken sequence of states and actions connecting the initial state <code>problem.INITIAL</code> to a goal state that passes <code>IS-GOAL(problem, s)</code>:</p>
           <div class="formula-box">Solution Path = &lang;s&#8320; &rarr;<sup>a&#8321;</sup> s&#8321; &rarr;<sup>a&#8322;</sup> s&#8322; &rarr; &hellip; &rarr;<sup>a&#8347;</sup> s&#8347;&rang; &middot; s&#8320; = INITIAL, IS-GOAL(s&#8347;) = True</div>
           <p>When a search algorithm successfully identifies a goal node <code>node_goal</code>, it reconstructs the solution path by following the <code>node.PARENT</code> pointers backward from the goal up to the root, then reversing the chain. The <strong>path cost</strong> <code>g(path)</code> is the sum of the individual step costs <code>c(s, a, s&prime;)</code> along that trajectory:</p>
           <div class="formula-box">g(path) = &sum; c(s<sub>i-1</sub>, a<sub>i</sub>, s<sub>i</sub>) &middot; Optimal Cost C* = min { g(p) | p is a valid solution path }</div>
           <p>An <strong>optimal solution</strong> is any solution path whose path cost is minimal among all reachable solutions (denoted <code>C*</code>).</p>
           <p><em>Crucial distinction &mdash; Expansion Order vs. Solution Path:</em> The <strong>expansion order</strong> records every node selected and expanded during search (including dead ends, pruned redundant branches, and exploratory detours). The <strong>solution path</strong> is only the final, clean sequence of actions linking the start to the goal. For instance, in our standard graph from <strong>A</strong> to <strong>G</strong>, Uniform-Cost Search explores nodes in the expansion order <code>A &rarr; C &rarr; B &rarr; D &rarr; E &rarr; G</code> (6 nodes), but returns the optimal solution path <code>A &rarr; B &rarr; D &rarr; G</code> with path cost <strong>8</strong> (4 nodes).</p>
+
+          <h3 id="redundant-paths"><span class="rp-num">1.7</span>Redundant Paths</h3>
+          <p>A <strong>redundant path</strong> is a second path to a state that has already been reached — formally, a child node whose <code>node.STATE &isin; reached</code> already. Redundant paths are common whenever the state-space graph has more than one route between two states (a city reachable from two different neighboring cities, say). Left unmanaged, they cause the same state to show up as more than one node in the search tree — wasted work at best, and at worst a search that never terminates if a redundant path can lead back to a state that leads back to it again.</p>
+
+          <h3 id="tree-vs-graph"><span class="rp-num">1.8</span>Tree-Like vs. Graph Search</h3>
+          <p>Whether redundant paths get pruned is a design choice, not a law of nature — it is the difference between <strong>tree-like search</strong>, which keeps every path it finds as its own node (<code>frontier</code> only, no memory of what has already been reached), and <strong>graph search</strong>, which consults <code>reached[state] = node</code> before adding a child and discards the child outright if a path to that state already exists. Tree-like search is simpler but can re-explore the same state arbitrarily many times; graph search does more bookkeeping per node but guarantees each state is expanded at most once. Every strategy in Section 3 can be run either way — the pseudocode in Section 2.4 is written as graph search, since that is what the interactive lecture runs.</p>
         </section>
 
         <!-- ================= 2. DATA STRUCTURES ================= -->
