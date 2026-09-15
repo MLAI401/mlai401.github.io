@@ -1024,6 +1024,34 @@
                   </div>
                 </div>
 
+                <!-- Active Algorithm Solution Path Card -->
+                <div class="search-solution-card" id="search-active-solution-card">
+                  <div class="search-solution-header">
+                    <span class="search-solution-title">
+                      <i data-lucide="route"></i>
+                      <span id="search-solution-alg-name">BFS</span> Solution Path:
+                    </span>
+                    <span class="search-solution-badge" id="search-solution-status-badge">Searching...</span>
+                  </div>
+                  <div class="search-solution-path-container" id="search-solution-path-nodes">
+                    <span class="path-placeholder">Traverse graph or click Auto to discover path...</span>
+                  </div>
+                  <div class="search-solution-metrics-row">
+                    <div class="metric-item">
+                      <span class="metric-label">Path Cost:</span>
+                      <span class="metric-value" id="search-solution-cost">-</span>
+                    </div>
+                    <div class="metric-item">
+                      <span class="metric-label">Hops / Length:</span>
+                      <span class="metric-value" id="search-solution-length">-</span>
+                    </div>
+                    <div class="metric-item">
+                      <span class="metric-label">Expanded Nodes:</span>
+                      <span class="metric-value" id="search-solution-expanded-count">-</span>
+                    </div>
+                  </div>
+                </div>
+
                 <!-- Dynamic Step Table -->
                 <div class="comparison-table-wrapper" style="max-height: 140px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 6px;">
                   <table class="comparison-table" style="font-size: 0.7rem; box-shadow: none;">
@@ -1044,6 +1072,44 @@
               </div>
             </div>
 
+          </div>
+        </div>
+
+        <!-- Multi-Algorithm Solution Path Comparison Matrix -->
+        <div class="glass-panel search-comparison-section" style="margin-top: 1.5rem; padding: 1.25rem;">
+          <div class="comparison-section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+            <div>
+              <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                <i data-lucide="git-compare" style="width: 18px; height: 18px; color: var(--primary);"></i>
+                All Algorithms Solution Path &amp; Performance Comparison
+              </h4>
+              <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">
+                Direct side-by-side comparison of discovered solution paths, total path costs, node expansion counts, and optimality guarantees for all search algorithms from <strong id="comp-start-node-label" style="color: var(--primary);">A</strong> to <strong id="comp-goal-node-label" style="color: #e11d48;">G</strong>.
+              </p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; align-items: center;">
+              <span class="badge-optimal-legend" style="font-size: 0.72rem; padding: 0.25rem 0.6rem; border-radius: 4px; background: rgba(16, 185, 129, 0.1); color: #059669; font-weight: 600; border: 1px solid rgba(16, 185, 129, 0.2);">
+                <i data-lucide="check" style="width: 12px; height: 12px; vertical-align: middle; display: inline-block;"></i> Optimal Cost Path
+              </span>
+            </div>
+          </div>
+
+          <div class="comparison-table-wrapper" style="overflow-x: auto; border: 1px solid var(--border-light); border-radius: 8px;">
+            <table class="comparison-table" style="font-size: 0.78rem; width: 100%; border-collapse: collapse;">
+              <thead>
+                <tr>
+                  <th style="min-width: 150px;">Algorithm</th>
+                  <th style="min-width: 220px;">Discovered Solution Path</th>
+                  <th style="min-width: 90px;">Path Cost</th>
+                  <th style="min-width: 90px;">Expanded</th>
+                  <th style="min-width: 160px;">Optimality Guarantee</th>
+                  <th style="min-width: 95px; text-align: center;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="search-all-algs-comparison-body">
+                <!-- Dynamically computed for current start/goal -->
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -1482,8 +1548,8 @@
   <script src="demos/puzzle_demo/reachability.js?v=2"></script>
   <script src="demos/puzzle_demo/ui.js?v=2"></script>
   <!-- Graph Search Demo JS -->
-  <script src="demos/search_demo/graph.js?v=2"></script>
-  <script src="demos/search_demo/ui.js?v=2"></script>
+  <script src="demos/search_demo/graph.js?v=3"></script>
+  <script src="demos/search_demo/ui.js?v=3"></script>
   <!-- Adversarial Search & Games Demo JS -->
   <script src="demos/adversarial_demo/adversarial_engine.js?v=1"></script>
   <script src="demos/adversarial_demo/adversarial_lab.js?v=1"></script>

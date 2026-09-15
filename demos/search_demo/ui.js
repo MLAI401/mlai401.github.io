@@ -144,6 +144,7 @@ class SearchDemoUI {
 
     this.currentStepIdx = 0;
     this.buildStepTable();
+    this.renderAllAlgorithmsComparisonTable();
     this.updateUI();
   }
 
@@ -323,22 +324,95 @@ class SearchDemoUI {
     // 3. Populate dynamic step table up to the current index
     this.renderStepTableUpToCurrent();
 
-    // 4. Highlight current stage in search cycle diagram
+    // 4. Update Active Solution Path Card
+    this.updateActiveSolutionCard(step);
+
+    // 5. Highlight current stage in search cycle diagram
     this.updateCycleDiagram(step.action);
 
-    // 5. Update history table if run finishes
-    if (step.action === 'GOAL_FOUND') {
-      this.runHistory[this.currentAlg] = {
-        expanded: step.expanded.join(' → '),
-        path: step.path.join(' → '),
-        cost: step.cost,
-        expandedCount: step.expanded.length
-      };
-      this.updateComparisonTable();
+    // 6. Update comparison table active highlight
+    this.highlightActiveAlgorithmInTable();
+
+    // 7. Draw graph visualizer
+    this.draw();
+  }
+
+  updateActiveSolutionCard(step) {
+    const algNameEl = document.getElementById('search-solution-alg-name');
+    const badgeEl = document.getElementById('search-solution-status-badge');
+    const containerEl = document.getElementById('search-solution-path-nodes');
+    const costEl = document.getElementById('search-solution-cost');
+    const lenEl = document.getElementById('search-solution-length');
+    const expEl = document.getElementById('search-solution-expanded-count');
+
+    if (!containerEl) return;
+
+    if (algNameEl) {
+      let disp = this.currentAlg;
+      if (this.currentAlg === 'ASTAR') disp = 'A*';
+      else if (this.currentAlg === 'GREEDY') disp = 'Greedy';
+      else if (this.currentAlg === 'SMA') disp = 'SMA*';
+      algNameEl.textContent = disp;
     }
 
-    // 6. Draw graph visualizer
-    this.draw();
+    // Find goal step in this.steps if it exists
+    const goalStep = this.steps.find(s => s.action === 'GOAL_FOUND');
+    const isGoalReached = step && step.action === 'GOAL_FOUND';
+    const isFailed = step && step.action === 'FAIL';
+
+    if (isGoalReached && step.path) {
+      if (badgeEl) {
+        badgeEl.className = 'search-solution-badge success';
+        badgeEl.textContent = 'Goal Found!';
+      }
+      this.renderNodePills(containerEl, step.path);
+      if (costEl) costEl.textContent = step.cost ?? '-';
+      if (lenEl) lenEl.textContent = `${step.path.length - 1} hops (${step.path.length} nodes)`;
+      if (expEl) expEl.textContent = `${step.expanded.length} nodes`;
+    } else if (isFailed) {
+      if (badgeEl) {
+        badgeEl.className = 'search-solution-badge danger';
+        badgeEl.textContent = 'No Path';
+      }
+      containerEl.innerHTML = `<span class="path-placeholder" style="color:#ef4444;">No solution path exists from ${this.startNode} to ${this.goalNode}.</span>`;
+      if (costEl) costEl.textContent = '∞';
+      if (lenEl) lenEl.textContent = '0 hops';
+      if (expEl) expEl.textContent = `${step.expanded.length} nodes`;
+    } else {
+      // In progress
+      if (badgeEl) {
+        badgeEl.className = 'search-solution-badge warning';
+        badgeEl.textContent = `Step ${this.currentStepIdx} / ${this.steps.length - 1}`;
+      }
+      
+      if (goalStep && goalStep.path) {
+        // Show discovered path for this algorithm
+        this.renderNodePills(containerEl, goalStep.path);
+        if (costEl) costEl.textContent = goalStep.cost ?? '-';
+        if (lenEl) lenEl.textContent = `${goalStep.path.length - 1} hops (${goalStep.path.length} nodes)`;
+      } else {
+        containerEl.innerHTML = `<span class="path-placeholder">Exploring state space...</span>`;
+        if (costEl) costEl.textContent = '-';
+        if (lenEl) lenEl.textContent = '-';
+      }
+      if (expEl) expEl.textContent = `${step.expanded.length} nodes`;
+    }
+  }
+
+  renderNodePills(container, path) {
+    if (!path || path.length === 0) {
+      container.innerHTML = '<span class="path-placeholder">None</span>';
+      return;
+    }
+    const html = path.map((node, i) => {
+      let cls = 'path-node-pill';
+      if (i === 0) cls += ' start';
+      else if (i === path.length - 1) cls += ' goal';
+      
+      const arrow = i < path.length - 1 ? '<span class="path-arrow">→</span>' : '';
+      return `<span class="${cls}">${node}</span>${arrow}`;
+    }).join(' ');
+    container.innerHTML = html;
   }
 
   renderStepTableUpToCurrent() {
@@ -452,23 +526,159 @@ class SearchDemoUI {
     }
   }
 
-  updateComparisonTable() {
-    const algs = ['BFS', 'DFS', 'UCS', 'IDS', 'ASTAR', 'GREEDY'];
-    algs.forEach(alg => {
-      const data = this.runHistory[alg];
-      const rowId = alg === 'ASTAR' ? 'comp-row-astar' : (alg === 'GREEDY' ? 'comp-row-greedy' : `comp-row-${alg.toLowerCase()}`);
-      const row = document.getElementById(rowId);
-      if (row && data) {
-        let displayName = alg;
-        if (alg === 'ASTAR') displayName = 'A*';
-        else if (alg === 'GREEDY') displayName = 'Greedy Best-First';
-        row.innerHTML = `
-          <td><strong>${displayName}</strong></td>
-          <td><small>${data.expanded || '-'}</small></td>
-          <td><small>${data.path || '-'}</small></td>
-          <td><strong>${data.cost ?? '-'}</strong></td>
-          <td>${data.expandedCount}</td>
-        `;
+  renderAllAlgorithmsComparisonTable() {
+    const tbody = document.getElementById('search-all-algs-comparison-body');
+    const startLabel = document.getElementById('comp-start-node-label');
+    const goalLabel = document.getElementById('comp-goal-node-label');
+    
+    if (startLabel) startLabel.textContent = this.startNode;
+    if (goalLabel) goalLabel.textContent = this.goalNode;
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    const maxNodes = this.smaMaxNodesSelect ? parseInt(this.smaMaxNodesSelect.value, 10) : 4;
+
+    const algsList = [
+      { key: 'BFS', name: 'Breadth-First (BFS)', run: () => runBFS(this.startNode, this.goalNode), optText: 'Yes (for unit edge costs; minimum hops)' },
+      { key: 'DFS', name: 'Depth-First (DFS)', run: () => runDFS(this.startNode, this.goalNode), optText: 'No (may return arbitrary non-optimal path)' },
+      { key: 'UCS', name: 'Uniform-Cost (UCS)', run: () => runUCS(this.startNode, this.goalNode), optText: 'Yes (guaranteed minimum cumulative cost)' },
+      { key: 'IDS', name: 'Iterative Deepening (IDS)', run: () => runIDS(this.startNode, this.goalNode), optText: 'Yes (for unit edge costs; optimal hop count)' },
+      { key: 'ASTAR', name: 'A* Search (A*)', run: () => runAStar(this.startNode, this.goalNode), optText: 'Yes (optimal with consistent/admissible heuristic)' },
+      { key: 'GREEDY', name: 'Greedy Best-First', run: () => runGreedy(this.startNode, this.goalNode), optText: 'No (guided purely by heuristic estimation)' },
+      { key: 'BIBF', name: 'Bidirectional (BIBF)', run: () => runBIBF(this.startNode, this.goalNode), optText: 'Yes (optimal bidirectional uniform-cost search)' },
+      { key: 'SMA', name: 'Memory-Bounded A* (SMA*)', run: () => runSMA(this.startNode, this.goalNode, maxNodes), optText: 'Yes (if memory bound accommodates optimal path)' }
+    ];
+
+    // Compute results for each algorithm
+    const results = algsList.map(item => {
+      let steps = [];
+      try {
+        steps = item.run();
+      } catch (err) {
+        console.error(`Error running ${item.key}:`, err);
+      }
+      const goalStep = steps.find(s => s.action === 'GOAL_FOUND');
+      const lastStep = steps[steps.length - 1];
+      const hasGoal = !!goalStep;
+      const path = hasGoal ? goalStep.path : null;
+      const cost = hasGoal ? goalStep.cost : Infinity;
+      const expandedCount = lastStep ? (lastStep.expanded ? lastStep.expanded.length : 0) : 0;
+      return {
+        ...item,
+        hasGoal,
+        path,
+        cost,
+        expandedCount,
+        steps
+      };
+    });
+
+    // Find min cost among successful searches
+    const validCosts = results.filter(r => r.hasGoal && typeof r.cost === 'number').map(r => r.cost);
+    const minCost = validCosts.length > 0 ? Math.min(...validCosts) : null;
+
+    results.forEach(res => {
+      const isCurrent = this.currentAlg === res.key;
+      const row = document.createElement('tr');
+      row.id = `search-comp-row-${res.key.toLowerCase()}`;
+      if (isCurrent) {
+        row.style.background = 'rgba(79, 70, 229, 0.06)';
+        row.style.fontWeight = '600';
+      }
+
+      // Path HTML with mini pills
+      let pathHtml = '<span style="color:var(--text-muted); font-style:italic;">No Path Found</span>';
+      if (res.hasGoal && res.path && res.path.length > 0) {
+        pathHtml = res.path.map((node, i) => {
+          let cls = 'path-node-pill-sm';
+          if (i === 0) cls += ' start';
+          else if (i === res.path.length - 1) cls += ' goal';
+          const arrow = i < res.path.length - 1 ? '<span class="path-arrow" style="font-size:0.68rem; margin: 0 2px;">→</span>' : '';
+          return `<span class="${cls}">${node}</span>${arrow}`;
+        }).join('');
+      }
+
+      // Cost with optimal badge
+      let costHtml = '<span style="color:var(--text-muted);">∞</span>';
+      if (res.hasGoal) {
+        const isOptimal = (minCost !== null && res.cost === minCost);
+        costHtml = `<strong>${res.cost}</strong>`;
+        if (isOptimal) {
+          costHtml += ` <span class="optimal-tag"><i data-lucide="check" style="width:10px; height:10px; display:inline-block;"></i> Optimal</span>`;
+        }
+      }
+
+      row.innerHTML = `
+        <td><strong>${res.name}</strong></td>
+        <td><div style="display:flex; align-items:center; flex-wrap:wrap; gap:3px;">${pathHtml}</div></td>
+        <td>${costHtml}</td>
+        <td>${res.expandedCount} nodes</td>
+        <td><small style="color:var(--text-secondary);">${res.optText}</small></td>
+        <td style="text-align:center;">
+          <button class="btn-action-sm ${isCurrent ? 'active' : ''}" data-alg="${res.key}" style="font-size:0.72rem; padding:0.25rem 0.6rem;">
+            ${isCurrent ? 'Active' : 'Visualize'}
+          </button>
+        </td>
+      `;
+
+      tbody.appendChild(row);
+    });
+
+    // Add event listeners to "Visualize" buttons
+    tbody.querySelectorAll('.btn-action-sm').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const algKey = e.currentTarget.getAttribute('data-alg');
+        if (!algKey) return;
+        
+        // Switch tab
+        this.algTabButtons.forEach(b => {
+          if (b.getAttribute('data-alg') === algKey) {
+            b.classList.add('active');
+          } else {
+            b.classList.remove('active');
+          }
+        });
+        
+        this.currentAlg = algKey;
+        if (this.smaMaxNodesRow) {
+          this.smaMaxNodesRow.style.display = (this.currentAlg === 'SMA') ? 'flex' : 'none';
+        }
+        this.pause();
+        this.generateTrace();
+
+        // Scroll back up to visualizer if needed
+        const visualizer = document.getElementById('search-canvas-container');
+        if (visualizer) {
+          visualizer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      });
+    });
+
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  }
+
+  highlightActiveAlgorithmInTable() {
+    const tbody = document.getElementById('search-all-algs-comparison-body');
+    if (!tbody) return;
+
+    tbody.querySelectorAll('tr').forEach(row => {
+      const btn = row.querySelector('.btn-action-sm');
+      if (!btn) return;
+      const algKey = btn.getAttribute('data-alg');
+      const isCurrent = this.currentAlg === algKey;
+      if (isCurrent) {
+        row.style.background = 'rgba(79, 70, 229, 0.06)';
+        row.style.fontWeight = '600';
+        btn.classList.add('active');
+        btn.textContent = 'Active';
+      } else {
+        row.style.background = '';
+        row.style.fontWeight = 'normal';
+        btn.classList.remove('active');
+        btn.textContent = 'Visualize';
       }
     });
   }

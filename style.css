@@ -1832,6 +1832,178 @@ kbd {
   cursor: default;
 }
 
+/* --- Graph Search Solution Path & Comparison Matrix Styles --- */
+.search-solution-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.8rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.search-solution-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.search-solution-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.search-solution-title i {
+  width: 14px;
+  height: 14px;
+  color: var(--primary);
+}
+
+.search-solution-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 100px;
+  background: rgba(15, 23, 42, 0.06);
+  color: var(--text-secondary);
+  transition: var(--transition-fast);
+}
+
+.search-solution-badge.success {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.search-solution-badge.warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.search-solution-badge.danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.search-solution-path-container {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  padding: 0.4rem 0.55rem;
+  background: rgba(15, 23, 42, 0.03);
+  border-radius: 6px;
+  min-height: 32px;
+}
+
+.path-placeholder {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.path-node-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #10b981;
+  color: white;
+  box-shadow: 0 1px 3px rgba(16, 185, 129, 0.3);
+}
+
+.path-node-pill.start {
+  background: #06b6d4;
+  box-shadow: 0 1px 3px rgba(6, 182, 212, 0.3);
+}
+
+.path-node-pill.goal {
+  background: #e11d48;
+  box-shadow: 0 1px 3px rgba(225, 29, 72, 0.3);
+}
+
+.path-node-pill-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 0.68rem;
+  font-weight: 700;
+  background: #10b981;
+  color: white;
+}
+
+.path-node-pill-sm.start {
+  background: #06b6d4;
+}
+
+.path-node-pill-sm.goal {
+  background: #e11d48;
+}
+
+.path-arrow {
+  color: var(--text-muted);
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.search-solution-metrics-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  border-top: 1px solid rgba(15, 23, 42, 0.05);
+  padding-top: 0.4rem;
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.metric-label {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.metric-value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.optimal-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.68rem;
+  color: #059669;
+  background: rgba(16, 185, 129, 0.12);
+  border-radius: 3px;
+  padding: 0.1rem 0.35rem;
+  font-weight: 700;
+  margin-left: 4px;
+}
+
 /* --- Two-Room Vacuum Robot Demo Styles --- */
 .vaccum-flow-step {
   display: flex;
