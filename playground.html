@@ -6,8 +6,8 @@
   <title>AI Playground - MLAI401 Foundational AI & ML</title>
   
   <!-- SEO Meta Tags -->
-  <meta name="description" content="Interactive AI and ML visualizer labs covering K-Means clustering, maze search abstraction, 8-puzzle state-space exploration, graph search algorithms (BFS, DFS, UCS, IDS), and intelligent agent architectures (Two-Room Vacuum Robot).">
-  <meta name="keywords" content="AI Playground, Machine Learning Visualizer, K-Means Canvas, Maze Search, 8-Puzzle, Graph Search, Vacuum Robot Agent, AIMA">
+  <meta name="description" content="Interactive AI and ML visualizer labs covering K-Means clustering, maze abstraction, 8-puzzle state-space exploration, graph search algorithms (BFS, DFS, UCS, IDS), and intelligent agent architectures (Two-Room Vacuum Robot).">
+  <meta name="keywords" content="AI Playground, Machine Learning Visualizer, K-Means Canvas, Maze Abstraction, 8-Puzzle, Graph Search, Vacuum Robot Agent, AIMA">
   
   <!-- Open Graph -->
   <meta property="og:title" content="MLAI401 - AI Playground & Interactive Labs">
@@ -72,7 +72,7 @@
             <i data-lucide="bar-chart-2"></i> K-Means Clustering
           </button>
           <button class="playground-tab" data-target="view-maze">
-            <i data-lucide="grid"></i> Maze Search & Abstraction
+            <i data-lucide="grid"></i> Maze Abstraction
           </button>
           <button class="playground-tab" data-target="view-puzzle">
             <i data-lucide="puzzle"></i> 8-Puzzle State-Space
@@ -149,7 +149,7 @@
         </div>
       </div>
 
-      <!-- Tab 2: Maze Search & Abstraction View -->
+      <!-- Tab 2: Maze Abstraction View -->
       <div class="playground-view" id="view-maze">
         
         <!-- Teaching Flow Progress Indicator -->
@@ -177,10 +177,6 @@
           <div class="flow-step" data-step="5">
             <span class="flow-step-num">6</span>
             <span class="flow-step-name">Comparison</span>
-          </div>
-          <div class="flow-step" data-step="6">
-            <span class="flow-step-num">7</span>
-            <span class="flow-step-name">Search Complexity</span>
           </div>
         </div>
 
@@ -406,93 +402,6 @@
                       <div class="bar-fill" id="compare-bar-fill" style="background: linear-gradient(90deg, var(--primary), #10b981); height: 100%; transition: width 0.5s ease; width: 0%; font-size: 0.7rem; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold;">0%</div>
                     </div>
                   </div>
-                </div>
-              </div>
-
-              <!-- Panel 7: Search Algorithms Complexity -->
-              <div class="teaching-panel" id="panel-step-6">
-                <h3>7. Search Algorithms Complexity & Cost</h3>
-                <p>Compare the search performance of different algorithms on the derived abstract graph for this specific maze from <strong>S</strong> to <strong>G</strong>:</p>
-                
-                <div class="comparison-table-wrapper" style="margin-top: 5px; max-height: 180px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 6px;">
-                  <table class="comparison-table" style="font-size: 0.7rem; box-shadow: none;">
-                    <thead>
-                      <tr>
-                        <th>Algorithm</th>
-                        <th>Path Cost</th>
-                        <th>Expanded Nodes</th>
-                        <th>Optimal?</th>
-                        <th>Action</th>
-                      </tr>
-                    </thead>
-                    <tbody id="maze-search-complexity-body">
-                      <!-- Computed dynamically -->
-                    </tbody>
-                  </table>
-                </div>
-
-                <div class="teaching-tip" style="padding: 0.5rem 0.75rem; margin-top: 8px;">
-                  <i data-lucide="info"></i>
-                  <span id="maze-search-explanation">Click "Visualize" above to trace the path and see how each algorithm explores the state space.</span>
-                </div>
-                
-                <p style="margin-top: 10px; font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Theoretical Complexity Bounds Reference:</p>
-                <div class="comparison-table-wrapper" style="margin-top: 5px; max-height: 150px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 6px;">
-                  <table class="comparison-table" style="font-size: 0.65rem; box-shadow: none;">
-                    <thead>
-                      <tr>
-                        <th>Algorithm</th>
-                        <th>Time</th>
-                        <th>Space</th>
-                        <th>Opt?</th>
-                        <th>Compl?</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td><strong>BFS</strong></td>
-                        <td>O(b<sup>d</sup>)</td>
-                        <td>O(b<sup>d</sup>)</td>
-                        <td>Yes*</td>
-                        <td>Yes</td>
-                      </tr>
-                      <tr>
-                        <td><strong>DFS</strong></td>
-                        <td>O(b<sup>m</sup>)</td>
-                        <td>O(b·m)</td>
-                        <td>No</td>
-                        <td>No</td>
-                      </tr>
-                      <tr>
-                        <td><strong>UCS</strong></td>
-                        <td>O(b<sup>1+⌊C*/ε⌋</sup>)</td>
-                        <td>O(b<sup>1+⌊C*/ε⌋</sup>)</td>
-                        <td>Yes</td>
-                        <td>Yes</td>
-                      </tr>
-                      <tr>
-                        <td><strong>IDS</strong></td>
-                        <td>O(b<sup>d</sup>)</td>
-                        <td>O(b·d)</td>
-                        <td>Yes*</td>
-                        <td>Yes</td>
-                      </tr>
-                      <tr>
-                        <td><strong>Greedy</strong></td>
-                        <td>O(b<sup>m</sup>)</td>
-                        <td>O(b<sup>m</sup>)</td>
-                        <td>No</td>
-                        <td>No</td>
-                      </tr>
-                      <tr>
-                        <td><strong>A*</strong></td>
-                        <td>O(b<sup>d</sup>)</td>
-                        <td>O(b<sup>d</sup>)</td>
-                        <td>Yes</td>
-                        <td>Yes</td>
-                      </tr>
-                    </tbody>
-                  </table>
                 </div>
               </div>
             </div>
@@ -1546,10 +1455,9 @@
 
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
-  <!-- Maze Search Demo JS -->
+  <!-- Maze Abstraction Demo JS -->
   <script src="demos/maze_demo/maze.js?v=2"></script>
   <script src="demos/maze_demo/abstraction.js?v=2"></script>
-  <script src="demos/maze_demo/search.js?v=2"></script>
   <script src="demos/maze_demo/ui.js?v=2"></script>
   <!-- 8-Puzzle State-Space Demo JS -->
   <script src="demos/puzzle_demo/puzzle.js?v=2"></script>

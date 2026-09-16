@@ -1,5 +1,5 @@
 /**
- * UI and Visualizer Engine for the Maze Search & Abstraction Demo.
+ * UI and Visualizer Engine for the Maze Abstraction Demo.
  */
 class MazeDemoUI {
   constructor() {
@@ -20,8 +20,6 @@ class MazeDemoUI {
     this.maze = new Maze(this.grid);
     this.decisionPoints = Abstraction.findDecisionPoints(this.maze);
     this.graph = Abstraction.buildAbstractGraph(this.maze, this.decisionPoints);
-    this.searchComplexityResults = this.computeSearchComplexity();
-    this.selectedComplexityAlgorithm = 'A*';
 
     // DOM Elements
     this.canvas = document.getElementById('maze-canvas');
@@ -50,7 +48,7 @@ class MazeDemoUI {
     this.absLog = document.getElementById('abs-log');
 
     // UI State
-    this.currentTeachingStep = 0; // 0 to 6
+    this.currentTeachingStep = 0; // 0 to 5
     this.robotState = new RobotState(this.maze.start.x, this.maze.start.y, 'E');
     this.abstractRobotState = 'S'; // Start label
     this.activeAbstractPath = null; // Last traversed abstract corridor coordinates
@@ -170,7 +168,7 @@ class MazeDemoUI {
   }
 
   setTeachingStep(step) {
-    if (step < 0 || step > 6) return;
+    if (step < 0 || step > 5) return;
     
     this.currentTeachingStep = step;
     
@@ -187,8 +185,8 @@ class MazeDemoUI {
 
     // Nav buttons status
     this.btnPrev.disabled = step === 0;
-    this.btnNext.textContent = step === 6 ? "Finished" : "Next Step";
-    this.btnNext.disabled = step === 6;
+    this.btnNext.textContent = step === 5 ? "Finished" : "Next Step";
+    this.btnNext.disabled = step === 5;
 
     // Reset components depending on step
     if (step === 1) {
@@ -204,14 +202,6 @@ class MazeDemoUI {
       }
       if (this.absLog) {
         this.absLog.innerHTML = `<div class="log-entry">Robot placed at node: <strong>${this.abstractRobotState}</strong></div>`;
-      }
-    } else if (step === 6) {
-      this.renderSearchComplexityTable();
-      const expEl = document.getElementById('maze-search-explanation');
-      if (expEl && this.selectedComplexityAlgorithm) {
-        const alg = this.selectedComplexityAlgorithm;
-        const res = this.searchComplexityResults[alg];
-        expEl.innerHTML = `<strong>${alg} Search path:</strong> ${res.path.join(' → ')} <br><strong>Expanded Nodes Order:</strong> ${res.expandedOrder.join(', ') || 'None'}`;
       }
     }
 
@@ -486,13 +476,6 @@ class MazeDemoUI {
       this.drawGraphEdges(cellSize, false);
       this.drawDecisionPoints(cellSize);
     }
-    else if (this.currentTeachingStep === 6) {
-      // Step 7 (Complexity) - Draw abstract graph with selected algorithm's path highlighted
-      const algRes = this.searchComplexityResults[this.selectedComplexityAlgorithm];
-      const path = algRes ? algRes.path : this.findOptimalPath();
-      this.drawGraphEdges(cellSize, false, path);
-      this.drawDecisionPoints(cellSize, path);
-    }
 
     // Render Start (S) and Goal (G) text overlays
     this.drawStartGoalText(cellSize);
@@ -545,46 +528,6 @@ class MazeDemoUI {
     }
   }
 
-  findOptimalPath() {
-    // Dijkstra algorithm on this.graph from 'S' to 'G'
-    const dist = {};
-    const prev = {};
-    const queue = [];
-
-    this.decisionPoints.forEach(dp => {
-      dist[dp.label] = Infinity;
-      prev[dp.label] = null;
-      queue.push(dp.label);
-    });
-
-    dist['S'] = 0;
-
-    while (queue.length > 0) {
-      queue.sort((a, b) => dist[a] - dist[b]);
-      const u = queue.shift();
-
-      if (u === 'G' || dist[u] === Infinity) break;
-
-      const edges = this.graph[u] || [];
-      edges.forEach(edge => {
-        const alt = dist[u] + edge.cost;
-        if (alt < dist[edge.to]) {
-          dist[edge.to] = alt;
-          prev[edge.to] = u;
-        }
-      });
-    }
-
-    const path = [];
-    let curr = 'G';
-    if (prev[curr] || curr === 'S') {
-      while (curr) {
-        path.push(curr);
-        curr = prev[curr];
-      }
-    }
-    return path.reverse();
-  }
 
   drawDecisionPoints(cellSize, highlightedPath = null) {
     this.decisionPoints.forEach(dp => {
@@ -730,73 +673,6 @@ class MazeDemoUI {
     this.ctx.restore();
   }
 
-  computeSearchComplexity() {
-    const start = 'S';
-    const goal = 'G';
-    const results = {};
-
-    results['BFS'] = window.mazeBFS(this.graph, start, goal);
-    results['DFS'] = window.mazeDFS(this.graph, start, goal);
-    results['IDS'] = window.mazeIDS(this.graph, start, goal);
-    results['UCS'] = window.mazeUCS(this.graph, start, goal);
-    results['A*'] = window.mazeAStar(this.graph, start, goal, this.decisionPoints);
-    results['Greedy'] = window.mazeGreedy(this.graph, start, goal, this.decisionPoints);
-
-    return results;
-  }
-
-  renderSearchComplexityTable() {
-    const tbody = document.getElementById('maze-search-complexity-body');
-    if (!tbody) return;
-
-    tbody.innerHTML = '';
-    const algs = ['BFS', 'DFS', 'IDS', 'UCS', 'A*', 'Greedy'];
-    const isOptimal = {
-      'BFS': 'No (optimal only for unit costs)',
-      'DFS': 'No',
-      'IDS': 'No (optimal only for unit costs)',
-      'UCS': 'Yes (optimal for general costs)',
-      'A*': 'Yes (optimal with consistent h)',
-      'Greedy': 'No'
-    };
-
-    algs.forEach(alg => {
-      const res = this.searchComplexityResults[alg];
-      const row = document.createElement('tr');
-      
-      const isCurrent = this.selectedComplexityAlgorithm === alg;
-      
-      row.innerHTML = `
-        <td><strong>${alg}</strong></td>
-        <td>${res.cost === Infinity ? 'Unreachable' : res.cost}</td>
-        <td>${res.expandedCount}</td>
-        <td><small>${isOptimal[alg]}</small></td>
-        <td>
-          <button class="btn-action-sm ${isCurrent ? 'active' : ''}" data-alg="${alg}">
-            ${isCurrent ? 'Active' : 'Visualize'}
-          </button>
-        </td>
-      `;
-
-      tbody.appendChild(row);
-    });
-
-    tbody.querySelectorAll('.btn-action-sm').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const alg = e.target.getAttribute('data-alg');
-        this.selectedComplexityAlgorithm = alg;
-        
-        const expEl = document.getElementById('maze-search-explanation');
-        if (expEl) {
-          const res = this.searchComplexityResults[alg];
-          expEl.innerHTML = `<strong>${alg} Search path:</strong> ${res.path.join(' → ')} <br><strong>Expanded Nodes Order:</strong> ${res.expandedOrder.join(', ') || 'None'}`;
-        }
-
-        this.renderSearchComplexityTable();
-        this.draw();
-      });
-    });
-  }
 }
 
 // Export UI to global window scope
