@@ -74,6 +74,12 @@ document.addEventListener('DOMContentLoaded', () => {
         } else {
           window.mazeDemo.resizeCanvas();
         }
+      } else if (targetId === 'view-maze-search') {
+        if (!window.mazeSearchDemo) {
+          window.mazeSearchDemo = new MazeSearchDemoUI();
+        } else {
+          window.mazeSearchDemo.resizeCanvas();
+        }
       } else if (targetId === 'view-puzzle') {
         if (!window.puzzleDemo) {
           window.puzzleDemo = new PuzzleDemoUI();

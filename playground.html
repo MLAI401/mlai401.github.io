@@ -44,25 +44,8 @@
     </div>
   </header>
 
-  <!-- Playground Hero Section -->
-  <section class="hero" id="playground-hero" style="min-height: auto; padding-top: 7rem; padding-bottom: 2.5rem;">
-    <div class="container">
-      <div class="hero-content" style="max-width: 800px; margin: 0 auto; text-align: center;">
-        <div class="hero-badge" id="hero-badge-tag" style="margin: 0 auto 1.25rem;">
-          <i data-lucide="sparkles"></i> Interactive Learning Laboratories
-        </div>
-        <h1 class="hero-title" style="font-size: 2.75rem; margin-bottom: 1rem;">
-          AI & ML Playground
-        </h1>
-        <p class="hero-description" style="margin: 0 auto; font-size: 1.05rem;">
-          Explore foundational AI algorithms in real-time. Experiment with clustering dynamics, state-space abstraction, heuristic search mechanics, and intelligent agent decision models.
-        </p>
-      </div>
-    </div>
-  </section>
-
   <!-- Interactive Playground Section -->
-  <section class="section" id="playground" style="background: rgba(241, 245, 249, 0.5); position: relative; padding-top: 1rem;">
+  <section class="section" id="playground" style="background: rgba(241, 245, 249, 0.5); position: relative; padding-top: 5.5rem; padding-bottom: 2rem;">
     <div class="ambient-glow-green"></div>
     <div class="container">
       <div class="section-header" style="margin-bottom: 2rem;">
@@ -73,6 +56,9 @@
           </button>
           <button class="playground-tab" data-target="view-maze">
             <i data-lucide="grid"></i> Maze Abstraction
+          </button>
+          <button class="playground-tab" data-target="view-maze-search">
+            <i data-lucide="compass"></i> Maze Search
           </button>
           <button class="playground-tab" data-target="view-puzzle">
             <i data-lucide="puzzle"></i> 8-Puzzle State-Space
@@ -414,6 +400,164 @@
               <button class="btn-ctrl btn-ctrl-primary" id="btn-maze-next">
                 Next Step <i data-lucide="chevron-right"></i>
               </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2.5: Maze Search & Performance View -->
+      <div class="playground-view" id="view-maze-search">
+        <div class="playground-grid">
+          <!-- Visualizer Canvas -->
+          <div class="canvas-container" id="maze-search-canvas-container">
+            <canvas id="ms-canvas"></canvas>
+            <div class="canvas-overlay" id="ms-overlay-info">
+              <div>Goal: <span style="color: #ef4444; font-weight: 700;">G</span> &bull; Start: <span style="color: #10b981; font-weight: 700;">S</span></div>
+              <div>Heuristic: <span style="color: var(--accent);">Manhattan Distance |Δx| + |Δy|</span></div>
+            </div>
+          </div>
+          
+          <!-- Controls & Performance Dashboard Panel -->
+          <div class="playground-controls glass-panel" id="maze-search-controls-panel">
+            <!-- Header & Config -->
+            <div class="controls-header" style="margin-bottom: 0.75rem;">
+              <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">
+                Maze Search &amp; Complexity
+              </h3>
+              <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">
+                Evaluate time complexity, memory space, completeness, and optimality on maze topologies.
+              </p>
+            </div>
+
+            <!-- Primary Algorithm Selector & Mode Controls -->
+            <div class="controls-row-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <div class="control-select-wrapper">
+                <label class="control-mini-label">Algorithm</label>
+                <select id="ms-alg-select" class="select-input">
+                  <option value="A*" selected>A* Search (f = g + h)</option>
+                  <option value="UCS">Uniform-Cost Search (UCS)</option>
+                  <option value="BFS">Breadth-First Search (BFS)</option>
+                  <option value="DFS">Depth-First Search (DFS)</option>
+                  <option value="Greedy">Greedy Best-First</option>
+                  <option value="IDS">Iterative Deepening (IDS)</option>
+                </select>
+              </div>
+
+              <div class="control-select-wrapper">
+                <label class="control-mini-label">Maze Preset</label>
+                <select id="ms-preset-select" class="select-input">
+                  <option value="dualRoute" selected>Dual Route &amp; Trap</option>
+                  <option value="looping">Cyclic Corridor Maze</option>
+                  <option value="openField">Open Room / Obstacles</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Search Mode & Comparison Toggle -->
+            <div class="controls-row-group" style="display: flex; gap: 0.5rem; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; padding: 0.4rem 0.6rem; background: rgba(15, 23, 42, 0.03); border-radius: 6px; border: 1px solid var(--border-light);">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <label class="control-mini-label" style="margin: 0;">State Space:</label>
+                <select id="ms-mode-select" class="select-input" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; width: auto;">
+                  <option value="grid" selected>Grid Level (Cells)</option>
+                  <option value="abstract">Abstract Graph (Nodes)</option>
+                </select>
+              </div>
+
+              <label class="checkbox-label" style="font-size: 0.75rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.35rem; margin: 0;">
+                <input type="checkbox" id="ms-compare-toggle">
+                <span>Side-by-Side Compare</span>
+              </label>
+            </div>
+
+            <!-- Secondary Compare Algorithm (Hidden by default) -->
+            <div id="ms-compare-select-group" class="control-select-wrapper" style="display: none; margin-bottom: 0.75rem;">
+              <label class="control-mini-label">Compare Against:</label>
+              <select id="ms-alg-compare-select" class="select-input">
+                <option value="BFS" selected>Breadth-First Search (BFS)</option>
+                <option value="DFS">Depth-First Search (DFS)</option>
+                <option value="UCS">Uniform-Cost Search (UCS)</option>
+                <option value="Greedy">Greedy Best-First</option>
+                <option value="A*">A* Search</option>
+                <option value="IDS">Iterative Deepening (IDS)</option>
+              </select>
+            </div>
+
+            <!-- Playback Stepper Buttons -->
+            <div class="playback-controls-container" style="display: flex; gap: 0.4rem; margin-bottom: 0.75rem;">
+              <button class="btn-ctrl btn-ctrl-primary" id="ms-btn-play" style="flex: 1.4;">
+                <i data-lucide="play"></i> Auto Run
+              </button>
+              <button class="btn-ctrl" id="ms-btn-prev" title="Step Back">
+                <i data-lucide="skip-back"></i>
+              </button>
+              <button class="btn-ctrl" id="ms-btn-next" title="Step Next">
+                <i data-lucide="skip-forward"></i>
+              </button>
+              <button class="btn-ctrl" id="ms-btn-reset" title="Reset Search">
+                <i data-lucide="rotate-ccw"></i>
+              </button>
+            </div>
+
+            <!-- Speed Slider -->
+            <div class="controls-group" style="margin-bottom: 0.75rem;">
+              <div class="control-label" style="font-size: 0.75rem;">
+                <span>Step Delay</span>
+                <span class="slider-val" id="ms-speed-display">200ms</span>
+              </div>
+              <input type="range" class="range-slider" id="ms-speed-slider" min="30" max="600" step="10" value="200">
+            </div>
+
+            <!-- Live Performance Metrics Grid -->
+            <div class="stat-summary-box" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; padding: 0.5rem; margin-bottom: 0.75rem;">
+              <div class="summary-item" style="text-align: center;">
+                <span class="summary-label" style="font-size: 0.65rem;">Expanded (Time)</span>
+                <span class="summary-val" id="ms-stat-expanded" style="font-size: 0.95rem; color: var(--primary);">0</span>
+              </div>
+              <div class="summary-item" style="text-align: center;">
+                <span class="summary-label" style="font-size: 0.65rem;">Peak Memory (Space)</span>
+                <span class="summary-val" id="ms-stat-memory" style="font-size: 0.95rem; color: #f59e0b;">1 node</span>
+              </div>
+              <div class="summary-item" style="text-align: center;">
+                <span class="summary-label" style="font-size: 0.65rem;">Path Cost</span>
+                <span class="summary-val" id="ms-stat-cost" style="font-size: 0.95rem; color: #10b981;">0</span>
+              </div>
+              <div class="summary-item" style="text-align: center;">
+                <span class="summary-label" style="font-size: 0.65rem;">Optimality</span>
+                <span class="badge-optimal-sm" id="ms-stat-optimality" style="font-size: 0.7rem;">Optimal</span>
+              </div>
+            </div>
+
+            <!-- Live Action / Event Log -->
+            <div class="manual-log-box" style="margin-bottom: 0.75rem; max-height: 50px;">
+              <div id="ms-log-content" class="manual-log-content" style="font-size: 0.75rem;"></div>
+            </div>
+
+            <!-- Visual Frontier Container -->
+            <div class="frontier-visual-section" style="margin-bottom: 0.75rem;">
+              <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">
+                Frontier Queue / Stack (Next pop highlighted):
+              </div>
+              <div id="ms-frontier-container" class="ms-frontier-grid"></div>
+            </div>
+
+            <!-- Evaluation Summary Matrix Table -->
+            <div class="comparison-table-wrapper" style="max-height: 140px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 6px;">
+              <table class="comparison-table" style="font-size: 0.65rem; box-shadow: none;">
+                <thead>
+                  <tr>
+                    <th>Algorithm</th>
+                    <th>Time</th>
+                    <th>Space</th>
+                    <th>Expanded</th>
+                    <th>Memory</th>
+                    <th>Cost</th>
+                    <th>Opt?</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="ms-summary-table-body"></tbody>
+              </table>
             </div>
 
           </div>
@@ -1459,6 +1603,9 @@
   <script src="demos/maze_demo/maze.js?v=2"></script>
   <script src="demos/maze_demo/abstraction.js?v=2"></script>
   <script src="demos/maze_demo/ui.js?v=2"></script>
+  <!-- Maze Search & Performance Demo JS -->
+  <script src="demos/maze_search_demo/maze_search_engine.js?v=1"></script>
+  <script src="demos/maze_search_demo/ui.js?v=1"></script>
   <!-- 8-Puzzle State-Space Demo JS -->
   <script src="demos/puzzle_demo/puzzle.js?v=2"></script>
   <script src="demos/puzzle_demo/reachability.js?v=2"></script>
