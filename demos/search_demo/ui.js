@@ -750,17 +750,17 @@ class SearchDemoUI {
         
         if (isSolEdge) {
           ctx.strokeStyle = '#10b981'; // Neon Emerald Green for final path
-          ctx.lineWidth = 3.5;
+          ctx.lineWidth = 5.5;
           ctx.shadowColor = '#10b981';
-          ctx.shadowBlur = 6;
+          ctx.shadowBlur = 8;
         } else if (isActiveGen) {
           ctx.strokeStyle = '#f59e0b'; // Amber for successor generation
-          ctx.lineWidth = 2.5;
+          ctx.lineWidth = 4.5;
           ctx.shadowColor = '#f59e0b';
-          ctx.shadowBlur = 4;
+          ctx.shadowBlur = 6;
         } else {
-          ctx.strokeStyle = 'rgba(15, 23, 42, 0.15)';
-          ctx.lineWidth = 1.2;
+          ctx.strokeStyle = 'rgba(15, 23, 42, 0.22)';
+          ctx.lineWidth = 2.5;
           ctx.shadowBlur = 0;
         }
         ctx.stroke();
@@ -772,14 +772,14 @@ class SearchDemoUI {
         
         ctx.fillStyle = '#ffffff';
         ctx.beginPath();
-        ctx.arc(mx, my - 2, 7, 0, 2 * Math.PI);
+        ctx.arc(mx, my - 2, 10, 0, 2 * Math.PI);
         ctx.fill();
-        ctx.strokeStyle = isSolEdge ? '#10b981' : (isActiveGen ? '#f59e0b' : 'rgba(15, 23, 42, 0.15)');
-        ctx.lineWidth = 0.8;
+        ctx.strokeStyle = isSolEdge ? '#10b981' : (isActiveGen ? '#f59e0b' : 'rgba(15, 23, 42, 0.22)');
+        ctx.lineWidth = 1.6;
         ctx.stroke();
 
-        ctx.fillStyle = isSolEdge ? '#047857' : '#475569';
-        ctx.font = 'bold 8px monospace';
+        ctx.fillStyle = isSolEdge ? '#047857' : '#334155';
+        ctx.font = 'bold 11px monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(succ.cost, mx, my - 2);
@@ -818,15 +818,15 @@ class SearchDemoUI {
     Object.entries(NODE_LAYOUT).forEach(([nodeId, layout]) => {
       const nx = layout.x * w;
       const ny = layout.y * hMax;
-      const radius = 16;
+      const radius = 20;
 
       ctx.save();
       
       // Determine coloring based on search status
       let fillColor = '#ffffff';
-      let borderStroke = 'rgba(15, 23, 42, 0.15)';
+      let borderStroke = 'rgba(15, 23, 42, 0.2)';
       let textFill = '#0f172a';
-      let lineWidth = 1.5;
+      let lineWidth = 2.5;
       
       const isStart = nodeId === this.startNode;
       const isGoal = nodeId === this.goalNode;
@@ -842,13 +842,13 @@ class SearchDemoUI {
         borderStroke = '#4f46e5';
         textFill = '#ffffff';
         ctx.shadowColor = '#4f46e5';
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = 10;
       } else if (isSuccessor) {
         fillColor = '#fef3c7'; // child node being evaluated
         borderStroke = '#f59e0b';
         textFill = '#d97706';
         ctx.shadowColor = '#f59e0b';
-        ctx.shadowBlur = 6;
+        ctx.shadowBlur = 8;
       } else if (expandedSet.has(nodeId)) {
         fillColor = '#1e293b'; // already expanded
         borderStroke = '#1e293b';
@@ -884,11 +884,11 @@ class SearchDemoUI {
       // Start/Goal custom outlines
       if (isStart) {
         ctx.strokeStyle = '#06b6d4'; // Cyan outline for start
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 4.5;
         ctx.stroke();
       } else if (isGoal) {
         ctx.strokeStyle = '#e11d48'; // Red outline for goal
-        ctx.lineWidth = 3;
+        ctx.lineWidth = 4.5;
         ctx.stroke();
       } else {
         ctx.strokeStyle = borderStroke;
@@ -899,7 +899,7 @@ class SearchDemoUI {
 
       // Draw node letter ID
       ctx.fillStyle = textFill;
-      ctx.font = 'bold 12px Outfit, sans-serif';
+      ctx.font = 'bold 16px Outfit, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(nodeId, nx, ny);
@@ -907,16 +907,16 @@ class SearchDemoUI {
       // Draw Start/Goal indicator labels above the node
       if (isStart) {
         ctx.fillStyle = '#0891b2';
-        ctx.font = 'bold 8px monospace';
+        ctx.font = 'bold 11px monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText("START", nx, ny - radius - 7);
+        ctx.fillText("START", nx, ny - radius - 8);
       } else if (isGoal) {
         ctx.fillStyle = '#e11d48';
-        ctx.font = 'bold 8px monospace';
+        ctx.font = 'bold 11px monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText("GOAL", nx, ny - radius - 7);
+        ctx.fillText("GOAL", nx, ny - radius - 8);
       }
 
       // Label details (cost, heuristic, f-score, or depth under nodes)
@@ -929,51 +929,51 @@ class SearchDemoUI {
           const gCost = step.reached[nodeId] ?? 0;
           const fCost = gCost + hCost;
           ctx.fillStyle = '#1e293b';
-          ctx.font = 'bold 9px monospace';
-          ctx.fillText(`h:${hCost} | f:${fCost}`, nx, ny + radius + 11);
+          ctx.font = 'bold 11px monospace';
+          ctx.fillText(`h:${hCost} | f:${fCost}`, nx, ny + radius + 13);
         } else {
-          ctx.fillStyle = '#94a3b8';
-          ctx.font = 'bold 9px monospace';
-          ctx.fillText(`h:${hCost} | f:—`, nx, ny + radius + 11);
+          ctx.fillStyle = '#64748b';
+          ctx.font = 'bold 11px monospace';
+          ctx.fillText(`h:${hCost} | f:—`, nx, ny + radius + 13);
         }
       } else if (this.currentAlg === 'GREEDY') {
         const hCost = getHeuristic(nodeId, this.goalNode);
         if (reachedSet.has(nodeId) || frontierNodes.has(nodeId)) {
           ctx.fillStyle = '#1e293b';
-          ctx.font = 'bold 9px monospace';
-          ctx.fillText(`h:${hCost} | f:${hCost}`, nx, ny + radius + 11);
+          ctx.font = 'bold 11px monospace';
+          ctx.fillText(`h:${hCost} | f:${hCost}`, nx, ny + radius + 13);
         } else {
-          ctx.fillStyle = '#94a3b8';
-          ctx.font = 'bold 9px monospace';
-          ctx.fillText(`h:${hCost} | f:—`, nx, ny + radius + 11);
+          ctx.fillStyle = '#64748b';
+          ctx.font = 'bold 11px monospace';
+          ctx.fillText(`h:${hCost} | f:—`, nx, ny + radius + 13);
         }
       } else if (this.currentAlg === 'SMA') {
         const hCost = getHeuristic(nodeId, this.goalNode);
         const frontierItem = step.frontier.find(it => it.node === nodeId);
         if (frontierItem) {
           ctx.fillStyle = '#1e293b';
-          ctx.font = 'bold 9px monospace';
-          ctx.fillText(`h:${hCost} | f:${frontierItem.f}`, nx, ny + radius + 11);
+          ctx.font = 'bold 11px monospace';
+          ctx.fillText(`h:${hCost} | f:${frontierItem.f}`, nx, ny + radius + 13);
         } else if (reachedSet.has(nodeId)) {
           const gCost = step.reached[nodeId] ?? 0;
           const fCost = gCost + hCost;
           ctx.fillStyle = '#1e293b';
-          ctx.font = 'bold 9px monospace';
-          ctx.fillText(`h:${hCost} | f:${fCost}`, nx, ny + radius + 11);
+          ctx.font = 'bold 11px monospace';
+          ctx.fillText(`h:${hCost} | f:${fCost}`, nx, ny + radius + 13);
         } else {
-          ctx.fillStyle = '#94a3b8';
-          ctx.font = 'bold 9px monospace';
-          ctx.fillText(`h:${hCost} | f:—`, nx, ny + radius + 11);
+          ctx.fillStyle = '#64748b';
+          ctx.font = 'bold 11px monospace';
+          ctx.fillText(`h:${hCost} | f:—`, nx, ny + radius + 13);
         }
       } else if ((this.currentAlg === 'UCS' || this.currentAlg === 'BIBF') && reachedSet.has(nodeId)) {
-        ctx.fillStyle = '#64748b';
-        ctx.font = 'bold 9px monospace';
+        ctx.fillStyle = '#475569';
+        ctx.font = 'bold 11px monospace';
         const cost = step.reached[nodeId] ?? '∞';
-        ctx.fillText(`g:${cost}`, nx, ny + radius + 11);
+        ctx.fillText(`g:${cost}`, nx, ny + radius + 13);
       } else if (this.currentAlg === 'IDS' && nodeId === step.currentNode) {
-        ctx.fillStyle = '#64748b';
-        ctx.font = 'bold 9px monospace';
-        ctx.fillText(`d:${step.depth}`, nx, ny + radius + 11);
+        ctx.fillStyle = '#475569';
+        ctx.font = 'bold 11px monospace';
+        ctx.fillText(`d:${step.depth}`, nx, ny + radius + 13);
       }
 
       ctx.restore();
@@ -989,16 +989,16 @@ class SearchDemoUI {
 
     // Draw container bounding box
     ctx.fillStyle = '#f8fafc';
-    ctx.strokeStyle = 'rgba(15, 23, 42, 0.05)';
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(15, 23, 42, 0.08)';
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.rect(10, startY, w - 20, h - startY - 10);
     ctx.fill();
     ctx.stroke();
 
     // Label
-    ctx.fillStyle = '#64748b';
-    ctx.font = 'bold 8px monospace';
+    ctx.fillStyle = '#475569';
+    ctx.font = 'bold 11px monospace';
     ctx.textAlign = 'left';
     
     let desc = '';
@@ -1011,25 +1011,25 @@ class SearchDemoUI {
     else if (this.currentAlg === 'BIBF') desc = 'TWO PRIORITY QUEUES: FORWARD (from START) + BACKWARD (from GOAL)';
     else if (this.currentAlg === 'SMA') desc = 'MEMORY-BOUNDED PRIORITY QUEUE (LOWEST f(n), WORST LEAF FORGOTTEN WHEN FULL)';
     
-    ctx.fillText(`FRONTIER: ${desc}`, 20, startY + 14);
+    ctx.fillText(`FRONTIER: ${desc}`, 20, startY + 16);
 
     const len = step.frontier.length;
     if (len === 0) {
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = 'italic 10px sans-serif';
+      ctx.fillStyle = '#64748b';
+      ctx.font = 'italic 12px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText("Frontier is currently empty.", w / 2, startY + (h - startY) / 2);
       ctx.restore();
       return;
     }
 
-    const cellW = 42;
-    const cellH = 26;
+    const cellW = 54;
+    const cellH = 30;
 
     if (this.currentAlg === 'DFS' || this.currentAlg === 'IDS') {
       // Draw LIFO stack vertically (draw up to 4 elements, show dots if more)
       const stackStartX = w / 2 - cellW / 2;
-      const stackStartY = h - 22;
+      const stackStartY = h - 24;
       const maxDraw = 3;
 
       for (let i = 0; i < Math.min(len, maxDraw); i++) {
@@ -1042,11 +1042,12 @@ class SearchDemoUI {
         this.roundRect(stackStartX, cy, cellW, cellH, 4);
         ctx.fill();
         ctx.strokeStyle = i === 0 ? '#4f46e5' : '#818cf8';
+        ctx.lineWidth = 1.5;
         ctx.stroke();
 
         // Node ID
         ctx.fillStyle = i === 0 ? '#ffffff' : '#3730a3';
-        ctx.font = 'bold 11px Outfit, sans-serif';
+        ctx.font = 'bold 13px Outfit, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
@@ -1057,15 +1058,15 @@ class SearchDemoUI {
         // Top pointer indicator
         if (i === 0) {
           ctx.fillStyle = '#4f46e5';
-          ctx.font = 'bold 8px monospace';
+          ctx.font = 'bold 10px monospace';
           ctx.textAlign = 'right';
           ctx.fillText("TOP (Pop Next) ➔", stackStartX - 8, cy + cellH / 2);
         }
       }
 
       if (len > maxDraw) {
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = 'bold 12px sans-serif';
+        ctx.fillStyle = '#64748b';
+        ctx.font = 'bold 14px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText("...", stackStartX + cellW / 2, stackStartY - maxDraw * (cellH + 2) + 8);
       }
@@ -1075,7 +1076,7 @@ class SearchDemoUI {
       let startX = (w - totalW) / 2;
       if (startX < 95) startX = 95; // bound check so pointer doesn't clip
 
-      const cy = startY + 24;
+      const cy = startY + 28;
 
       // For BIBF the array is [...forward items (cost-sorted), ...backward items (cost-sorted)],
       // so "next to pop" is whichever of frontierF[0]/frontierB[0] has the lower cost -- not
@@ -1100,11 +1101,12 @@ class SearchDemoUI {
         this.roundRect(cx, cy, cellW, cellH, 4);
         ctx.fill();
         ctx.strokeStyle = isNext ? (isBackward ? '#7c3aed' : '#4f46e5') : (isBackward ? '#c4b5fd' : '#818cf8');
+        ctx.lineWidth = 1.5;
         ctx.stroke();
 
         // Node ID and cost / f / h
         ctx.fillStyle = isNext ? '#ffffff' : (isBackward ? '#6d28d9' : '#3730a3');
-        ctx.font = 'bold 11px Outfit, sans-serif';
+        ctx.font = 'bold 12px Outfit, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
@@ -1119,7 +1121,7 @@ class SearchDemoUI {
         // FRONT / lowest cost indicators
         if (isNext) {
           ctx.fillStyle = isBackward ? '#7c3aed' : '#4f46e5';
-          ctx.font = 'bold 8px monospace';
+          ctx.font = 'bold 10px monospace';
           ctx.textAlign = 'center';
           let indicatorText = "FRONT (Pop)";
           if (this.currentAlg === 'UCS') indicatorText = "LOWEST COST (Pop)";
@@ -1127,17 +1129,17 @@ class SearchDemoUI {
           if (this.currentAlg === 'GREEDY') indicatorText = "LOWEST h(n) (Pop)";
           if (this.currentAlg === 'BIBF') indicatorText = isBackward ? "NEXT: BACKWARD (Pop)" : "NEXT: FORWARD (Pop)";
           if (this.currentAlg === 'SMA') indicatorText = "LOWEST f(n) (Pop)";
-          ctx.fillText(indicatorText, cx + cellW / 2, cy - 6);
-          ctx.fillText("▼", cx + cellW / 2, cy - 1);
+          ctx.fillText(indicatorText, cx + cellW / 2, cy - 8);
+          ctx.fillText("▼", cx + cellW / 2, cy - 2);
         }
 
         // BACK indicator (skip for BIBF -- two interleaved queues make "back" ambiguous)
         if (i === len - 1 && len > 1 && this.currentAlg !== 'BIBF') {
           ctx.fillStyle = '#64748b';
-          ctx.font = 'bold 8px monospace';
+          ctx.font = 'bold 10px monospace';
           ctx.textAlign = 'center';
-          ctx.fillText("BACK (Push)", cx + cellW / 2, cy + cellH + 9);
-          ctx.fillText("▲", cx + cellW / 2, cy + cellH + 4);
+          ctx.fillText("BACK (Push)", cx + cellW / 2, cy + cellH + 11);
+          ctx.fillText("▲", cx + cellW / 2, cy + cellH + 5);
         }
       }
     }
