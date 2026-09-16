@@ -284,6 +284,7 @@ class SearchDemoUI {
         greedyCostPanel.style.display = 'block';
         const hCost = step.currentNode ? getHeuristic(step.currentNode, this.goalNode) : 0;
         setSafeText('search-status-greedy-h', hCost);
+        setSafeText('search-status-greedy-f', hCost);
       } else {
         greedyCostPanel.style.display = 'none';
       }
@@ -903,46 +904,76 @@ class SearchDemoUI {
       ctx.textBaseline = 'middle';
       ctx.fillText(nodeId, nx, ny);
 
-      // Label details (cost or depth under nodes)
+      // Draw Start/Goal indicator labels above the node
+      if (isStart) {
+        ctx.fillStyle = '#0891b2';
+        ctx.font = 'bold 8px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText("START", nx, ny - radius - 7);
+      } else if (isGoal) {
+        ctx.fillStyle = '#e11d48';
+        ctx.font = 'bold 8px monospace';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText("GOAL", nx, ny - radius - 7);
+      }
+
+      // Label details (cost, heuristic, f-score, or depth under nodes)
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
       if (this.currentAlg === 'ASTAR') {
-        ctx.fillStyle = '#64748b';
-        ctx.font = 'bold 9px monospace';
+        const hCost = getHeuristic(nodeId, this.goalNode);
         if (reachedSet.has(nodeId)) {
           const gCost = step.reached[nodeId] ?? 0;
-          const hCost = getHeuristic(nodeId, this.goalNode);
-          ctx.fillText(`f:${gCost + hCost}`, nx, ny + radius + 11);
+          const fCost = gCost + hCost;
+          ctx.fillStyle = '#1e293b';
+          ctx.font = 'bold 9px monospace';
+          ctx.fillText(`h:${hCost} | f:${fCost}`, nx, ny + radius + 11);
         } else {
-          const hCost = getHeuristic(nodeId, this.goalNode);
-          ctx.fillText(`h:${hCost}`, nx, ny + radius + 11);
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = 'bold 9px monospace';
+          ctx.fillText(`h:${hCost} | f:—`, nx, ny + radius + 11);
         }
       } else if (this.currentAlg === 'GREEDY') {
-        ctx.fillStyle = '#64748b';
-        ctx.font = 'bold 9px monospace';
         const hCost = getHeuristic(nodeId, this.goalNode);
-        ctx.fillText(`h:${hCost}`, nx, ny + radius + 11);
+        if (reachedSet.has(nodeId) || frontierNodes.has(nodeId)) {
+          ctx.fillStyle = '#1e293b';
+          ctx.font = 'bold 9px monospace';
+          ctx.fillText(`h:${hCost} | f:${hCost}`, nx, ny + radius + 11);
+        } else {
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = 'bold 9px monospace';
+          ctx.fillText(`h:${hCost} | f:—`, nx, ny + radius + 11);
+        }
+      } else if (this.currentAlg === 'SMA') {
+        const hCost = getHeuristic(nodeId, this.goalNode);
+        const frontierItem = step.frontier.find(it => it.node === nodeId);
+        if (frontierItem) {
+          ctx.fillStyle = '#1e293b';
+          ctx.font = 'bold 9px monospace';
+          ctx.fillText(`h:${hCost} | f:${frontierItem.f}`, nx, ny + radius + 11);
+        } else if (reachedSet.has(nodeId)) {
+          const gCost = step.reached[nodeId] ?? 0;
+          const fCost = gCost + hCost;
+          ctx.fillStyle = '#1e293b';
+          ctx.font = 'bold 9px monospace';
+          ctx.fillText(`h:${hCost} | f:${fCost}`, nx, ny + radius + 11);
+        } else {
+          ctx.fillStyle = '#94a3b8';
+          ctx.font = 'bold 9px monospace';
+          ctx.fillText(`h:${hCost} | f:—`, nx, ny + radius + 11);
+        }
       } else if ((this.currentAlg === 'UCS' || this.currentAlg === 'BIBF') && reachedSet.has(nodeId)) {
         ctx.fillStyle = '#64748b';
         ctx.font = 'bold 9px monospace';
         const cost = step.reached[nodeId] ?? '∞';
         ctx.fillText(`g:${cost}`, nx, ny + radius + 11);
-      } else if (this.currentAlg === 'SMA' && reachedSet.has(nodeId)) {
-        ctx.fillStyle = '#64748b';
-        ctx.font = 'bold 9px monospace';
-        const frontierItem = step.frontier.find(it => it.node === nodeId);
-        const label = frontierItem ? `f:${frontierItem.f}` : `g:${step.reached[nodeId] ?? '∞'}`;
-        ctx.fillText(label, nx, ny + radius + 11);
       } else if (this.currentAlg === 'IDS' && nodeId === step.currentNode) {
         ctx.fillStyle = '#64748b';
         ctx.font = 'bold 9px monospace';
         ctx.fillText(`d:${step.depth}`, nx, ny + radius + 11);
-      } else if (isStart) {
-        ctx.fillStyle = '#0891b2';
-        ctx.font = 'bold 8px monospace';
-        ctx.fillText("START", nx, ny - radius - 6);
-      } else if (isGoal) {
-        ctx.fillStyle = '#e11d48';
-        ctx.font = 'bold 8px monospace';
-        ctx.fillText("GOAL", nx, ny - radius - 6);
       }
 
       ctx.restore();
