@@ -69,6 +69,9 @@
           <button class="playground-tab" data-target="view-adversarial">
             <i data-lucide="swords"></i> Adversarial Search
           </button>
+          <button class="playground-tab" data-target="view-csp">
+            <i data-lucide="grid-3x3"></i> Constraint Satisfaction
+          </button>
           <button class="playground-tab" data-target="view-vaccum">
             <i data-lucide="bot"></i> Two-Room Vacuum Agents
           </button>
@@ -1296,6 +1299,33 @@
 
       </div>
 
+      <!-- Tab 8: Constraint Satisfaction Problems Lab View (Topic 04) -->
+      <div class="playground-view" id="view-csp">
+
+        <!-- CSP Sub-navigation Tabs -->
+        <div class="search-tabs-container" style="margin-bottom: 1.5rem;">
+          <button class="search-tab csp-subtab-btn active" data-subtab="map">
+            <i data-lucide="map"></i> Map Colouring Solver
+          </button>
+          <button class="search-tab csp-subtab-btn" data-subtab="schedule">
+            <i data-lucide="calendar-clock"></i> Course Scheduling
+          </button>
+          <button class="search-tab csp-subtab-btn" data-subtab="queens">
+            <i data-lucide="crown"></i> N-Queens Min-Conflicts
+          </button>
+          <button class="search-tab csp-subtab-btn" data-subtab="sudoku">
+            <i data-lucide="grid-3x3"></i> Sudoku (AC-3 + MAC)
+          </button>
+        </div>
+
+        <!-- Sub-tab panes — rendered by demos/csp_demo/csp_lab.js -->
+        <div class="csp-subtab-pane active" id="csp-pane-map"></div>
+        <div class="csp-subtab-pane" id="csp-pane-schedule"></div>
+        <div class="csp-subtab-pane" id="csp-pane-queens"></div>
+        <div class="csp-subtab-pane" id="csp-pane-sudoku"></div>
+
+      </div>
+
       <!-- Tab 6: Adversarial Search & Games Lab View -->
       <div class="playground-view" id="view-adversarial">
         
@@ -1617,6 +1647,11 @@
   <script src="demos/adversarial_demo/adversarial_engine.js?v=1"></script>
   <script src="demos/adversarial_demo/adversarial_lab.js?v=1"></script>
   <!-- Two-Room Vacuum Robot Demo JS -->
+  <!-- Constraint Satisfaction (Topic 04): engine → renderers → lab -->
+  <script src="demos/csp_demo/csp_engine.js?v=1"></script>
+  <script src="demos/csp_demo/csp_render.js?v=1"></script>
+  <script src="demos/csp_demo/csp_lab.js?v=1"></script>
+
   <script src="demos/vaccum_demo/environment.js?v=2"></script>
   <script src="demos/vaccum_demo/agents.js?v=2"></script>
   <script src="demos/vaccum_demo/ui.js?v=2"></script>

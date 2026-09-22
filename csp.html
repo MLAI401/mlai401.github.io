@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Constraint Satisfaction Problems - MLAI401 Foundational AI & ML</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="An illustrated lecture page on constraint satisfaction problems: variables, domains and constraints, constraint graphs, node and arc consistency, AC-3, backtracking search with MRV, degree and LCV heuristics, forward checking, MAC, backjumping, min-conflicts local search, and tree-structured CSPs.">
+  <meta name="keywords" content="Constraint Satisfaction, CSP, Map Coloring, Scheduling, Arc Consistency, AC-3, Backtracking, MRV, Degree Heuristic, LCV, Forward Checking, MAC, Min-Conflicts, Sudoku, N-Queens, Tree-Structured CSP, Cutset Conditioning, AIMA">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="MLAI401 - Constraint Satisfaction Problems">
+  <meta property="og:description" content="CSP Formulation, Constraint Propagation, Backtracking Search, Local Search & Structure, and Evaluating CSP Solvers — one screen at a time.">
+  <meta property="og:type" content="website">
+
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="sl-page csp-page">
+
+  <!-- Navigation Header -->
+  <header class="navbar" id="navbar-header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo" id="logo-link">
+        <span class="logo-icon">M</span>
+        MLAI401
+      </a>
+
+      <button class="menu-toggle" id="menu-toggle-btn" aria-label="Toggle Navigation Menu">
+        <i data-lucide="menu"></i>
+      </button>
+
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="index.html" class="nav-link" id="nav-home">Home</a></li>
+        <li><a href="curriculum.html" class="nav-link active" id="nav-curr">Curriculum</a></li>
+        <li><a href="playground.html" class="nav-link" id="nav-play">Playground</a></li>
+        <li><a href="index.html#resources" class="nav-link" id="nav-res">Resources</a></li>
+      </ul>
+
+      <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="nav-btn" id="nav-github-btn">
+        <i data-lucide="github"></i> GitHub Profile
+      </a>
+    </div>
+  </header>
+
+  <!-- Single-screen lecture shell: fixed height, no body scroll on desktop -->
+  <main class="sl-shell csp-shell">
+
+    <div class="sl-topbar">
+      <a href="curriculum.html" class="sl-breadcrumb"><i data-lucide="arrow-left"></i> Curriculum</a>
+      <div class="sl-title-block">
+        <span class="sl-topic-badge csp-badge-accent"><i data-lucide="grid-3x3"></i> Topic 04</span>
+        <h1>Constraint Satisfaction Problems</h1>
+      </div>
+      <div class="csp-topbar-actions">
+        <a href="topic04_reading.html" class="sl-reading-btn"><i data-lucide="book-open"></i> Reading Notes</a>
+        <a href="playground.html#view-csp" class="sl-reading-btn csp-demo-btn"><i data-lucide="play-circle"></i> Interactive Demo</a>
+      </div>
+    </div>
+
+    <!-- Topic selector bar -->
+    <div class="sl-topic-bar-wrap">
+      <div class="sl-topic-tabs" id="csp-topic-tabs"></div>
+    </div>
+
+    <!-- Main two-column concept + illustration viewport -->
+    <div class="sl-main-grid" id="csp-main-grid">
+
+      <div class="sl-concept-col glass-panel" id="csp-concept-col">
+        <!-- Rendered by demos/csp_demo/ui.js -->
+      </div>
+
+      <div class="sl-graph-col glass-panel" id="csp-graph-col">
+        <!-- Rendered by demos/csp_demo/ui.js -->
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+
+  <!-- Shared CSP engine (also used by the Playground) — must load first -->
+  <script src="demos/csp_demo/csp_engine.js?v=1"></script>
+
+  <!-- Shared SVG renderers (map of Australia, constraint graphs) -->
+  <script src="demos/csp_demo/csp_render.js?v=1"></script>
+
+  <!-- Page controller — renders topic tabs, concepts and illustrations -->
+  <script src="demos/csp_demo/ui.js?v=1"></script>
+
+  <!-- Application JS -->
+  <script src="main.js?v=2"></script>
+</body>
+</html>

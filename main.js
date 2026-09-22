@@ -96,6 +96,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.adversarialLab) {
           window.adversarialLab.resizeCanvas();
         }
+      } else if (targetId === 'view-csp') {
+        if (window.cspLab) {
+          window.cspLab.resizeCanvas();
+        }
       } else if (targetId === 'view-vaccum') {
         if (!window.vacuumDemo) {
           window.vacuumDemo = new VacuumDemoUI();

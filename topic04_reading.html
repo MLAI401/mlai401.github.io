@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Constraint Satisfaction Problems — Reading Notes - MLAI401 Foundational AI &amp; ML</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Textbook-style reading notes for Topic 04, Constraint Satisfaction Problems: variables, domains and constraints, constraint graphs, node and arc consistency, AC-3, path consistency, global constraints, backtracking search with MRV, degree and LCV heuristics, forward checking, MAC, conflict-directed backjumping, min-conflicts local search, tree-structured CSPs, cutset conditioning and tree decomposition. Adapted from Artificial Intelligence: A Modern Approach.">
+  <meta name="keywords" content="Constraint Satisfaction Problems, CSP, Map Coloring, Arc Consistency, AC-3, Backtracking Search, MRV, Degree Heuristic, LCV, Forward Checking, MAC, Backjumping, Min-Conflicts, Sudoku, N-Queens, Scheduling, Tree-Structured CSP, Cutset Conditioning, Tree Decomposition, AIMA">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="MLAI401 - Constraint Satisfaction Problems: Reading Notes">
+  <meta property="og:description" content="A textbook-style companion to the Constraint Satisfaction lecture: CSP formulation, constraint propagation, backtracking search, local search and problem structure.">
+  <meta property="og:type" content="article">
+
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="csp-reading">
+
+  <!-- Navigation Header -->
+  <header class="navbar" id="navbar-header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo" id="logo-link">
+        <span class="logo-icon">M</span>
+        MLAI401
+      </a>
+
+      <button class="menu-toggle" id="menu-toggle-btn" aria-label="Toggle Navigation Menu">
+        <i data-lucide="menu"></i>
+      </button>
+
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="index.html" class="nav-link" id="nav-home">Home</a></li>
+        <li><a href="curriculum.html" class="nav-link active" id="nav-curr">Curriculum</a></li>
+        <li><a href="playground.html" class="nav-link" id="nav-play">Playground</a></li>
+        <li><a href="index.html#resources" class="nav-link" id="nav-res">Resources</a></li>
+      </ul>
+
+      <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="nav-btn" id="nav-github-btn">
+        <i data-lucide="github"></i> GitHub Profile
+      </a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Masthead -->
+    <section class="rp-masthead">
+      <div class="container rp-masthead-inner">
+        <a href="csp.html" class="sl-breadcrumb"><i data-lucide="arrow-left"></i> Constraint Satisfaction Problems</a>
+
+        <div class="rp-title-row">
+          <span class="sl-topic-badge csp-badge-accent"><i data-lucide="book-open"></i> Topic 04 &middot; Reading</span>
+        </div>
+        <h1>Constraint Satisfaction Problems — Reading Notes</h1>
+
+        <p class="rp-lede">These notes follow the same order as the interactive <a href="csp.html">Constraint Satisfaction Problems</a> lecture — how a problem is written as variables, domains and constraints; how inference shrinks domains; how backtracking search uses ordering heuristics and interleaved inference; how local search repairs complete assignments; and how the structure of the constraint graph can make a hard problem easy. Where the lecture page lets you click through live examples (the map of Australia, AC-3, forward checking, min-conflicts), these notes spell the same ideas out in prose with the same notation and worked numbers. Every number on this page was produced by the same engine that runs the lecture and the <a href="playground.html#view-csp">Playground</a>.</p>
+
+        <div class="rp-citation">
+          <i data-lucide="quote"></i>
+          <span>Materials and content adapted from <em>Artificial Intelligence: A Modern Approach</em> (AIMA), 4th edition, by Stuart Russell and Peter Norvig &mdash; specifically Chapter 6 (Constraint Satisfaction Problems, §6.1&ndash;6.5).</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOC + Article Layout -->
+    <div class="container rp-layout">
+
+      <aside class="rp-toc" id="rp-toc">
+        <div class="rp-toc-label">On This Page</div>
+        <nav aria-label="Table of contents">
+          <a class="rp-toc-h2" href="#formulation">1. Defining CSPs</a>
+          <a class="rp-toc-h3" href="#xdc">1.1 Variables, Domains &amp; Constraints</a>
+          <a class="rp-toc-h3" href="#assignments">1.2 Assignments &amp; Solutions</a>
+          <a class="rp-toc-h3" href="#constraint-graph">1.3 The Constraint Graph</a>
+          <a class="rp-toc-h3" href="#constraint-types">1.4 Kinds of Constraints</a>
+          <a class="rp-toc-h3" href="#hard-soft">1.5 Hard vs. Soft: Timetabling</a>
+          <a class="rp-toc-h3" href="#csp-search">1.6 CSP as a Search Problem</a>
+
+          <a class="rp-toc-h2" href="#propagation">2. Constraint Propagation</a>
+          <a class="rp-toc-h3" href="#node-consistency">2.1 Node Consistency</a>
+          <a class="rp-toc-h3" href="#arc-consistency">2.2 Arc Consistency</a>
+          <a class="rp-toc-h3" href="#ac3">2.3 The AC-3 Algorithm</a>
+          <a class="rp-toc-h3" href="#path-consistency">2.4 Path &amp; k-Consistency</a>
+          <a class="rp-toc-h3" href="#global-constraints">2.5 Global Constraints</a>
+          <a class="rp-toc-h3" href="#sudoku">2.6 Sudoku</a>
+
+          <a class="rp-toc-h2" href="#backtracking">3. Backtracking Search</a>
+          <a class="rp-toc-h3" href="#bt-algorithm">3.1 The Algorithm</a>
+          <a class="rp-toc-h3" href="#variable-ordering">3.2 Variable Ordering: MRV &amp; Degree</a>
+          <a class="rp-toc-h3" href="#value-ordering">3.3 Value Ordering: LCV</a>
+          <a class="rp-toc-h3" href="#forward-checking">3.4 Forward Checking</a>
+          <a class="rp-toc-h3" href="#mac">3.5 Maintaining Arc Consistency</a>
+          <a class="rp-toc-h3" href="#backjumping">3.6 Intelligent Backtracking</a>
+
+          <a class="rp-toc-h2" href="#local-structure">4. Local Search &amp; Structure</a>
+          <a class="rp-toc-h3" href="#min-conflicts">4.1 Min-Conflicts</a>
+          <a class="rp-toc-h3" href="#plateaus">4.2 Plateaus &amp; Weighting</a>
+          <a class="rp-toc-h3" href="#components">4.3 Independent Subproblems</a>
+          <a class="rp-toc-h3" href="#tree-csp">4.4 Tree-Structured CSPs</a>
+          <a class="rp-toc-h3" href="#cutset">4.5 Cutset Conditioning</a>
+          <a class="rp-toc-h3" href="#tree-decomposition">4.6 Tree Decomposition</a>
+
+          <a class="rp-toc-h2" href="#evaluating">5. Evaluating CSP Solvers</a>
+          <a class="rp-toc-h3" href="#eval-work">5.1 Measuring Work</a>
+          <a class="rp-toc-h3" href="#eval-complexity">5.2 Complexity</a>
+          <a class="rp-toc-h3" href="#eval-matrix">5.3 Comparison Matrix</a>
+
+          <a class="rp-toc-h2" href="#exercises">6. Practice Exercises</a>
+          <a class="rp-toc-h3" href="#ex1">6.1 Formulating Australia</a>
+          <a class="rp-toc-h3" href="#ex2">6.2 AC-3 Trace</a>
+          <a class="rp-toc-h3" href="#ex3">6.3 Forward Checking Trace</a>
+          <a class="rp-toc-h3" href="#ex4">6.4 Ordering Heuristics</a>
+          <a class="rp-toc-h3" href="#ex5">6.5 A Min-Conflicts Step</a>
+          <a class="rp-toc-h3" href="#ex6">6.6 Exploiting Structure</a>
+        </nav>
+      </aside>
+
+      <article class="rp-article">
+
+        <!-- ================= 1. FORMULATION ================= -->
+        <section id="formulation">
+          <h2><span class="rp-num">1.</span>Defining Constraint Satisfaction Problems</h2>
+
+          <p>In Topics 01&ndash;03 every state was <strong>atomic</strong>: a black box that the search algorithm could only generate, test for the goal, and compare by cost or utility. A <strong>constraint satisfaction problem</strong> (CSP) opens the box. A state is described by a set of variables, each holding a value, and the problem is solved when every variable has a value that satisfies all of the constraints on it. This <strong>factored representation</strong> lets general-purpose algorithms use the structure of the problem &mdash; which variables interact, and how &mdash; to prune huge parts of the search space at once.</p>
+
+          <h3 id="xdc"><span class="rp-num">1.1</span>Variables, Domains &amp; Constraints</h3>
+          <p>A CSP consists of three components:</p>
+          <dl class="rp-spec">
+            <dt>X — variables</dt>
+            <dd>A set <code>{X<sub>1</sub>, …, X<sub>n</sub>}</code>.</dd>
+            <dt>D — domains</dt>
+            <dd>One domain <code>D<sub>i</sub> = {v<sub>1</sub>, …, v<sub>k</sub>}</code> of allowable values for each variable X<sub>i</sub>.</dd>
+            <dt>C — constraints</dt>
+            <dd>Each constraint <code>C<sub>j</sub> = ⟨scope, rel⟩</code> names the variables it involves (its <em>scope</em>) and a relation saying which combinations of their values are allowed. The relation can be an explicit list of tuples or an abstract test such as <code>X<sub>1</sub> ≠ X<sub>2</sub></code>.</dd>
+          </dl>
+          <p>The running example is AIMA's <strong>map colouring of Australia</strong>: colour each state and territory red, green or blue so that no two neighbouring regions share a colour.</p>
+          <div class="formula-box">X = {WA, NT, Q, NSW, V, SA, T} &middot; D<sub>i</sub> = {red, green, blue} &middot; C = {SA ≠ WA, SA ≠ NT, SA ≠ Q, SA ≠ NSW, SA ≠ V, WA ≠ NT, NT ≠ Q, Q ≠ NSW, NSW ≠ V}</div>
+          <figure class="rp-figure csp-rp-duo">
+            <div><svg class="csp-map-svg" viewBox="0 0 400 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Map of Australia's states and territories"><rect x="0" y="0" width="400" height="340" rx="12" class="csp-sea"></rect><path d="M157.1 50.0 L128.6 40.0 L100.0 65.0 L81.0 90.0 L14.3 118.0 L8.6 140.0 L14.3 170.0 L23.8 210.0 L23.8 240.0 L33.3 250.0 L52.4 250.0 L71.4 240.0 L109.5 235.0 L128.6 223.0 L157.1 217.0 L157.1 160.0 Z" fill="#ef4444"  class="csp-region" data-var="WA"><title>Western Australia (WA)</title></path><path d="M157.1 50.0 L171.4 23.0 L185.7 13.0 L228.6 20.0 L221.9 50.0 L242.9 65.0 L242.9 160.0 L157.1 160.0 Z" fill="#22c55e"  class="csp-region" data-var="NT"><title>Northern Territory (NT)</title></path><path d="M242.9 65.0 L269.5 75.0 L277.1 25.0 L285.7 7.0 L295.2 40.0 L313.3 50.0 L319.0 88.0 L347.6 110.0 L366.7 138.0 L387.6 155.0 L391.4 182.0 L366.7 188.0 L347.6 190.0 L271.4 190.0 L271.4 160.0 L242.9 160.0 Z" fill="#ef4444"  class="csp-region" data-var="Q"><title>Queensland (Q)</title></path><path d="M271.4 190.0 L347.6 190.0 L366.7 188.0 L391.4 182.0 L385.7 210.0 L376.2 228.0 L366.7 240.0 L357.1 260.0 L356.2 275.0 L340.0 268.0 L300.0 257.0 L271.4 240.0 Z" fill="#22c55e"  class="csp-region" data-var="NSW"><title>New South Wales (NSW)</title></path><path d="M271.4 240.0 L300.0 257.0 L340.0 268.0 L356.2 275.0 L333.3 280.0 L321.9 291.0 L304.8 283.0 L295.2 288.0 L271.4 280.0 Z" fill="#ef4444"  class="csp-region" data-var="V"><title>Victoria (V)</title></path><path d="M157.1 160.0 L242.9 160.0 L271.4 160.0 L271.4 190.0 L271.4 240.0 L271.4 280.0 L259.0 272.0 L252.4 256.0 L242.9 257.0 L247.6 246.0 L241.0 230.0 L233.3 249.0 L223.8 250.0 L220.0 246.0 L206.7 228.0 L185.7 220.0 L157.1 217.0 Z" fill="#3b82f6"  class="csp-region" data-var="SA"><title>South Australia (SA)</title></path><path d="M305.7 307.0 L341.0 309.0 L338.1 330.0 L326.7 336.0 L311.4 322.0 Z" fill="#22c55e"  class="csp-region" data-var="T"><title>Tasmania (T)</title></path><text x="80.95238095238095" y="150" class="csp-region-label on">WA</text><text x="200" y="100" class="csp-region-label on">NT</text><text x="304.76190476190476" y="120.00000000000001" class="csp-region-label on">Q</text><text x="323.8095238095238" y="220" class="csp-region-label on">NSW</text><text x="303.8095238095239" y="271" class="csp-region-label on">V</text><text x="212.38095238095246" y="195" class="csp-region-label on">SA</text><text x="324.7619047619047" y="320" class="csp-region-label on">T</text></svg></div>
+            <div><svg class="csp-graph-svg" viewBox="0 0 300 240" xmlns="http://www.w3.org/2000/svg"><line x1="53.52" y1="107.52" x2="117.84" y2="53.44" class="csp-gedge  "></line><line x1="53.52" y1="107.52" x2="133.92000000000002" y2="136.64" class="csp-gedge  "></line><line x1="117.84" y1="53.44" x2="133.92000000000002" y2="136.64" class="csp-gedge  "></line><line x1="117.84" y1="53.44" x2="192.88" y2="65.92" class="csp-gedge  "></line><line x1="192.88" y1="65.92" x2="133.92000000000002" y2="136.64" class="csp-gedge  "></line><line x1="192.88" y1="65.92" x2="230.4" y2="132.48000000000002" class="csp-gedge  "></line><line x1="230.4" y1="132.48000000000002" x2="133.92000000000002" y2="136.64" class="csp-gedge  "></line><line x1="230.4" y1="132.48000000000002" x2="176.79999999999998" y2="190.72" class="csp-gedge  "></line><line x1="176.79999999999998" y1="190.72" x2="133.92000000000002" y2="136.64" class="csp-gedge  "></line><g class="csp-gnode" data-var="WA"><circle cx="53.52" cy="107.52" r="15" fill="#ef4444"></circle><text x="53.52" y="111.52" class="csp-gnode-label on">WA</text></g><g class="csp-gnode" data-var="NT"><circle cx="117.84" cy="53.44" r="15" fill="#22c55e"></circle><text x="117.84" y="57.44" class="csp-gnode-label on">NT</text></g><g class="csp-gnode" data-var="Q"><circle cx="192.88" cy="65.92" r="15" fill="#ef4444"></circle><text x="192.88" y="69.92" class="csp-gnode-label on">Q</text></g><g class="csp-gnode" data-var="NSW"><circle cx="230.4" cy="132.48000000000002" r="15" fill="#22c55e"></circle><text x="230.4" y="136.48000000000002" class="csp-gnode-label on">NSW</text></g><g class="csp-gnode" data-var="V"><circle cx="176.79999999999998" cy="190.72" r="15" fill="#ef4444"></circle><text x="176.79999999999998" y="194.72" class="csp-gnode-label on">V</text></g><g class="csp-gnode" data-var="SA"><circle cx="133.92000000000002" cy="136.64" r="15" fill="#3b82f6"></circle><text x="133.92000000000002" y="140.64" class="csp-gnode-label on">SA</text></g><g class="csp-gnode" data-var="T"><circle cx="246.48" cy="203.20000000000002" r="15" fill="#22c55e"></circle><text x="246.48" y="207.20000000000002" class="csp-gnode-label on">T</text></g></svg></div>
+            <figcaption>Figure 1. Left: one solution of the Australia map-colouring CSP. Right: its constraint graph — one node per variable, one edge per binary constraint (AIMA Fig 6.1).</figcaption>
+          </figure>
+
+          <h3 id="assignments"><span class="rp-num">1.2</span>Assignments &amp; Solutions</h3>
+          <p>An <strong>assignment</strong> gives values to some or all variables, e.g. <code>{WA = red, NT = green}</code>. It is <strong>consistent</strong> (or legal) if it violates no constraint, and <strong>complete</strong> if every variable has a value. A <strong>solution</strong> is a complete, consistent assignment. A <strong>partial</strong> assignment leaves some variables unassigned; a <em>partial solution</em> is a partial assignment that is consistent.</p>
+          <p>The key observation for search is that a partial assignment can already be inconsistent. As soon as WA and NT are both red, <em>no</em> extension of that assignment can be a solution, so an algorithm can discard every one of the 3<sup>5</sup> = 243 ways of completing it in a single step. This is exactly what a black-box state representation cannot do.</p>
+
+          <h3 id="constraint-graph"><span class="rp-num">1.3</span>The Constraint Graph</h3>
+          <p>A binary CSP is naturally drawn as a <strong>constraint graph</strong>: a node for each variable, and an edge between two variables whenever a constraint involves both. Structure is visible at a glance. Tasmania has degree 0 — it is an independent subproblem and can be coloured any way at all. South Australia has degree 5 — it is involved in more constraints than any other region, which makes it the natural variable to decide first (§3.2) and the natural variable to remove to break every cycle (§4.5).</p>
+
+          <h3 id="constraint-types"><span class="rp-num">1.4</span>Kinds of Constraints</h3>
+          <ul>
+            <li><strong>Unary</strong> constraints restrict a single variable, e.g. <code>⟨(SA), SA ≠ green⟩</code>.</li>
+            <li><strong>Binary</strong> constraints relate two variables, e.g. <code>⟨(SA, NSW), SA ≠ NSW⟩</code>. A binary CSP has only unary and binary constraints and can be drawn as a constraint graph.</li>
+            <li><strong>Global</strong> (higher-order) constraints involve an arbitrary number of variables. The most common is <code>Alldiff</code>, which requires all of its variables to take different values — every row, column and box of a Sudoku. In a <em>cryptarithmetic</em> puzzle such as TWO + TWO = FOUR, <code>Alldiff(F, T, U, W, R, O)</code> is combined with column constraints like <code>O + O = R + 10 · C<sub>1</sub></code> that link letters to auxiliary carry variables C<sub>1</sub>, C<sub>2</sub>, C<sub>3</sub>; these are drawn as a <em>constraint hypergraph</em>.</li>
+          </ul>
+          <p>Every finite-domain constraint can be reduced to a set of binary constraints if enough auxiliary variables are introduced, or by building the <em>dual graph</em> in which constraints become variables. This is why most algorithms in this topic are stated for binary CSPs, although specialised propagation for global constraints (§2.5) is often far more efficient in practice.</p>
+
+          <h3 id="hard-soft"><span class="rp-num">1.5</span>Hard vs. Soft Constraints: University Timetabling</h3>
+          <p>So far every constraint has been <strong>absolute</strong>: violating it rules out a solution. Many real problems also contain <strong>preference constraints</strong> that say which solutions are better. A CSP with preferences is a <strong>constraint optimisation problem</strong> (COP): find a solution that satisfies all hard constraints and minimises the total penalty of the violated soft ones.</p>
+          <p>The Playground's <a href="playground.html#view-csp">Course Scheduling</a> lab uses the following formulation. Each of the 12 course sessions is a variable; its domain is the set of <code>(timeslot, room)</code> pairs — 3 days × 4 periods × 4 rooms = 48 values.</p>
+          <div class="rp-table-wrap">
+            <table class="rp-table">
+              <thead><tr><th>Id</th><th>Hard constraint (feasibility — 0 clashes allowed)</th><th>Arity</th></tr></thead>
+              <tbody>
+                <tr><td><strong>H1</strong></td><td>No room double-booking: two courses cannot share a room in the same timeslot.</td><td>binary</td></tr>
+                <tr><td><strong>H2</strong></td><td>Room capacity &ge; enrolment, and room type matches (lab courses in the Computer Lab).</td><td>unary</td></tr>
+                <tr><td><strong>H3</strong></td><td>No instructor double-booking.</td><td>binary</td></tr>
+                <tr><td><strong>H4</strong></td><td>Instructor availability: no assignment in a declared unavailable slot.</td><td>unary</td></tr>
+                <tr><td><strong>H5</strong></td><td>No student-cohort clash: a cohort's mandatory courses cannot overlap.</td><td>binary</td></tr>
+                <tr><td><strong>H6</strong></td><td>Complete assignment: every course is scheduled.</td><td>goal test</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="rp-table-wrap">
+            <table class="rp-table">
+              <thead><tr><th>Id</th><th>Soft constraint (quality)</th><th>Penalty weight</th></tr></thead>
+              <tbody>
+                <tr><td><strong>S1</strong></td><td>Instructor preferences — penalise slots outside an instructor's preferred times.</td><td>2 per session</td></tr>
+                <tr><td><strong>S2</strong></td><td>Room utilisation — penalise rooms with more than twice the needed seats.</td><td>1 per session</td></tr>
+                <tr><td><strong>S3</strong></td><td>Student dead hours — penalise empty periods between a cohort's classes on a day.</td><td>2 per gap</td></tr>
+                <tr><td><strong>S4</strong></td><td>Fatigue — penalise more than two back-to-back classes for a cohort.</td><td>3 per extra class</td></tr>
+                <tr><td><strong>S5</strong></td><td>Campus transit — penalise consecutive classes in different buildings.</td><td>1 per transition</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>A standard two-phase strategy is to find a <em>feasible</em> timetable with backtracking search (H2 and H4 are removed up front by node consistency, §2.1), and then improve the soft score with local search that never breaks a hard constraint (§4.1). In the engine's reference run, backtracking with MRV and forward checking finds a feasible timetable with 12 assignments and no backtracks; local search then lowers the soft penalty from 21 to 3.</p>
+
+          <h3 id="csp-search"><span class="rp-num">1.6</span>CSP as a Search Problem</h3>
+          <p>A CSP can be solved by the search algorithms of Topic 02 using the <strong>incremental formulation</strong>:</p>
+          <dl class="rp-spec">
+            <dt>Initial state</dt><dd>The empty assignment <code>{ }</code>.</dd>
+            <dt>Actions</dt><dd>Assign a value to an unassigned variable, provided it does not conflict with the current assignment.</dd>
+            <dt>Goal test</dt><dd>The assignment is complete (and therefore, by construction, consistent).</dd>
+            <dt>Path cost</dt><dd>Irrelevant — every solution appears at depth n, so depth-first search is the natural choice.</dd>
+          </dl>
+          <p>Done naïvely, the branching factor at the top level is <code>n · d</code> (any variable, any value), at the next level <code>(n − 1) · d</code>, and so on: a tree with <code>n! · d<sup>n</sup></code> leaves, even though there are only <code>d<sup>n</sup></code> complete assignments. The fix is <strong>commutativity</strong>: the order in which values are assigned does not change the result, so it is enough to consider a single variable at each node of the tree. With that restriction the tree has exactly <code>d<sup>n</sup></code> leaves. For Australia this is the difference between 7! · 3<sup>7</sup> = 11,022,480 and 3<sup>7</sup> = 2,187.</p>
+        </section>
+
+        <!-- ================= 2. PROPAGATION ================= -->
+        <section id="propagation">
+          <h2><span class="rp-num">2.</span>Constraint Propagation: Inference in CSPs</h2>
+          <p>A search algorithm for atomic states can only search. A CSP algorithm can also <strong>infer</strong>: use the constraints to reduce the number of legal values for a variable, which in turn reduces the legal values of its neighbours, and so on. This is <strong>constraint propagation</strong>. It may be done as a preprocessing step, or interleaved with search (§3.4–3.5). The central idea is <strong>local consistency</strong>: treat each variable as a node and each binary constraint as an arc, and remove values that cannot be part of any solution because they fail some local test.</p>
+
+          <h3 id="node-consistency"><span class="rp-num">2.1</span>Node Consistency</h3>
+          <p>A variable is <strong>node-consistent</strong> if all the values in its domain satisfy its unary constraints; a network is node-consistent if every variable is. Node consistency is enforced once, by simply deleting offending values, after which all unary constraints can be dropped.</p>
+          <p>In the timetabling CSP, H2 and H4 are unary. For the ML Lab session <code>AI302L</code> (24 students, a <em>lab</em>, taught by Dr. Okafor who is unavailable on Monday), 36 of the 48 <code>(slot, room)</code> values fail H2 (the three lecture rooms) and 4 fail H4 (the Computer Lab on Monday), leaving a domain of just <strong>8 values</strong> before search even begins.</p>
+
+          <h3 id="arc-consistency"><span class="rp-num">2.2</span>Arc Consistency</h3>
+          <p>A variable X<sub>i</sub> is <strong>arc-consistent</strong> with respect to X<sub>j</sub> if for every value in D<sub>i</sub> there is some value in D<sub>j</sub> that satisfies the binary constraint on the arc (X<sub>i</sub>, X<sub>j</sub>). A network is arc-consistent if every variable is arc-consistent with every other variable. The basic operation is <code>REVISE(X<sub>i</sub>, X<sub>j</sub>)</code>, which deletes every value of X<sub>i</sub> that has no support in D<sub>j</sub>.</p>
+          <p>AIMA's example: the constraint <code>Y = X²</code> with <code>X, Y ∈ {0, …, 9}</code>. Making X arc-consistent with Y leaves <code>X ∈ {0, 1, 2, 3}</code> (since 4² = 16 is out of range); making Y arc-consistent with X leaves <code>Y ∈ {0, 1, 4, 9}</code>. Note that arcs are <em>directed</em> — each direction is a separate revision.</p>
+          <p>Arc consistency does not always help. Colouring Australia with no pre-assignments, every value of every region has a different-coloured supporting value in each neighbour, so arc consistency removes nothing.</p>
+
+          <h3 id="ac3"><span class="rp-num">2.3</span>The AC-3 Algorithm</h3>
+          <p>AC-3 maintains a queue of arcs. Initially the queue holds every arc in the CSP (each binary constraint contributes two arcs). AC-3 pops an arbitrary arc (X<sub>i</sub>, X<sub>j</sub>) and revises it. If D<sub>i</sub> is unchanged it moves on; if D<sub>i</sub> shrank, every arc (X<sub>k</sub>, X<sub>i</sub>) that points <em>into</em> X<sub>i</sub> must be re-checked and is added to the queue; if D<sub>i</sub> became empty, the whole CSP has no consistent solution and AC-3 returns failure immediately.</p>
+          <div class="rp-pseudocode">
+            <div class="rp-pseudocode-title">The AC-3 Algorithm (AIMA Figure 6.3)</div>
+            <pre>function AC-3(csp) returns false if an inconsistency is found and true otherwise
+    queue ← a queue of arcs, initially all the arcs in csp
+    while queue is not empty do
+        (X<sub>i</sub>, X<sub>j</sub>) ← POP(queue)
+        if REVISE(csp, X<sub>i</sub>, X<sub>j</sub>) then
+            if size of D<sub>i</sub> = 0 then return false
+            for each X<sub>k</sub> in X<sub>i</sub>.NEIGHBORS − {X<sub>j</sub>} do
+                add (X<sub>k</sub>, X<sub>i</sub>) to queue
+    return true
+
+function REVISE(csp, X<sub>i</sub>, X<sub>j</sub>) returns true iff we revise the domain of X<sub>i</sub>
+    revised ← false
+    for each x in D<sub>i</sub> do
+        if no value y in D<sub>j</sub> allows (x, y) to satisfy the constraint between X<sub>i</sub> and X<sub>j</sub> then
+            delete x from D<sub>i</sub>
+            revised ← true
+    return revised</pre>
+          </div>
+          <p>With c binary constraints and domains of size at most d, each arc can be re-inserted at most d times (once per deleted value of its tail) and each revision costs O(d²), so AC-3 runs in <strong>O(c · d³)</strong> time.</p>
+          <p>Run AC-3 on Australia after fixing <code>WA = red</code> and <code>Q = green</code>: revisions remove red and green from NT and from SA, leaving <code>NT = {blue}</code> and <code>SA = {blue}</code>; the arc (SA, NT) then empties D(SA) and AC-3 returns <em>false</em>. The partial assignment is shown to be hopeless with no search at all. With <code>WA = red</code> and <code>NT = green</code> instead, AC-3 forces SA = blue, Q = red, NSW = green and V = red — it colours the entire mainland by itself.</p>
+          <figure class="rp-figure">
+            <svg class="csp-map-svg" viewBox="0 0 400 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Map of Australia's states and territories"><rect x="0" y="0" width="400" height="340" rx="12" class="csp-sea"></rect><path d="M157.1 50.0 L128.6 40.0 L100.0 65.0 L81.0 90.0 L14.3 118.0 L8.6 140.0 L14.3 170.0 L23.8 210.0 L23.8 240.0 L33.3 250.0 L52.4 250.0 L71.4 240.0 L109.5 235.0 L128.6 223.0 L157.1 217.0 L157.1 160.0 Z" fill="#ef4444"  class="csp-region" data-var="WA"><title>Western Australia (WA)</title></path><path d="M157.1 50.0 L171.4 23.0 L185.7 13.0 L228.6 20.0 L221.9 50.0 L242.9 65.0 L242.9 160.0 L157.1 160.0 Z" fill="#f1f5f9"  class="csp-region hl" data-var="NT"><title>Northern Territory (NT)</title></path><path d="M242.9 65.0 L269.5 75.0 L277.1 25.0 L285.7 7.0 L295.2 40.0 L313.3 50.0 L319.0 88.0 L347.6 110.0 L366.7 138.0 L387.6 155.0 L391.4 182.0 L366.7 188.0 L347.6 190.0 L271.4 190.0 L271.4 160.0 L242.9 160.0 Z" fill="#22c55e"  class="csp-region" data-var="Q"><title>Queensland (Q)</title></path><path d="M271.4 190.0 L347.6 190.0 L366.7 188.0 L391.4 182.0 L385.7 210.0 L376.2 228.0 L366.7 240.0 L357.1 260.0 L356.2 275.0 L340.0 268.0 L300.0 257.0 L271.4 240.0 Z" fill="#f1f5f9"  class="csp-region" data-var="NSW"><title>New South Wales (NSW)</title></path><path d="M271.4 240.0 L300.0 257.0 L340.0 268.0 L356.2 275.0 L333.3 280.0 L321.9 291.0 L304.8 283.0 L295.2 288.0 L271.4 280.0 Z" fill="#f1f5f9"  class="csp-region" data-var="V"><title>Victoria (V)</title></path><path d="M157.1 160.0 L242.9 160.0 L271.4 160.0 L271.4 190.0 L271.4 240.0 L271.4 280.0 L259.0 272.0 L252.4 256.0 L242.9 257.0 L247.6 246.0 L241.0 230.0 L233.3 249.0 L223.8 250.0 L220.0 246.0 L206.7 228.0 L185.7 220.0 L157.1 217.0 Z" fill="#f1f5f9"  class="csp-region hl" data-var="SA"><title>South Australia (SA)</title></path><path d="M305.7 307.0 L341.0 309.0 L338.1 330.0 L326.7 336.0 L311.4 322.0 Z" fill="#f1f5f9"  class="csp-region" data-var="T"><title>Tasmania (T)</title></path><text x="80.95238095238095" y="145" class="csp-region-label on">WA</text><text x="200" y="95" class="csp-region-label">NT</text><circle cx="190" cy="107" r="3.8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"></circle><line x1="186.5" y1="110.5" x2="193.5" y2="103.5" stroke="#94a3b8" stroke-width="1"></line><circle cx="200" cy="107" r="3.8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"></circle><line x1="196.5" y1="110.5" x2="203.5" y2="103.5" stroke="#94a3b8" stroke-width="1"></line><circle cx="210" cy="107" r="3.8" fill="#3b82f6" stroke="rgba(15,23,42,0.35)" stroke-width="1"></circle><text x="304.76190476190476" y="115.00000000000001" class="csp-region-label on">Q</text><text x="323.8095238095238" y="215" class="csp-region-label">NSW</text><circle cx="313.8095238095238" cy="227" r="3.8" fill="#ef4444" stroke="rgba(15,23,42,0.35)" stroke-width="1"></circle><circle cx="323.8095238095238" cy="227" r="3.8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"></circle><line x1="320.3095238095238" y1="230.5" x2="327.3095238095238" y2="223.5" stroke="#94a3b8" stroke-width="1"></line><circle cx="333.8095238095238" cy="227" r="3.8" fill="#3b82f6" stroke="rgba(15,23,42,0.35)" stroke-width="1"></circle><text x="303.8095238095239" y="266" class="csp-region-label">V</text><circle cx="293.8095238095239" cy="278" r="3.8" fill="#ef4444" stroke="rgba(15,23,42,0.35)" stroke-width="1"></circle><circle cx="303.8095238095239" cy="278" r="3.8" fill="#22c55e" stroke="rgba(15,23,42,0.35)" stroke-width="1"></circle><circle cx="313.8095238095239" cy="278" r="3.8" fill="#3b82f6" stroke="rgba(15,23,42,0.35)" stroke-width="1"></circle><text x="212.38095238095246" y="190" class="csp-region-label">SA</text><circle cx="202.38095238095246" cy="202" r="3.8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"></circle><line x1="198.88095238095246" y1="205.5" x2="205.88095238095246" y2="198.5" stroke="#94a3b8" stroke-width="1"></line><circle cx="212.38095238095246" cy="202" r="3.8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"></circle><line x1="208.88095238095246" y1="205.5" x2="215.88095238095246" y2="198.5" stroke="#94a3b8" stroke-width="1"></line><circle cx="222.38095238095246" cy="202" r="3.8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"></circle><line x1="218.88095238095246" y1="205.5" x2="225.88095238095246" y2="198.5" stroke="#94a3b8" stroke-width="1"></line><text x="212.38095238095246" y="217" class="csp-wipe-label">∅ empty</text><text x="324.7619047619047" y="315" class="csp-region-label">T</text><circle cx="314.7619047619047" cy="327" r="3.8" fill="#ef4444" stroke="rgba(15,23,42,0.35)" stroke-width="1"></circle><circle cx="324.7619047619047" cy="327" r="3.8" fill="#22c55e" stroke="rgba(15,23,42,0.35)" stroke-width="1"></circle><circle cx="334.7619047619047" cy="327" r="3.8" fill="#3b82f6" stroke="rgba(15,23,42,0.35)" stroke-width="1"></circle></svg>
+            <figcaption>Figure 2. AC-3 after WA = red, Q = green: NT is reduced to {blue} and SA's domain is wiped out (dots show the remaining colours of each unassigned region).</figcaption>
+          </figure>
+
+          <h3 id="path-consistency"><span class="rp-num">2.4</span>Path Consistency &amp; k-Consistency</h3>
+          <p>Arc consistency can miss inferences. Try to colour the triangle WA–NT–SA with only two colours: every single value has a supporting value across each arc, so the network is arc-consistent — yet it obviously has no solution. <strong>Path consistency</strong> tightens binary constraints using implicit constraints inferred from triples: a two-variable set {X<sub>i</sub>, X<sub>j</sub>} is path-consistent with respect to X<sub>m</sub> if for every consistent assignment <code>{X<sub>i</sub> = a, X<sub>j</sub> = b}</code> there is a value of X<sub>m</sub> consistent with both. For the two-coloured triangle the only consistent pairs for {WA, NT} are {red, green} and {green, red}, and neither leaves a colour for SA; the PC-2 algorithm deletes both pairs and exposes the inconsistency.</p>
+          <p>More generally, a CSP is <strong>k-consistent</strong> if any consistent assignment to any k − 1 variables can be extended to any k-th variable. 1-consistency is node consistency, 2-consistency is arc consistency and 3-consistency is path consistency (for binary constraint networks). A graph that is <em>strongly</em> n-consistent can be solved without any backtracking, but establishing it takes time and space exponential in n in the worst case, so practical solvers stop at arc or path consistency.</p>
+
+          <h3 id="global-constraints"><span class="rp-num">2.5</span>Global Constraints</h3>
+          <p>Global constraints come with specialised propagation that is both faster and stronger than decomposing them into binary constraints. A simple test for <code>Alldiff</code>: if m variables are involved and only n distinct values remain in the union of their domains, and m &gt; n, the constraint cannot be satisfied (the pigeonhole principle). Suppose NT, SA and Q are mutually adjacent and all three have been reduced to <code>{green, blue}</code>: an Alldiff check on {NT, SA, Q} sees 3 variables and 2 values and fails at once. The general algorithm repeatedly removes variables with singleton domains (and their value from the others), failing if a domain empties or more variables than values remain.</p>
+          <p>For resource constraints such as <code>Atmost(10, P<sub>1</sub>, P<sub>2</sub>, P<sub>3</sub>)</code> (at most 10 personnel in total), inconsistency is detected by summing the minimum values of the current domains; for large integer problems, domains are represented by lower and upper bounds and handled by <strong>bounds propagation</strong>.</p>
+
+          <h3 id="sudoku"><span class="rp-num">2.6</span>Sudoku as a CSP</h3>
+          <p>A 9×9 Sudoku has 81 variables (one per cell) with domain {1, …, 9}; the givens have single-value domains. There are 27 Alldiff constraints — one per row, column and 3×3 box — so every cell has 20 <em>peers</em>. Enforcing arc consistency on the binary ≠ constraints solves the easy newspaper puzzles completely. For AIMA's hardest puzzles AC-3 leaves many candidates and search is required; interleaving AC-3 with backtracking (MAC, §3.5) and the MRV heuristic still solves them in milliseconds. On the Playground's "Hard" puzzle, for example, MAC + MRV needs 291 assignments, while plain backtracking gives up after 1.5 million constraint checks.</p>
+        </section>
+
+        <!-- ================= 3. BACKTRACKING ================= -->
+        <section id="backtracking">
+          <h2><span class="rp-num">3.</span>Backtracking Search for CSPs</h2>
+          <p>Many CSPs cannot be solved by inference alone; at some point we must search. <strong>Backtracking search</strong> is a depth-first search that chooses values for one variable at a time and backtracks when a variable has no legal values left. It exploits commutativity (§1.6) by fixing one variable per level, and it checks consistency incrementally so that an inconsistent partial assignment is abandoned immediately.</p>
+
+          <h3 id="bt-algorithm"><span class="rp-num">3.1</span>The Algorithm</h3>
+          <div class="rp-pseudocode">
+            <div class="rp-pseudocode-title">A simple backtracking algorithm for CSPs (AIMA Figure 6.5)</div>
+            <pre>function BACKTRACKING-SEARCH(csp) returns a solution or failure
+    return BACKTRACK(csp, { })
+
+function BACKTRACK(csp, assignment) returns a solution or failure
+    if assignment is complete then return assignment
+    var ← SELECT-UNASSIGNED-VARIABLE(csp, assignment)
+    for each value in ORDER-DOMAIN-VALUES(csp, var, assignment) do
+        if value is consistent with assignment then
+            add {var = value} to assignment
+            inferences ← INFERENCE(csp, var, assignment)
+            if inferences ≠ failure then
+                add inferences to csp
+                result ← BACKTRACK(csp, assignment)
+                if result ≠ failure then return result
+                remove inferences from csp
+            remove {var = value} from assignment
+    return failure</pre>
+          </div>
+          <p>The algorithm has three hooks that do not depend on the particular problem: <code>SELECT-UNASSIGNED-VARIABLE</code> (which variable next?), <code>ORDER-DOMAIN-VALUES</code> (in what order to try its values?) and <code>INFERENCE</code> (what can be deduced after each assignment?). Choosing them well is what separates a slow solver from a fast one. With a fixed variable order <code>WA, NSW, NT, Q, SA, V, T</code> and no inference, the engine needs 12 assignments and 5 backtracks to colour Australia: after WA = red, NSW = red and NT = green, Q must be blue and SA then has no colour; the algorithm must undo Q, NT and eventually NSW.</p>
+
+          <h3 id="variable-ordering"><span class="rp-num">3.2</span>Variable Ordering: MRV and the Degree Heuristic</h3>
+          <p>The <strong>minimum-remaining-values</strong> (MRV) heuristic chooses the variable with the fewest legal values — also called the "most constrained variable" or "fail-first" heuristic. After <code>WA = red</code> and <code>NT = green</code>, SA has only blue left, so MRV assigns SA next rather than wandering off to Q, NSW or V. If some variable has <em>zero</em> legal values, MRV selects it and the failure is detected immediately, avoiding pointless searches through other variables. MRV typically performs orders of magnitude better than a static or random ordering.</p>
+          <p>MRV does not help with the first choice in Australia: every region starts with three values. The <strong>degree heuristic</strong> breaks the tie by choosing the variable involved in the largest number of constraints on other <em>unassigned</em> variables. SA has degree 5, T has degree 0. With SA chosen first, the map can be coloured with no backtracking at all. The degree heuristic is mainly used as a tie-breaker for MRV (<code>MRV + Degree</code> in the lecture and Playground).</p>
+
+          <h3 id="value-ordering"><span class="rp-num">3.3</span>Value Ordering: Least-Constraining Value</h3>
+          <p>Once a variable is chosen, the <strong>least-constraining-value</strong> (LCV) heuristic prefers the value that rules out the fewest choices for the neighbouring variables. After <code>WA = red</code>, <code>NT = green</code>, suppose Q is next. Q = green is illegal. Q = blue would remove SA's last value; Q = red leaves blue for SA. LCV therefore tries red first. The asymmetry with variable ordering is deliberate: a variable must eventually be assigned, so we pick the one most likely to fail early (fail-first), but we only need one solution, so we try the value most likely to succeed (fail-last).</p>
+
+          <h3 id="forward-checking"><span class="rp-num">3.4</span>Forward Checking</h3>
+          <p>Inference is most powerful when it is interleaved with search. The simplest form is <strong>forward checking</strong>: whenever a variable X is assigned, for each unassigned neighbour Y delete from D<sub>Y</sub> any value inconsistent with the value chosen for X. If some D<sub>Y</sub> becomes empty, the current branch fails immediately.</p>
+          <div class="rp-table-wrap">
+            <table class="rp-table csp-rp-fc">
+              <thead><tr><th></th><th>WA</th><th>NT</th><th>Q</th><th>NSW</th><th>V</th><th>SA</th><th>T</th></tr></thead>
+              <tbody><tr><th>Initial domains</th><td class=" "><span class="csp-dot" style="background:#ef4444"></span><span class="csp-dot" style="background:#22c55e"></span><span class="csp-dot" style="background:#3b82f6"></span></td><td class=" "><span class="csp-dot" style="background:#ef4444"></span><span class="csp-dot" style="background:#22c55e"></span><span class="csp-dot" style="background:#3b82f6"></span></td><td class=" "><span class="csp-dot" style="background:#ef4444"></span><span class="csp-dot" style="background:#22c55e"></span><span class="csp-dot" style="background:#3b82f6"></span></td><td class=" "><span class="csp-dot" style="background:#ef4444"></span><span class="csp-dot" style="background:#22c55e"></span><span class="csp-dot" style="background:#3b82f6"></span></td><td class=" "><span class="csp-dot" style="background:#ef4444"></span><span class="csp-dot" style="background:#22c55e"></span><span class="csp-dot" style="background:#3b82f6"></span></td><td class=" "><span class="csp-dot" style="background:#ef4444"></span><span class="csp-dot" style="background:#22c55e"></span><span class="csp-dot" style="background:#3b82f6"></span></td><td class=" "><span class="csp-dot" style="background:#ef4444"></span><span class="csp-dot" style="background:#22c55e"></span><span class="csp-dot" style="background:#3b82f6"></span></td></tr><tr><th>After WA = red</th><td class=" "><span class="csp-dot" style="background:#ef4444"></span></td><td class="changed "><span class="csp-dot" style="background:#22c55e"></span><span class="csp-dot" style="background:#3b82f6"></span></td><td class=" "><span class="csp-dot" style="background:#ef4444"></span><span class="csp-dot" style="background:#22c55e"></span><span class="csp-dot" style="background:#3b82f6"></span></td><td class=" "><span class="csp-dot" style="background:#ef4444"></span><span class="csp-dot" style="background:#22c55e"></span><span class="csp-dot" style="background:#3b82f6"></span></td><td class=" "><span class="csp-dot" style="background:#ef4444"></span><span class="csp-dot" style="background:#22c55e"></span><span class="csp-dot" style="background:#3b82f6"></span></td><td class="changed "><span class="csp-dot" style="background:#22c55e"></span><span class="csp-dot" style="background:#3b82f6"></span></td><td class=" "><span class="csp-dot" style="background:#ef4444"></span><span class="csp-dot" style="background:#22c55e"></span><span class="csp-dot" style="background:#3b82f6"></span></td></tr><tr><th>After Q = green</th><td class=" "><span class="csp-dot" style="background:#ef4444"></span></td><td class="changed "><span class="csp-dot" style="background:#3b82f6"></span></td><td class=" "><span class="csp-dot" style="background:#22c55e"></span></td><td class="changed "><span class="csp-dot" style="background:#ef4444"></span><span class="csp-dot" style="background:#3b82f6"></span></td><td class=" "><span class="csp-dot" style="background:#ef4444"></span><span class="csp-dot" style="background:#22c55e"></span><span class="csp-dot" style="background:#3b82f6"></span></td><td class="changed "><span class="csp-dot" style="background:#3b82f6"></span></td><td class=" "><span class="csp-dot" style="background:#ef4444"></span><span class="csp-dot" style="background:#22c55e"></span><span class="csp-dot" style="background:#3b82f6"></span></td></tr><tr><th>After V = blue</th><td class=" "><span class="csp-dot" style="background:#ef4444"></span></td><td class=" "><span class="csp-dot" style="background:#3b82f6"></span></td><td class=" "><span class="csp-dot" style="background:#22c55e"></span></td><td class="changed "><span class="csp-dot" style="background:#ef4444"></span></td><td class=" "><span class="csp-dot" style="background:#3b82f6"></span></td><td class="changed wiped">∅</td><td class=" "><span class="csp-dot" style="background:#ef4444"></span><span class="csp-dot" style="background:#22c55e"></span><span class="csp-dot" style="background:#3b82f6"></span></td></tr></tbody>
+            </table>
+          </div>
+          <p>The table reproduces AIMA Figure 6.7. After <code>WA = red</code>, red is removed from NT and SA. After <code>Q = green</code>, green is removed from NT, SA and NSW — NT and SA are now both <code>{blue}</code>. After <code>V = blue</code>, blue is removed from NSW and SA, SA's domain becomes empty, and forward checking backtracks. Notice what forward checking missed: at the second row, NT and SA are adjacent and both forced to blue, which is already a contradiction. Forward checking only looks at the neighbours of the variable just assigned, so it cannot see it.</p>
+
+          <h3 id="mac"><span class="rp-num">3.5</span>Maintaining Arc Consistency (MAC)</h3>
+          <p>The <strong>MAC</strong> algorithm fixes this. After a variable X<sub>i</sub> is assigned, <code>INFERENCE</code> calls AC-3, but instead of a queue of all arcs it starts with only the arcs <code>(X<sub>j</sub>, X<sub>i</sub>)</code> for the unassigned neighbours X<sub>j</sub> of X<sub>i</sub>. From there AC-3 propagates in the usual way, and fails if any domain is emptied. In the example above, once NT is reduced to {blue} the arc (SA, NT) is examined and SA's last value disappears — one level earlier than forward checking. MAC is strictly more powerful than forward checking, because forward checking does the same work as MAC on the initial arcs but, unlike MAC, does not propagate further when a domain shrinks.</p>
+
+          <h3 id="backjumping"><span class="rp-num">3.6</span>Intelligent Backtracking: Looking Backward</h3>
+          <p>When a branch fails, <code>BACKTRACK</code> returns to the most recently assigned variable — <strong>chronological backtracking</strong>. That is often the wrong place. Take the fixed order Q, NSW, V, T, SA with the partial assignment <code>{Q = red, NSW = green, V = blue, T = red}</code>. SA has no consistent value: red conflicts with Q, green with NSW, blue with V. Chronological backtracking tries T = green and T = blue, which cannot possibly help because Tasmania is not adjacent to SA.</p>
+          <p>A smarter approach keeps, for each variable, its <strong>conflict set</strong>: the assigned variables that ruled out one of its values. Here <code>conf(SA) = {Q, NSW, V}</code>. <strong>Backjumping</strong> jumps back to the most recent variable in the conflict set — V. When forward checking is used, the conflict set comes for free: when forward checking from an assignment X = x deletes a value from D<sub>Y</sub>, it adds X to conf(Y). If the jump target also fails, <strong>conflict-directed backjumping</strong> merges the conflict sets, <code>conf(X<sub>j</sub>) ← conf(X<sub>j</sub>) ∪ conf(X<sub>i</sub>) − {X<sub>j</sub>}</code>, and keeps jumping. <strong>Constraint learning</strong> goes one step further and records the minimal set of variables responsible for a failure as a <em>no-good</em>, so the same contradiction is never rediscovered in another branch.</p>
+        </section>
+
+        <!-- ================= 4. LOCAL SEARCH & STRUCTURE ================= -->
+        <section id="local-structure">
+          <h2><span class="rp-num">4.</span>Local Search &amp; the Structure of Problems</h2>
+
+          <h3 id="min-conflicts"><span class="rp-num">4.1</span>Local Search: Min-Conflicts</h3>
+          <p>Local search algorithms (Topic 02's hill climbing) turn out to be very effective for many CSPs. They use a <strong>complete-state formulation</strong>: every variable has a value, and each step changes the value of one variable. The <strong>min-conflicts</strong> heuristic picks a conflicted variable at random and gives it the value that results in the minimum number of conflicts with other variables, breaking ties randomly.</p>
+          <div class="rp-pseudocode">
+            <div class="rp-pseudocode-title">The MIN-CONFLICTS local search algorithm (AIMA Figure 6.8)</div>
+            <pre>function MIN-CONFLICTS(csp, max_steps) returns a solution or failure
+    current ← an initial complete assignment for csp
+    for i = 1 to max_steps do
+        if current is a solution for csp then return current
+        var ← a randomly chosen conflicted variable from csp.VARIABLES
+        value ← the value v for var that minimizes CONFLICTS(csp, var, v, current)
+        set var = value in current
+    return failure</pre>
+          </div>
+          <p>Min-conflicts is surprisingly effective. On the n-queens problem (one queen per column; each queen's row is its value), its run-time is roughly independent of problem size: after a greedy initial assignment it solves even the <em>million</em>-queens problem in about 50 steps on average. In the engine's 8-queens demonstrations a random start is typically solved in a few dozen steps; a 60-queens board takes on the order of a hundred.</p>
+
+          <h3 id="plateaus"><span class="rp-num">4.2</span>Plateaus, Tabu Search &amp; Constraint Weighting</h3>
+          <p>The landscape of a CSP under min-conflicts often has <strong>plateaus</strong>: millions of assignments that are only one conflict away from a solution. Allowing <em>sideways</em> moves (to a value with the same number of conflicts) helps the search wander across them. <strong>Tabu search</strong> keeps a short list of recently visited states and forbids returning to them. <strong>Constraint weighting</strong> gives each constraint a numeric weight, initially 1; at each step the algorithm minimises the total weight of violated constraints, and then increases the weight of every constraint still violated. Constraints that are hard to satisfy therefore grow heavier, focusing the search on them.</p>
+          <p>A second advantage of local search is that it works <strong>online</strong>: when the problem changes — a flight is cancelled, a lecturer falls ill — the existing schedule can be repaired with a few moves instead of being rebuilt from scratch. This is how the Course Scheduling lab optimises its soft constraints.</p>
+
+          <h3 id="components"><span class="rp-num">4.3</span>Independent Subproblems</h3>
+          <p>The structure of the constraint graph can make a problem dramatically easier. The simplest case: if the graph has several <strong>connected components</strong>, each is an independent subproblem, and a solution is the union of the component solutions. Suppose n variables fall into components of c variables each, with domain size d. The total work is <code>O(d<sup>c</sup> · n/c)</code> — linear in n — instead of <code>O(d<sup>n</sup>)</code>. With n = 80 Boolean variables split into four components of 20, this is the difference between 2<sup>80</sup> (longer than the lifetime of the universe at 10 million nodes per second) and 4 · 2<sup>20</sup> (a fraction of a second).</p>
+
+          <h3 id="tree-csp"><span class="rp-num">4.4</span>Tree-Structured CSPs</h3>
+          <p>A constraint graph is a <strong>tree</strong> when any two variables are connected by exactly one path. Any tree-structured CSP can be solved in time <strong>linear</strong> in the number of variables. The key is <em>directional arc consistency</em> (DAC): under an ordering X<sub>1</sub>, …, X<sub>n</sub>, a CSP is DAC if every X<sub>i</sub> is arc-consistent with each X<sub>j</sub> for j &gt; i.</p>
+          <div class="rp-pseudocode">
+            <div class="rp-pseudocode-title">The TREE-CSP-SOLVER algorithm (AIMA Figure 6.11)</div>
+            <pre>function TREE-CSP-SOLVER(csp) returns a solution, or failure
+    n ← number of variables in X
+    assignment ← an empty assignment
+    root ← any variable in X
+    X ← TOPOLOGICALSORT(X, root)
+    for j = n down to 2 do
+        MAKE-ARC-CONSISTENT(PARENT(X<sub>j</sub>), X<sub>j</sub>)
+        if it cannot be made consistent then return failure
+    for i = 1 to n do
+        assignment[X<sub>i</sub>] ← any consistent value from D<sub>i</sub>
+        if there is no consistent value then return failure
+    return assignment</pre>
+          </div>
+          <p>After the backward pass, every parent value has a compatible value in each child, so the forward pass can assign variables from the root down with no backtracking. There are n − 1 arcs and each is revised once at cost O(d²), giving <strong>O(n · d²)</strong> overall. Exercise 6.6 traces the algorithm on the tree of AIMA Figure 6.10.</p>
+          <figure class="rp-figure">
+            <svg class="csp-graph-svg" viewBox="0 0 420 230" xmlns="http://www.w3.org/2000/svg"><line x1="62.559999999999995" y1="115" x2="140.16" y2="115" class="csp-gedge  "></line><line x1="140.16" y1="115" x2="217.76000000000002" y2="59.56" class="csp-gedge  "></line><line x1="140.16" y1="115" x2="217.76000000000002" y2="158.56" class="csp-gedge  "></line><line x1="217.76000000000002" y1="158.56" x2="310.88" y2="126.88000000000001" class="csp-gedge  "></line><line x1="217.76000000000002" y1="158.56" x2="310.88" y2="190.24" class="csp-gedge  "></line><g class="csp-gnode" data-var="A"><circle cx="62.559999999999995" cy="115" r="17" fill="#ffffff"></circle><text x="62.559999999999995" y="119" class="csp-gnode-label ">A</text><text x="62.559999999999995" y="144" class="csp-gnode-sub">{R, G}</text></g><g class="csp-gnode" data-var="B"><circle cx="140.16" cy="115" r="17" fill="#ffffff"></circle><text x="140.16" y="119" class="csp-gnode-label ">B</text><text x="140.16" y="144" class="csp-gnode-sub">{R, G}</text></g><g class="csp-gnode" data-var="C"><circle cx="217.76000000000002" cy="59.56" r="17" fill="#ffffff"></circle><text x="217.76000000000002" y="63.56" class="csp-gnode-label ">C</text><text x="217.76000000000002" y="88.56" class="csp-gnode-sub">{R}</text></g><g class="csp-gnode" data-var="D"><circle cx="217.76000000000002" cy="158.56" r="17" fill="#ffffff"></circle><text x="217.76000000000002" y="162.56" class="csp-gnode-label ">D</text><text x="217.76000000000002" y="187.56" class="csp-gnode-sub">{G, B}</text></g><g class="csp-gnode" data-var="E"><circle cx="310.88" cy="126.88000000000001" r="17" fill="#ffffff"></circle><text x="310.88" y="130.88" class="csp-gnode-label ">E</text><text x="310.88" y="155.88" class="csp-gnode-sub">{G}</text></g><g class="csp-gnode" data-var="F"><circle cx="310.88" cy="190.24" r="17" fill="#ffffff"></circle><text x="310.88" y="194.24" class="csp-gnode-label ">F</text><text x="310.88" y="219.24" class="csp-gnode-sub">{B, G}</text></g></svg>
+            <figcaption>Figure 3. The tree-structured CSP of AIMA Fig 6.10 (edges are ≠ constraints), with the initial domains used in the lecture's stepper and in Exercise 6.6.</figcaption>
+          </figure>
+
+          <h3 id="cutset"><span class="rp-num">4.5</span>Cutset Conditioning</h3>
+          <p>Most graphs are not trees, but many are <em>nearly</em> trees. <strong>Cutset conditioning</strong> chooses a subset S of variables such that the constraint graph becomes a tree after S is removed — a <strong>cycle cutset</strong>. For each possible consistent assignment to S, it removes from the domains of the remaining variables any values inconsistent with that assignment, and solves the remaining tree-structured CSP. If the cutset has size c, the total run-time is <code>O(d<sup>c</sup> · (n − c) · d²)</code>: very fast when c is small. In Australia, S = {SA}: after assigning SA, the rest of the map is the chain WA – NT – Q – NSW – V plus the isolated T.</p>
+          <figure class="rp-figure">
+            <svg class="csp-graph-svg" viewBox="0 0 300 240" xmlns="http://www.w3.org/2000/svg"><line x1="53.52" y1="107.52" x2="117.84" y2="53.44" class="csp-gedge  "></line><line x1="53.52" y1="107.52" x2="133.92000000000002" y2="136.64" class="csp-gedge  gone"></line><line x1="117.84" y1="53.44" x2="133.92000000000002" y2="136.64" class="csp-gedge  gone"></line><line x1="117.84" y1="53.44" x2="192.88" y2="65.92" class="csp-gedge  "></line><line x1="192.88" y1="65.92" x2="133.92000000000002" y2="136.64" class="csp-gedge  gone"></line><line x1="192.88" y1="65.92" x2="230.4" y2="132.48000000000002" class="csp-gedge  "></line><line x1="230.4" y1="132.48000000000002" x2="133.92000000000002" y2="136.64" class="csp-gedge  gone"></line><line x1="230.4" y1="132.48000000000002" x2="176.79999999999998" y2="190.72" class="csp-gedge  "></line><line x1="176.79999999999998" y1="190.72" x2="133.92000000000002" y2="136.64" class="csp-gedge  gone"></line><g class="csp-gnode" data-var="WA"><circle cx="53.52" cy="107.52" r="15" fill="#ffffff"></circle><text x="53.52" y="111.52" class="csp-gnode-label ">WA</text><text x="53.52" y="134.51999999999998" class="csp-gnode-sub">{G, B}</text></g><g class="csp-gnode" data-var="NT"><circle cx="117.84" cy="53.44" r="15" fill="#ffffff"></circle><text x="117.84" y="57.44" class="csp-gnode-label ">NT</text><text x="117.84" y="80.44" class="csp-gnode-sub">{G, B}</text></g><g class="csp-gnode" data-var="Q"><circle cx="192.88" cy="65.92" r="15" fill="#ffffff"></circle><text x="192.88" y="69.92" class="csp-gnode-label ">Q</text><text x="192.88" y="92.92" class="csp-gnode-sub">{G, B}</text></g><g class="csp-gnode" data-var="NSW"><circle cx="230.4" cy="132.48000000000002" r="15" fill="#ffffff"></circle><text x="230.4" y="136.48000000000002" class="csp-gnode-label ">NSW</text><text x="230.4" y="159.48000000000002" class="csp-gnode-sub">{G, B}</text></g><g class="csp-gnode" data-var="V"><circle cx="176.79999999999998" cy="190.72" r="15" fill="#ffffff"></circle><text x="176.79999999999998" y="194.72" class="csp-gnode-label ">V</text><text x="176.79999999999998" y="217.72" class="csp-gnode-sub">{G, B}</text></g><g class="csp-gnode removed" data-var="SA"><circle cx="133.92000000000002" cy="136.64" r="15" fill="#ef4444"></circle><text x="133.92000000000002" y="140.64" class="csp-gnode-label on">SA</text></g><g class="csp-gnode" data-var="T"><circle cx="246.48" cy="203.20000000000002" r="15" fill="#ffffff"></circle><text x="246.48" y="207.20000000000002" class="csp-gnode-label ">T</text><text x="246.48" y="230.20000000000002" class="csp-gnode-sub">{R, G, B}</text></g></svg>
+            <figcaption>Figure 4. Conditioning on SA = red: SA's neighbours lose red, and the remaining constraint graph is a tree.</figcaption>
+          </figure>
+
+          <h3 id="tree-decomposition"><span class="rp-num">4.6</span>Tree Decomposition</h3>
+          <p>A <strong>tree decomposition</strong> transforms the constraint graph into a tree of connected subproblems. Each subproblem is solved independently, and the resulting solutions are combined. A decomposition must satisfy three requirements: every variable appears in at least one subproblem; if two variables are connected by a constraint, they (and the constraint) appear together in at least one subproblem; and if a variable appears in two subproblems, it appears in every subproblem along the path connecting them. Australia decomposes into {WA, NT, SA}, {NT, SA, Q}, {SA, Q, NSW}, {SA, NSW, V} and {T} (AIMA Fig 6.13).</p>
+          <p>Each subproblem is solved and its solutions become the domain of a single "mega-variable"; constraints between mega-variables require shared variables to agree; and the resulting tree is solved with the tree algorithm. The <strong>tree width</strong> w of a decomposition is one less than the size of its largest subproblem (here w = 2); a CSP with tree width w can be solved in <code>O(n · d<sup>w+1</sup>)</code> time. Finding the decomposition with minimal tree width is NP-hard, but good heuristics exist.</p>
+          <p>Finally, <strong>value symmetry</strong> can be exploited: in map colouring, any permutation of the d colours of a solution is also a solution, so imposing an arbitrary <em>symmetry-breaking constraint</em> such as <code>NT &lt; SA &lt; WA</code> (alphabetical colour order) reduces the search space by a factor of d!.</p>
+        </section>
+
+        <!-- ================= 5. EVALUATION ================= -->
+        <section id="evaluating">
+          <h2><span class="rp-num">5.</span>Evaluating CSP Solvers</h2>
+
+          <h3 id="eval-work"><span class="rp-num">5.1</span>Measuring Work</h3>
+          <p>Wall-clock time depends on the machine and the implementation, so CSP solvers are usually compared by counting the work they do: the number of <strong>assignments</strong> (search nodes) tried, the number of <strong>backtracks</strong>, and the number of <strong>constraint checks</strong>. Inference trades checks for assignments — MAC performs more checks per node than forward checking, which performs more than plain backtracking — but on tightly constrained problems it explores so many fewer nodes that it wins overall. The lecture's live benchmark reproduces this on a 20-region random map: plain backtracking needs 1,113 assignments and 1,093 backtracks, whereas MRV + MAC finds a solution with just 20 assignments and no backtracking at all.</p>
+
+          <h3 id="eval-complexity"><span class="rp-num">5.2</span>Complexity</h3>
+          <p>General finite-domain CSPs are NP-complete (they include 3-SAT as a special case), so no known complete algorithm is better than exponential in the worst case. Heuristics and inference do not change the worst case; they change the typical case, often by many orders of magnitude. Structure gives genuine polynomial special cases.</p>
+          <div class="rp-table-wrap">
+            <table class="rp-table">
+              <thead><tr><th>Algorithm</th><th>Time</th><th>Space</th><th>Notes</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Backtracking (any ordering)</strong></td><td><code>O(d<sup>n</sup>)</code></td><td><code>O(n)</code></td><td>Depth-first; worst case unchanged by heuristics</td></tr>
+                <tr><td><strong>Forward checking / MAC</strong></td><td><code>O(d<sup>n</sup>)</code></td><td><code>O(n · d)</code></td><td>Far fewer nodes on tight problems</td></tr>
+                <tr><td><strong>AC-3 (once)</strong></td><td><code>O(c · d³)</code></td><td><code>O(c)</code></td><td>c binary constraints</td></tr>
+                <tr><td><strong>Tree-structured CSP</strong></td><td><code>O(n · d²)</code></td><td><code>O(n · d)</code></td><td>No backtracking</td></tr>
+                <tr><td><strong>Cutset conditioning</strong></td><td><code>O(d<sup>c</sup> · (n − c) · d²)</code></td><td><code>O(n · d)</code></td><td>c = cycle-cutset size</td></tr>
+                <tr><td><strong>Tree decomposition</strong></td><td><code>O(n · d<sup>w+1</sup>)</code></td><td><code>O(n · d<sup>w</sup>)</code></td><td>w = tree width</td></tr>
+                <tr><td><strong>Min-conflicts</strong></td><td>no bound (incomplete)</td><td><code>O(n)</code></td><td>≈ constant steps on n-queens</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <h3 id="eval-matrix"><span class="rp-num">5.3</span>Comparison Matrix</h3>
+          <div class="rp-table-wrap">
+            <table class="rp-table">
+              <thead><tr><th>Property</th><th>Backtracking</th><th>+ MRV / Degree / LCV</th><th>+ Forward Checking</th><th>MAC</th><th>Min-Conflicts</th><th>Tree-CSP Solver</th></tr></thead>
+              <tbody>
+                <tr><td><strong>Complete</strong></td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td><td>No</td><td>Yes (trees)</td></tr>
+                <tr><td><strong>Proves "no solution"</strong></td><td>Yes</td><td>Yes</td><td>Yes</td><td>Yes</td><td>No</td><td>Yes</td></tr>
+                <tr><td><strong>Detects failure early</strong></td><td>No</td><td>Partly</td><td>Empty neighbour domain</td><td>Any arc inconsistency</td><td>—</td><td>Yes</td></tr>
+                <tr><td><strong>Soft constraints</strong></td><td>Branch &amp; bound</td><td>Branch &amp; bound</td><td>Branch &amp; bound</td><td>Branch &amp; bound</td><td>Naturally (cost)</td><td>Dynamic programming</td></tr>
+                <tr><td><strong>Best for</strong></td><td>Tiny problems</td><td>General CSPs</td><td>General CSPs</td><td>Tight puzzles (Sudoku)</td><td>Huge / online repair</td><td>Tree-like graphs</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================= 6. EXERCISES ================= -->
+        <section id="exercises">
+          <h2><span class="rp-num">6.</span>Practice Exercises</h2>
+          <p>Six worked exercises covering formulation, AC-3, forward checking, ordering heuristics, min-conflicts and structure. Try each one before opening the answer; every answer was checked with the lecture's engine.</p>
+
+          <!-- Exercise 1 -->
+          <div class="rp-exercise" id="ex1">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 1</span>
+              <h3 class="rp-exercise-title">Formulating Australia</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>For the Australia map-colouring CSP with three colours (Figure 1):</p>
+              <ol>
+                <li>How many variables and how many binary constraints are there?</li>
+                <li>How many complete assignments exist, and how many leaves does the <em>naïve</em> search tree (any variable, any value at each level) have?</li>
+                <li>How many solutions does the CSP have?</li>
+              </ol>
+            </div>
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
+              <div class="rp-answer-body">
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">1. Size</span>
+                  <p><strong>7 variables</strong> (WA, NT, Q, NSW, V, SA, T) and <strong>9 binary constraints</strong>: the 9 edges of the constraint graph — five around SA (WA, NT, Q, NSW, V) plus WA–NT, NT–Q, Q–NSW and NSW–V.</p>
+                </div>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">2. Search space</span>
+                  <div class="rp-pseudocode"><pre>complete assignments = d<sup>n</sup>      = 3<sup>7</sup>        = 2,187
+naïve tree leaves    = n! · d<sup>n</sup> = 5,040 · 2,187 = 11,022,480</pre></div>
+                </div>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">3. Number of solutions</span>
+                  <p>Colour SA first: 3 choices. The five mainland regions around SA form the path WA – NT – Q – NSW – V, and each must avoid SA's colour, so the path is coloured with the remaining 2 colours, alternating: 2 choices once WA is fixed. Tasmania is independent: 3 choices.</p>
+                  <div class="formula-box">solutions = 3 (SA) × 2 (path) × 3 (T) = 18</div>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Exercise 2 -->
+          <div class="rp-exercise" id="ex2">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 2</span>
+              <h3 class="rp-exercise-title">AC-3 Trace</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Variables X, Y, Z each have domain {1, 2, 3, 4}. The constraints are <code>X &lt; Y</code> and <code>Y &lt; Z</code>. Run AC-3 starting with the queue <code>[(X, Y), (Y, X), (Y, Z), (Z, Y)]</code>, processing arcs first-in first-out. Give every revision and the final domains.</p>
+            </div>
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
+              <div class="rp-answer-body">
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Trace</span>
+                  <div class="rp-pseudocode"><pre>1. REVISE(X, Y): remove 4 from D(X)
+     X {1,2,3}  Y {1,2,3,4}  Z {1,2,3,4}
+2. REVISE(Y, X): remove 1 from D(Y)
+     X {1,2,3}  Y {2,3,4}  Z {1,2,3,4}
+3. REVISE(Y, Z): remove 4 from D(Y); re-queue (X, Y)
+     X {1,2,3}  Y {2,3}  Z {1,2,3,4}
+4. REVISE(Z, Y): remove 1, 2 from D(Z)
+     X {1,2,3}  Y {2,3}  Z {3,4}
+5. REVISE(X, Y): remove 3 from D(X)
+     X {1,2}  Y {2,3}  Z {3,4}
+queue empty → arc-consistent.    X {1,2}  Y {2,3}  Z {3,4}</pre></div>
+                </div>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Why (X, Y) is revised twice</span>
+                  <p>When REVISE(Y, Z) removes 4 from D(Y), the arc (X, Y) — which points <em>into</em> Y — is added back to the queue. Its second revision removes 3 from D(X), because X = 3 needed Y = 4 as support.</p>
+                </div>
+                <div class="formula-box">X ∈ {1, 2} · Y ∈ {2, 3} · Z ∈ {3, 4} — arc-consistent, 6 values removed</div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Exercise 3 -->
+          <div class="rp-exercise" id="ex3">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 3</span>
+              <h3 class="rp-exercise-title">Forward Checking Trace</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Starting from full domains {R, G, B}, assign <code>WA = red</code>, then <code>Q = green</code>, then <code>V = blue</code>, applying forward checking after each assignment. Give the domains of all variables after each step. At which step does forward checking detect failure? Could it have been detected earlier, and by which method?</p>
+            </div>
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
+              <div class="rp-answer-body">
+                <div class="rp-table-wrap">
+                  <table class="rp-table csp-rp-fc">
+                    <thead><tr><th></th><th>WA</th><th>NT</th><th>Q</th><th>NSW</th><th>V</th><th>SA</th><th>T</th></tr></thead>
+                    <tbody><tr><th>Initial domains</th><td class=" ">{R, G, B}</td><td class=" ">{R, G, B}</td><td class=" ">{R, G, B}</td><td class=" ">{R, G, B}</td><td class=" ">{R, G, B}</td><td class=" ">{R, G, B}</td><td class=" ">{R, G, B}</td></tr><tr><th>After WA = red</th><td class=" ">{R}</td><td class="changed ">{G, B}</td><td class=" ">{R, G, B}</td><td class=" ">{R, G, B}</td><td class=" ">{R, G, B}</td><td class="changed ">{G, B}</td><td class=" ">{R, G, B}</td></tr><tr><th>After Q = green</th><td class=" ">{R}</td><td class="changed ">{B}</td><td class=" ">{G}</td><td class="changed ">{R, B}</td><td class=" ">{R, G, B}</td><td class="changed ">{B}</td><td class=" ">{R, G, B}</td></tr><tr><th>After V = blue</th><td class=" ">{R}</td><td class=" ">{B}</td><td class=" ">{G}</td><td class="changed ">{R}</td><td class=" ">{B}</td><td class="changed wiped">∅</td><td class=" ">{R, G, B}</td></tr></tbody>
+                  </table>
+                </div>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Failure</span>
+                  <p>After <code>V = blue</code>, D(SA) = ∅, so forward checking fails and backtracks. But the contradiction already existed after <code>Q = green</code>: NT and SA are adjacent and both reduced to {B}. Forward checking does not examine the arc (NT, SA) because neither was just assigned; <strong>MAC</strong> would have re-queued (SA, NT) when D(NT) shrank and failed one level earlier.</p>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Exercise 4 -->
+          <div class="rp-exercise" id="ex4">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 4</span>
+              <h3 class="rp-exercise-title">Ordering Heuristics</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <ol>
+                <li>With the empty assignment, which variable does MRV choose? Which does MRV with the degree tie-breaker choose?</li>
+                <li>With <code>{WA = red, NT = green}</code>, give the number of legal values of every unassigned variable and the MRV choice.</li>
+                <li>In the same state, suppose Q is the variable being assigned. Order its values with LCV.</li>
+              </ol>
+            </div>
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
+              <div class="rp-answer-body">
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">1. First variable</span>
+                  <p>Every variable has 3 legal values, so MRV alone is a 7-way tie (a static tie-break would pick WA). Degrees to unassigned variables: SA 5, NT 3, Q 3, NSW 3, WA 2, V 2, T 0 — the degree heuristic picks <strong>SA</strong>.</p>
+                </div>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">2. MRV after WA = red, NT = green</span>
+                  <div class="rp-pseudocode"><pre>SA : {blue}              → 1   (neighbours WA = red, NT = green)
+Q  : {red, blue}         → 2   (neighbour NT = green)
+NSW: {red, green, blue}  → 3
+V  : {red, green, blue}  → 3
+T  : {red, green, blue}  → 3
+MRV chooses SA.</pre></div>
+                </div>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">3. LCV for Q</span>
+                  <p>Q = green is illegal (NT is green). For the unassigned neighbours SA and NSW:</p>
+                  <div class="rp-pseudocode"><pre>Q = red : SA {blue} (1 value), NSW {green, blue} (2)  → 3 values remain
+Q = blue: SA {}     (0 value), NSW {red, green}  (2)  → SA wiped out
+LCV order: red, then blue.</pre></div>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Exercise 5 -->
+          <div class="rp-exercise" id="ex5">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 5</span>
+              <h3 class="rp-exercise-title">A Min-Conflicts Step on 4-Queens</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Columns c<sub>1</sub>…c<sub>4</sub> hold one queen each; rows are numbered 1 (top) to 4. The current complete assignment is <code>(c<sub>1</sub>, c<sub>2</sub>, c<sub>3</sub>, c<sub>4</sub>) = (2, 3, 1, 3)</code>.</p>
+              <figure class="rp-ex-figure">
+                <svg viewBox="0 0 200 200" class="rp-ex-graph-svg" style="max-width:220px"><rect x="0" y="0" width="50" height="50" class="csp-sq-l"></rect><rect x="50" y="0" width="50" height="50" class="csp-sq-d"></rect><rect x="100" y="0" width="50" height="50" class="csp-sq-l"></rect><rect x="150" y="0" width="50" height="50" class="csp-sq-d"></rect><rect x="0" y="50" width="50" height="50" class="csp-sq-d"></rect><rect x="50" y="50" width="50" height="50" class="csp-sq-l"></rect><rect x="100" y="50" width="50" height="50" class="csp-sq-d"></rect><rect x="150" y="50" width="50" height="50" class="csp-sq-l"></rect><rect x="0" y="100" width="50" height="50" class="csp-sq-l"></rect><rect x="50" y="100" width="50" height="50" class="csp-sq-d"></rect><rect x="100" y="100" width="50" height="50" class="csp-sq-l"></rect><rect x="150" y="100" width="50" height="50" class="csp-sq-d"></rect><rect x="0" y="150" width="50" height="50" class="csp-sq-d"></rect><rect x="50" y="150" width="50" height="50" class="csp-sq-l"></rect><rect x="100" y="150" width="50" height="50" class="csp-sq-d"></rect><rect x="150" y="150" width="50" height="50" class="csp-sq-l"></rect><g class="csp-queen att"><circle cx="25" cy="75" r="17"></circle><text x="25" y="82" style="font-size:20px">♛</text></g><g class="csp-queen att"><circle cx="75" cy="125" r="17"></circle><text x="75" y="132" style="font-size:20px">♛</text></g><g class="csp-queen "><circle cx="125" cy="25" r="17"></circle><text x="125" y="32" style="font-size:20px">♛</text></g><g class="csp-queen att"><circle cx="175" cy="125" r="17"></circle><text x="175" y="132" style="font-size:20px">♛</text></g></svg>
+                <figcaption>The 4-queens state (2, 3, 1, 3). Red queens are attacked.</figcaption>
+              </figure>
+              <ol>
+                <li>How many pairs of queens attack each other, and how many conflicts does each queen have?</li>
+                <li>Min-conflicts selects the queen in c<sub>2</sub>. Compute CONFLICTS(c<sub>2</sub>, r) for r = 1…4 and give the new state.</li>
+              </ol>
+            </div>
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
+              <div class="rp-answer-body">
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">1. Conflicts</span>
+                  <p>Two attacking pairs: (c<sub>1</sub>, c<sub>2</sub>) on a diagonal (rows 2 and 3, adjacent columns) and (c<sub>2</sub>, c<sub>4</sub>) on row 3. Per queen: c<sub>1</sub> = 1, c<sub>2</sub> = 2, c<sub>3</sub> = 0, c<sub>4</sub> = 1.</p>
+                </div>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">2. Min-conflicts value for c<sub>2</sub></span>
+                  <div class="rp-pseudocode"><pre>r = 1 : row with c<sub>3</sub>, diagonals with c<sub>1</sub> and c<sub>4</sub>   → 3 conflicts
+r = 2 : row with c<sub>1</sub>, diagonal with c<sub>3</sub>               → 2 conflicts
+r = 3 : diagonal with c<sub>1</sub>, row with c<sub>4</sub>               → 2 conflicts
+r = 4 : no row or diagonal shared                    → 0 conflicts</pre></div>
+                  <p>Move the queen to row 4. The new state <code>(2, 4, 1, 3)</code> has no attacking pairs — it is a solution, reached in a single min-conflicts step.</p>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Exercise 6 -->
+          <div class="rp-exercise" id="ex6">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 6</span>
+              <h3 class="rp-exercise-title">Exploiting Structure</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <ol>
+                <li>Run TREE-CSP-SOLVER on the tree of Figure 3 (edges A–B, B–C, B–D, D–E, D–F, all ≠) with domains A {R, G}, B {R, G}, C {R}, D {G, B}, E {G}, F {B, G}, using the order A, B, C, D, E, F.</li>
+                <li>Using the cycle cutset S = {SA}, how many elementary operations does cutset conditioning need for Australia with d = 3, compared with brute-force enumeration of complete assignments?</li>
+              </ol>
+            </div>
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
+              <div class="rp-answer-body">
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">1. Backward pass (j = n down to 2)</span>
+                  <div class="rp-pseudocode"><pre>MAKE-ARC-CONSISTENT(D, F) : no change
+MAKE-ARC-CONSISTENT(D, E) : remove G from D(D) → D(D) = {B}
+MAKE-ARC-CONSISTENT(B, D) : no change
+MAKE-ARC-CONSISTENT(B, C) : remove R from D(B) → D(B) = {G}
+MAKE-ARC-CONSISTENT(A, B) : remove G from D(A) → D(A) = {R}</pre></div>
+                </div>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Forward pass (i = 1 to n)</span>
+                  <div class="rp-pseudocode"><pre>A = R   (root)
+B = G   (≠ parent A = R)
+C = R   (≠ parent B = G)
+D = B   (≠ parent B = G)
+E = G   (≠ parent D = B)
+F = G   (≠ parent D = B)</pre></div>
+                  <p>Solution <code>{A = R, B = G, C = R, D = B, E = G, F = G}</code>, found without a single backtrack.</p>
+                </div>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">2. Cutset conditioning</span>
+                  <div class="rp-pseudocode"><pre>c = 1, n = 7, d = 3
+cutset conditioning : d<sup>c</sup> · (n − c) · d² = 3 · 6 · 9 = 162
+brute force         : d<sup>n</sup>              = 3<sup>7</sup>       = 2,187</pre></div>
+                  <p>For each of the 3 values of SA, the remaining 6 variables form a tree solved in (n − c) · d² steps.</p>
+                </div>
+              </div>
+            </details>
+          </div>
+
+        </section>
+
+      </article>
+    </div>
+
+  </main>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+
+  <!-- Application JS -->
+  <script src="main.js?v=2"></script>
+</body>
+</html>
