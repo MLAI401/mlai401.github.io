@@ -17,7 +17,7 @@
 
       // Tree Visualizer State
       this.currentAlg = 'ALPHABETA'; // 'MINIMAX', 'ALPHABETA', 'EXPECTIMINIMAX', 'MCTS'
-      this.currentPreset = 'AIMA_57'; // 'AIMA_52', 'AIMA_57', 'DEEP_3PLY', 'CHANCE', 'CUSTOM'
+      this.currentPreset = 'AIMA_52'; // 'AIMA_52', 'DEEP_3PLY', 'CHANCE', 'CUSTOM'
       this.treeRoot = null;
       this.steps = [];
       this.currentStepIdx = 0;
@@ -131,9 +131,6 @@
         case 'AIMA_52':
           this.treeRoot = window.AdversarialEngine.createAimaFig52Tree();
           break;
-        case 'AIMA_57':
-          this.treeRoot = window.AdversarialEngine.createAimaFig57Tree();
-          break;
         case 'DEEP_3PLY':
           this.treeRoot = window.AdversarialEngine.createDeep3PlyTree();
           break;
@@ -144,7 +141,7 @@
           this.treeRoot = window.AdversarialEngine.createCustomTree();
           break;
         default:
-          this.treeRoot = window.AdversarialEngine.createAimaFig57Tree();
+          this.treeRoot = window.AdversarialEngine.createAimaFig52Tree();
       }
     }
 
