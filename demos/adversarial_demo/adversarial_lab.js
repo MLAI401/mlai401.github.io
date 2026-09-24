@@ -316,8 +316,16 @@
         if (statPruned) statPruned.textContent = '0';
       }
 
-      const aDisplay = step.activeAlpha === -Infinity ? '-∞' : (step.activeAlpha !== null && step.activeAlpha !== undefined ? step.activeAlpha : '-');
-      const bDisplay = step.activeBeta === Infinity ? '+∞' : (step.activeBeta !== null && step.activeBeta !== undefined ? step.activeBeta : '-');
+      let aVal = step.activeAlpha;
+      let bVal = step.activeBeta;
+      // Final (DONE) step has no active window: show the root's final [α, β] instead.
+      // Tree snapshots are JSON-cloned, so ±Infinity appears there as null.
+      if ((aVal === null || aVal === undefined) && step.actionType === 'DONE' && this.currentAlg === 'ALPHABETA' && step.treeState) {
+        aVal = step.treeState.alpha === null || step.treeState.alpha === undefined ? -Infinity : step.treeState.alpha;
+        bVal = step.treeState.beta === null || step.treeState.beta === undefined ? Infinity : step.treeState.beta;
+      }
+      const aDisplay = aVal === -Infinity ? '-∞' : (aVal !== null && aVal !== undefined ? aVal : '-');
+      const bDisplay = bVal === Infinity ? '+∞' : (bVal !== null && bVal !== undefined ? bVal : '-');
 
       if (statAlpha) statAlpha.textContent = aDisplay;
       if (statBeta) statBeta.textContent = bDisplay;
@@ -359,7 +367,8 @@
 
       const maxDepth = levels.length - 1;
       const rowHeight = Math.min((height - 70) / Math.max(maxDepth, 1), 95);
-      const startY = 45;
+      // Center the tree vertically in the canvas (keeps a 45px top margin minimum)
+      const startY = Math.max(45, (height - maxDepth * rowHeight) / 2);
 
       // Assign X coordinates based on leaf spacing
       let leafCount = 0;
@@ -523,9 +532,26 @@
           // JSON cloning of tree snapshots turns ±Infinity into null, so treat null as the infinite bound
           const aStr = (node.alpha === -Infinity || node.alpha === null || node.alpha === undefined) ? '-∞' : node.alpha;
           const bStr = (node.beta === Infinity || node.beta === null || node.beta === undefined) ? '+∞' : node.beta;
-          ctx.fillStyle = '#4f46e5';
+          const badgeText = `[${aStr}, ${bStr}]`;
+          const badgeY = y + radius + 11;
           ctx.font = 'bold 9px monospace';
-          ctx.fillText(`[${aStr}, ${bStr}]`, x, y + radius + 11);
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          // White pill behind the label so edges don't cut through the text
+          const padX = 4, bh = 13;
+          const bw = ctx.measureText(badgeText).width + padX * 2;
+          ctx.shadowColor = 'transparent';
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(x - bw / 2, badgeY - bh / 2, bw, bh, 4);
+          else ctx.rect(x - bw / 2, badgeY - bh / 2, bw, bh);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.95)';
+          ctx.fill();
+          ctx.lineWidth = 1;
+          ctx.setLineDash([]);
+          ctx.strokeStyle = 'rgba(79, 70, 229, 0.35)';
+          ctx.stroke();
+          ctx.fillStyle = '#4f46e5';
+          ctx.fillText(badgeText, x, badgeY);
         }
 
         // MCTS visit count below node

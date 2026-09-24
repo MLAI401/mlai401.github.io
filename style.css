@@ -5218,6 +5218,19 @@ body.sl-page::after {
   display: block;
 }
 
+/* Keep the tree panel at its natural height instead of stretching to the controls column */
+.adv-tree-canvas-container {
+  align-self: start;
+}
+
+@media (min-width: 1025px) {
+  /* Tree stays in view while scrolling the (taller) controls column */
+  .adv-tree-canvas-container {
+    position: sticky;
+    top: 96px;
+  }
+}
+
 .adv-tree-legend {
   position: static;
   width: 100%;
