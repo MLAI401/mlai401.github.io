@@ -5207,8 +5207,9 @@ body.sl-page::after {
   overflow: hidden;
   box-shadow: var(--shadow-sm);
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
 }
 
 #adv-tree-canvas {
@@ -5218,16 +5219,16 @@ body.sl-page::after {
 }
 
 .adv-tree-legend {
-  position: absolute;
-  top: 10px;
-  left: 10px;
+  position: static;
+  width: 100%;
+  box-sizing: border-box;
   background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(8px);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-sm);
-  padding: 6px 10px;
+  border-bottom: 1px solid var(--border-light);
+  padding: 6px 12px;
   display: flex;
-  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 16px;
   font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-secondary);

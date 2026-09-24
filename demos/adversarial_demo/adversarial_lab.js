@@ -75,7 +75,10 @@
       const rect = container.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
       const width = Math.max(rect.width || 600, 300);
-      const height = Math.max(rect.height || 420, 380);
+      // Legend sits above the canvas (not overlaid), so subtract its height
+      const legend = container.querySelector('.adv-tree-legend');
+      const legendH = legend ? legend.offsetHeight : 0;
+      const height = Math.max((rect.height || 420) - legendH, 380);
 
       this.canvas.width = width * dpr;
       this.canvas.height = height * dpr;
