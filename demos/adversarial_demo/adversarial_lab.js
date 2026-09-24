@@ -517,8 +517,9 @@
 
         // Alpha-Beta bounds badge below node (if applicable)
         if (this.currentAlg === 'ALPHABETA' && node.visited && !isPruned) {
-          const aStr = node.alpha === -Infinity ? '-∞' : node.alpha;
-          const bStr = node.beta === Infinity ? '+∞' : node.beta;
+          // JSON cloning of tree snapshots turns ±Infinity into null, so treat null as the infinite bound
+          const aStr = (node.alpha === -Infinity || node.alpha === null || node.alpha === undefined) ? '-∞' : node.alpha;
+          const bStr = (node.beta === Infinity || node.beta === null || node.beta === undefined) ? '+∞' : node.beta;
           ctx.fillStyle = '#4f46e5';
           ctx.font = 'bold 9px monospace';
           ctx.fillText(`[${aStr}, ${bStr}]`, x, y + radius + 11);
