@@ -8,7 +8,7 @@
  * Topics:
  *   1. CSP Formulation            4. Local Search & Problem Structure
  *   2. Constraint Propagation     5. Evaluating CSP Solvers
- *   3. Backtracking Search        6. Connecting Search, Games & CSPs
+ *   3. Backtracking Search        6. Search → Adversarial Search → CSP
  *
  * Every live illustration calls into window.CSPEngine
  * (demos/csp_demo/csp_engine.js) — the same engine the Playground uses.
@@ -23,6 +23,19 @@
   const HEX = E.COLOR_HEX;
   const ACCENT = '#0d9488';
 
+  // Topic 02 route graph — same edges/costs/layout as demos/search_planning_demo/city_engine.js
+  const CITY_GRAPH = {
+    NYC: [{ to: 'CHI', cost: 3 }, { to: 'DAL', cost: 2 }, { to: 'ATL', cost: 9 }],
+    CHI: [{ to: 'DEN', cost: 2 }, { to: 'ATL', cost: 4 }],
+    DAL: [{ to: 'ATL', cost: 6 }, { to: 'MIA', cost: 9 }],
+    DEN: [{ to: 'LAX', cost: 3 }],
+    ATL: [{ to: 'LAX', cost: 1 }, { to: 'SEA', cost: 2 }],
+    MIA: [{ to: 'SEA', cost: 1 }],
+    LAX: [{ to: 'SEA', cost: 5 }],
+    SEA: []
+  };
+  const CITY_LAYOUT = { NYC: [0.10, 0.50], CHI: [0.35, 0.25], DAL: [0.35, 0.75], ATL: [0.50, 0.50], DEN: [0.65, 0.25], MIA: [0.65, 0.75], LAX: [0.88, 0.35], SEA: [0.88, 0.65] };
+
   // ---------------------------------------------------------------------------
   // Topics & concepts
   // ---------------------------------------------------------------------------
@@ -33,7 +46,7 @@
     { id: 'backtracking', title: 'Backtracking Search for CSPs', short: 'Backtracking Search' },
     { id: 'local', title: 'Local Search & the Structure of Problems', short: 'Local Search & Structure' },
     { id: 'evaluation', title: 'Evaluating CSP Solvers', short: 'Evaluating CSP Solvers' },
-    { id: 'connections', title: 'Connecting Search, Games & CSPs', short: 'Search ↔ Games ↔ CSP' }
+    { id: 'connections', title: 'Search → Adversarial Search → CSP', short: 'Search → Games → CSP' }
   ];
 
   const TOPIC_INTROS = [
@@ -42,7 +55,7 @@
     'Backtracking search assigns one variable at a time and backs up on failure. Good variable/value ordering and interleaved inference (forward checking, MAC) make it dramatically faster.',
     'Local search repairs a complete assignment instead of building one; min-conflicts is remarkably effective. The shape of the constraint graph — components, trees, cutsets — can make a CSP easy.',
     'Compare solvers by assignments tried, backtracks, constraint checks and guarantees — measured live on the same engine the Playground uses.',
-    'CSPs reuse the ideas of Topics 02 and 03: backtracking is depth-first search, inference prunes subtrees like α-β, and MRV / LCV play the role of heuristics — made possible by the factored state.'
+    'Search, games and CSPs all explore a space of possibilities — but they solve different problems, represent states differently, and expect different kinds of solutions.'
   ];
 
   const FORMULATION_CONCEPTS = [
@@ -231,34 +244,28 @@
 
   const CONNECTION_CONCEPTS = [
     {
-      key: 'formulations', name: 'One Problem, Three Formulations', kind: 'three_views',
-      definition: 'The same task — colouring the map of Australia — can be written as a classical search problem (Topic 02), as a two-player game (Topic 03), or as a CSP (Topic 04). What changes is the <strong>state representation</strong> and what counts as a solution.',
-      notation: 'Search: ⟨S<sub>0</sub>, ACTIONS, RESULT, GOAL-TEST, c⟩ → path · Game: ⟨S<sub>0</sub>, TO-MOVE, ACTIONS, RESULT, IS-TERMINAL, UTILITY⟩ → strategy · CSP: ⟨X, D, C⟩ → complete consistent assignment',
-      tip: 'Search sees an <strong>atomic</strong> state (a black box it can only goal-test), a game adds <strong>whose turn it is</strong> and a utility, and a CSP uses a <strong>factored</strong> state — so the solver can see exactly which variable and which constraint cause a failure.'
+      key: 'goals', name: '1 · What Is Each Problem Trying to Achieve?', kind: 'goal_compare',
+      definition: 'All three explore a space of possibilities, but they answer different questions. <strong>Search</strong> finds a path from an initial state to a goal. A <strong>game</strong> chooses the best action while an opponent works against you. A <strong>CSP</strong> finds values for every variable so that all constraints are satisfied.',
+      notation: 'Search: S<sub>0</sub> ⟶ … ⟶ goal · Game: a* = argmax<sub>a</sub> MINIMAX(RESULT(s, a)) · CSP: find {X<sub>1</sub> = v<sub>1</sub>, …, X<sub>n</sub> = v<sub>n</sub>} with every C<sub>j</sub> satisfied',
+      tip: 'Ask students to state each goal as a question: <em>"How do I get there?"</em> · <em>"What should I play, given that my opponent plays well?"</em> · <em>"Which values satisfy every rule?"</em> Then press <b>Show the answer</b> to see what each one returns.'
     },
     {
-      key: 'dfs_bt', name: 'Backtracking = DFS + Early Checks', kind: 'dfs_vs_bt',
-      definition: 'Backtracking search is depth-first search over partial assignments. The only change from Topic 02 is that each new assignment is checked against the constraints immediately, so a failing branch is abandoned long before it reaches a complete (leaf) state.',
-      notation: 'BFS / DFS: GOAL-TEST only on complete states · BACKTRACK: reject X<sub>i</sub> = v if ∃ C violated · + MRV & forward checking: prune D<sub>j</sub> after each assignment',
-      tip: 'Run all four solvers on the same map. BFS keeps the whole frontier in memory; DFS generate-and-test only notices a clash at the bottom of the tree. Checking early (the factored representation) is what turns DFS into an efficient CSP solver.'
+      key: 'states', name: '2 · How Is the State Space Represented?', kind: 'state_repr',
+      definition: 'Search treats a state as a <strong>whole</strong> and reaches successors through actions. Games add <strong>whose turn it is</strong> and <strong>utility</strong> values, giving an alternating MAX / MIN tree. A CSP changes the representation fundamentally: the state is <strong>factored</strong> into variables and values, and constraints say which combinations are allowed.',
+      notation: 'Search: s, ACTIONS(s), RESULT(s, a) · Game: s + TO-MOVE(s) ∈ {MAX, MIN}, UTILITY(s, p) at terminals · CSP: s = {X<sub>i</sub> = v<sub>i</sub>}, D<sub>i</sub>, C<sub>j</sub> = ⟨scope, rel⟩',
+      tip: 'Compare what the algorithm can <em>see</em> inside one state. An atomic state can only be goal-tested. A factored state shows which variables are set, what values remain and which constraint fails — the basis for MRV, forward checking and AC-3.'
     },
     {
-      key: 'prune_sync', name: 'α-β Window ↔ Domain Wipe-Out', kind: 'prune_sync',
-      definition: 'Alpha-beta pruning (Topic 03) and constraint propagation (Topic 04) both cut off subtrees that provably cannot change the answer. α-β shrinks a <strong>value window</strong> [α, β]; forward checking shrinks each <strong>domain</strong> D<sub>i</sub>. When the window or a domain becomes empty, the rest of that subtree is skipped.',
-      notation: 'games: prune when α ≥ β · CSP: prune when some D<sub>i</sub> = ∅ · both leave the answer unchanged',
-      tip: 'Step both traces together: B = 3 sets α = 3 as WA = red trims its neighbours; the empty window at C matches D(SA) = ∅ after V = blue.'
+      key: 'solutions', name: '3 · What Counts as a Solution?', kind: 'solution_type',
+      definition: 'The expected answer changes too: a <strong>path</strong> of actions (search), a <strong>strategy</strong> — in practice the best move now — against an opponent (games), and a <strong>complete, consistent assignment</strong> (CSP).',
+      notation: 'Search: [a<sub>1</sub>, …, a<sub>k</sub>] minimising Σ c · Game: π(s) = best move for MAX (minimax value) · CSP: complete ∧ consistent (the path is irrelevant)',
+      tip: 'A useful test: <em>does the order of steps matter in the answer?</em> For a route, yes — the path is the answer. For a game, the next move matters and depends on the opponent. For a CSP, no — WA = red then NT = green gives the same solution as the reverse order.'
     },
     {
-      key: 'heuristics_bridge', name: 'Heuristics Across Topics', kind: 'heuristic_bridge',
-      definition: 'All three topics use heuristics to decide what to explore first. Search uses a problem-specific estimate h(n); games use move ordering and EVAL(s) at a cutoff; CSPs use <strong>domain-independent</strong> heuristics (MRV, degree, LCV) computed from X, D and C alone.',
-      notation: 'A*: f(n) = g(n) + h(n) · games: EVAL(s) ≈ UTILITY, best moves first · CSP: MRV = argmin<sub>v</sub> |legal(v)|, LCV = argmin<sub>x</sub> Σ ruled-out(x) · min-conflicts: h = # violated constraints',
-      tip: 'A CSP solver needs no hand-written h(n) such as straight-line distance: because the state is factored, "fewest legal values left" works for map colouring, Sudoku and timetabling alike.'
-    },
-    {
-      key: 'concept_map', name: 'Concept Map: Topics 01 → 04', kind: 'concept_map',
-      definition: 'Topics 01–04 build on each other: problem formulation defines states and actions; search explores the state space; adversarial search adds an opponent; CSPs open up the state so structure can be exploited.',
-      notation: '01 formulation → 02 search tree, DFS, h(n) → 03 minimax, α-β, EVAL(s) → 04 backtracking, inference, MRV / LCV, min-conflicts',
-      tip: 'Click a topic box to open that lecture. Each numbered link names the idea that carries over — use it as a revision map before the exam.'
+      key: 'transition', name: '4 · Same Exploration, Different Problem', kind: 'transition_grid',
+      definition: 'We are still searching through possibilities — but the <strong>type of problem</strong>, the <strong>representation of the state space</strong> and the <strong>definition of a solution</strong> have changed.',
+      notation: 'Topic 02: path in a state space → Topic 03: best move in a MAX / MIN game tree → Topic 04: consistent assignment of a factored state',
+      tip: 'Step through the grid row by row: first what stays the same (exploring a space of possibilities), then what changes — the goal, the state and the solution. End on the transition message before starting CSP algorithms.'
     }
   ];
 
@@ -338,10 +345,9 @@
         treeStep: 0,
         cutsetOn: false, cutsetVal: 'red',
         benchProblem: 'rand', benchRows: null,
-        viewSel: 'csp',
-        dvbProblem: 'aus', dvbColors: 3,
-        psStep: 0,
-        cmapHot: '3'
+        goalShow: false,
+        reprSel: 'search',
+        tgStep: 0
       };
       this.topicTabsEl = document.getElementById('csp-topic-tabs');
       this.conceptColEl = document.getElementById('csp-concept-col');
@@ -1411,317 +1417,207 @@
     }
 
     // =========================================================================
-    // TOPIC 6 — CONNECTING SEARCH (T02), GAMES (T03) & CSPs (T04)
+    // TOPIC 6 — SEARCH (T02) → ADVERSARIAL SEARCH (T03) → CSP (T04)
+    // Same exploration of possibilities, different problem / state / solution.
     // =========================================================================
 
-    ill_three_views() {
-      const sel = this.st.viewSel;
-      const cols = [
-        ['search', 'Topic 02 · Search', 'Atomic state'],
-        ['game', 'Topic 03 · Game', 'State + turn'],
-        ['csp', 'Topic 04 · CSP', 'Factored state']
-      ];
-      const cards = {
-        search: {
-          rep: 's<sub>17</sub> = ■ (opaque)',
-          sees: 'Only GOAL-TEST(s<sub>17</sub>) = false. It cannot tell <em>why</em>, so it keeps expanding.'
-        },
-        game: {
-          rep: 's = (WA=red, NT=green) · TO-MOVE = MIN',
-          sees: 'Whose turn it is and, at terminal states, UTILITY(s, MAX) = ±1.'
-        },
-        csp: {
-          rep: '{WA = red, NT = green} · D(SA) = {blue}',
-          sees: 'Which variables are assigned, what values remain, which constraints bind — SA has one value left.'
-        }
-      };
-      const rows = [
-        ['State', 'a node s — the colouring is hidden inside a black box', 'a colouring + TO-MOVE(s) ∈ {MAX, MIN}', 'a set of X<sub>i</sub> = v pairs'],
-        ['Actions', 'colour any uncoloured region with any colour', 'the mover colours one region with a legal colour', 'assign a value to <b>one</b> unassigned variable'],
-        ['Test', 'GOAL-TEST: all coloured, no equal neighbours', 'IS-TERMINAL: mover has no legal move', 'complete ∧ consistent, checked per constraint'],
-        ['Solution', 'a path of actions to a goal', 'a strategy for MAX', 'a complete, consistent assignment'],
-        ['Algorithms', 'BFS, DFS, UCS, A*', 'minimax, α-β, MCTS', 'backtracking + MRV/LCV + FC/MAC, min-conflicts']
-      ];
-      const idx = { search: 1, game: 2, csp: 3 }[sel];
-      this.graphColEl.innerHTML = shell(
-        'Map colouring, formulated three ways',
-        seg('csp-x3-seg', cols.map(([k, l]) => [k, l.split(' · ')[1]]), sel),
-        `<div class="csp-duo-label">The same partial colouring {WA = red, NT = green}, seen three ways</div>
-           <div class="csp-x3-cards">${cols.map(([k, t, sub]) => `
-             <button class="csp-x3-card ${k === sel ? 'sel' : ''}" data-view="${k}">
-               <span class="csp-x3-tag">${t}</span>
-               <span class="csp-x3-sub">${sub}</span>
-               <code class="csp-x3-rep">${cards[k].rep}</code>
-               <span class="csp-x3-sees">${cards[k].sees}</span>
-             </button>`).join('')}
-           </div>
-         <div class="csp-table-wrap"><table class="csp-table csp-x3-table">
-           <thead><tr><th></th>${cols.map(([k, t], i) => `<th class="${i + 1 === idx ? 'csp-x3-hl' : ''}">${t}</th>`).join('')}</tr></thead>
-           <tbody>${rows.map(r => `<tr><th>${r[0]}</th>${r.slice(1).map((c, i) => `<td class="${i + 1 === idx ? 'csp-x3-hl' : ''}">${c}</td>`).join('')}</tr>`).join('')}</tbody>
-         </table></div>`,
-        `<p class="csp-note">The game version is the "map-colouring game": players take turns colouring a region legally, and a player who cannot move loses. The same map gives a path-finding problem, a game, or a CSP, depending on the question you ask.</p>`
-      );
-      this.bindSeg('csp-x3-seg', v => { this.st.viewSel = v; this.refresh(); });
-      this.graphColEl.querySelectorAll('.csp-x3-card').forEach(b => b.addEventListener('click', () => { this.st.viewSel = b.getAttribute('data-view'); this.refresh(); }));
-    }
-
-    /**
-     * Generic tree search over partial assignments, so BFS, DFS and backtracking
-     * are measured by the same counters. mode: { queue, check, mrv, fc }.
-     */
-    dvbRun(csp, mode, budget) {
-      const vars = csp.variables, nb = csp.neighbors;
-      const complete = a => vars.every(v => v in a);
-      const root = { a: {}, d: E.copyDomains(csp.domains) };
-      const fr = [root];
-      let head = 0, generated = 1, maxF = 1, found = null, stopped = false;
-      while (fr.length - head > 0) {
-        const node = mode.queue ? fr[head++] : fr.pop();
-        if (complete(node.a)) {
-          if (csp.conflictedEdges(node.a).length === 0) { found = node.a; break; }
-          continue;
-        }
-        const un = vars.filter(v => !(v in node.a));
-        let v = un[0];
-        if (mode.mrv) {
-          let bc = Infinity, bd = -1;
-          for (const u of un) {
-            const c = node.d[u].length, dg = nb[u].filter(w => !(w in node.a)).length;
-            if (c < bc || (c === bc && dg > bd)) { v = u; bc = c; bd = dg; }
-          }
-        }
-        const kids = [];
-        for (const x of node.d[v]) {
-          generated++;
-          if (mode.check && nb[v].some(u => u in node.a && !csp.constraint(v, x, u, node.a[u]))) continue;
-          const a2 = Object.assign({}, node.a); a2[v] = x;
-          let d2 = node.d;
-          if (mode.fc) {
-            d2 = E.copyDomains(node.d); d2[v] = [x];
-            let wiped = false;
-            for (const u of nb[v]) {
-              if (u in a2) continue;
-              d2[u] = d2[u].filter(y => csp.constraint(v, x, u, y));
-              if (!d2[u].length) { wiped = true; break; }
-            }
-            if (wiped) continue;
-          }
-          kids.push({ a: a2, d: d2 });
-        }
-        if (mode.queue) kids.forEach(k => fr.push(k));
-        else for (let k = kids.length - 1; k >= 0; k--) fr.push(kids[k]);
-        maxF = Math.max(maxF, fr.length - head);
-        if (generated > budget) { stopped = true; break; }
-        if (mode.queue && head > 50000) { fr.splice(0, head); head = 0; }
+    /** Topic 02 route graph (same graph as demos/search_planning_demo/city_engine.js). */
+    cityGraphSVG(opts) {
+      const o = Object.assign({ W: 200, H: 150, path: [], focus: null }, opts || {});
+      const G = CITY_GRAPH, P = CITY_LAYOUT;
+      const X = v => 18 + P[v][0] * (o.W - 36), Y = v => 16 + P[v][1] * (o.H - 32);
+      const onPath = (a, b) => { const i = o.path.indexOf(a); return i >= 0 && o.path[i + 1] === b; };
+      let s = `<svg viewBox="0 0 ${o.W} ${o.H}" class="csp-sg-svg" role="img" aria-label="Route-finding graph">`;
+      for (const a of Object.keys(G)) for (const { to, cost } of G[a]) {
+        const hot = onPath(a, to);
+        s += `<line x1="${X(a)}" y1="${Y(a)}" x2="${X(to)}" y2="${Y(to)}" class="csp-sg-edge ${hot ? 'hot' : ''}"></line>`;
+        s += `<text x="${(X(a) + X(to)) / 2}" y="${(Y(a) + Y(to)) / 2 - 3}" class="csp-sg-cost ${hot ? 'hot' : ''}">${cost}</text>`;
       }
-      return { generated, maxF, found, stopped };
-    }
-
-    ill_dfs_vs_bt() {
-      const prob = this.st.dvbProblem, d = this.st.dvbColors;
-      const key = prob + '/' + d;
-      const BUDGET = 250000;
-      if (this._dvbKey !== key) {
-        const mapDef = prob === 'aus' ? AUS : E.randomMap(12, 11, 4);
-        const csp = E.makeMapCSP(mapDef, d);
-        const algs = [
-          ['BFS (Topic 02)', 'queue; GOAL-TEST on complete states', { queue: true }],
-          ['DFS generate-and-test', 'stack; GOAL-TEST on complete states', {}],
-          ['Backtracking', 'DFS + check each new assignment', { check: true }],
-          ['Backtracking + MRV + FC', 'fail-first variable + forward checking', { check: true, mrv: true, fc: true }]
-        ];
-        this._dvb = { n: csp.variables.length, rows: algs.map(([name, how, mode]) => Object.assign({ name, how }, this.dvbRun(csp, mode, BUDGET))) };
-        this._dvbKey = key;
+      for (const v of Object.keys(P)) {
+        const cls = ['csp-sg-node', v === 'NYC' ? 'start' : '', v === 'LAX' ? 'goal' : '', o.path.includes(v) ? 'hot' : '', o.focus === v ? 'focus' : ''].join(' ');
+        s += `<circle cx="${X(v)}" cy="${Y(v)}" r="13" class="${cls}"></circle><text x="${X(v)}" y="${Y(v) + 3}" class="csp-sg-label">${v}</text>`;
       }
-      const { n, rows } = this._dvb;
-      const maxG = Math.max(...rows.map(r => r.generated)), maxM = Math.max(...rows.map(r => r.maxF));
-      const bar = (v, m) => `<span class="csp-bar" style="width:${Math.max(3, Math.log10(v + 1) / Math.log10(m + 1) * 100)}%"></span>`;
-      const leaves = Math.pow(d, n);
-      this.graphColEl.innerHTML = shell(
-        'Same problem, four tree searches',
-        seg('csp-dvb-prob', [['aus', 'Australia (n = 7)'], ['rand', 'Random map (n = 12)']], prob) +
-        seg('csp-dvb-d', [['3', 'd = 3'], ['4', 'd = 4']], d),
-        `<div class="csp-table-wrap"><table class="csp-table csp-bench-table csp-dvb-table">
-           <thead><tr><th>Algorithm</th><th>States generated</th><th>Max frontier</th><th>Result</th></tr></thead>
-           <tbody>${rows.map((r, i) => `<tr class="${i === rows.length - 1 ? 'best' : ''}">
-             <td><b>${r.name}</b><div class="csp-muted csp-dvb-how">${r.how}</div></td>
-             <td><div class="csp-bar-cell">${bar(r.generated, maxG)}<b>${r.stopped ? '&gt; ' : ''}${r.generated.toLocaleString('en-US')}</b></div></td>
-             <td><div class="csp-bar-cell">${bar(r.maxF, maxM)}<b>${r.maxF.toLocaleString('en-US')}</b></div></td>
-             <td class="${r.found ? 'csp-t-ok' : r.stopped ? 'csp-t-warn' : 'csp-t-bad'}">${r.found ? 'solution' : r.stopped ? 'stopped (budget)' : 'no solution'}</td>
-           </tr>`).join('')}</tbody>
-         </table></div>
-         <div class="csp-metric-row">
-           <div class="csp-metric"><span>Complete assignments d<sup>n</sup></span><b>${fmt(leaves)}</b></div>
-           <div class="csp-metric bad"><span>BFS ÷ backtracking</span><b>${rows[0].stopped ? '&gt; ' : ''}${fmt(rows[0].generated / Math.max(1, rows[2].generated))}×</b></div>
-           <div class="csp-metric ok"><span>Backtracking ÷ MRV + FC</span><b>${fmt(rows[2].generated / Math.max(1, rows[3].generated))}×</b></div>
-         </div>`,
-        `<p class="csp-note">All four use the commutative formulation (one variable per level, fixed order ${prob === 'aus' ? 'WA, NT, Q, NSW, V, SA, T' : 'R1 … R12'}). "States generated" counts every child created, including rejected ones; bars are log-scaled. BFS stops at ${BUDGET.toLocaleString('en-US')} states.</p>`
-      );
-      this.bindSeg('csp-dvb-prob', v => { this.st.dvbProblem = v; this.refresh(); });
-      this.bindSeg('csp-dvb-d', v => { this.st.dvbColors = +v; this.refresh(); });
+      return s + '</svg>';
     }
 
-    /** Mini game tree (AIMA Fig 5.2) for the α-β ↔ forward-checking comparison. */
-    gameTreeSVG(step) {
-      const W = 300, H = 178;
-      const L = { A: [150, 26], B: [55, 84], C: [150, 84], D: [245, 84] };
-      const leaves = { B: [3, 12, 8], C: [2, 4, 6], D: [14, 5, 2] };
-      const vis = { B: step >= 1 ? [1, 1, 1] : [0, 0, 0], C: step >= 2 ? [1, 0, 0] : [0, 0, 0], D: [0, 0, 0] };
-      const pruned = step >= 3 ? { C: [0, 1, 1] } : {};
-      const tri = (x, y, up, fill, stroke) => {
-        const r = 15, s = up ? -1 : 1;
-        return `<polygon points="${x},${y + s * r * 1.1} ${x - r * 1.1},${y - s * r * 0.9} ${x + r * 1.1},${y - s * r * 0.9}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"></polygon>`;
-      };
-      const badge = (x, y, txt, hot) => {
-        const w = txt.length * 5.6 + 10;
-        return `<rect x="${x - w / 2}" y="${y - 7}" width="${w}" height="14" rx="4" class="csp-gt-badge ${hot ? 'hot' : ''}"></rect><text x="${x}" y="${y + 3.5}" class="csp-gt-badge-t ${hot ? 'hot' : ''}">${txt}</text>`;
-      };
-      let s = `<svg viewBox="0 0 ${W} ${H}" class="csp-gt-svg" role="img" aria-label="Alpha-beta pruning on a two-ply game tree">`;
-      // edges
-      for (const k of ['B', 'C', 'D']) {
-        const [x, y] = L[k];
-        s += `<line x1="${L.A[0]}" y1="${L.A[1] + 12}" x2="${x}" y2="${y - 14}" class="csp-gt-edge ${(k === 'B' && step >= 1) || (k === 'C' && step >= 2) ? 'on' : ''}"></line>`;
-        leaves[k].forEach((_, j) => {
-          const lx = x - 30 + j * 30;
-          const cut = pruned[k] && pruned[k][j];
-          s += `<line x1="${x}" y1="${y + 12}" x2="${lx}" y2="${140}" class="csp-gt-edge ${vis[k][j] ? 'on' : ''} ${cut ? 'cut' : ''}"></line>`;
-          if (cut) s += `<text x="${(x + lx) / 2 + (j ? 5 : -5)}" y="${(y + 152) / 2}" class="csp-gt-scissor">✂</text>`;
+    /** Two-ply MAX/MIN tree (AIMA Fig 5.2). values: back up minimax values; best: highlight a1; layers: side labels. */
+    gameMiniSVG(opts) {
+      const o = Object.assign({ W: 210, H: 150, values: false, best: false, layers: false }, opts || {});
+      const off = o.layers ? 118 : 0, tw = o.W - off;
+      const ys = [24, o.H * 0.5, o.H - 22];
+      const root = [off + tw / 2, ys[0]];
+      const mins = [1, 3, 5].map(k => [off + tw * k / 6, ys[1]]);
+      const leaves = [[3, 12, 8], [2, 4, 6], [14, 5, 2]];
+      const mv = [3, 2, 2];
+      const gap = tw / 9.4;
+      const tri = (x, y, up, cls) => { const r = 12, sg = up ? -1 : 1; return `<polygon points="${x},${y + sg * r * 1.1} ${x - r * 1.1},${y - sg * r * 0.9} ${x + r * 1.1},${y - sg * r * 0.9}" class="${cls}"></polygon>`; };
+      let s = `<svg viewBox="0 0 ${o.W} ${o.H}" class="csp-sg-svg" role="img" aria-label="Two-ply MAX/MIN game tree">`;
+      if (o.layers) {
+        const lab = [['MAX to move', 'TO-MOVE(s) = MAX'], ['MIN to move', 'TO-MOVE(s) = MIN'], ['Terminal', 'UTILITY(s, MAX)']];
+        lab.forEach(([a, b], i) => { s += `<rect x="4" y="${ys[i] - 15}" width="${off - 16}" height="30" rx="7" class="csp-gm-layer l${i}"></rect><text x="12" y="${ys[i] - 2}" class="csp-gm-layer-a">${a}</text><text x="12" y="${ys[i] + 10}" class="csp-gm-layer-b">${b}</text>`; });
+      }
+      mins.forEach(([x, y], i) => {
+        const bestEdge = o.best && i === 0;
+        s += `<line x1="${root[0]}" y1="${root[1] + 10}" x2="${x}" y2="${y - 12}" class="csp-gm-edge ${bestEdge ? 'best' : ''}"></line>`;
+        s += `<text x="${(root[0] + x) / 2 + (i === 1 ? 8 : 0)}" y="${(root[1] + y) / 2 - 2}" class="csp-gm-act ${bestEdge ? 'best' : ''}">a<tspan baseline-shift="sub" font-size="7">${i + 1}</tspan></text>`;
+        leaves[i].forEach((u, j) => {
+          const lx = x + (j - 1) * gap;
+          s += `<line x1="${x}" y1="${y + 10}" x2="${lx}" y2="${ys[2] - 9}" class="csp-gm-edge"></line><rect x="${lx - 10}" y="${ys[2] - 9}" width="20" height="17" rx="4" class="csp-gm-leaf"></rect><text x="${lx}" y="${ys[2] + 3}" class="csp-gm-leaf-t">${u}</text>`;
         });
-      }
-      // leaves
-      for (const k of ['B', 'C', 'D']) {
-        const [x] = L[k];
-        leaves[k].forEach((v, j) => {
-          const lx = x - 30 + j * 30;
-          const cut = pruned[k] && pruned[k][j];
-          s += `<rect x="${lx - 11}" y="142" width="22" height="20" rx="4" class="csp-gt-leaf ${vis[k][j] ? 'on' : ''} ${cut ? 'cut' : ''}"></rect><text x="${lx}" y="156" class="csp-gt-leaf-t ${cut ? 'cut' : ''}">${v}</text>`;
-        });
-      }
-      // internal nodes
-      const vals = { A: step >= 1 ? '≥3' : '', B: step >= 1 ? '3' : '', C: step >= 3 ? '≤2' : step >= 2 ? '≤2' : '', D: '' };
-      s += tri(L.A[0], L.A[1], true, '#10b981', '#047857') + `<text x="${L.A[0]}" y="${L.A[1] + 5}" class="csp-gt-node-t">${vals.A || 'A'}</text>`;
-      for (const k of ['B', 'C', 'D']) {
-        const [x, y] = L[k];
-        s += tri(x, y, false, '#ef4444', '#b91c1c') + `<text x="${x}" y="${y + 1}" class="csp-gt-node-t">${vals[k] || k}</text>`;
-      }
-      // windows
-      s += badge(L.A[0] + 46, L.A[1], step >= 1 ? '[3, +∞]' : '[−∞, +∞]', step === 1);
-      if (step >= 2) s += badge(L.C[0] + 44, L.C[1] - 6, step >= 3 ? '[3, 2] ∅' : '[3, 2]', step >= 2);
-      s += '</svg>';
-      return s;
-    }
-
-    ill_prune_sync() {
-      const rows = this.fcRows();
-      const i = Math.min(this.st.psStep, rows.length - 1);
-      const r = rows[i];
-      const wiped = AUS.variables.find(v => r.d[v].length === 0);
-      const text = [
-        ['Nothing explored: A\'s window is [−∞, +∞].', 'Nothing assigned: every domain is {red, green, blue}.', 'Nothing ruled out yet on either side.'],
-        ['B returns 3, so α = 3 at A: MAX already has a move worth 3.', 'WA = red: forward checking deletes red from NT and SA.', 'Both shrink the space of acceptable answers.'],
-        ['C1 = 2, so β = 2 at C: MIN can hold C to ≤ 2.', 'Q = green: deletes green from NT, SA and NSW (NT, SA = {blue}).', 'The window and the domains keep narrowing.'],
-        ['α = 3 ≥ β = 2: the window is empty, so C2 and C3 are pruned.', `V = blue: D(${wiped || 'SA'}) = ∅ (wipe-out), so this branch is abandoned.`, 'Empty window ↔ empty domain: skip the subtree, the answer is unchanged.']
-      ][i];
-      this.graphColEl.innerHTML = shell(
-        'Pruning in games and in CSPs, step by step',
-        '',
-        `<div class="csp-duo csp-ps-duo">
-           <div class="csp-duo-cell"><div class="csp-duo-label">Topic 03 · alpha-beta (Fig 5.2)</div>${this.gameTreeSVG(i)}<div class="csp-ps-say">${text[0]}</div></div>
-           <div class="csp-duo-cell"><div class="csp-duo-label">Topic 04 · forward checking (Fig 6.7)</div><div class="csp-map-wrap csp-map-sm">${mapSVG({ assignment: r.a, domains: r.d, highlight: wiped ? [wiped] : r.changed })}</div><div class="csp-ps-say">${text[1]}</div></div>
-         </div>
-         <div class="csp-table-wrap"><table class="csp-table csp-ps-table">
-           <thead><tr><th></th><th>Alpha-beta pruning</th><th>Constraint propagation</th></tr></thead>
-           <tbody>
-             <tr><th>What shrinks</th><td>value window [α, β]</td><td>domains D<sub>i</sub></td></tr>
-             <tr><th>Prune when</th><td>α ≥ β</td><td>some D<sub>i</sub> = ∅</td></tr>
-             <tr><th>Safe because</th><td>minimax value is unchanged</td><td>no solution is removed</td></tr>
-             <tr><th>Helped by</th><td>good move ordering</td><td>MRV / degree / LCV ordering</td></tr>
-           </tbody>
-         </table></div>`,
-        `${stepperHTML('csp-ps', i, rows.length, !!this.timer)}
-         <div class="csp-status-row"><span class="csp-pill ${i === 3 ? 'bad' : 'info'}">${i === 3 ? 'PRUNE' : 'STEP ' + i}</span><span class="csp-msg">${text[2]}</span></div>`
-      );
-      this.bindStepper('csp-ps', 'psStep', rows.length, 1600);
-    }
-
-    ill_heuristic_bridge() {
-      const rows = [
-        ['Which node / variable next?', 'best-first on f(n) = g(n) + h(n) (Greedy, A*)', 'expand the most promising moves first (move ordering)', 'MRV, tie-break by degree (fail-first)'],
-        ['Which successor / value first?', 'all successors go to the frontier; f(n) orders them', 'killer moves, history heuristic → more α-β cut-offs', 'LCV: value that rules out the fewest neighbour values'],
-        ['How good is a non-goal state?', 'h(n): estimated cost to the goal', 'EVAL(s) at the depth cutoff', 'number of violated constraints'],
-        ['Local / sampling variant', 'hill climbing on h (AIMA Ch. 4)', 'MCTS rollouts estimate a state\'s value', 'min-conflicts repairs a complete assignment'],
-        ['Where does it come from?', 'problem-specific (straight-line distance)', 'problem-specific (material, mobility)', '<b>domain-independent</b>: computed from X, D, C']
-      ];
-      const legal = this.legalValues({ WA: 'red', NT: 'green' });
-      const un = AUS.variables.filter(v => !['WA', 'NT'].includes(v));
-      this.graphColEl.innerHTML = shell(
-        'The same questions, answered in three topics',
-        '',
-        `<div class="csp-table-wrap"><table class="csp-table csp-hb-table">
-           <thead><tr><th>Question</th><th>Topic 02 · Search</th><th>Topic 03 · Games</th><th>Topic 04 · CSP</th></tr></thead>
-           <tbody>${rows.map(r => `<tr><th>${r[0]}</th>${r.slice(1).map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>
-         </table></div>
-         <div class="csp-hb-demo">
-           <div class="csp-duo-label">Domain-independent in action: state {WA = red, NT = green}</div>
-           <div class="csp-hb-chips">${un.map(v => `<span class="csp-hb-chip ${legal[v].length === 1 ? 'hot' : ''}"><b>${v}</b> ${domainDots(legal[v])} <em>${legal[v].length}</em></span>`).join('')}</div>
-           <div class="csp-muted">MRV picks <b>SA</b> (1 legal value) without knowing anything about maps — the same rule picks the most constrained cell in Sudoku.</div>
-         </div>`,
-        `<p class="csp-note">Search and games need a hand-built estimate for each new problem. A CSP solver gets strong general heuristics for free, because the factored state exposes variables, domains and constraints.</p>`
-      );
-    }
-
-    ill_concept_map() {
-      const T = {
-        t1: { x: 150, y: 10, w: 200, t: 'Topic 01', n: 'Problem Formulation', href: 'problem_formulation.html' },
-        t2: { x: 10, y: 118, w: 190, t: 'Topic 02', n: 'Search & Planning', href: 'search_planning.html' },
-        t3: { x: 300, y: 118, w: 190, t: 'Topic 03', n: 'Adversarial Search', href: 'adversarial.html' },
-        t4: { x: 150, y: 226, w: 200, t: 'Topic 04', n: 'Constraint Satisfaction', href: 'csp.html#formulation/xdc', cur: true }
-      };
-      const H = 46;
-      const c = k => [T[k].x + T[k].w / 2, T[k].y + H / 2];
-      const links = [
-        ['t1', 't2', '1'], ['t2', 't3', '2'], ['t2', 't4', '3'], ['t3', 't4', '4'], ['t1', 't4', '5']
-      ];
-      const legend = [
-        ['1', 'Formulation → search', 'states, ACTIONS, RESULT and GOAL-TEST define the state space that BFS, DFS, UCS and A* explore.'],
-        ['2', 'Search → games', 'the search tree gains an opponent: DFS over plies becomes minimax; IS-TERMINAL and UTILITY replace the goal test.'],
-        ['3', 'Search → CSP', 'DFS becomes backtracking; h(n) becomes MRV / LCV; hill climbing becomes min-conflicts.'],
-        ['4', 'Games → CSP', 'α-β pruning (empty window) ↔ inference (empty domain); move ordering ↔ variable / value ordering.'],
-        ['5', 'Formulation → CSP', 'an atomic state becomes a factored one: ⟨X, D, C⟩ lets the solver see why a state fails.']
-      ];
-      const hot = this.st.cmapHot;
-      let s = `<svg viewBox="0 0 500 282" class="csp-cmap-svg" role="img" aria-label="Concept map linking topics 01 to 04"><defs><marker id="csp-cm-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="csp-cm-head"></path></marker></defs>`;
-      for (const [a, b, n] of links) {
-        let [x1, y1] = c(a), [x2, y2] = c(b);
-        const clip = (x, y, tx, ty, k) => {
-          const bx = T[k].w / 2 + 4, by = H / 2 + 4, dx = tx - x, dy = ty - y;
-          const t = Math.min(Math.abs(bx / (dx || 1e-9)), Math.abs(by / (dy || 1e-9)));
-          return [x + dx * t, y + dy * t];
-        };
-        const [sx, sy] = clip(x1, y1, x2, y2, a), [ex, ey] = clip(x2, y2, x1, y1, b);
-        const f = n === '5' ? 0.22 : 0.5; // keep badge 5 clear of link 2 where the lines cross
-        const mx = sx + (ex - sx) * f, my = sy + (ey - sy) * f;
-        s += `<line x1="${sx}" y1="${sy}" x2="${ex}" y2="${ey}" class="csp-cm-edge ${hot === n ? 'hot' : ''}" marker-end="url(#csp-cm-arrow)"></line>`;
-        s += `<g class="csp-cm-num ${hot === n ? 'hot' : ''}" data-link="${n}"><circle cx="${mx}" cy="${my}" r="10"></circle><text x="${mx}" y="${my + 4}">${n}</text></g>`;
-      }
-      for (const k of Object.keys(T)) {
-        const b = T[k];
-        s += `<a href="${b.href}" class="csp-cm-box ${b.cur ? 'cur' : ''}"><rect x="${b.x}" y="${b.y}" width="${b.w}" height="${H}" rx="10"></rect><text x="${b.x + b.w / 2}" y="${b.y + 18}" class="csp-cm-t">${b.t}</text><text x="${b.x + b.w / 2}" y="${b.y + 35}" class="csp-cm-n">${b.n}</text></a>`;
-      }
-      s += '</svg>';
-      this.graphColEl.innerHTML = shell(
-        'How Topics 01–04 connect',
-        '',
-        `<div class="csp-cmap-wrap">${s}</div>
-         <div class="csp-cm-picks">${legend.map(([n, h]) => `<button class="csp-cm-pick ${hot === n ? 'hot' : ''}" data-link="${n}"><span class="csp-cm-idx">${n}</span>${h}</button>`).join('')}</div>
-         ${legend.filter(([n]) => n === hot).map(([n, h, d]) => `<div class="csp-cm-detail"><span class="csp-cm-idx">${n}</span><div><b>${h}</b> — ${d}</div></div>`).join('')}`,
-        `<p class="csp-note">Hover or tap a number to highlight a link. Topic boxes open the matching lecture page.</p>`
-      );
-      const setHot = n => { if (this.st.cmapHot !== n) { this.st.cmapHot = n; this.refresh(); } };
-      this.graphColEl.querySelectorAll('[data-link]').forEach(el => {
-        el.addEventListener('mouseenter', () => setHot(el.getAttribute('data-link')));
-        el.addEventListener('click', () => setHot(el.getAttribute('data-link')));
       });
+      s += tri(root[0], root[1], true, 'csp-gm-max') + `<text x="${root[0]}" y="${root[1] + 5}" class="csp-gm-t">${o.values ? '3' : 'A'}</text>`;
+      mins.forEach(([x, y], i) => { s += tri(x, y, false, 'csp-gm-min') + `<text x="${x}" y="${y + 1}" class="csp-gm-t">${o.values ? mv[i] : 'BCD'[i]}</text>`; });
+      return s + '</svg>';
+    }
+
+    ill_goal_compare() {
+      const show = this.st.goalShow;
+      const sol = { WA: 'red', NT: 'green', SA: 'blue', Q: 'red', NSW: 'green', V: 'red', T: 'red' };
+      const cols = [
+        { tag: 'Topic 02 · Search', q: 'How do I get from NYC to LAX?', goal: 'Find a <b>path</b> from the initial state to a goal state.',
+          vis: this.cityGraphSVG({ path: show ? ['NYC', 'CHI', 'DEN', 'LAX'] : [] }),
+          ans: 'NYC → CHI → DEN → LAX · cost 8' },
+        { tag: 'Topic 03 · Games', q: 'Which move should MAX play if MIN plays well?', goal: 'Choose the <b>best action</b> while accounting for an opponent.',
+          vis: this.gameMiniSVG({ values: show, best: show }),
+          ans: 'Play a<sub>1</sub> · minimax value 3' },
+        { tag: 'Topic 04 · CSP', q: 'Can every region get a colour so neighbours differ?', goal: 'Find an <b>assignment</b> that satisfies every constraint.',
+          vis: `<div class="csp-map-wrap csp-g3-map">${mapSVG({ assignment: show ? sol : {} })}</div>`,
+          ans: '7 regions coloured · 9 / 9 constraints ✓' }
+      ];
+      this.graphColEl.innerHTML = shell(
+        'Three problems, three different goals',
+        `<button class="csp-btn csp-btn-primary" id="csp-goal-toggle"><i data-lucide="${show ? 'eye-off' : 'eye'}"></i> ${show ? 'Hide the answer' : 'Show the answer'}</button>`,
+        `<div class="csp-g3">${cols.map((c, i) => `
+           <div class="csp-g3-col c${i}">
+             <div class="csp-g3-tag">${c.tag}</div>
+             <div class="csp-g3-q">“${c.q}”</div>
+             <div class="csp-g3-vis">${c.vis}</div>
+             <div class="csp-g3-goal">${c.goal}</div>
+             <div class="csp-g3-ans ${show ? 'on' : ''}">${show ? c.ans : '?'}</div>
+           </div>`).join('<div class="csp-g3-arrow" aria-hidden="true">→</div>')}
+         </div>`,
+        `<p class="csp-note">All three <b>explore a space of possibilities</b> — routes, move sequences, colourings — but each is looking for a different kind of answer.</p>`
+      );
+      this.on('csp-goal-toggle', 'click', () => { this.st.goalShow = !this.st.goalShow; this.refresh(); });
+    }
+
+    ill_state_repr() {
+      const sel = this.st.reprSel;
+      const partial = { WA: 'red', NT: 'green' };
+      const legal = this.legalValues(partial);
+      let main = '', caption = '';
+      if (sel === 'search') {
+        const box = (x, y, w, label, cls) => `<rect x="${x}" y="${y}" width="${w}" height="40" rx="9" class="csp-sr-box ${cls || ''}"></rect><text x="${x + w / 2}" y="${y + 25}" class="csp-sr-box-t ${cls || ''}">${label}</text>`;
+        const arrow = (x1, y1, x2, y2, t, dy) => `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="csp-sr-arrow" marker-end="url(#csp-sr-head)"></line><text x="${(x1 + x2) / 2}" y="${(y1 + y2) / 2 + (dy || -6)}" class="csp-sr-act">${t}</text>`;
+        main = `<svg viewBox="0 0 520 190" class="csp-sg-svg csp-sr-svg" role="img" aria-label="Atomic state with successors">
+          <defs><marker id="csp-sr-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" class="csp-sr-headp"></path></marker></defs>
+          ${box(14, 75, 76, 'CHI')}
+          ${arrow(92, 95, 186, 95, 'go(ATL) · cost 4')}
+          <rect x="190" y="58" width="130" height="74" rx="12" class="csp-sr-box atomic"></rect>
+          <text x="255" y="88" class="csp-sr-box-t big">ATL</text>
+          <text x="255" y="112" class="csp-sr-note">one indivisible state</text>
+          ${arrow(322, 82, 414, 40, 'go(LAX) · 1', -8)}
+          ${arrow(322, 108, 414, 150, 'go(SEA) · 2', 16)}
+          ${box(418, 18, 88, 'LAX', 'goal')}
+          ${box(418, 132, 88, 'SEA')}
+          <text x="462" y="72" class="csp-sr-note">GOAL-TEST ✓</text>
+        </svg>`;
+        caption = 'The algorithm can only ask two things about ATL: <b>GOAL-TEST(ATL)?</b> and <b>ACTIONS(ATL)</b>. Successors come from actions, and path cost adds up along the way.';
+      } else if (sel === 'game') {
+        main = this.gameMiniSVG({ W: 520, H: 200, layers: true, values: false });
+        caption = 'Each node is a position <b>plus whose turn it is</b>. Levels alternate MAX, MIN, MAX … and only terminal positions have a <b>UTILITY</b>. Values are backed up from the leaves.';
+      } else {
+        const rows = AUS.variables.map(v => `<tr class="${partial[v] ? 'set' : ''} ${!partial[v] && legal[v].length === 1 ? 'tight' : ''}"><th>${v}</th><td>${partial[v] ? colorDot(partial[v]) + ' ' + partial[v] : '—'}</td><td>${domainDots(partial[v] ? [partial[v]] : legal[v])}</td></tr>`).join('');
+        main = `<div class="csp-duo csp-sr-duo">
+          <div class="csp-duo-cell"><div class="csp-duo-label">Constraint graph (adjacent ≠)</div>${ausGraph({ assignment: partial, highlight: ['SA'] })}</div>
+          <div class="csp-duo-cell"><div class="csp-duo-label">Inside the state</div><div class="csp-table-wrap"><table class="csp-table csp-sr-vars"><thead><tr><th>X<sub>i</sub></th><th>value</th><th>D<sub>i</sub> left</th></tr></thead><tbody>${rows}</tbody></table></div></div>
+        </div>`;
+        caption = 'The state is <b>factored</b>: {WA = red, NT = green}. Constraints show SA has only blue left. A successor assigns <b>one more variable</b>, e.g. SA = blue.';
+      }
+      const strips = [
+        ['search', 'Search', `<span class="csp-an-cell whole">ATL</span>`, 'the whole state, no parts'],
+        ['game', 'Game', `<span class="csp-an-cell">position</span><span class="csp-an-cell turn">TO-MOVE = MIN</span><span class="csp-an-cell util">UTILITY at terminals</span>`, 'state + turn + utility'],
+        ['csp', 'CSP', AUS.variables.map(v => `<span class="csp-an-cell var ${partial[v] ? 'set' : ''}">${v}${partial[v] ? ' = ' + colorDot(partial[v]) : ' = ?'}</span>`).join('') + `<span class="csp-an-cell con">C: adjacent ≠</span>`, 'variables + values + constraints']
+      ];
+      this.graphColEl.innerHTML = shell(
+        'What one state looks like',
+        seg('csp-sr-seg', [['search', 'Search'], ['game', 'Game'], ['csp', 'CSP']], sel),
+        `<div class="csp-sr-main">${main}</div>
+         <div class="csp-status-row"><span class="csp-pill info">${{ search: 'ATOMIC', game: 'STATE + TURN', csp: 'FACTORED' }[sel]}</span><span class="csp-msg">${caption}</span></div>
+         <div class="csp-an">${strips.map(([k, l, cells, sub]) => `<button class="csp-an-row ${k === sel ? 'sel' : ''}" data-view="${k}"><span class="csp-an-l"><b>${l}</b><em>${sub}</em></span><span class="csp-an-cells">${cells}</span></button>`).join('')}</div>`,
+        ''
+      );
+      this.bindSeg('csp-sr-seg', v => { this.st.reprSel = v; this.refresh(); });
+      this.graphColEl.querySelectorAll('.csp-an-row').forEach(b => b.addEventListener('click', () => { this.st.reprSel = b.getAttribute('data-view'); this.refresh(); }));
+    }
+
+    ill_solution_type() {
+      const sol = { WA: 'red', NT: 'green', SA: 'blue', Q: 'red', NSW: 'green', V: 'red', T: 'red' };
+      const nOk = E.makeMapCSP(AUS, 3).edges().length - E.makeMapCSP(AUS, 3).conflictedEdges(sol).length;
+      const pathChips = [['NYC', ''], ['CHI', 3], ['DEN', 2], ['LAX', 3]].map(([c, k], i) => `${i ? `<span class="csp-st-arrow">→<em>${k}</em></span>` : ''}<span class="csp-st-chip">${c}</span>`).join('');
+      const cards = [
+        { tag: 'Topic 02 · Search', kind: 'A path', vis: this.cityGraphSVG({ path: ['NYC', 'CHI', 'DEN', 'LAX'] }), ans: `<div class="csp-st-path">${pathChips}</div><div class="csp-muted">cost 3 + 2 + 3 = 8</div>` },
+        { tag: 'Topic 03 · Games', kind: 'A strategy / best move', vis: this.gameMiniSVG({ values: true, best: true }), ans: `<div class="csp-st-path"><span class="csp-st-chip best">play a<sub>1</sub></span></div><div class="csp-muted">guarantees ≥ 3 whatever MIN replies</div>` },
+        { tag: 'Topic 04 · CSP', kind: 'A consistent assignment', vis: `<div class="csp-map-wrap csp-g3-map">${mapSVG({ assignment: sol })}</div>`, ans: `<div class="csp-st-path csp-st-wrap">${AUS.variables.map(v => `<span class="csp-st-chip sm">${v} ${colorDot(sol[v])}</span>`).join('')}</div><div class="csp-muted">${nOk} / 9 constraints satisfied ✓</div>` }
+      ];
+      const rows = [
+        ['Does step order matter?', '<span class="csp-t-ok">Yes</span> — the path is the answer', '<span class="csp-t-ok">Yes</span> — turns alternate', '<span class="csp-t-bad">No</span> — only the final assignment counts'],
+        ['Opponent?', 'No', '<span class="csp-t-ok">Yes</span> — MIN', 'No'],
+        ['Quality measure', 'path cost Σ c (lower is better)', 'utility / minimax value', 'none — every solution is equally good (a COP adds costs)']
+      ];
+      this.graphColEl.innerHTML = shell(
+        'From a path, to a strategy, to an assignment',
+        '',
+        `<div class="csp-g3 csp-st">${cards.map((c, i) => `
+           <div class="csp-g3-col c${i}">
+             <div class="csp-g3-tag">${c.tag}</div>
+             <div class="csp-st-kind">${c.kind}</div>
+             <div class="csp-g3-vis">${c.vis}</div>
+             <div class="csp-st-ans">${c.ans}</div>
+           </div>`).join('<div class="csp-g3-arrow" aria-hidden="true">→</div>')}
+         </div>
+         <div class="csp-table-wrap"><table class="csp-table csp-st-table">
+           <thead><tr><th></th><th>Search</th><th>Games</th><th>CSP</th></tr></thead>
+           <tbody>${rows.map(r => `<tr><th>${r[0]}</th>${r.slice(1).map(c => `<td>${c}</td>`).join('')}</tr>`).join('')}</tbody>
+         </table></div>`,
+        ''
+      );
+    }
+
+    ill_transition_grid() {
+      const step = this.st.tgStep;
+      const icon = {
+        search: '<svg viewBox="0 0 40 24" class="csp-tg-ico"><circle cx="5" cy="12" r="4"></circle><circle cx="20" cy="6" r="4"></circle><circle cx="35" cy="14" r="4" class="g"></circle><path d="M9 11 L16 7 M24 7 L31 12"></path></svg>',
+        game: '<svg viewBox="0 0 40 24" class="csp-tg-ico"><polygon points="20,2 25,10 15,10" class="mx"></polygon><polygon points="9,21 14,13 4,13" class="mn"></polygon><polygon points="31,21 36,13 26,13" class="mn"></polygon><path d="M18 10 L11 13 M22 10 L29 13"></path></svg>',
+        csp: '<svg viewBox="0 0 40 24" class="csp-tg-ico"><rect x="2" y="4" width="10" height="16" rx="2" class="r"></rect><rect x="15" y="4" width="10" height="16" rx="2" class="gr"></rect><rect x="28" y="4" width="10" height="16" rx="2" class="b"></rect></svg>'
+      };
+      const rows = [
+        ['Type of problem', ['Reach a goal', 'Beat an opponent', 'Satisfy all constraints'], ['find a path from the initial state to a goal', 'choose the best action, assuming MIN plays well', 'give every variable a value that breaks no rule']],
+        ['State representation', ['Atomic state', 'State + turn + utility', 'Factored state'], ['a state is a whole; successors come from ACTIONS(s)', 'alternating MAX / MIN game tree; UTILITY at terminals', 'variables = values; constraints say what may combine']],
+        ['Solution', ['A path', 'A strategy / best move', 'A consistent assignment'], ['S<sub>0</sub> → … → goal, measured by path cost', 'the move to make now (minimax value)', 'complete ∧ consistent — the order is irrelevant']]
+      ];
+      const head = ['Topic 02 · Search', 'Topic 03 · Adversarial search', 'Topic 04 · CSP'];
+      const keys = ['search', 'game', 'csp'];
+      const say = [
+        'What stays the same: every topic explores a space of possibilities.',
+        'What changes first: the kind of problem being solved.',
+        'Then: how a state is represented — from a whole state, to a state with a turn, to a factored state.',
+        'And so the answer changes: a path → a strategy / best move → a consistent assignment.',
+        'Transition to CSP algorithms: same exploration, new problem, new state representation, new definition of a solution.'
+      ][step];
+      this.graphColEl.innerHTML = shell(
+        'Same exploration, different problem',
+        '',
+        `<div class="csp-tg">
+           <div class="csp-tg-row csp-tg-head"><div></div>${head.map((h, i) => `<div class="csp-tg-h">${icon[keys[i]]}<span>${h}</span></div>`).join('')}</div>
+           <div class="csp-tg-row csp-tg-common ${step === 0 ? 'cur' : ''}"><div class="csp-tg-l">Stays the same</div><div class="csp-tg-span"><i data-lucide="git-branch"></i> Explore a space of possibilities: start somewhere, generate successors, order or prune them, stop when the answer is found.</div></div>
+           ${rows.map(([label, big, small], r) => `<div class="csp-tg-row ${step >= r + 1 ? 'on' : 'off'} ${step === r + 1 ? 'cur' : ''}"><div class="csp-tg-l">${label}</div>${big.map((b, i) => `<div class="csp-tg-cell c${i}">${step >= r + 1 ? `<b>${b}</b><span>${small[i]}</span>` : '<span class="csp-tg-q">?</span>'}</div>`).join('')}</div>`).join('')}
+           <div class="csp-tg-key ${step >= 4 ? 'on' : ''}"><i data-lucide="flag"></i><div>We are still <b>searching through possibilities</b> — but the <b>type of problem</b>, the <b>representation of the state space</b> and the <b>definition of a solution</b> have changed.</div></div>
+         </div>`,
+        `${stepperHTML('csp-tg', step, 5, !!this.timer)}
+         <div class="csp-status-row"><span class="csp-pill ${step === 4 ? 'ok' : 'info'}">${step === 0 ? 'SAME' : step === 4 ? 'KEY IDEA' : 'CHANGES'}</span><span class="csp-msg">${say}</span></div>`
+      );
+      this.bindStepper('csp-tg', 'tgStep', 5, 1800);
     }
   }
 
