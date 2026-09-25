@@ -6,9 +6,10 @@
  * (definition · AIMA notation · teaching tip) and illustration column.
  *
  * Topics:
+ *   0. Search → Adversarial Search → CSP (bridge from Topics 02–03)
  *   1. CSP Formulation            4. Local Search & Problem Structure
  *   2. Constraint Propagation     5. Evaluating CSP Solvers
- *   3. Backtracking Search        6. Search → Adversarial Search → CSP
+ *   3. Backtracking Search
  *
  * Every live illustration calls into window.CSPEngine
  * (demos/csp_demo/csp_engine.js) — the same engine the Playground uses.
@@ -41,21 +42,21 @@
   // ---------------------------------------------------------------------------
 
   const CSP_TOPICS = [
+    { id: 'connections', title: 'Search → Adversarial Search → CSP', short: 'Search → Games → CSP' },
     { id: 'formulation', title: 'Defining Constraint Satisfaction Problems', short: 'CSP Formulation' },
     { id: 'propagation', title: 'Constraint Propagation: Inference in CSPs', short: 'Constraint Propagation' },
     { id: 'backtracking', title: 'Backtracking Search for CSPs', short: 'Backtracking Search' },
     { id: 'local', title: 'Local Search & the Structure of Problems', short: 'Local Search & Structure' },
-    { id: 'evaluation', title: 'Evaluating CSP Solvers', short: 'Evaluating CSP Solvers' },
-    { id: 'connections', title: 'Search → Adversarial Search → CSP', short: 'Search → Games → CSP' }
+    { id: 'evaluation', title: 'Evaluating CSP Solvers', short: 'Evaluating CSP Solvers' }
   ];
 
   const TOPIC_INTROS = [
+    'Search, games and CSPs all explore a space of possibilities — but they solve different problems, represent states differently, and expect different kinds of solutions.',
     'A CSP describes a problem with a factored state — variables, their domains, and constraints — so general-purpose algorithms can exploit its structure instead of treating each state as a black box.',
     'Inference uses the constraints to shrink domains before or during search. Enforcing local consistency (node, arc, path, global) can solve a problem outright or expose a dead end early.',
     'Backtracking search assigns one variable at a time and backs up on failure. Good variable/value ordering and interleaved inference (forward checking, MAC) make it dramatically faster.',
     'Local search repairs a complete assignment instead of building one; min-conflicts is remarkably effective. The shape of the constraint graph — components, trees, cutsets — can make a CSP easy.',
-    'Compare solvers by assignments tried, backtracks, constraint checks and guarantees — measured live on the same engine the Playground uses.',
-    'Search, games and CSPs all explore a space of possibilities — but they solve different problems, represent states differently, and expect different kinds of solutions.'
+    'Compare solvers by assignments tried, backtracks, constraint checks and guarantees — measured live on the same engine the Playground uses.'
   ];
 
   const FORMULATION_CONCEPTS = [
@@ -269,7 +270,7 @@
     }
   ];
 
-  const ALL_CONCEPTS = [FORMULATION_CONCEPTS, PROPAGATION_CONCEPTS, BACKTRACKING_CONCEPTS, LOCAL_CONCEPTS, EVALUATION_CONCEPTS, CONNECTION_CONCEPTS];
+  const ALL_CONCEPTS = [CONNECTION_CONCEPTS, FORMULATION_CONCEPTS, PROPAGATION_CONCEPTS, BACKTRACKING_CONCEPTS, LOCAL_CONCEPTS, EVALUATION_CONCEPTS];
 
   // ---------------------------------------------------------------------------
   // SVG / HTML helpers
