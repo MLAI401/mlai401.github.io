@@ -102,14 +102,14 @@
     {
       key: 'node', name: 'Node Consistency', kind: 'node_consistency',
       definition: 'A variable is node-consistent if every value in its domain satisfies the variable\'s unary constraints. A network is node-consistent if every variable is.',
-      notation: '∀ x ∈ D<sub>i</sub> : C<sub>unary</sub>(X<sub>i</sub> = x) holds · D<sub>i</sub> ← {x ∈ D<sub>i</sub> | C(x)}',
-      tip: 'Enforce node consistency once, up front. In timetabling, room capacity (H2) and instructor availability (H4) are unary — deleting impossible (slot, room) values before search shrinks every domain.'
+      notation: '∀ x ∈ D<sub>i</sub> : C<sub>unary</sub>(X<sub>i</sub> = x) holds · D<sub>i</sub> ← {x ∈ D<sub>i</sub> | C(x)} · AIMA: ⟨(SA), SA ≠ green⟩ ⇒ D<sub>SA</sub> = {red, blue}',
+      tip: 'Enforce node consistency once, up front. On the map, &ldquo;South Australians dislike green&rdquo; deletes green from D<sub>SA</sub> before search starts. In timetabling, room capacity (H2) and instructor availability (H4) are unary — deleting impossible (slot, room) values before search shrinks every domain.'
     },
     {
       key: 'arc', name: 'Arc Consistency', kind: 'arc_revise',
       definition: 'X<sub>i</sub> is arc-consistent with respect to X<sub>j</sub> if for every value in D<sub>i</sub> there is some value in D<sub>j</sub> that satisfies the binary constraint on (X<sub>i</sub>, X<sub>j</sub>).',
-      notation: 'REVISE(X<sub>i</sub>, X<sub>j</sub>): delete x ∈ D<sub>i</sub> if ∄ y ∈ D<sub>j</sub> with (x, y) ∈ C<sub>ij</sub> · AIMA: Y = X², X, Y ∈ {0 … 9}',
-      tip: 'Arcs are <strong>directed</strong>. Making X consistent with Y (keep X ∈ {0, 1, 2, 3}) is a different operation from making Y consistent with X (keep Y ∈ {0, 1, 4, 9}).'
+      notation: 'REVISE(X<sub>i</sub>, X<sub>j</sub>): delete x ∈ D<sub>i</sub> if ∄ y ∈ D<sub>j</sub> with (x, y) ∈ C<sub>ij</sub> · map: C = SA ≠ WA, D<sub>WA</sub> = {red} ⇒ REVISE(SA, WA) deletes red · AIMA: Y = X², X, Y ∈ {0 … 9}',
+      tip: 'Arcs are <strong>directed</strong>. On the map, REVISE(SA, WA) can delete red from SA while REVISE(WA, SA) deletes nothing. Making X consistent with Y (keep X ∈ {0, 1, 2, 3}) is a different operation from making Y consistent with X (keep Y ∈ {0, 1, 4, 9}).'
     },
     {
       key: 'ac3', name: 'AC-3 Algorithm', kind: 'ac3_stepper',
@@ -312,6 +312,31 @@
     return `<div class="csp-seg" id="${id}">${options.map(([val, label]) => `<button data-val="${val}" class="${String(val) === String(active) ? 'active' : ''}">${label}</button>`).join('')}</div>`;
   }
 
+  const NC_EXAMPLES = [['map', 'Map colouring'], ['tt', 'Timetabling']];
+  const ARC_EXAMPLES = [['map', 'Map colouring'], ['num', 'Y = X²']];
+  const MAP_COLORS = ['red', 'green', 'blue'];
+
+  // Unary constraints on the Australia map (node consistency example)
+  const MAP_UNARY = [
+    { id: 'sa', v: 'SA', op: '≠', c: 'green', why: 'AIMA: South Australians dislike green' },
+    { id: 'wa', v: 'WA', op: '=', c: 'red', why: 'a given / pre-assigned value' },
+    { id: 't', v: 'T', op: '≠', c: 'blue', why: 'Tasmania\'s flag is already blue' },
+    { id: 'q', v: 'Q', op: '≠', c: 'red', why: 'Queensland dislikes red' }
+  ];
+  const unaryOkMap = (u, val) => (u.op === '=' ? val === u.c : val !== u.c);
+
+  // Starting domains for the map arc-consistency example
+  const MAP_ARC_PRESETS = {
+    wa: { label: 'WA = red', dom: { WA: ['red'] } },
+    wa_sa: { label: 'WA = red, SA ≠ green', dom: { WA: ['red'], SA: ['red', 'blue'] } },
+    wa_q: { label: 'WA = red, Q = green', dom: { WA: ['red'], Q: ['green'] } }
+  };
+  const mapArcDomains = key => {
+    const d = {};
+    for (const v of AUS.variables) d[v] = (MAP_ARC_PRESETS[key].dom[v] || MAP_COLORS).slice();
+    return d;
+  };
+
   const fmt = n => (n >= 1e15 ? n.toExponential(2).replace('e+', ' × 10^') : Math.round(n).toLocaleString('en-US'));
 
   // ---------------------------------------------------------------------------
@@ -329,7 +354,9 @@
         graphSel: 'SA',
         typeSel: 'binary',
         searchN: 7, searchD: 3,
+        ncEx: 'map', ncMapOn: { sa: true, wa: true, t: false, q: false }, ncMapApplied: false,
         ncCourse: 'AI302L', ncApplied: false,
+        arcEx: 'map', maPreset: 'wa_sa', maDom: null, maXi: 'SA', maXj: 'WA', maLog: [],
         arcX: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], arcY: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], arcLog: [],
         ac3Preset: 'wa_q', ac3Step: 0,
         pathColors: 2,
@@ -696,6 +723,7 @@
     // =========================================================================
 
     ill_node_consistency() {
+      if (this.st.ncEx === 'map') return this.ill_node_map();
       const S = E.SCHEDULE;
       const course = E.courseById(this.st.ncCourse);
       const applied = this.st.ncApplied;
@@ -718,7 +746,7 @@
       const inst = S.instructors[course.instr];
       this.graphColEl.innerHTML = shell(
         'Node consistency on a course\'s (slot, room) domain',
-        `<select class="csp-select" id="csp-nc-course">${opts}</select><button class="csp-btn ${applied ? '' : 'csp-btn-primary'}" id="csp-nc-apply">${applied ? 'Undo' : 'Apply node consistency'}</button>`,
+        `${seg('csp-nc-ex', NC_EXAMPLES, 'tt')}<select class="csp-select" id="csp-nc-course">${opts}</select><button class="csp-btn ${applied ? '' : 'csp-btn-primary'}" id="csp-nc-apply">${applied ? 'Undo' : 'Apply node consistency'}</button>`,
         `<div class="csp-course-facts"><span><b>${course.id}</b> · ${course.enroll} students · needs a <b>${course.type}</b> room</span><span>Dr. ${course.instr} unavailable: <b>${inst.unavailLabel}</b></span></div>
          <div class="csp-mini-tt-wrap"><table class="csp-mini-tt csp-nc-table"><thead><tr><th></th>${cols}</tr><tr><th></th>${per}</tr></thead><tbody>${rows}</tbody></table></div>
          <div class="csp-legend"><span><i class="csp-lg ok"></i> consistent value</span><span><i class="csp-lg h2"></i> H2 capacity / type</span><span><i class="csp-lg h4"></i> H4 unavailable</span></div>`,
@@ -728,11 +756,13 @@
            <div class="csp-metric ok"><span>|D| after</span><b>${kept}</b></div>
          </div>`
       );
+      this.bindSeg('csp-nc-ex', v => { this.st.ncEx = v; this.refresh(); });
       this.on('csp-nc-course', 'change', e => { this.st.ncCourse = e.target.value; this.refresh(); });
       this.on('csp-nc-apply', 'click', () => { this.st.ncApplied = !applied; this.refresh(); });
     }
 
     ill_arc_revise() {
+      if (this.st.arcEx === 'map') return this.ill_arc_map();
       const X = this.st.arcX, Y = this.st.arcY;
       const all = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
       const xPos = v => 30 + v * 38, W = 400;
@@ -748,7 +778,7 @@
       const log = this.st.arcLog.slice(-3).map(l => `<div>${l}</div>`).join('') || '<div>Constraint Y = X². Press REVISE to make one arc consistent.</div>';
       this.graphColEl.innerHTML = shell(
         'REVISE on the constraint Y = X² (X, Y ∈ {0 … 9})',
-        `<button class="csp-btn csp-btn-primary" id="csp-arc-xy">REVISE(X, Y)</button><button class="csp-btn csp-btn-primary" id="csp-arc-yx">REVISE(Y, X)</button><button class="csp-btn" id="csp-arc-reset"><i data-lucide="rotate-ccw"></i></button>`,
+        `${seg('csp-arc-ex', ARC_EXAMPLES, 'num')}<button class="csp-btn csp-btn-primary" id="csp-arc-xy">REVISE(X, Y)</button><button class="csp-btn csp-btn-primary" id="csp-arc-yx">REVISE(Y, X)</button><button class="csp-btn" id="csp-arc-reset"><i data-lucide="rotate-ccw"></i></button>`,
         `<div class="csp-card">${svg}</div>
          <div class="csp-metric-row">
            <div class="csp-metric"><span>D(X)</span><b>{${X.join(', ')}}</b></div>
@@ -768,9 +798,137 @@
         }
         this.refresh();
       };
+      this.bindSeg('csp-arc-ex', v => { this.st.arcEx = v; this.refresh(); });
       this.on('csp-arc-xy', 'click', () => rev('xy'));
       this.on('csp-arc-yx', 'click', () => rev('yx'));
       this.on('csp-arc-reset', 'click', () => { this.st.arcX = all.slice(); this.st.arcY = all.slice(); this.st.arcLog = []; this.refresh(); });
+    }
+
+    /** Node consistency on the Australia map: unary colour constraints. */
+    ill_node_map() {
+      const on = this.st.ncMapOn, applied = this.st.ncMapApplied;
+      const active = MAP_UNARY.filter(u => on[u.id]);
+      const breaks = (v, c) => active.find(u => u.v === v && !unaryOkMap(u, c));
+      const dom = {};
+      let removed = 0;
+      for (const v of AUS.variables) {
+        dom[v] = MAP_COLORS.filter(c => !breaks(v, c));
+        removed += MAP_COLORS.length - dom[v].length;
+      }
+      const shown = applied ? dom : Object.fromEntries(AUS.variables.map(v => [v, MAP_COLORS.slice()]));
+      const constrained = [...new Set(active.map(u => u.v))];
+      const chips = MAP_UNARY.map(u => `<button class="csp-btn ${on[u.id] ? 'csp-btn-primary' : ''}" data-u="${u.id}" title="${u.why}">${on[u.id] ? '✓' : '+'} ${u.v} ${u.op} ${colorDot(u.c)} ${u.c}</button>`).join('');
+      const head = MAP_COLORS.map(c => `<th>${colorDot(c)} ${c}</th>`).join('');
+      const rows = AUS.variables.map(v => {
+        const cells = MAP_COLORS.map(c => {
+          const b = breaks(v, c);
+          if (!b) return `<td class="csp-nc-ok" style="text-align:center">✓</td>`;
+          return `<td class="csp-nc-h4 ${applied ? 'struck' : ''}" style="text-align:center" title="violates ${b.v} ${b.op} ${b.c}">${applied ? '' : '✕'}</td>`;
+        }).join('');
+        return `<tr><th>${v}</th>${cells}</tr>`;
+      }).join('');
+      this.graphColEl.innerHTML = shell(
+        'Node consistency on the map of Australia',
+        `${seg('csp-nc-ex', NC_EXAMPLES, 'map')}<button class="csp-btn ${applied ? '' : 'csp-btn-primary'}" id="csp-ncm-apply">${applied ? 'Undo' : 'Apply node consistency'}</button>`,
+        `<div class="csp-ill-tools" id="csp-ncm-chips"><span class="csp-queue-label">Unary constraints</span>${chips}</div>
+         <div class="csp-duo">
+           <div class="csp-duo-cell"><div class="csp-map-wrap">${mapSVG({ domains: shown, highlight: constrained })}</div></div>
+           <div class="csp-duo-cell">
+             <table class="csp-table csp-nc-table"><thead><tr><th>Var</th>${head}</tr></thead><tbody>${rows}</tbody></table>
+             <div class="csp-legend"><span><i class="csp-lg ok"></i> satisfies every unary constraint</span><span><i class="csp-lg h4"></i> violates one</span></div>
+           </div>
+         </div>
+         <div class="csp-metric-row">
+           <div class="csp-metric"><span>Σ|D| before</span><b>${AUS.variables.length * MAP_COLORS.length}</b></div>
+           <div class="csp-metric bad"><span>values removed</span><b>${removed}</b></div>
+           <div class="csp-metric ok"><span>Σ|D| after</span><b>${AUS.variables.length * MAP_COLORS.length - removed}</b></div>
+         </div>`,
+        `<p class="csp-note">Node consistency only checks each variable against its <strong>own</strong> unary constraints. Even with WA = red, it leaves red in D<sub>NT</sub> and D<sub>SA</sub> — removing it there needs the binary constraints SA ≠ WA and NT ≠ WA, which is the job of <strong>arc consistency</strong>.</p>`
+      );
+      this.bindSeg('csp-nc-ex', v => { this.st.ncEx = v; this.refresh(); });
+      this.on('csp-ncm-apply', 'click', () => { this.st.ncMapApplied = !applied; this.refresh(); });
+      const box = this.$('csp-ncm-chips');
+      if (box) box.querySelectorAll('button[data-u]').forEach(b => b.addEventListener('click', () => {
+        const id = b.getAttribute('data-u');
+        this.st.ncMapOn = Object.assign({}, on, { [id]: !on[id] });
+        this.refresh();
+      }));
+    }
+
+    /** Arc consistency on the Australia map: REVISE on a chosen directed arc. */
+    ill_arc_map() {
+      if (!this.st.maDom) this.st.maDom = mapArcDomains(this.st.maPreset);
+      const D = this.st.maDom;
+      const vars = AUS.variables.filter(v => AUS.neighbors[v].length);
+      let Xi = this.st.maXi, Xj = this.st.maXj;
+      if (!AUS.neighbors[Xi].includes(Xj)) { Xj = this.st.maXj = AUS.neighbors[Xi][0]; }
+      const supported = (a, b, x) => D[b].some(y => y !== x);
+      // Support diagram between D(Xi) (top) and D(Xj) (bottom)
+      const cx = i => 70 + i * 70, W = 290;
+      let lines = '', chips = '';
+      MAP_COLORS.forEach((x, i) => {
+        if (!D[Xi].includes(x)) return;
+        MAP_COLORS.forEach((y, k) => { if (D[Xj].includes(y) && y !== x) lines += `<line x1="${cx(i)}" y1="52" x2="${cx(k)}" y2="118" class="csp-support"></line>`; });
+      });
+      const chip = (v, x, y, alive, lonely) => `<g><circle cx="${x}" cy="${y}" r="15" fill="${alive ? HEX[v] : '#ffffff'}" stroke="${lonely ? '#dc2626' : alive ? 'rgba(15,23,42,0.35)' : '#cbd5e1'}" stroke-width="${lonely ? 3 : 1.4}" ${alive ? '' : 'stroke-dasharray="3 3"'}></circle>${alive ? '' : `<line x1="${x - 9}" y1="${y + 9}" x2="${x + 9}" y2="${y - 9}" stroke="#94a3b8" stroke-width="1.4"></line>`}</g>`;
+      MAP_COLORS.forEach((c, i) => {
+        const alive = D[Xi].includes(c);
+        chips += chip(c, cx(i), 36, alive, alive && !supported(Xi, Xj, c));
+        chips += chip(c, cx(i), 134, D[Xj].includes(c), false);
+      });
+      const svg = `<svg viewBox="0 0 ${W} 170" class="csp-graph-svg">
+        <text x="8" y="40" class="csp-row-label">${Xi}</text><text x="8" y="138" class="csp-row-label">${Xj}</text>
+        <text x="${W / 2}" y="89" text-anchor="middle" style="font:600 10px 'Outfit',sans-serif;fill:#64748b">${Xi} ≠ ${Xj}</text>
+        ${lines}${chips}
+      </svg>`;
+      // How many directed arcs are still not arc-consistent?
+      const bad = [];
+      for (const a of vars) for (const b of AUS.neighbors[a]) if (D[a].some(x => !supported(a, b, x))) bad.push(`${a}→${b}`);
+      const wiped = AUS.variables.filter(v => !D[v].length);
+      const presetOpts = Object.entries(MAP_ARC_PRESETS).map(([k, p]) => `<option value="${k}" ${k === this.st.maPreset ? 'selected' : ''}>${p.label}</option>`).join('');
+      const xiOpts = vars.map(v => `<option ${v === Xi ? 'selected' : ''}>${v}</option>`).join('');
+      const xjOpts = AUS.neighbors[Xi].map(v => `<option ${v === Xj ? 'selected' : ''}>${v}</option>`).join('');
+      const fmtD = v => '{' + D[v].join(', ') + '}';
+      const log = this.st.maLog.slice(-3).map(l => `<div>${l}</div>`).join('') || `<div>Pick an arc and press REVISE. A value of ${Xi} ringed in red has no support in D<sub>${Xj}</sub>. Try REVISE(SA, WA), then REVISE(NT, SA) and REVISE(NT, WA).</div>`;
+      this.graphColEl.innerHTML = shell(
+        'Arc consistency on the map: REVISE(X<sub>i</sub>, X<sub>j</sub>) with X<sub>i</sub> ≠ X<sub>j</sub>',
+        `${seg('csp-arc-ex', ARC_EXAMPLES, 'map')}<select class="csp-select" id="csp-ma-preset">${presetOpts}</select>`,
+        `<div class="csp-ill-tools">
+           <span class="csp-queue-label">Arc</span>
+           <select class="csp-select" id="csp-ma-xi">${xiOpts}</select><span>→</span><select class="csp-select" id="csp-ma-xj">${xjOpts}</select>
+           <button class="csp-btn csp-btn-primary" id="csp-ma-rev">REVISE(${Xi}, ${Xj})</button>
+           <button class="csp-btn csp-btn-primary" id="csp-ma-revb">REVISE(${Xj}, ${Xi})</button>
+           <button class="csp-btn" id="csp-ma-reset" title="Reset domains"><i data-lucide="rotate-ccw"></i></button>
+         </div>
+         <div class="csp-duo">
+           <div class="csp-duo-cell"><div class="csp-map-wrap">${mapSVG({ domains: D, arc: [Xi, Xj], highlight: [Xi] })}</div></div>
+           <div class="csp-duo-cell"><div class="csp-card">${svg}</div></div>
+         </div>
+         <div class="csp-metric-row">
+           <div class="csp-metric"><span>D(${Xi})</span><b>${fmtD(Xi)}</b></div>
+           <div class="csp-metric"><span>D(${Xj})</span><b>${fmtD(Xj)}</b></div>
+           <div class="csp-metric ${wiped.length ? 'bad' : bad.length ? '' : 'ok'}"><span>Whole map</span><b>${wiped.length ? 'D(' + wiped.join(', ') + ') = ∅ — no solution' : bad.length ? bad.length + ' arcs not yet consistent' : 'arc-consistent ✓'}</b></div>
+         </div>`,
+        `<div class="csp-log">${log}</div>`
+      );
+      const revise = (a, b) => {
+        const gone = D[a].filter(x => !supported(a, b, x));
+        this.st.maDom = Object.assign({}, D, { [a]: D[a].filter(x => supported(a, b, x)) });
+        let msg = `REVISE(${a}, ${b}): `;
+        if (!gone.length) msg += `nothing removed — every colour of ${a} has a different colour left in D(${b}).`;
+        else msg += `removed ${gone.join(', ')} from D(${a}) — ${b} can only be ${D[b].join('/') || 'nothing'}, so ${a} = ${gone.join('/')} would clash.`;
+        if (gone.length && !this.st.maDom[a].length) msg += ` D(${a}) is now empty — the problem is inconsistent.`;
+        else if (gone.length) msg += ` Arcs into ${a} (${AUS.neighbors[a].filter(k => k !== b).map(k => k + '→' + a).join(', ') || 'none'}) must now be re-checked.`;
+        this.st.maLog.push(msg);
+        this.refresh();
+      };
+      this.bindSeg('csp-arc-ex', v => { this.st.arcEx = v; this.refresh(); });
+      this.on('csp-ma-preset', 'change', e => { this.st.maPreset = e.target.value; this.st.maDom = mapArcDomains(e.target.value); this.st.maLog = []; this.refresh(); });
+      this.on('csp-ma-xi', 'change', e => { this.st.maXi = e.target.value; this.refresh(); });
+      this.on('csp-ma-xj', 'change', e => { this.st.maXj = e.target.value; this.refresh(); });
+      this.on('csp-ma-rev', 'click', () => revise(Xi, Xj));
+      this.on('csp-ma-revb', 'click', () => revise(Xj, Xi));
+      this.on('csp-ma-reset', 'click', () => { this.st.maDom = mapArcDomains(this.st.maPreset); this.st.maLog = []; this.refresh(); });
     }
 
     ac3Presets() {
