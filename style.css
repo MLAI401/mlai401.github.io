@@ -5681,13 +5681,18 @@ body.sl-page::after {
 .csp-ill-tools { display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center; }
 
 .csp-ill-body {
-  flex: 1 1 auto;
+  /* Never shrink below its content: when the panel is short, the
+     illustration must push the footer down (panel scrolls) instead of
+     overflowing on top of the header and footer. */
+  flex: 1 0 auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  justify-content: safe center;
   gap: 0.75rem;
   min-height: 0;
 }
+.csp-ill-body > * { flex-shrink: 0; }
 
 .csp-ill-foot { display: flex; flex-direction: column; gap: 0.5rem; }
 
@@ -6116,6 +6121,11 @@ text.csp-hyper-label { paint-order: normal; }
 }
 
 .csp-arc-chip.next { background: var(--csp-accent); color: #fff; }
+.csp-arc-chip.upnext { background: #ffffff; color: var(--csp-accent); box-shadow: inset 0 0 0 1.5px var(--csp-accent); }
+.csp-arc-chip.added { background: rgba(245, 158, 11, 0.18); color: #b45309; font-weight: 700; }
+.csp-arc-chip.upnext.added { box-shadow: inset 0 0 0 1.5px var(--csp-accent); }
+.csp-legend .csp-arc-chip { font-style: normal; }
+.csp-queue-sep { width: 1px; align-self: stretch; background: var(--border-light); margin: 0 0.35rem; }
 
 /* ---- Tables ---- */
 .csp-table-wrap { overflow-x: auto; border: 1px solid var(--border-light); border-radius: 10px; }

@@ -955,14 +955,19 @@
       const tint = {};
       for (const v of AUS.variables) if (!P.init[v] && s.domains[v].length === 1) tint[v] = s.domains[v][0];
       const q = s.queue || [];
-      const qHTML = q.slice(0, 14).map(([a, b], k) => `<span class="csp-arc-chip ${k === 0 ? 'next' : ''}">${a}→${b}</span>`).join('') + (q.length > 14 ? `<span class="csp-muted">+${q.length - 14} more</span>` : '') || '<span class="csp-muted">empty</span>';
+      // The queue snapshot is taken AFTER the current arc was popped, so the
+      // arc on the map (s.arc) is shown separately as "revised now" and the
+      // head of the remaining queue is marked as "up next".
+      const added = (s.added || []).map(([a, b]) => a + '|' + b);
+      const qHTML = q.slice(0, 14).map(([a, b], k) => `<span class="csp-arc-chip ${k === 0 ? 'upnext' : ''} ${added.includes(a + '|' + b) ? 'added' : ''}" title="${k === 0 ? 'next arc to be popped' : added.includes(a + '|' + b) ? 're-queued by this step' : ''}">${a}→${b}</span>`).join('') + (q.length > 14 ? `<span class="csp-muted">+${q.length - 14} more</span>` : '') || '<span class="csp-muted">empty</span>';
+      const nowHTML = s.arc ? `<span class="csp-queue-label">Revised now</span><span class="csp-arc-chip next">${s.arc[0]}→${s.arc[1]}</span><span class="csp-queue-sep"></span>` : '';
       const opts = Object.entries(this.ac3Presets()).map(([k, v]) => `<option value="${k}" ${k === this.st.ac3Preset ? 'selected' : ''}>${v.label}</option>`).join('');
       const kindPill = { start: ['neutral', 'START'], keep: ['neutral', 'NO CHANGE'], revise: ['info', 'REVISED'], wipeout: ['bad', 'DOMAIN WIPE-OUT'], done: ['ok', 'ARC-CONSISTENT'] }[s.kind];
       this.graphColEl.innerHTML = shell(
         'AC-3 on Australia',
         `<select class="csp-select" id="csp-ac3-preset">${opts}</select>`,
         `<div class="csp-map-wrap">${mapSVG({ assignment: P.init, domains: s.domains, tint, arc: s.arc || null, highlight: s.arc ? [s.arc[0]] : [] })}</div>
-         <div class="csp-queue"><span class="csp-queue-label">Queue (${q.length})</span>${qHTML}</div>`,
+         <div class="csp-queue">${nowHTML}<span class="csp-queue-label">Queue (${q.length})</span>${qHTML}</div>`,
         `${stepperHTML('csp-ac3', i, steps.length, !!this.timer)}
          <div class="csp-status-row"><span class="csp-pill ${kindPill[0]}">${kindPill[1]}</span><span class="csp-msg">${s.msg}</span></div>`
       );

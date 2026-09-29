@@ -256,7 +256,9 @@
     if (!queue) for (const Xi of csp.variables) for (const Xj of csp.neighbors[Xi]) q.push([Xi, Xj]);
     let checks = 0, prunedCount = 0;
     const pruned = [];
-    if (opts.trace) steps.push({ kind: 'start', queue: q.map(a => a.slice()), domains: copyDomains(domains), msg: `Initialise the queue with ${q.length} arcs.` });
+    if (opts.trace) steps.push({ kind: 'start', queue: q.map(a => a.slice()), domains: copyDomains(domains), msg: `Initialise the queue with ${q.length} arcs (Xi, Xj) — one for each direction of every binary constraint.` });
+    const setTxt = vals => '{' + vals.join(', ') + '}';
+    const listTxt = vals => vals.length <= 1 ? vals.join('') : vals.slice(0, -1).join(', ') + ' and ' + vals[vals.length - 1];
     while (q.length) {
       const [Xi, Xj] = q.shift();
       const r = revise(csp, domains, Xi, Xj);
@@ -265,7 +267,7 @@
         prunedCount += r.removed.length;
         r.removed.forEach(x => pruned.push([Xi, x]));
         if (domains[Xi].length === 0) {
-          if (opts.trace) steps.push({ kind: 'wipeout', arc: [Xi, Xj], removed: r.removed, queue: q.map(a => a.slice()), domains: copyDomains(domains), msg: `REVISE(${Xi}, ${Xj}) removed ${r.removed.join(', ')} — D(${Xi}) is now EMPTY. AC-3 returns false: no solution extends this state.` });
+          if (opts.trace) steps.push({ kind: 'wipeout', arc: [Xi, Xj], removed: r.removed, queue: q.map(a => a.slice()), domains: copyDomains(domains), msg: `REVISE(${Xi}, ${Xj}): Revise D(${Xi}). ${listTxt(r.removed)} ${r.removed.length > 1 ? 'have' : 'has'} no support in D(${Xj}) = ${setTxt(domains[Xj])} → remove from D(${Xi}). D(${Xi}) is now EMPTY → AC-3 returns false: no solution extends this state.` });
           return { consistent: false, steps, checks, prunedCount, pruned, domains };
         }
         const added = [];
@@ -273,12 +275,12 @@
           if (Xk === Xj) continue;
           if (!q.some(([a, b]) => a === Xk && b === Xi)) { q.push([Xk, Xi]); added.push([Xk, Xi]); }
         }
-        if (opts.trace) steps.push({ kind: 'revise', arc: [Xi, Xj], removed: r.removed, added, queue: q.map(a => a.slice()), domains: copyDomains(domains), msg: `REVISE(${Xi}, ${Xj}) removed ${r.removed.join(', ')} from D(${Xi}) (no support in D(${Xj})). Re-queue ${added.length ? added.map(a => `(${a[0]},${a[1]})`).join(' ') : 'nothing new'}.` });
+        if (opts.trace) steps.push({ kind: 'revise', arc: [Xi, Xj], removed: r.removed, added, queue: q.map(a => a.slice()), domains: copyDomains(domains), msg: `REVISE(${Xi}, ${Xj}): Revise D(${Xi}). ${listTxt(r.removed)} ${r.removed.length > 1 ? 'have' : 'has'} no support in D(${Xj}) = ${setTxt(domains[Xj])} → remove from D(${Xi}), now D(${Xi}) = ${setTxt(domains[Xi])}. ${added.length ? `D(${Xi}) changed → re-queue ${added.map(a => `(${a[0]}, ${a[1]})`).join(', ')}.` : (csp.neighbors[Xi].some(k => k !== Xj) ? `D(${Xi}) changed, but ${csp.neighbors[Xi].filter(k => k !== Xj).map(k => `(${k}, ${Xi})`).join(', ')} ${csp.neighbors[Xi].filter(k => k !== Xj).length > 1 ? 'are' : 'is'} already in the queue → nothing new to add.` : `D(${Xi}) changed, but no other arc points into ${Xi} → nothing to re-queue.`)}` });
       } else if (opts.trace) {
-        steps.push({ kind: 'keep', arc: [Xi, Xj], removed: [], added: [], queue: q.map(a => a.slice()), domains: copyDomains(domains), msg: `REVISE(${Xi}, ${Xj}): every value in D(${Xi}) has support in D(${Xj}) — nothing removed.` });
+        steps.push({ kind: 'keep', arc: [Xi, Xj], removed: [], added: [], queue: q.map(a => a.slice()), domains: copyDomains(domains), msg: `REVISE(${Xi}, ${Xj}): Revise D(${Xi}). Every value has support in D(${Xj}) → nothing removed from D(${Xi}).` });
       }
     }
-    if (opts.trace) steps.push({ kind: 'done', queue: [], domains: copyDomains(domains), msg: 'Queue empty — the CSP is arc-consistent. AC-3 returns true.' });
+    if (opts.trace) steps.push({ kind: 'done', queue: [], domains: copyDomains(domains), msg: 'Queue empty → every arc is consistent. AC-3 returns true (the CSP is arc-consistent).' });
     return { consistent: true, steps, checks, prunedCount, pruned, domains };
   }
 
