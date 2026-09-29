@@ -53,8 +53,29 @@
       const [x1, y1] = E.projectAus(...AUS.labels[o.arc[0]], o.W, o.H);
       const [x2, y2] = E.projectAus(...AUS.labels[o.arc[1]], o.W, o.H);
       s += `<defs><marker id="csp-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#0f172a"></path></marker></defs>`;
-      const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy) || 1;
-      s += `<line x1="${x1 + dx / L * 14}" y1="${y1 + dy / L * 14}" x2="${x2 - dx / L * 16}" y2="${y2 - dy / L * 16}" class="csp-arc-line" marker-end="url(#csp-arrow)"></line>`;
+      // Keep the arrow clear of each region's label block (name + domain dots):
+      // clip the line to an ellipse around the block instead of a fixed offset.
+      const cy = o.domains ? 2 : 0;
+      const rx = o.domains ? 25 : 16, ry = o.domains ? 19 : 12;
+      const ax = x1, ay = y1 + cy, bx = x2, by = y2 + cy;
+      const dx = bx - ax, dy = by - ay, L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L;
+      const clear = 1 / Math.sqrt((ux / rx) ** 2 + (uy / ry) ** 2);
+      const sx = ax + ux * (clear + 2), sy = ay + uy * (clear + 2);
+      const ex = bx - ux * (clear + 6), ey = by - uy * (clear + 6);
+      let d;
+      if (Math.hypot(ex - sx, ey - sy) >= 30 && (ex - sx) * ux + (ey - sy) * uy > 0) {
+        d = `M${sx} ${sy} L${ex} ${ey}`;
+      } else {
+        // Neighbours too close for a straight arrow (e.g. NSW → V): bow out sideways (eastwards).
+        let nx = -uy, ny = ux;
+        if (nx < 0) { nx = -nx; ny = -ny; }
+        const off = rx + 2;
+        const p1x = ax + nx * off, p1y = ay + ny * off, p2x = bx + nx * off, p2y = by + ny * off;
+        const qx = (p1x + p2x) / 2 + nx * 22, qy = (p1y + p2y) / 2 + ny * 22;
+        d = `M${p1x} ${p1y} Q${qx} ${qy} ${p2x} ${p2y}`;
+      }
+      s += `<path d="${d}" fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="round" opacity="0.85"></path>`;
+      s += `<path d="${d}" fill="none" class="csp-arc-line" marker-end="url(#csp-arrow)"></path>`;
     }
     for (const v of AUS.variables) {
       const [x, y] = E.projectAus(...AUS.labels[v], o.W, o.H);
