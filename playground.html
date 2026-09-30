@@ -15,7 +15,7 @@
   <meta property="og:type" content="website">
   
   <!-- Style Sheet -->
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=11">
 </head>
 <body>
   
@@ -48,38 +48,47 @@
   <section class="section" id="playground" style="background: rgba(241, 245, 249, 0.5); position: relative; padding-top: 5.5rem; padding-bottom: 2rem;">
     <div class="ambient-glow-green"></div>
     <div class="container">
-      <div class="section-header" style="margin-bottom: 2rem;">
+      <div class="section-header playground-tabs-bar" style="margin-bottom: 2rem;">
         <!-- Playground Tab Navigation -->
         <div class="playground-tabs">
-          <button class="playground-tab active" data-target="view-kmeans">
-            <i data-lucide="bar-chart-2"></i> K-Means Clustering
+          <!-- Topic 01 · Problem Formulation -->
+          <button class="playground-tab active" data-target="view-vaccum" title="Topic 01 · Problem Formulation">
+            <i data-lucide="bot"></i> Two-Room Vacuum Agents
           </button>
-          <button class="playground-tab" data-target="view-maze">
+          <button class="playground-tab" data-target="view-maze" title="Topic 01 · Problem Formulation">
             <i data-lucide="grid"></i> Maze Abstraction
           </button>
-          <button class="playground-tab" data-target="view-maze-search">
-            <i data-lucide="compass"></i> Maze Search
-          </button>
-          <button class="playground-tab" data-target="view-puzzle">
+          <button class="playground-tab" data-target="view-puzzle" title="Topic 01 · Problem Formulation">
             <i data-lucide="puzzle"></i> 8-Puzzle State-Space
           </button>
-          <button class="playground-tab" data-target="view-search">
+          <span class="playground-tab-sep" aria-hidden="true"></span>
+          <!-- Topic 02 · Search -->
+          <button class="playground-tab" data-target="view-search" title="Topic 02 · Search">
             <i data-lucide="git-commit"></i> Graph Search Algorithms
           </button>
-          <button class="playground-tab" data-target="view-adversarial">
+          <button class="playground-tab" data-target="view-maze-search" title="Topic 02 · Search">
+            <i data-lucide="compass"></i> Maze Search
+          </button>
+          <span class="playground-tab-sep" aria-hidden="true"></span>
+          <!-- Topic 03 · Games -->
+          <button class="playground-tab" data-target="view-adversarial" title="Topic 03 · Games">
             <i data-lucide="swords"></i> Adversarial Search
           </button>
-          <button class="playground-tab" data-target="view-csp">
+          <span class="playground-tab-sep" aria-hidden="true"></span>
+          <!-- Topic 04 · CSP -->
+          <button class="playground-tab" data-target="view-csp" title="Topic 04 · CSP">
             <i data-lucide="grid-3x3"></i> Constraint Satisfaction
           </button>
-          <button class="playground-tab" data-target="view-vaccum">
-            <i data-lucide="bot"></i> Two-Room Vacuum Agents
+          <span class="playground-tab-sep" aria-hidden="true"></span>
+          <!-- Topic 06 · Learning -->
+          <button class="playground-tab" data-target="view-kmeans" title="Topic 06 · Learning">
+            <i data-lucide="bar-chart-2"></i> K-Means Clustering
           </button>
         </div>
       </div>
       
       <!-- Tab 1: K-Means Clustering View -->
-      <div class="playground-view active" id="view-kmeans">
+      <div class="playground-view" id="view-kmeans">
         <div class="playground-grid">
           <!-- Visualizer Canvas -->
           <div class="canvas-container" id="visualizer-canvas-container">
@@ -1179,7 +1188,7 @@
       </div>
 
       <!-- Tab 5: Two-Room Vacuum Robot Agent View -->
-      <div class="playground-view" id="view-vaccum">
+      <div class="playground-view active" id="view-vaccum">
         
         <!-- Top Controls Bar -->
         <div class="glass-panel" style="padding: 1rem 1.5rem; margin-bottom: 1.25rem; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 1rem;">
@@ -1655,6 +1664,6 @@
   <script src="demos/vaccum_demo/agents.js?v=2"></script>
   <script src="demos/vaccum_demo/ui.js?v=2"></script>
   <!-- Application JS -->
-  <script src="main.js?v=2"></script>
+  <script src="main.js?v=3"></script>
 </body>
 </html>

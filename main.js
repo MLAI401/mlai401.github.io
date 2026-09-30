@@ -122,8 +122,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const matchingTab = document.querySelector(`.playground-tab[data-target="${hash}"]`);
       if (matchingTab) {
         matchingTab.click();
+        return;
       }
     }
+    // No (valid) hash: open the first demo in topic order and initialise it
+    const firstTab = document.querySelector('.playground-tab');
+    if (firstTab) firstTab.click();
   }
   activateTabFromHash();
   window.addEventListener('hashchange', activateTabFromHash);

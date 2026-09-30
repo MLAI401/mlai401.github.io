@@ -47,7 +47,8 @@
     { id: 'propagation', title: 'Constraint Propagation: Inference in CSPs', short: 'Constraint Propagation' },
     { id: 'backtracking', title: 'Backtracking Search for CSPs', short: 'Backtracking Search' },
     { id: 'local', title: 'Local Search & the Structure of Problems', short: 'Local Search & Structure' },
-    { id: 'evaluation', title: 'Evaluating CSP Solvers', short: 'Evaluating CSP Solvers' }
+    { id: 'evaluation', title: 'Evaluating CSP Solvers', short: 'Evaluating CSP Solvers' },
+    { id: 'code', title: 'Code Trace: CSP Algorithms in Python', short: 'Code Trace' }
   ];
 
   const TOPIC_INTROS = [
@@ -56,7 +57,8 @@
     'Inference uses the constraints to shrink domains before or during search. Enforcing local consistency (node, arc, path, global) can solve a problem outright or expose a dead end early.',
     'Backtracking search assigns one variable at a time and backs up on failure. Good variable/value ordering and interleaved inference (forward checking, MAC) make it dramatically faster.',
     'Local search repairs a complete assignment instead of building one; min-conflicts is remarkably effective. The shape of the constraint graph — components, trees, cutsets — can make a CSP easy.',
-    'Compare solvers by assignments tried, backtracks, constraint checks and guarantees — measured live on the same engine the Playground uses.'
+    'Compare solvers by assignments tried, backtracks, constraint checks and guarantees — measured live on the same engine the Playground uses.',
+    'Step through the Python implementations in <code>python_sandbox/csp.py</code> and <code>python_sandbox/07_CSP_Heuristics.py</code> line by line — backtracking, MRV/Degree, LCV, forward checking, AC-3 and min-conflicts — then compare their efficiency.'
   ];
 
   const FORMULATION_CONCEPTS = [
@@ -270,7 +272,52 @@
     }
   ];
 
-  const ALL_CONCEPTS = [CONNECTION_CONCEPTS, FORMULATION_CONCEPTS, PROPAGATION_CONCEPTS, BACKTRACKING_CONCEPTS, LOCAL_CONCEPTS, EVALUATION_CONCEPTS];
+  const CODE_CONCEPTS = [
+    {
+      key: 'btcode', name: 'Backtracking Code Trace', kind: 'bt_code', codeInConcept: true,
+      definition: 'The recursive <code>backtracking_search</code> from <code>python_sandbox/csp.py</code>, traced line by line on the Australia map. Each call to <code>backtrack()</code> extends the assignment by one variable; a call that returns <code>None</code> makes its caller undo that choice and try the next value.',
+      notation: 'backtrack(assignment): if complete → return it · var ← select_unassigned_variable · for val in order_domain_values: if is_consistent → assign, result ← backtrack(assignment), if result ≠ None → return it · unassign, backtracks += 1 · return None',
+      tip: 'Watch the <strong>call stack</strong>: every frame is one level of the search tree. A backtrack is just a recursive call returning <code>None</code> — the caller then removes its value (line 17) and tries the next one. Switch to "SA first" to see the same code finish without a single backtrack.'
+    },
+    {
+      key: 'mrv', name: 'MRV + Degree', kind: 'ct_mrv', codeInConcept: true,
+      definition: 'Variable ordering: <code>mrv()</code> picks the unassigned variable with the fewest legal values; ties are broken by the degree heuristic (most constraints on unassigned variables).',
+      notation: 'argmin<sub>v</sub> |legal(v)| · tie → argmax<sub>v</sub> |{u unassigned : (u, v) ∈ E}|',
+      tip: 'Start from the empty assignment: every region ties on 3 legal values, and the degree heuristic picks SA (degree 5).'
+    },
+    {
+      key: 'lcv', name: 'LCV', kind: 'ct_lcv', codeInConcept: true,
+      definition: 'Value ordering: <code>lcv()</code> sorts the domain of the chosen variable by how many values each choice rules out in the unassigned neighbours — least constraining first.',
+      notation: 'sorted(D(var), key = ruled_out) · ruled_out(x) = Σ<sub>n unassigned</sub> |{y ∈ D(n) : ¬C(var = x, n = y)}|',
+      tip: 'With WA = red, NT = green, Q = red rules out 1 value but Q = blue rules out 2 (it would leave SA empty), so LCV tries red first.'
+    },
+    {
+      key: 'fc', name: 'Forward Checking', kind: 'ct_fc', codeInConcept: true,
+      definition: 'Inference after each assignment: <code>forward_checking()</code> deletes every value of an unassigned neighbour that conflicts with the new assignment, and fails as soon as a domain becomes empty.',
+      notation: 'X = x ⇒ ∀ n ∈ N(X) unassigned: D(n) ← {y ∈ D(n) | C(X = x, n = y)} · D(n) = ∅ ⇒ return False',
+      tip: 'Replays AIMA Fig 6.7: after WA = red, Q = green, V = blue the domain of SA is wiped out.'
+    },
+    {
+      key: 'ac3', name: 'AC-3', kind: 'ct_ac3', codeInConcept: true,
+      definition: '<code>ac3()</code> keeps a queue of arcs and calls <code>revise()</code> on each; when a domain shrinks, all arcs pointing into it are queued again. <code>mac()</code> runs it after every assignment.',
+      notation: 'revise(Xi, Xj): delete x ∈ Di if ∄ y ∈ Dj with C(x, y) · O(c · d³)',
+      tip: 'With WA = red, Q = green, AC-3 empties a domain and returns False without any search.'
+    },
+    {
+      key: 'minconf', name: 'Min-Conflicts', kind: 'ct_minconf', codeInConcept: true,
+      definition: 'Local search: <code>min_conflicts()</code> builds a complete (greedy) assignment, then repeatedly picks a random conflicted variable and gives it the value with the fewest conflicts.',
+      notation: 'MIN-CONFLICTS(csp, max_steps) · var ← random conflicted · value ← argmin<sub>v</sub> CONFLICTS(var, v)',
+      tip: 'Incomplete but fast: on Australia it usually repairs the greedy start in a few moves.'
+    },
+    {
+      key: 'compare', name: 'Compare Efficiency', kind: 'ct_compare', codeInConcept: true,
+      definition: 'Measure nodes visited, backtracks and elapsed time for basic backtracking, heuristic backtracking (MRV/Degree + LCV + FC or MAC) and min-conflicts on the same problems.',
+      notation: 'measure(solver, csp) → (result, nodes_expanded, backtracks, elapsed ms)',
+      tip: 'On Australia every solver is instant; on 20-Queens basic backtracking needs about 200,000 nodes while the heuristic versions need a few dozen.'
+    }
+  ];
+
+  const ALL_CONCEPTS = [CONNECTION_CONCEPTS, FORMULATION_CONCEPTS, PROPAGATION_CONCEPTS, BACKTRACKING_CONCEPTS, LOCAL_CONCEPTS, EVALUATION_CONCEPTS, CODE_CONCEPTS];
 
   // ---------------------------------------------------------------------------
   // SVG / HTML helpers
@@ -337,6 +384,415 @@
     return d;
   };
 
+  // ---------------------------------------------------------------------------
+  // Backtracking code trace — python_sandbox/csp.py · backtracking_search
+  // ---------------------------------------------------------------------------
+  const BT_PY = [
+    'def backtracking_search(csp):',
+    '    csp.nodes_expanded = 0',
+    '    csp.backtracks = 0',
+    '',
+    '    def backtrack(assignment):',
+    '        csp.nodes_expanded += 1',
+    '        if len(assignment) == len(csp.variables):',
+    '            return assignment',
+    '',
+    '        var = select_unassigned_variable(assignment, csp)',
+    '        for val in order_domain_values(var, assignment, csp):',
+    '            if csp.is_consistent(var, val, assignment):',
+    '                csp.assign(var, val, assignment)',
+    '                result = backtrack(assignment)',
+    '                if result is not None:',
+    '                    return result',
+    '                csp.unassign(var, assignment)',
+    '                csp.backtracks += 1',
+    '',
+    '        return None',
+    '',
+    '    return backtrack({})'
+  ];
+  const BT_CODE_ORDERS = {
+    bad: { label: 'Order: WA, NSW, NT, Q, SA, V, T', order: ['WA', 'NSW', 'NT', 'Q', 'SA', 'V', 'T'] },
+    aima: { label: 'Order: WA, NT, Q, NSW, V, SA, T', order: ['WA', 'NT', 'Q', 'NSW', 'V', 'SA', 'T'] },
+    sa: { label: 'Order: SA first (degree)', order: ['SA', 'WA', 'NT', 'Q', 'NSW', 'V', 'T'] }
+  };
+  const pyHTML = line => esc(line)
+    .replace(/\b(def|return|if|for|in|is|not|None)\b/g, '<span class="kw">$1</span>')
+    .replace(/\b(backtracking_search|backtrack|select_unassigned_variable|order_domain_values|is_consistent|assign|unassign|len)\b(?=\()/g, '<span class="fn">$1</span>');
+  const asgTxt = a => '{' + Object.entries(a).map(([k, v]) => `${k}: ${v}`).join(', ') + '}';
+
+  /** Runs backtracking_search on Australia and records one step per code event. */
+  function traceBacktrackingCode(order, colors) {
+    colors = colors || ['red', 'green', 'blue'];
+    const N = AUS.neighbors, n = order.length;
+    const steps = [], a = {}, stack = [];
+    let nodes = 0, bts = 0;
+    const top = () => stack[stack.length - 1];
+    const snap = o => steps.push(Object.assign({ assignment: Object.assign({}, a), stack: stack.map(f => Object.assign({}, f)), nodes, bts }, o));
+    snap({ lines: [1, 2, 3], kind: 'start', title: 'Start the search', explain: '<code>backtracking_search(csp)</code> resets both counters: <code>nodes_expanded = 0</code> and <code>backtracks = 0</code>.' });
+    snap({ lines: [22], kind: 'start', title: 'First call: backtrack({})', explain: 'The search starts the recursion with an <strong>empty</strong> assignment. Every later call adds exactly one variable.' });
+    function bt(depth) {
+      nodes++;
+      stack.push({ depth, asg: asgTxt(a), v: null, val: null });
+      const k = Object.keys(a).length;
+      if (k === n) {
+        snap({ lines: [5, 6, 7, 8], kind: 'solution', title: 'Complete assignment → solution', explain: `Call #${nodes} (depth ${depth}): <code>len(assignment) = ${k} = len(csp.variables)</code>. Every region has a colour and no constraint is violated, so this call <strong>returns the assignment</strong>.` });
+        stack.pop();
+        return Object.assign({}, a);
+      }
+      snap({ lines: [5, 6, 7], kind: 'call', title: `Call backtrack() — depth ${depth}`, explain: `<code>nodes_expanded</code> becomes ${nodes}. <code>len(assignment) = ${k}</code> &lt; ${n}, so the assignment is not complete yet — keep going.` });
+      const v = order.find(x => !(x in a));
+      top().v = v;
+      snap({ lines: [10], kind: 'select', v, title: `Select variable ${v}`, explain: `<code>select_unassigned_variable</code> returns <strong>${v}</strong>, the first unassigned region in the fixed order ${order.join(', ')}.` });
+      for (const c of colors) {
+        top().val = c;
+        const clash = N[v].find(u => a[u] === c);
+        if (clash) {
+          snap({ lines: [11, 12], kind: 'reject', v, val: c, conflict: [v, clash], title: `Try ${v} = ${c} ✗`, explain: `<code>is_consistent(${v}, ${c})</code> is <strong>False</strong>: neighbour ${clash} is already ${c}. Skip lines 13–18 and try the next value.` });
+          continue;
+        }
+        snap({ lines: [11, 12], kind: 'ok', v, val: c, title: `Try ${v} = ${c} ✓`, explain: `<code>is_consistent(${v}, ${c})</code> is <strong>True</strong>: no neighbour of ${v} (${N[v].join(', ') || 'none'}) is ${c}.` });
+        a[v] = c;
+        snap({ lines: [13, 14], kind: 'assign', v, val: c, title: `Assign ${v} = ${c}, then recurse`, explain: `<code>csp.assign</code> adds ${v} = ${c} to the assignment, and <code>backtrack(assignment)</code> goes one level deeper (depth ${depth + 1}).` });
+        const r = bt(depth + 1);
+        if (r) {
+          snap({ lines: [15, 16], kind: 'solution', v, val: c, title: `Pass the solution up (depth ${depth})`, explain: `<code>result</code> is not <code>None</code>, so this call returns it unchanged to its caller.` });
+          stack.pop();
+          return r;
+        }
+        delete a[v];
+        bts++;
+        snap({ lines: [15, 17, 18], kind: 'undo', v, val: c, title: `Backtrack: undo ${v} = ${c}`, explain: `The deeper call returned <code>None</code> — the search cannot be finished with ${v} = ${c}. <code>csp.unassign</code> removes it and <code>backtracks</code> becomes ${bts}. Try the next value of ${v}.` });
+      }
+      top().val = null;
+      snap({ lines: [20], kind: 'fail', v, title: `No colour works for ${v}`, explain: `Every value of ${v} failed, so this call (depth ${depth}) <strong>returns None</strong> — its caller will undo its own choice.` });
+      stack.pop();
+      return null;
+    }
+    const res = bt(0);
+    snap({ lines: [22], kind: res ? 'done' : 'fail', title: res ? 'Search finished: solution returned' : 'Search finished: no solution', explain: res ? `<code>backtracking_search</code> returns ${asgTxt(res)} after ${nodes} calls to <code>backtrack()</code> and ${bts} backtrack${bts === 1 ? '' : 's'}.` : 'No complete, consistent assignment exists.' });
+    return steps;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Code Trace topic — heuristics, inference, local search, comparison
+  // (python_sandbox/07_CSP_Heuristics.py)
+  // ---------------------------------------------------------------------------
+  const CT_FILE = 'python_sandbox/07_CSP_Heuristics.py';
+  const COLORS3 = ['red', 'green', 'blue'];
+  const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+  const setOf = vals => '{' + vals.join(', ') + '}';
+  const copyDom = d => { const o = {}; for (const k in d) o[k] = d[k].slice(); return o; };
+  const fullDom = () => { const d = {}; AUS.variables.forEach(v => { d[v] = COLORS3.slice(); }); return d; };
+
+  const MRV_PY = [
+    'def mrv(assignment, csp):',
+    '    unassigned = [v for v in csp.variables if v not in assignment]',
+    '    if not unassigned:',
+    '        return None',
+    '',
+    '    def legal(var):',
+    '        return sum(1 for val in csp.domains[var]',
+    '                   if csp.is_consistent(var, val, assignment))',
+    '',
+    '    min_size = min(legal(v) for v in unassigned)',
+    '    candidates = [v for v in unassigned if legal(v) == min_size]',
+    '    if len(candidates) == 1:',
+    '        return candidates[0]',
+    '',
+    '    # Degree heuristic tie-breaker',
+    '    def degree(var):',
+    '        return sum(1 for n in csp.neighbors[var] if n not in assignment)',
+    '',
+    '    return max(candidates, key=degree)'
+  ];
+  const LCV_PY = [
+    'def lcv(var, assignment, csp):',
+    '    def ruled_out(val):',
+    '        count = 0',
+    '        for n in csp.neighbors[var]:',
+    '            if n not in assignment:',
+    '                for y in csp.domains[n]:',
+    '                    if not csp.constraints(var, val, n, y):',
+    '                        count += 1',
+    '        return count',
+    '',
+    '    return sorted(csp.domains[var], key=ruled_out)'
+  ];
+  const FC_PY = [
+    'def forward_checking(csp, var, value, assignment, removals):',
+    '    for n in csp.neighbors[var]:',
+    '        if n not in assignment:',
+    '            for y in list(csp.domains[n]):',
+    '                if not csp.constraints(var, value, n, y):',
+    '                    csp.prune(n, y, removals)',
+    '            if not csp.domains[n]:',
+    '                return False',
+    '    return True'
+  ];
+  const AC3_PY = [
+    'def ac3(csp, queue=None, removals=None):',
+    '    if queue is None:',
+    '        queue = [(Xi, Xk) for Xi in csp.variables for Xk in csp.neighbors[Xi]]',
+    '',
+    '    while queue:',
+    '        Xi, Xj = queue.pop(0)',
+    '        if revise(csp, Xi, Xj, removals):',
+    '            if not csp.domains[Xi]:',
+    '                return False',
+    '            for Xk in csp.neighbors[Xi]:',
+    '                if Xk != Xj:',
+    '                    queue.append((Xk, Xi))',
+    '    return True',
+    '',
+    'def revise(csp, Xi, Xj, removals=None):',
+    '    revised = False',
+    '    for x in list(csp.domains[Xi]):',
+    '        if not any(csp.constraints(Xi, x, Xj, y) for y in csp.domains[Xj]):',
+    '            csp.prune(Xi, x, removals)',
+    '            revised = True',
+    '    return revised'
+  ];
+  const MC_PY = [
+    'def min_conflicts(csp, max_steps=1000):',
+    '    csp.nodes_expanded = 0',
+    '    current = {}',
+    '    for var in csp.variables:  # greedy complete assignment',
+    '        counts = {val: csp.nconflicts(var, val, current) for val in csp.domains[var]}',
+    '        fewest = min(counts.values())',
+    '        current[var] = random.choice([val for val in counts if counts[val] == fewest])',
+    '',
+    '    for step in range(max_steps):',
+    '        csp.nodes_expanded += 1',
+    '        conflicted = [var for var in csp.variables',
+    '                      if csp.nconflicts(var, current[var], current) > 0]',
+    '        if not conflicted:',
+    '            return current',
+    '',
+    '        var = random.choice(conflicted)',
+    '        min_conf = float("inf")',
+    '        best_vals = []',
+    '        for val in csp.domains[var]:',
+    '            conf = csp.nconflicts(var, val, current)',
+    '            if conf < min_conf:',
+    '                min_conf = conf',
+    '                best_vals = [val]',
+    '            elif conf == min_conf:',
+    '                best_vals.append(val)',
+    '',
+    '        current[var] = random.choice(best_vals)',
+    '',
+    '    return None'
+  ];
+  const CMP_PY = [
+    'def measure(solver, csp):',
+    '    csp.nodes_expanded = 0',
+    '    csp.backtracks = 0',
+    '    start = time.perf_counter()',
+    '    result = solver(csp)',
+    '    elapsed = (time.perf_counter() - start) * 1000',
+    '    return result, csp.nodes_expanded, csp.backtracks, elapsed',
+    '',
+    'SOLVERS = {',
+    '    "Backtracking": backtracking_search,',
+    '    "BT + MRV/Degree + LCV + FC": lambda c: backtracking_search_heuristics(',
+    '        c, mrv, lcv, forward_checking),',
+    '    "BT + MRV/Degree + LCV + MAC": lambda c: backtracking_search_heuristics(',
+    '        c, mrv, lcv, mac),',
+    '    "Min-Conflicts": lambda c: min_conflicts(c, max_steps=10000),',
+    '}',
+    '',
+    'def compare(name, make_problem):',
+    '    for label, solver in SOLVERS.items():',
+    '        result, nodes, bts, ms = measure(solver, make_problem())',
+    '        print(label, result is not None, nodes, bts, round(ms, 2))'
+  ];
+
+  const MRV_PRESETS = {
+    start: { label: 'Empty assignment {}', asg: {} },
+    wa: { label: 'After WA = red', asg: { WA: 'red' } },
+    wa_nt: { label: 'After WA = red, NT = green', asg: { WA: 'red', NT: 'green' } }
+  };
+  const LCV_PRESETS = {
+    q: { label: 'Order D(Q) · WA = red, NT = green (after FC)', v: 'Q', asg: { WA: 'red', NT: 'green' }, dom: { WA: ['red'], NT: ['green'], SA: ['blue'], Q: ['red', 'blue'], NSW: COLORS3, V: COLORS3, T: COLORS3 } },
+    nsw: { label: 'Order D(NSW) · WA = red, NT = green, Q = red', v: 'NSW', asg: { WA: 'red', NT: 'green', Q: 'red' }, dom: { WA: ['red'], NT: ['green'], Q: ['red'], SA: ['blue'], NSW: ['green', 'blue'], V: COLORS3, T: COLORS3 } },
+    sa: { label: 'Order D(SA) · empty assignment', v: 'SA', asg: {}, dom: null }
+  };
+  const FC_PRESETS = {
+    fig67: { label: 'AIMA Fig 6.7: WA = red, Q = green, V = blue', seq: [['WA', 'red'], ['Q', 'green'], ['V', 'blue']] },
+    ok: { label: 'WA = red, NT = green, Q = red', seq: [['WA', 'red'], ['NT', 'green'], ['Q', 'red']] }
+  };
+  const AC3_PRESETS = {
+    wa_q: { label: 'WA = red, Q = green', init: { WA: ['red'], Q: ['green'] } },
+    wa: { label: 'WA = red', init: { WA: ['red'] } },
+    wa_sa: { label: 'WA = red, SA ≠ green', init: { WA: ['red'], SA: ['red', 'blue'] } }
+  };
+  const MC_PRESETS = { s1: { label: 'Random seed 1', seed: 1 }, s2: { label: 'Random seed 2', seed: 2 }, s3: { label: 'Random seed 3', seed: 3 } };
+  const CMP_PROBLEMS = {
+    aus: { label: 'Australia (7 regions)', make: () => E.makeMapCSP(AUS, 3) },
+    ausbad: { label: 'Australia, order WA, NSW, NT, Q, SA, V, T', make: () => E.makeMapCSP(AUS, 3), order: ['WA', 'NSW', 'NT', 'Q', 'SA', 'V', 'T'] },
+    q8: { label: '8-Queens', make: () => E.makeQueensCSP(8) },
+    q20: { label: '20-Queens (basic backtracking takes a few seconds)', make: () => E.makeQueensCSP(20) },
+    rand: { label: 'Random map (30 regions, 3 colours)', make: () => E.makeMapCSP(E.randomMap(30, 11), 3) }
+  };
+
+  function traceMRV(asg) {
+    const N = AUS.neighbors, steps = [], legal = {}, deg = {};
+    const un = AUS.variables.filter(v => !(v in asg));
+    const snap = o => steps.push(Object.assign({ asg, un, legal: Object.assign({}, legal), deg: Object.assign({}, deg) }, o));
+    snap({ lines: [1], kind: 'start', title: `Call mrv(assignment = ${asgTxt(asg)})`, explain: '<code>mrv()</code> returns the next variable to assign: the one with the <strong>fewest legal values</strong> left (fail-first).' });
+    snap({ lines: [2], kind: 'run', title: 'Collect the unassigned variables', explain: `<code>unassigned = [${un.join(', ')}]</code> — ${plural(un.length, 'region')} still need a colour.` });
+    snap({ lines: [3], kind: 'run', title: 'Anything left to assign?', explain: 'The list is not empty, so skip <code>return None</code> and rank the candidates.' });
+    un.forEach(v => {
+      const ok = COLORS3.filter(c => N[v].every(n => asg[n] !== c));
+      legal[v] = ok;
+      const blocked = COLORS3.filter(c => !ok.includes(c)).map(c => `${c} (used by ${N[v].filter(n => asg[n] === c).join(', ')})`);
+      snap({ lines: [10, 6, 7, 8], kind: 'legal', v, title: `legal(${v}) = ${ok.length}`, explain: `Colours of ${v} consistent with the assignment: ${setOf(ok)}.${blocked.length ? ' Blocked: ' + blocked.join(', ') + '.' : ' No neighbour of ' + v + ' is coloured yet, so every colour is legal.'}` });
+    });
+    const m = Math.min(...un.map(v => legal[v].length));
+    snap({ lines: [10], kind: 'run', title: `min_size = ${m}`, explain: `The smallest number of legal values among the unassigned regions is <strong>${m}</strong>.` });
+    const cand = un.filter(v => legal[v].length === m);
+    snap({ lines: [11], kind: 'run', cand, title: `candidates = [${cand.join(', ')}]`, explain: cand.length === 1 ? `Only ${cand[0]} has ${plural(m, 'legal value')}.` : `${cand.length} regions tie with ${plural(m, 'legal value')} — MRV alone cannot decide.` });
+    if (cand.length === 1) {
+      snap({ lines: [12, 13], kind: 'done', cand, chosen: cand[0], title: `MRV picks ${cand[0]}`, explain: `<code>len(candidates) == 1</code>, so return <strong>${cand[0]}</strong> immediately — the degree heuristic is not needed.` });
+      return steps;
+    }
+    snap({ lines: [12], kind: 'run', cand, title: 'Tie → use the degree heuristic', explain: '<code>len(candidates) &gt; 1</code>, so skip <code>return candidates[0]</code> and break the tie with the degree heuristic.' });
+    cand.forEach(v => {
+      const u = N[v].filter(n => !(n in asg));
+      deg[v] = u.length;
+      snap({ lines: [19, 16, 17], kind: 'degree', v, cand, title: `degree(${v}) = ${u.length}`, explain: `${v} shares a constraint with ${plural(u.length, 'unassigned region')}${u.length ? ': ' + u.join(', ') : ''}.` });
+    });
+    let best = cand[0];
+    cand.forEach(v => { if (deg[v] > deg[best]) best = v; });
+    snap({ lines: [19], kind: 'done', cand, chosen: best, title: `MRV + Degree picks ${best}`, explain: `<code>max(candidates, key=degree)</code> returns <strong>${best}</strong> (degree ${deg[best]}): it constrains the most remaining regions, so colouring it first prunes the most.` });
+    return steps;
+  }
+
+  function traceLCV(p) {
+    const N = AUS.neighbors, v = p.v, asg = p.asg, dom = p.dom || fullDom();
+    const steps = [], counts = {}, detail = {};
+    const snap = o => steps.push(Object.assign({ v, asg, dom, counts: Object.assign({}, counts), detail: JSON.parse(JSON.stringify(detail)) }, o));
+    snap({ lines: [1], kind: 'start', title: `Call lcv(${v})`, explain: `D(${v}) = ${setOf(dom[v])}. LCV orders these values by how many choices each one would <strong>remove</strong> from the unassigned neighbours — least constraining first.` });
+    for (const val of dom[v]) {
+      let count = 0;
+      detail[val] = [];
+      snap({ lines: [11, 2, 3], kind: 'val', val, title: `ruled_out(${val}): count = 0`, explain: `How many neighbour values clash with ${v} = ${val}?` });
+      for (const n of N[v]) {
+        if (n in asg) {
+          snap({ lines: [4, 5], kind: 'skip', val, n, title: `${n} is assigned → skip`, explain: `${n} already has a colour (${asg[n]}); only unassigned neighbours count.` });
+          continue;
+        }
+        const hit = dom[n].includes(val) ? 1 : 0;
+        count += hit;
+        detail[val].push([n, hit]);
+        snap({ lines: hit ? [4, 5, 6, 7, 8] : [4, 5, 6, 7], kind: 'nb', val, n, title: `${v} = ${val} vs D(${n}) = ${setOf(dom[n])}`, explain: hit ? `${n} = ${val} would violate ${v} ≠ ${n} → <code>count += 1</code> (now ${count}).` : `No value in D(${n}) clashes with ${val} → count stays ${count}.` });
+      }
+      counts[val] = count;
+      snap({ lines: [9], kind: 'ret', val, title: `ruled_out(${val}) = ${count}`, explain: `Choosing ${v} = ${val} would remove ${plural(count, 'value')} from its neighbours' domains.` });
+    }
+    const order = dom[v].slice().sort((a, b) => counts[a] - counts[b]);
+    const tie = new Set(dom[v].map(x => counts[x])).size < dom[v].length;
+    snap({ lines: [11], kind: 'done', order, title: `lcv(${v}) → [${order.join(', ')}]`, explain: `<code>sorted(..., key=ruled_out)</code> tries <strong>${order[0]}</strong> first because it leaves the most options open.${tie ? ' Equal counts keep their original order (Python\'s sort is stable).' : ''}` });
+    return steps;
+  }
+
+  function traceFC(seq) {
+    const N = AUS.neighbors, steps = [], asg = {}, history = [{ label: 'Initial domains', dom: fullDom() }];
+    const dom = fullDom();
+    const snap = o => steps.push(Object.assign({ asg: Object.assign({}, asg), dom: copyDom(dom), history: history.map(h => ({ label: h.label, dom: copyDom(h.dom) })) }, o));
+    for (const [v, val] of seq) {
+      asg[v] = val; dom[v] = [val];
+      const removed = [];
+      snap({ lines: [1], kind: 'start', v, val, title: `forward_checking(${v}, ${val})`, explain: `${v} = ${val} has just been assigned. Forward checking removes ${val} from every <strong>unassigned</strong> neighbour of ${v} (${N[v].join(', ') || 'none'}).` });
+      let failed = false;
+      for (const n of N[v]) {
+        if (n in asg) { snap({ lines: [2, 3], kind: 'skip', v, val, n, title: `${n} is assigned → skip`, explain: `${n} already has a colour, so its domain is not touched.` }); continue; }
+        const had = dom[n].includes(val);
+        if (had) { dom[n] = dom[n].filter(y => y !== val); removed.push(`${n}:${val}`); }
+        snap({ lines: had ? [2, 3, 4, 5, 6] : [2, 3, 4, 5], kind: had ? 'prune' : 'keep', v, val, n, pruned: had ? val : null, title: had ? `Prune ${val} from D(${n})` : `Nothing to prune in D(${n})`, explain: had ? `${n} = ${val} would violate ${v} ≠ ${n}, so <code>csp.prune(${n}, ${val})</code> → D(${n}) = ${setOf(dom[n])}.` : `D(${n}) = ${setOf(dom[n])} contains no ${val}.` });
+        if (!dom[n].length) {
+          history.push({ label: `After ${v} = ${val}`, dom: copyDom(dom) });
+          snap({ lines: [7, 8], kind: 'wipe', v, val, n, title: `D(${n}) is empty → return False`, explain: `${n} has no colour left, so ${v} = ${val} cannot lead to a solution. <code>backtracking_search_heuristics</code> restores the removals and undoes ${v} = ${val} — <strong>without</strong> ever trying to colour ${n}.` });
+          failed = true;
+          break;
+        }
+      }
+      if (failed) return steps;
+      history.push({ label: `After ${v} = ${val}`, dom: copyDom(dom) });
+      snap({ lines: [9], kind: 'done', v, val, title: 'No domain wiped out → return True', explain: `Removed ${removed.length ? removed.join(', ') : 'nothing'}. Every unassigned neighbour still has a value, so the search continues.` });
+    }
+    return steps;
+  }
+
+  function traceAC3(init) {
+    const N = AUS.neighbors, steps = [], dom = fullDom();
+    for (const k in init) dom[k] = init[k].slice();
+    const q = [];
+    AUS.variables.forEach(Xi => N[Xi].forEach(Xk => q.push([Xi, Xk])));
+    const snap = o => steps.push(Object.assign({ dom: copyDom(dom), queue: q.map(a => a.slice()) }, o));
+    snap({ lines: [1, 2, 3], kind: 'start', title: `queue = ${q.length} arcs`, explain: `No queue was passed in, so start with every arc (Xi, Xk): one per direction of each constraint — ${q.length} in total.` });
+    let guard = 0;
+    while (q.length && guard++ < 300) {
+      const [Xi, Xj] = q.shift();
+      snap({ lines: [5, 6], kind: 'pop', arc: [Xi, Xj], title: `Pop (${Xi}, ${Xj})`, explain: `Take the first arc. ${plural(q.length, 'arc')} remain in the queue.` });
+      const detail = dom[Xi].map(x => [x, dom[Xj].filter(y => y !== x)]);
+      const removed = detail.filter(d => !d[1].length).map(d => d[0]);
+      dom[Xi] = dom[Xi].filter(x => !removed.includes(x));
+      snap({ lines: removed.length ? [7, 15, 16, 17, 18, 19, 20, 21] : [7, 15, 16, 17, 18, 21], kind: removed.length ? 'revise' : 'keep', arc: [Xi, Xj], detail, removed, title: removed.length ? `revise(${Xi}, ${Xj}) removed ${removed.join(', ')}` : `revise(${Xi}, ${Xj}) → False`, explain: removed.length ? `${removed.join(', ')} ${removed.length > 1 ? 'have' : 'has'} no supporting value in D(${Xj}) = ${setOf(dom[Xj])} → prune; now D(${Xi}) = ${setOf(dom[Xi])}.` : `Every value in D(${Xi}) has a different colour available in D(${Xj}) → nothing removed.` });
+      if (removed.length) {
+        if (!dom[Xi].length) {
+          snap({ lines: [8, 9], kind: 'wipe', arc: [Xi, Xj], title: `D(${Xi}) is empty → return False`, explain: `AC-3 proves there is <strong>no solution</strong> with these domains — before any search.` });
+          return steps;
+        }
+        const added = N[Xi].filter(k => k !== Xj).map(k => [k, Xi]);
+        added.forEach(a => q.push(a));
+        snap({ lines: [8, 10, 11, 12], kind: 'requeue', arc: [Xi, Xj], added, title: added.length ? `Re-queue ${added.map(a => a[0] + '→' + a[1]).join(', ')}` : 'No arcs to re-queue', explain: `D(${Xi}) shrank, so every arc (Xk, ${Xi}) with Xk ≠ ${Xj} must be checked again. (This version appends even if the arc is already queued.)` });
+      }
+    }
+    snap({ lines: [13], kind: 'done', title: 'Queue empty → return True', explain: 'Every arc is consistent. The domains shown are the arc-consistent domains.' });
+    return steps;
+  }
+
+  function traceMinConflicts(seed) {
+    const N = AUS.neighbors, vars = AUS.variables, rng = E.makeRng(seed);
+    const choice = arr => arr[Math.floor(rng() * arr.length)];
+    const steps = [], cur = {};
+    let nodes = 0;
+    const ncf = (v, val) => N[v].filter(n => n in cur && cur[n] === val).length;
+    const conflictedEdges = () => { const out = []; vars.forEach(a => N[a].forEach(b => { if (a < b && a in cur && b in cur && cur[a] === cur[b]) out.push([a, b]); })); return out; };
+    const snap = o => steps.push(Object.assign({ cur: Object.assign({}, cur), nodes, edges: conflictedEdges() }, o));
+    snap({ lines: [1, 2, 3], kind: 'start', title: 'Start min_conflicts', explain: 'Local search works on a <strong>complete</strong> assignment. First build one greedily, region by region.' });
+    for (const v of vars) {
+      const counts = COLORS3.map(c => ncf(v, c));
+      const fewest = Math.min(...counts);
+      const pick = choice(COLORS3.filter((c, k) => counts[k] === fewest));
+      cur[v] = pick;
+      snap({ lines: [4, 5, 6, 7], kind: 'init', v, counts, title: `Greedy start: ${v} = ${pick}`, explain: `Conflicts with the regions coloured so far: ${COLORS3.map((c, k) => `${c} ${counts[k]}`).join(' · ')}. Pick randomly among the values with ${fewest} conflict${fewest === 1 ? '' : 's'}.` });
+    }
+    for (let step = 0; step < 60; step++) {
+      nodes++;
+      snap({ lines: [9, 10], kind: 'iter', title: `Iteration ${step + 1}`, explain: `<code>nodes_expanded</code> = ${nodes}.` });
+      const conflicted = vars.filter(v => ncf(v, cur[v]) > 0);
+      if (!conflicted.length) {
+        snap({ lines: [11, 12, 13, 14], kind: 'done', conflicted, title: 'No conflicts → return current', explain: `Every constraint is satisfied — solution found after ${plural(step, 'repair')}.` });
+        return steps;
+      }
+      snap({ lines: [11, 12, 13], kind: 'conf', conflicted, title: `conflicted = [${conflicted.join(', ')}]`, explain: `${plural(conflicted.length, 'region')} share a colour with a neighbour, so keep repairing.` });
+      const v = choice(conflicted);
+      snap({ lines: [16], kind: 'pick', v, conflicted, title: `Pick ${v} at random`, explain: `Choose one conflicted variable at random: <strong>${v}</strong> (currently ${cur[v]}).` });
+      const counts = COLORS3.map(c => ncf(v, c));
+      const m = Math.min(...counts);
+      const best = COLORS3.filter((c, k) => counts[k] === m);
+      snap({ lines: [17, 18, 19, 20, 21, 22, 23, 24, 25], kind: 'vals', v, counts, best, conflicted, title: `Conflicts for ${v}: ${COLORS3.map((c, k) => c + ' ' + counts[k]).join(', ')}`, explain: `min_conf = ${m}; best_vals = [${best.join(', ')}].` });
+      const old = cur[v], val = choice(best);
+      cur[v] = val;
+      snap({ lines: [27], kind: 'set', v, counts, best, title: `Set ${v} = ${val}`, explain: val === old ? `${v} keeps ${val} (a sideways move — it was already among the best values).` : `${v}: ${old} → ${val}. Total conflicting borders now ${conflictedEdges().length}.` });
+    }
+    snap({ lines: [29], kind: 'fail', title: 'max_steps reached → return None', explain: 'Min-conflicts is incomplete: it can stop without a solution.' });
+    return steps;
+  }
+
   const fmt = n => (n >= 1e15 ? n.toExponential(2).replace('e+', ' × 10^') : Math.round(n).toLocaleString('en-US'));
 
   // ---------------------------------------------------------------------------
@@ -363,6 +819,7 @@
         allM: 3, allN: 2,
         sudStep: 0,
         btVar: 'bad', btVal: 'static', btInf: 'none', btStep: 0,
+        btcOrder: 'bad', btcStep: 0,
         mrvAssign: { WA: 'red', NT: 'green' },
         degAssign: {},
         lcvVar: 'Q',
@@ -395,6 +852,11 @@
         this.topicIdx = ti;
         const ci = ALL_CONCEPTS[ti].findIndex(x => x.key === c);
         this.conceptIdx = ci >= 0 ? ci : 0;
+        if (ci < 0 && c) {
+          // Concept moved to another topic (e.g. #backtracking/btcode → #code/btcode)
+          const tj = ALL_CONCEPTS.findIndex(list => list.some(x => x.key === c));
+          if (tj >= 0) { this.topicIdx = tj; this.conceptIdx = ALL_CONCEPTS[tj].findIndex(x => x.key === c); }
+        }
       }
     }
 
@@ -439,7 +901,7 @@
             <p class="sl-topic-intro">${TOPIC_INTROS[this.topicIdx]}</p>
           </div>
           <div class="sl-concept-selector">${rowHTML}</div>
-          <div class="csp-def-box">
+          ${concept.codeInConcept ? '<div class="csp-concept-code" id="csp-concept-code"></div>' : `<div class="csp-def-box">
             <div class="csp-box-label">Definition</div>
             <div class="csp-def-text">${concept.definition}</div>
           </div>
@@ -450,7 +912,7 @@
           <div class="csp-tip-box">
             <div class="csp-box-label"><i data-lucide="lightbulb"></i> Teaching Tip</div>
             <div class="csp-tip-text">${concept.tip}</div>
-          </div>
+          </div>`}
         </div>`;
 
       this.conceptColEl.querySelectorAll('.sl-concept-chip').forEach(btn => btn.addEventListener('click', e => {
@@ -1101,7 +1563,8 @@
         'BACKTRACKING-SEARCH on Australia',
         sel('csp-bt-var', Object.entries(this.btOrders()).map(([k, v]) => [k, v.label]), this.st.btVar) +
         sel('csp-bt-val', [['static', 'Values: R, G, B'], ['lcv', 'Values: LCV']], this.st.btVal) +
-        sel('csp-bt-inf', [['none', 'No inference'], ['fc', 'Forward checking'], ['mac', 'MAC']], this.st.btInf),
+        sel('csp-bt-inf', [['none', 'No inference'], ['fc', 'Forward checking'], ['mac', 'MAC']], this.st.btInf) +
+        `<button class="csp-btn" id="csp-bt-code" title="Step through the Python code of this algorithm"><i data-lucide="code-2"></i> Code trace</button>`,
         `<div class="csp-bt-grid">
            <div class="csp-map-wrap">${mapSVG({ assignment: a, domains, highlight: hl, conflicts, tint })}</div>
            <div class="csp-log">${log}</div>
@@ -1119,8 +1582,265 @@
       this.on('csp-bt-var', 'change', e => { this.st.btVar = e.target.value; reset(); });
       this.on('csp-bt-val', 'change', e => { this.st.btVal = e.target.value; reset(); });
       this.on('csp-bt-inf', 'change', e => { this.st.btInf = e.target.value; reset(); });
+      this.on('csp-bt-code', 'click', () => { this.clearTimer(); this.topicIdx = CSP_TOPICS.findIndex(t => t.id === 'code'); this.conceptIdx = 0; this.render(); });
       this.bindStepper('csp-bt', 'btStep', steps.length, 800);
     }
+
+    /**
+     * Shared renderer for every Code Trace concept: the Python source goes in
+     * the concept column (#csp-concept-code); toolbar, step name, state panel
+     * and "What's happening?" go in the illustration column.
+     * o = { id, file, code, presets, steps(presetKey) , title, stateBody(s), tags, foot(steps) }
+     */
+    renderCodeTrace(o) {
+      const pk = 'ct_' + o.id + '_preset', sk = 'ct_' + o.id + '_step';
+      if (!this.st[pk] || !o.presets[this.st[pk]]) this.st[pk] = Object.keys(o.presets)[0];
+      if (this.st[sk] == null) this.st[sk] = 0;
+      const cacheKey = o.id + ':' + this.st[pk];
+      this._ct = this._ct || {};
+      if (!this._ct[cacheKey]) this._ct[cacheKey] = o.steps(this.st[pk]);
+      const steps = this._ct[cacheKey], total = steps.length;
+      const i = Math.min(this.st[sk], total - 1), s = steps[i];
+      const active = new Set(s.lines || []);
+      const code = o.code.map((line, k) => {
+        const on = active.has(k + 1);
+        return `<div class="csp-trace-line ${on ? 'is-active' : ''} ${line ? '' : 'is-blank'}"><span class="csp-trace-arrow">${on ? '→' : ''}</span><span class="csp-trace-no">${k + 1}</span><span class="csp-trace-src">${pyHTML(line)}</span></div>`;
+      }).join('');
+      const host = document.getElementById('csp-concept-code');
+      if (host) host.innerHTML = `
+        <div class="csp-trace-panel csp-trace-panel-code">
+          <p class="csp-trace-panel-title">${o.file}<span class="csp-trace-tag">Python</span><span class="csp-trace-tag csp-trace-tag-step">Step ${i + 1} / ${total}</span></p>
+          <pre class="csp-trace-code">${code}</pre>
+        </div>`;
+      const [tag, tagCls] = (o.tags && o.tags[s.kind]) || ['Running', ''];
+      const opts = Object.entries(o.presets).map(([k, v]) => `<option value="${k}" ${k === this.st[pk] ? 'selected' : ''}>${v.label}</option>`).join('');
+      const p = `csp-ct-${o.id}`;
+      this.graphColEl.innerHTML = shell(
+        o.title,
+        `<select class="csp-select" id="${p}-preset">${opts}</select>`,
+        `<div class="csp-trace csp-trace-side">
+           <div class="csp-trace-toolbar">
+             <div class="csp-trace-count">Step ${i + 1} of ${total}</div>
+             <div class="csp-trace-controls">
+               <button type="button" class="csp-btn" id="${p}-prev" ${i <= 0 ? 'disabled' : ''}>← Prev</button>
+               <button type="button" class="csp-btn csp-btn-primary" id="${p}-next" ${i >= total - 1 ? 'disabled' : ''}>Next →</button>
+               <button type="button" class="csp-btn" id="${p}-play">${this.timer ? '❚❚ Pause' : '▶ Run'}</button>
+               <button type="button" class="csp-btn" id="${p}-reset">↻ Reset</button>
+             </div>
+           </div>
+           <div class="csp-trace-note"><p class="csp-trace-note-title">${esc(s.title)}</p></div>
+           <div class="csp-trace-panel">
+             <p class="csp-trace-panel-title">${o.stateTitle || 'Search state'}<span class="csp-trace-tag ${tagCls}">${tag}</span></p>
+             ${o.stateBody(s, steps)}
+             <div class="csp-trace-explain"><div class="csp-trace-explain-title">What's happening?</div><div class="csp-trace-explain-body">${s.explain}</div></div>
+           </div>
+           ${o.foot ? `<p class="csp-note">${o.foot(steps)}</p>` : ''}
+         </div>`
+      );
+      this.on(`${p}-preset`, 'change', e => { this.clearTimer(); this.st[pk] = e.target.value; this.st[sk] = 0; this.refresh(); });
+      this.bindStepper(p, sk, total, o.interval || 900);
+      const pre = document.querySelector('#csp-concept-code .csp-trace-code');
+      const hot = pre && pre.querySelector('.csp-trace-line.is-active');
+      if (pre && hot && pre.scrollHeight > pre.clientHeight + 2) pre.scrollTop = Math.max(0, hot.offsetTop - pre.clientHeight / 2 + hot.offsetHeight);
+    }
+
+    /** Variables table used by several traces. */
+    ctVars(rows) {
+      return `<div class="csp-trace-region"><div class="csp-trace-region-label">Variables</div>${rows.map(([k, v, cls]) => `<div class="csp-trace-var"><span>${k}</span><b class="${cls || ''}">${v}</b></div>`).join('')}</div>`;
+    }
+
+    ill_bt_code() {
+      this.renderCodeTrace({
+        id: 'bt', file: 'python_sandbox/csp.py', code: BT_PY, presets: BT_CODE_ORDERS,
+        steps: k => traceBacktrackingCode(BT_CODE_ORDERS[k].order),
+        title: 'Trace the code: backtracking_search',
+        tags: { start: ['Ready', ''], reject: ['Conflict', 'bad'], undo: ['Backtrack', 'warn'], fail: ['Return None', 'warn'], solution: ['Solution', 'ok'], done: ['Done', 'ok'] },
+        stateBody: s => {
+          const tint = {};
+          if (s.v && s.val && !s.assignment[s.v]) tint[s.v] = s.val;
+          const frames = s.stack.length
+            ? s.stack.map((f, k) => `<div class="csp-trace-frame ${k === s.stack.length - 1 ? 'is-top' : ''}" style="margin-left:${Math.min(k, 7) * 6}px"><b>#${f.depth}</b> backtrack(${f.asg})${f.v ? ` · var=${f.v}` : ''}${f.val ? ` · val=${f.val}` : ''}</div>`).join('')
+            : '<p class="csp-trace-empty">No active calls.</p>';
+          return `<div class="csp-trace-state">
+              <div class="csp-trace-map">${mapSVG({ assignment: s.assignment, tint, highlight: s.v ? [s.v] : [], conflicts: s.conflict ? [s.conflict] : [] })}</div>
+              <div class="csp-trace-regions">
+                <div class="csp-trace-region"><div class="csp-trace-region-label">Call stack (recursion)</div>${frames}</div>
+                ${this.ctVars([['assignment', Object.keys(s.assignment).length ? asgTxt(s.assignment) : '{}'], ['nodes_expanded', s.nodes], ['backtracks', s.bts, s.bts ? 'bad' : '']])}
+              </div>
+            </div>`;
+        },
+        foot: steps => { const l = steps[steps.length - 1]; return `Colouring Australia with {red, green, blue}; variables in the fixed order above, values tried red → green → blue. Whole run: <b>${l.nodes}</b> calls to <code>backtrack()</code>, <b>${l.bts}</b> backtrack${l.bts === 1 ? '' : 's'}.`; }
+      });
+    }
+
+    ill_ct_mrv() {
+      this.renderCodeTrace({
+        id: 'mrv', file: CT_FILE + ' · mrv()', code: MRV_PY, presets: MRV_PRESETS,
+        steps: k => traceMRV(MRV_PRESETS[k].asg),
+        title: 'Trace the code: mrv() with degree tie-breaker', stateTitle: 'Variable ordering',
+        tags: { start: ['Ready', ''], legal: ['Count legal', ''], degree: ['Degree', 'warn'], done: ['Chosen', 'ok'] },
+        stateBody: s => {
+          const badges = {};
+          Object.keys(s.legal).forEach(v => { badges[v] = s.legal[v].length; });
+          const rows = s.un.map(v => {
+            const known = s.legal[v];
+            const role = s.chosen === v ? '<span class="csp-pill ok">★ chosen</span>' : (s.cand || []).includes(v) ? '<span class="csp-pill info">candidate</span>' : '';
+            return `<tr class="${s.v === v ? 'best' : ''}"><td><b>${v}</b></td><td>${known ? domainDots(known) : '<span class="csp-muted">?</span>'}</td><td class="mono">${known ? known.length : '—'}</td><td class="mono">${s.deg[v] != null ? s.deg[v] : '—'}</td><td>${role}</td></tr>`;
+          }).join('');
+          return `<div class="csp-trace-state">
+              <div class="csp-trace-map">${mapSVG({ assignment: s.asg, badges, badgeHot: s.v || s.chosen, highlight: s.chosen ? [s.chosen] : s.v ? [s.v] : [] })}</div>
+              <div class="csp-trace-regions">
+                <div class="csp-trace-region"><div class="csp-trace-region-label">Unassigned variables</div>
+                  <table class="csp-table csp-trace-table"><thead><tr><th>Var</th><th>Legal</th><th>#</th><th>Degree</th><th></th></tr></thead><tbody>${rows}</tbody></table></div>
+              </div>
+            </div>`;
+        },
+        foot: () => 'Badges on the map = number of legal colours. MRV keeps the variables with the smallest badge; the degree heuristic breaks ties by counting unassigned neighbours.'
+      });
+    }
+
+    ill_ct_lcv() {
+      this.renderCodeTrace({
+        id: 'lcv', file: CT_FILE + ' · lcv()', code: LCV_PY, presets: LCV_PRESETS,
+        steps: k => traceLCV(LCV_PRESETS[k]),
+        title: 'Trace the code: lcv()', stateTitle: 'Value ordering',
+        tags: { start: ['Ready', ''], val: ['ruled_out', ''], nb: ['Neighbour', ''], skip: ['Skip', ''], ret: ['Count', 'warn'], done: ['Ordered', 'ok'] },
+        stateBody: s => {
+          const vals = s.dom[s.v];
+          const rows = vals.map(x => {
+            const d = s.detail[x] || [];
+            const cells = d.map(([n, h]) => `<span class="csp-lcv-hit ${h ? 'on' : ''}">${n}${h ? ' −1' : ' 0'}</span>`).join(' ');
+            return `<tr class="${s.val === x ? 'best' : ''}"><td>${colorDot(x)} <b>${x}</b></td><td>${cells || '<span class="csp-muted">—</span>'}</td><td class="mono">${s.counts[x] != null ? s.counts[x] : '—'}</td></tr>`;
+          }).join('');
+          const order = s.order ? `<div class="csp-trace-order">${s.order.map((x, k) => `<span class="csp-arc-chip ${k === 0 ? 'next' : ''}">${k + 1}. ${x}</span>`).join('')}</div>` : '';
+          const dshow = {}; AUS.variables.forEach(k => { if (!(k in s.asg)) dshow[k] = s.dom[k]; });
+          return `<div class="csp-trace-state">
+              <div class="csp-trace-map">${mapSVG({ assignment: s.asg, domains: dshow, highlight: [s.v].concat(s.n ? [s.n] : []) })}</div>
+              <div class="csp-trace-regions">
+                <div class="csp-trace-region"><div class="csp-trace-region-label">ruled_out(val) for ${s.v}</div>
+                  <table class="csp-table csp-trace-table"><thead><tr><th>Value</th><th>Neighbours hit</th><th>Count</th></tr></thead><tbody>${rows}</tbody></table>
+                  ${order}</div>
+              </div>
+            </div>`;
+        },
+        foot: () => 'Dots on the map show the current domains (after forward checking). Variable ordering is fail-first; value ordering is fail-last: keep as many options open as possible.'
+      });
+    }
+
+    ill_ct_fc() {
+      this.renderCodeTrace({
+        id: 'fc', file: CT_FILE + ' · forward_checking()', code: FC_PY, presets: FC_PRESETS,
+        steps: k => traceFC(FC_PRESETS[k].seq),
+        title: 'Trace the code: forward_checking()', stateTitle: 'Domains',
+        tags: { start: ['Call', ''], skip: ['Skip', ''], prune: ['Prune', 'warn'], keep: ['No change', ''], wipe: ['Wipe-out', 'bad'], done: ['Return True', 'ok'] },
+        stateBody: s => {
+          const dshow = {}; AUS.variables.forEach(k => { if (!(k in s.asg)) dshow[k] = s.dom[k]; });
+          const head = AUS.variables.map(v => `<th class="${v === s.n ? 'hl' : ''}">${v}</th>`).join('');
+          const row = (label, d, cur) => `<tr class="${cur ? 'best' : ''}"><td>${label}</td>${AUS.variables.map(v => `<td class="${v === s.n && cur ? 'hl' : ''}">${d[v].length ? domainDots(d[v]) : '<span class="csp-bad-txt">∅</span>'}</td>`).join('')}</tr>`;
+          const done = s.history.length - 1;
+          const live = s.kind !== 'done' && s.kind !== 'wipe';
+          const rows = s.history.map((h, k) => row(h.label, h.dom, !live && k === done)).join('') + (live ? row(`During ${s.v} = ${s.val}`, s.dom, true) : '');
+          return `<div class="csp-trace-state csp-trace-state-wide">
+              <div class="csp-trace-map">${mapSVG({ assignment: s.asg, domains: dshow, highlight: [s.v].concat(s.n ? [s.n] : []), arc: s.n ? [s.v, s.n] : null })}</div>
+              <div class="csp-trace-regions"><div class="csp-trace-region"><div class="csp-trace-region-label">Domain table (AIMA Fig 6.7 style)</div>
+                <div class="csp-table-wrap"><table class="csp-table csp-trace-table csp-fc-table"><thead><tr><th></th>${head}</tr></thead><tbody>${rows}</tbody></table></div></div></div>
+            </div>`;
+        },
+        foot: () => 'Forward checking only looks one step ahead: it prunes the neighbours of the variable just assigned. It does not notice that two unassigned neighbours (e.g. NT and SA) are both left with only blue — that needs AC-3.'
+      });
+    }
+
+    ill_ct_ac3() {
+      this.renderCodeTrace({
+        id: 'ac3', file: CT_FILE + ' · ac3() / revise()', code: AC3_PY, presets: AC3_PRESETS,
+        steps: k => traceAC3(AC3_PRESETS[k].init),
+        title: 'Trace the code: ac3() and revise()', stateTitle: 'Arc consistency', interval: 600,
+        tags: { start: ['Ready', ''], pop: ['Pop arc', ''], keep: ['No change', ''], revise: ['Revised', 'warn'], requeue: ['Re-queue', 'warn'], wipe: ['Wipe-out', 'bad'], done: ['Consistent', 'ok'] },
+        stateBody: s => {
+          const q = s.queue;
+          const qHTML = q.slice(0, 16).map(([a, b], k) => `<span class="csp-arc-chip ${k === 0 ? 'upnext' : ''} ${(s.added || []).some(x => x[0] === a && x[1] === b) && k >= q.length - (s.added || []).length ? 'added' : ''}">${a}→${b}</span>`).join('') + (q.length > 16 ? `<span class="csp-muted">+${q.length - 16}</span>` : '') || '<span class="csp-muted">empty</span>';
+          const det = s.detail ? `<table class="csp-table csp-trace-table"><thead><tr><th>x ∈ D(${s.arc[0]})</th><th>support y ∈ D(${s.arc[1]}), y ≠ x</th></tr></thead><tbody>${s.detail.map(([x, ys]) => `<tr><td>${colorDot(x)} ${x}</td><td>${ys.length ? ys.map(y => colorDot(y) + ' ' + y).join(' ') : '<span class="csp-bad-txt">none → prune</span>'}</td></tr>`).join('')}</tbody></table>` : '<p class="csp-trace-empty">revise() details appear here.</p>';
+          return `<div class="csp-trace-state">
+              <div class="csp-trace-map">${mapSVG({ domains: s.dom, arc: s.arc || null, highlight: s.arc ? [s.arc[0]] : [] })}</div>
+              <div class="csp-trace-regions">
+                <div class="csp-trace-region"><div class="csp-trace-region-label">queue (${q.length})</div><div class="csp-queue">${qHTML}</div></div>
+                <div class="csp-trace-region"><div class="csp-trace-region-label">revise</div>${det}</div>
+              </div>
+            </div>`;
+        },
+        foot: steps => `This run: <b>${steps.filter(x => x.kind === 'pop').length}</b> arcs popped, result <b>${steps[steps.length - 1].kind === 'wipe' ? 'False (inconsistent)' : 'True'}</b>. Inside backtracking, <code>mac()</code> calls <code>ac3</code> with only the arcs pointing into the variable just assigned.`
+      });
+    }
+
+    ill_ct_minconf() {
+      this.renderCodeTrace({
+        id: 'mc', file: CT_FILE + ' · min_conflicts()', code: MC_PY, presets: MC_PRESETS,
+        steps: k => traceMinConflicts(MC_PRESETS[k].seed),
+        title: 'Trace the code: min_conflicts()', stateTitle: 'Local search state', interval: 800,
+        tags: { start: ['Ready', ''], init: ['Greedy start', ''], iter: ['Iteration', ''], conf: ['Conflicts', 'bad'], pick: ['Pick', 'warn'], vals: ['Evaluate', ''], set: ['Repair', 'warn'], done: ['Solution', 'ok'], fail: ['Gave up', 'bad'] },
+        stateBody: s => {
+          const vt = s.counts ? `<table class="csp-table csp-trace-table"><thead><tr><th>${s.kind === 'init' ? 'value' : 'val for ' + s.v}</th><th>conflicts</th></tr></thead><tbody>${COLORS3.map((c, k) => `<tr class="${(s.best || []).includes(c) ? 'best' : ''}"><td>${colorDot(c)} ${c}</td><td class="mono">${s.counts[k]}</td></tr>`).join('')}</tbody></table>` : '<p class="csp-trace-empty">Value conflicts appear here.</p>';
+          return `<div class="csp-trace-state">
+              <div class="csp-trace-map">${mapSVG({ assignment: s.cur, conflicts: s.edges, highlight: s.v ? [s.v] : [] })}</div>
+              <div class="csp-trace-regions">
+                ${this.ctVars([['current', Object.keys(s.cur).length ? asgTxt(s.cur) : '{}'], ['conflicted', s.conflicted ? '[' + s.conflicted.join(', ') + ']' : '—', s.conflicted && s.conflicted.length ? 'bad' : ''], ['conflicting borders', s.edges.length, s.edges.length ? 'bad' : ''], ['nodes_expanded', s.nodes]])}
+                <div class="csp-trace-region"><div class="csp-trace-region-label">nconflicts(var, val)</div>${vt}</div>
+              </div>
+            </div>`;
+        },
+        foot: steps => `This run: <b>${plural(steps.filter(x => x.kind === 'set').length, 'repair move')}</b>. The page uses its own seeded random generator, so the exact choices differ from Python's <code>random</code> — the algorithm is the same.`
+      });
+    }
+
+    ctRunCompare(key) {
+      const P = CMP_PROBLEMS[key];
+      const cfgs = [
+        ['Backtracking', { varOrder: 'static', valOrder: 'static', inference: 'none' }],
+        ['BT + MRV/Degree + LCV + FC', { varOrder: 'mrv-degree', valOrder: 'lcv', inference: 'fc' }],
+        ['BT + MRV/Degree + LCV + MAC', { varOrder: 'mrv-degree', valOrder: 'lcv', inference: 'mac' }]
+      ];
+      const time = fn => { let r = fn(), t = r.t, reps = 1; if (t < 5) { const t0 = performance.now(); for (let k = 0; k < 20; k++) fn(); t = (performance.now() - t0) / 20; reps = 20; } return Object.assign(r, { t, reps }); };
+      const rows = cfgs.map(([name, cfg]) => time(() => {
+        const t0 = performance.now();
+        const r = E.backtrackingSearch(P.make(), Object.assign({ trace: false, maxChecks: 5e7, staticOrder: P.order }, cfg));
+        const t = performance.now() - t0;
+        return { name, solved: !!r.solution, limit: r.aborted, nodes: r.stats.nodes + (r.solution ? 1 : 0), bts: r.stats.backtracks, t };
+      }));
+      rows.push(time(() => {
+        const t0 = performance.now();
+        const mc = E.minConflicts(P.make(), { maxSteps: 10000, seed: 4, trace: false });
+        return { name: 'Min-Conflicts', solved: !!mc.solution, nodes: mc.solution ? mc.iterations + 1 : mc.iterations, bts: null, t: performance.now() - t0, local: true };
+      }));
+      this.st.ctCmp = { key, rows };
+    }
+
+    ill_ct_compare() {
+      if (!this.st.ctCmpKey) this.st.ctCmpKey = 'ausbad';
+      if (!this.st.ctCmp || this.st.ctCmp.key !== this.st.ctCmpKey) this.ctRunCompare(this.st.ctCmpKey);
+      const rows = this.st.ctCmp.rows;
+      const host = document.getElementById('csp-concept-code');
+      const code = CMP_PY.map((line, k) => `<div class="csp-trace-line ${[4, 5, 6].includes(k + 1) ? 'is-active' : ''} ${line ? '' : 'is-blank'}"><span class="csp-trace-arrow">${[4, 5, 6].includes(k + 1) ? '→' : ''}</span><span class="csp-trace-no">${k + 1}</span><span class="csp-trace-src">${pyHTML(line)}</span></div>`).join('');
+      if (host) host.innerHTML = `<div class="csp-trace-panel csp-trace-panel-code"><p class="csp-trace-panel-title">${CT_FILE} · measure()<span class="csp-trace-tag">Python</span></p><pre class="csp-trace-code">${code}</pre></div>`;
+      const maxN = Math.max(...rows.map(r => r.nodes), 1);
+      const bar = (v, max, log) => `<div class="csp-bar-cell"><span class="csp-bar" style="width:${Math.max(2, (log ? Math.log10(v + 1) / Math.log10(max + 1) : v / max) * 100)}%"></span><b>${typeof v === 'number' && !Number.isInteger(v) ? v.toFixed(v < 1 ? 3 : 2) : v.toLocaleString()}</b></div>`;
+      const best = Math.min(...rows.filter(r => r.solved).map(r => r.nodes));
+      const body = rows.map(r => `<tr class="${r.solved && r.nodes === best ? 'best' : ''}"><td><b>${r.name}</b></td><td>${r.solved ? '<span class="csp-pill ok">✓</span>' : r.limit ? '<span class="csp-pill warn">limit</span>' : '<span class="csp-pill bad">✗</span>'}</td><td>${bar(r.nodes, maxN, true)}</td><td class="mono">${r.bts == null ? '—' : r.bts.toLocaleString()}</td><td class="mono">${r.t < 1 ? r.t.toFixed(3) : r.t.toFixed(1)}</td></tr>`).join('');
+      const opts = Object.entries(CMP_PROBLEMS).map(([k, v]) => `<option value="${k}" ${k === this.st.ctCmpKey ? 'selected' : ''}>${v.label}</option>`).join('');
+      this.graphColEl.innerHTML = shell(
+        'Compare search efficiency',
+        `<select class="csp-select" id="csp-ct-cmp-p">${opts}</select><button class="csp-btn csp-btn-primary" id="csp-ct-cmp-run">▶ Re-run</button>`,
+        `<div class="csp-trace csp-trace-side">
+           <div class="csp-trace-note"><p class="csp-trace-note-title">${esc(CMP_PROBLEMS[this.st.ctCmpKey].label)}: basic vs. heuristic backtracking vs. min-conflicts</p></div>
+           <div class="csp-table-wrap"><table class="csp-table csp-bench-table"><thead><tr><th>Solver</th><th>Solved</th><th>Nodes visited (log bar)</th><th>Backtracks</th><th>Time (ms)</th></tr></thead><tbody>${body}</tbody></table></div>
+           <div class="csp-trace-explain"><div class="csp-trace-explain-title">How to read it</div><div class="csp-trace-explain-body"><b>Nodes visited</b> = calls to <code>backtrack()</code> (for min-conflicts: iterations of the repair loop). <b>Backtracks</b> = values undone after a failed recursive call. <b>Elapsed</b> is measured in this browser with <code>performance.now()</code> (averaged over 20 runs when a run takes under 5 ms). Heuristics cost a little more per node but visit far fewer nodes as problems get harder — compare Australia with 20-Queens.</div></div>
+           <p class="csp-note">Run <code>python ${CT_FILE}</code> to print the same table from Python. Absolute times differ between Python and JavaScript; the node and backtrack counts follow the same algorithms.</p>
+         </div>`
+      );
+      const rerun = () => { this.st.ctCmp = null; this.graphColEl.querySelector('.csp-ill-body').innerHTML = '<div class="csp-empty">Running solvers…</div>'; setTimeout(() => this.refresh(), 30); };
+      this.on('csp-ct-cmp-p', 'change', e => { this.st.ctCmpKey = e.target.value; rerun(); });
+      this.on('csp-ct-cmp-run', 'click', rerun);
+    }
+
 
     heuristicMap(mode) {
       const key = mode === 'mrv' ? 'mrvAssign' : 'degAssign';
