@@ -6691,3 +6691,37 @@ text.csp-hyper-label { paint-order: normal; }
 .csp-fc-table td:first-child { white-space: nowrap; font-weight: 600; color: var(--text-primary); }
 .csp-fc-table td { text-align: center; white-space: nowrap; padding: 0.28rem 0.25rem; }
 .csp-fc-table .csp-dot { width: 7px; height: 7px; margin: 0; }
+
+/* Timetabling example (Backtracking Search + Code Trace) */
+.csp-tt-grid { width: 100%; border-collapse: separate; border-spacing: 3px; font-size: 0.72rem; }
+.csp-tt-grid thead th { font-size: 0.64rem; font-weight: 700; color: var(--text-muted); text-align: center; line-height: 1.2; padding: 0.15rem; }
+.csp-tt-grid td { height: 2.4rem; min-width: 3.6rem; border: 1.5px dashed var(--border-light); border-radius: 7px; text-align: center; vertical-align: middle; padding: 2px; background: #fbfdfe; }
+.csp-tt-grid td.col { background: rgba(245, 158, 11, 0.06); }
+.csp-tt-grid td.clash { border: 2px solid var(--csp-bad); background: rgba(220, 38, 38, 0.06); }
+.csp-tt-room { text-align: left; font-weight: 700; font-size: 0.72rem; color: var(--text-primary); padding-right: 0.3rem; white-space: nowrap; }
+.csp-tt-room span { display: block; font-weight: 500; font-size: 0.6rem; color: var(--text-muted); }
+.csp-tt-chip { display: inline-block; padding: 2px 6px; margin: 1px; border-radius: 6px; font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 700; color: #fff; background: var(--c); }
+.csp-tt-chip.hl { box-shadow: 0 0 0 2px #fff, 0 0 0 4px var(--c); }
+.csp-tt-chip.try { background: transparent; color: var(--c); border: 1.5px dashed var(--c); }
+.csp-tt-chip.try.bad { color: var(--csp-bad); border-color: var(--csp-bad); text-decoration: line-through; }
+.csp-bt-tt { display: flex; flex-direction: column; gap: 0.6rem; }
+.csp-bt-tt-row { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 0.6rem; align-items: start; }
+.csp-bt-tt-row .csp-log { max-height: 230px; overflow-y: auto; }
+.csp-tt-courses td, .csp-tt-courses th { white-space: nowrap; }
+.csp-trace-side .csp-trace-state-tt { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
+@container (max-width: 560px) { .csp-trace-side .csp-trace-state-tt { grid-template-columns: minmax(0, 1fr); } }
+
+/* Timetable (easy) — constraint graph + slot board */
+.csp-tte { display: flex; flex-direction: column; gap: 0.45rem; }
+.csp-tte .csp-graph-svg { max-width: 340px; margin: 0 auto; }
+.csp-tte-legend { display: flex; flex-wrap: wrap; gap: 0.3rem; justify-content: center; }
+.csp-tte-legend span { font-size: 0.64rem; padding: 1px 7px; border-radius: 999px; background: #f1f5f9; color: var(--text-muted); }
+.csp-tte-legend span.on { background: rgba(220, 38, 38, 0.1); color: var(--csp-bad); font-weight: 700; }
+.csp-tte-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.4rem; }
+.csp-tte-slot { border: 1.5px dashed var(--border-light); border-radius: 8px; padding: 0.35rem; min-height: 3.6rem; display: flex; flex-wrap: wrap; gap: 0.25rem; align-content: flex-start; }
+.csp-tte-slot.try { border-color: var(--csp-accent); background: var(--csp-accent-soft); }
+.csp-tte-slot.bad { border: 2px solid var(--csp-bad); background: rgba(220, 38, 38, 0.05); }
+.csp-tte-slot-h { width: 100%; display: flex; align-items: center; gap: 0.3rem; font-size: 0.66rem; font-weight: 700; color: var(--text-secondary); }
+.csp-tte-chip { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 700; padding: 1px 6px; border-radius: 6px; background: #0f172a; color: #fff; }
+.csp-tte-chip.try { background: transparent; color: var(--csp-accent); border: 1.5px dashed var(--csp-accent); }
+.csp-tte-chip.try.bad { color: var(--csp-bad); border-color: var(--csp-bad); text-decoration: line-through; }

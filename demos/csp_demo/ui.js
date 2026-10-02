@@ -144,7 +144,7 @@
       key: 'bt', name: 'Backtracking Search', kind: 'bt_stepper',
       definition: 'A depth-first search that chooses values for one variable at a time and backtracks when a variable has no legal values left to assign.',
       notation: 'BACKTRACK(assignment, csp): if complete return it · var ← SELECT-UNASSIGNED-VARIABLE · for value in ORDER-DOMAIN-VALUES · if consistent: add, INFERENCE, recurse · remove',
-      tip: 'Plain backtracking is uninformed DFS plus a consistency check. Try the default "bad" fixed order in the illustration and count the backtracks — then switch to MRV or MAC and watch them disappear.'
+      tip: 'Plain backtracking is uninformed DFS plus a consistency check. The default fixed order WA, NT, Q, NSW, V, SA, T (AIMA) happens to need no backtracking. Switch to the fixed order WA, NSW, NT, Q, SA, V, T and count the backtracks — then switch to MRV or MAC and watch them disappear.'
     },
     {
       key: 'mrv', name: 'MRV Heuristic', kind: 'mrv_view',
@@ -277,7 +277,7 @@
       key: 'btcode', name: 'Backtracking Code Trace', kind: 'bt_code', codeInConcept: true,
       definition: 'The recursive <code>backtracking_search</code> from <code>python_sandbox/csp.py</code>, traced line by line on the Australia map. Each call to <code>backtrack()</code> extends the assignment by one variable; a call that returns <code>None</code> makes its caller undo that choice and try the next value.',
       notation: 'backtrack(assignment): if complete → return it · var ← select_unassigned_variable · for val in order_domain_values: if is_consistent → assign, result ← backtrack(assignment), if result ≠ None → return it · unassign, backtracks += 1 · return None',
-      tip: 'Watch the <strong>call stack</strong>: every frame is one level of the search tree. A backtrack is just a recursive call returning <code>None</code> — the caller then removes its value (line 17) and tries the next one. Switch to "SA first" to see the same code finish without a single backtrack.'
+      tip: 'Watch the <strong>call stack</strong>: every frame is one level of the search tree. A backtrack is just a recursive call returning <code>None</code> — the caller then removes its value (line 17) and tries the next one. The default order WA, NT, Q, NSW, V, SA, T finishes without a single backtrack — switch to WA, NSW, NT, Q, SA, V, T to watch 5 backtracks happen.'
     },
     {
       key: 'mrv', name: 'MRV + Degree', kind: 'ct_mrv', codeInConcept: true,
@@ -360,6 +360,7 @@
   }
 
   const NC_EXAMPLES = [['map', 'Map colouring'], ['tt', 'Timetabling']];
+  const BT_EXAMPLES = [['map', 'Map colouring'], ['tte', 'Timetable (easy)'], ['tt', 'Timetabling']];
   const ARC_EXAMPLES = [['map', 'Map colouring'], ['num', 'Y = X²']];
   const MAP_COLORS = ['red', 'green', 'blue'];
 
@@ -412,19 +413,166 @@
     '    return backtrack({})'
   ];
   const BT_CODE_ORDERS = {
-    bad: { label: 'Order: WA, NSW, NT, Q, SA, V, T', order: ['WA', 'NSW', 'NT', 'Q', 'SA', 'V', 'T'] },
     aima: { label: 'Order: WA, NT, Q, NSW, V, SA, T', order: ['WA', 'NT', 'Q', 'NSW', 'V', 'SA', 'T'] },
+    bad: { label: 'Order: WA, NSW, NT, Q, SA, V, T', order: ['WA', 'NSW', 'NT', 'Q', 'SA', 'V', 'T'] },
     sa: { label: 'Order: SA first (degree)', order: ['SA', 'WA', 'NT', 'Q', 'NSW', 'V', 'T'] }
+  };
+  const BT_TT_ORDERS = {
+    list: { label: 'Order: CS101, CS101L, MA101, CS201, CS201L, MA201', order: ['CS101', 'CS101L', 'MA101', 'CS201', 'CS201L', 'MA201'] },
+    patel: { label: 'Order: MA101, MA201 first (Patel only on Monday)', order: ['MA101', 'MA201', 'CS101', 'CS101L', 'CS201', 'CS201L'] }
   };
   const pyHTML = line => esc(line)
     .replace(/\b(def|return|if|for|in|is|not|None)\b/g, '<span class="kw">$1</span>')
     .replace(/\b(backtracking_search|backtrack|select_unassigned_variable|order_domain_values|is_consistent|assign|unassign|len)\b(?=\()/g, '<span class="fn">$1</span>');
   const asgTxt = a => '{' + Object.entries(a).map(([k, v]) => `${k}: ${v}`).join(', ') + '}';
 
-  /** Runs backtracking_search on Australia and records one step per code event. */
-  function traceBacktrackingCode(order, colors) {
-    colors = colors || ['red', 'green', 'blue'];
-    const N = AUS.neighbors, n = order.length;
+  // ---------------------------------------------------------------------------
+  // Mini timetabling CSP (Backtracking + Code Trace "Timetabling" example).
+  // 6 courses · 4 slots (Mon/Tue × 09:00/10:30) · 3 rooms. Domains are the
+  // node-consistent (slot, room) pairs: H2 room capacity/type and H4 instructor
+  // availability are already applied; H1/H3/H5 are the binary constraints.
+  // ---------------------------------------------------------------------------
+  const TT = {
+    slots: ['Mon 09:00', 'Mon 10:30', 'Tue 09:00', 'Tue 10:30'],
+    rooms: [{ id: 'HALL', cap: 120, type: 'lecture' }, { id: 'R101', cap: 60, type: 'lecture' }, { id: 'LAB1', cap: 30, type: 'lab' }],
+    unavailable: { Chen: [3], Patel: [2, 3] },
+    courses: [
+      { id: 'CS101', name: 'Intro to Programming', enroll: 110, type: 'lecture', instr: 'Chen', cohort: 'Y1' },
+      { id: 'CS101L', name: 'Programming Lab', enroll: 28, type: 'lab', instr: 'Chen', cohort: 'Y1' },
+      { id: 'MA101', name: 'Discrete Mathematics', enroll: 55, type: 'lecture', instr: 'Patel', cohort: 'Y1' },
+      { id: 'CS201', name: 'Data Structures', enroll: 58, type: 'lecture', instr: 'Chen', cohort: 'Y2' },
+      { id: 'CS201L', name: 'Data Structures Lab', enroll: 30, type: 'lab', instr: 'Garcia', cohort: 'Y2' },
+      { id: 'MA201', name: 'Probability', enroll: 45, type: 'lecture', instr: 'Patel', cohort: 'Y2' }
+    ]
+  };
+  TT.vars = TT.courses.map(c => c.id);
+  TT.byId = {}; TT.courses.forEach(c => { TT.byId[c.id] = c; });
+  const ttVal = (s, r) => `${TT.slots[s]} ${r}`;
+  const ttParse = {};
+  TT.slots.forEach((sl, s) => TT.rooms.forEach(r => { ttParse[ttVal(s, r.id)] = { slot: s, room: r.id }; }));
+  TT.domains = {};
+  TT.courses.forEach(c => {
+    TT.domains[c.id] = [];
+    TT.slots.forEach((sl, s) => TT.rooms.forEach(r => {
+      if (r.cap >= c.enroll && r.type === c.type && !(TT.unavailable[c.instr] || []).includes(s)) TT.domains[c.id].push(ttVal(s, r.id));
+    }));
+  });
+  /** Which hard constraint does A = a, B = b violate? null when compatible. */
+  function ttReason(A, a, B, b) {
+    const pa = ttParse[a], pb = ttParse[b];
+    if (pa.slot !== pb.slot) return null;
+    if (pa.room === pb.room) return 'H1';
+    if (TT.byId[A].instr === TT.byId[B].instr) return 'H3';
+    if (TT.byId[A].cohort === TT.byId[B].cohort) return 'H5';
+    return null;
+  }
+  const TT_WHY = { H1: 'same room at the same time (H1)', H3: 'same instructor at the same time (H3)', H5: 'same student cohort at the same time (H5)' };
+  function makeTTCSP() {
+    const nb = {}; TT.vars.forEach(v => { nb[v] = TT.vars.filter(u => u !== v); });
+    return new E.CSP(TT.vars.slice(), copyDomainsTT(TT.domains), nb, (A, a, B, b) => !ttReason(A, a, B, b), { kind: 'timetable' });
+  }
+  function copyDomainsTT(d) { const o = {}; for (const k in d) o[k] = d[k].slice(); return o; }
+  const TT_COHORT = { Y1: '#4f46e5', Y2: '#0d9488' };
+
+  /** Timetable grid: rooms × slots, courses as chips; optional tried value / clash. */
+  function ttGridHTML(asg, o) {
+    o = o || {};
+    const at = {};
+    for (const c in asg) { const p = ttParse[asg[c]]; at[p.slot + '|' + p.room] = c; }
+    const tryP = o.tryCourse && o.tryVal ? ttParse[o.tryVal] : null;
+    const clashP = o.clashWith && asg[o.clashWith] ? ttParse[asg[o.clashWith]] : null;
+    const head = TT.slots.map(s => `<th>${s.replace(' ', '<br>')}</th>`).join('');
+    const rows = TT.rooms.map(r => {
+      const cells = TT.slots.map((sl, s) => {
+        const k = s + '|' + r.id, c = at[k];
+        const isTry = tryP && tryP.slot === s && tryP.room === r.id;
+        const isClash = clashP && clashP.slot === s && clashP.room === r.id;
+        let inner = '';
+        if (c) inner += `<span class="csp-tt-chip ${c === o.hl ? 'hl' : ''}" style="--c:${TT_COHORT[TT.byId[c].cohort]}">${c}</span>`;
+        if (isTry && !c) inner += `<span class="csp-tt-chip try ${o.bad ? 'bad' : ''}" style="--c:${TT_COHORT[TT.byId[o.tryCourse].cohort]}">${o.tryCourse}?</span>`;
+        if (isTry && c) inner += `<span class="csp-tt-chip try bad" style="--c:${TT_COHORT[TT.byId[o.tryCourse].cohort]}">${o.tryCourse}?</span>`;
+        return `<td class="${isClash ? 'clash' : ''} ${tryP && tryP.slot === s ? 'col' : ''}">${inner}</td>`;
+      }).join('');
+      return `<tr><th class="csp-tt-room">${r.id}<span>${r.cap} · ${r.type}</span></th>${cells}</tr>`;
+    }).join('');
+    return `<div class="csp-table-wrap"><table class="csp-tt-grid"><thead><tr><th></th>${head}</tr></thead><tbody>${rows}</tbody></table></div>`;
+  }
+  function ttCoursesHTML(asg, cur, doms) {
+    return `<table class="csp-table csp-trace-table csp-tt-courses"><thead><tr><th>Course</th><th>Instr.</th><th>Cohort</th><th>|D|</th><th>Assigned</th></tr></thead><tbody>${TT.courses.map(c => `<tr class="${c.id === cur ? 'best' : ''}"><td><b style="color:${TT_COHORT[c.cohort]}">${c.id}</b></td><td>${c.instr}</td><td>${c.cohort}</td><td class="mono">${(doms || TT.domains)[c.id].length}</td><td class="mono">${asg[c.id] || '—'}</td></tr>`).join('')}</tbody></table>`;
+  }
+  const TT_NOTE = 'Unary constraints are already applied to the domains (node consistency): lectures need a lecture room big enough, labs need LAB1 (H2); Chen cannot teach Tue 10:30 and Patel cannot teach on Tuesday (H4). Binary constraints: H1 room, H3 instructor, H5 cohort clashes.';
+
+  // ---------------------------------------------------------------------------
+  // Timetable (easy): 4 courses, 3 time slots, instructor / shared-student
+  // constraints — a chain-shaped constraint graph (graph colouring in disguise).
+  // ---------------------------------------------------------------------------
+  const TTE = {
+    slots: ['9:00 AM', '10:30 AM', '1:00 PM'],
+    vars: ['CS101', 'CS102', 'CS201', 'CS202'],
+    edges: [['CS101', 'CS102', 'same instructor'], ['CS102', 'CS201', 'shared students'], ['CS201', 'CS202', 'same instructor']],
+    unavailable: { CS202: ['1:00 PM'] },
+    pos: { CS101: [8, 50], CS102: [36, 18], CS201: [64, 82], CS202: [92, 50] }
+  };
+  TTE.neighbors = {}; TTE.vars.forEach(v => { TTE.neighbors[v] = []; });
+  TTE.why = {};
+  TTE.edges.forEach(([a, b, w]) => { TTE.neighbors[a].push(b); TTE.neighbors[b].push(a); TTE.why[a + '|' + b] = w; TTE.why[b + '|' + a] = w; });
+  TTE.domains = {}; TTE.vars.forEach(v => { TTE.domains[v] = TTE.slots.filter(s => !(TTE.unavailable[v] || []).includes(s)); });
+  const TTE_COLOR = { '9:00 AM': 'red', '10:30 AM': 'green', '1:00 PM': 'blue' };
+  const TTE_ORDERS = {
+    list: { label: 'Order: CS101, CS102, CS201, CS202', order: ['CS101', 'CS102', 'CS201', 'CS202'] },
+    rev: { label: 'Order: CS202, CS201, CS102, CS101', order: ['CS202', 'CS201', 'CS102', 'CS101'] }
+  };
+  function makeTTECSP() {
+    const nb = {}; TTE.vars.forEach(v => { nb[v] = TTE.neighbors[v].slice(); });
+    return new E.CSP(TTE.vars.slice(), copyDomainsTT(TTE.domains), nb, (A, a, B, b) => a !== b, { kind: 'timetable-easy' });
+  }
+  const BT_TTE_P = {
+    noun: 'course', values: v => TTE.domains[v],
+    clash: (v, val, a) => { const u = TTE.neighbors[v].find(x => a[x] === val); return u ? { with: u, why: `${u} is already at ${val} and ${v}–${u} have the ${TTE.why[v + '|' + u]}` } : null; },
+    okWhy: (v, val) => `no course linked to ${v} (${TTE.neighbors[v].join(', ')}) is at ${val}`,
+    doneWhy: 'Every course has a time slot and no instructor or student clash remains',
+    failTitle: v => `No time slot works for ${v}`
+  };
+  /** Constraint graph + slot board for the easy timetable. */
+  function tteStateHTML(asg, o) {
+    o = o || {};
+    const col = {}, sub = {};
+    TTE.vars.forEach(v => {
+      if (asg[v]) { col[v] = TTE_COLOR[asg[v]]; sub[v] = asg[v]; }
+      else sub[v] = '{' + TTE.domains[v].map(s => s.replace(' AM', 'a').replace(' PM', 'p')).join(', ') + '}';
+    });
+    const graph = graphSVG({ vars: TTE.vars, neighbors: TTE.neighbors, pos: TTE.pos, assignment: col, sub, W: 320, H: 170, r: 19, highlight: o.hl ? [o.hl] : [], hlEdges: o.clashWith ? [[o.hl, o.clashWith]] : [] });
+    const board = TTE.slots.map(s => {
+      const here = TTE.vars.filter(v => asg[v] === s);
+      const tried = o.tryVal === s && o.hl;
+      return `<div class="csp-tte-slot ${tried ? (o.bad ? 'bad' : 'try') : ''}"><div class="csp-tte-slot-h"><span class="csp-dot" style="background:${HEX[TTE_COLOR[s]]}"></span>${s}</div>${here.map(v => `<span class="csp-tte-chip">${v}</span>`).join('')}${tried ? `<span class="csp-tte-chip try ${o.bad ? 'bad' : ''}">${o.hl}?</span>` : ''}</div>`;
+    }).join('');
+    const legend = TTE.edges.map(([a, b, w]) => `<span class="${o.clashWith && ((a === o.hl && b === o.clashWith) || (b === o.hl && a === o.clashWith)) ? 'on' : ''}">${a} — ${b}: ${w}</span>`).join('');
+    return `<div class="csp-tte">${graph}<div class="csp-tte-legend">${legend}<span>CS202 unavailable at 1:00 PM</span></div><div class="csp-tte-board">${board}</div></div>`;
+  }
+  const TTE_NOTE = 'Courses linked by an edge (same instructor or shared students) must get different time slots. CS202\'s unavailability at 1:00 PM is a unary constraint, already removed from its domain (node consistency). The constraint graph is a chain and every course has fewer linked courses than available slots, so backtracking never has to undo a choice here — compare with the Timetabling example.';
+
+  /** Map-colouring hooks for traceBacktrackingCode. */
+  const BT_MAP_P = {
+    noun: 'region', values: () => ['red', 'green', 'blue'],
+    clash: (v, c, a) => { const u = AUS.neighbors[v].find(x => a[x] === c); return u ? { with: u, why: `neighbour ${u} is already ${c}` } : null; },
+    okWhy: (v, c) => `no neighbour of ${v} (${AUS.neighbors[v].join(', ') || 'none'}) is ${c}`,
+    doneWhy: 'Every region has a colour and no constraint is violated',
+    failTitle: v => `No colour works for ${v}`
+  };
+  /** Timetabling hooks for traceBacktrackingCode. */
+  const BT_TT_P = {
+    noun: 'course', values: v => TT.domains[v],
+    clash: (v, val, a) => { for (const u of TT.vars) if (u in a) { const r = ttReason(v, val, u, a[u]); if (r) return { with: u, reason: r, why: `${u} is already at ${a[u]} — ${TT_WHY[r]}` }; } return null; },
+    okWhy: (v, val) => `no course already placed clashes with ${val} (room H1, instructor H3, cohort H5)`,
+    doneWhy: 'Every course has a (slot, room) and no hard constraint is violated',
+    failTitle: v => `No (slot, room) works for ${v}`
+  };
+
+  /** Runs backtracking_search and records one step per code event (P = problem hooks). */
+  function traceBacktrackingCode(order, P) {
+    P = P || BT_MAP_P;
+    const n = order.length;
     const steps = [], a = {}, stack = [];
     let nodes = 0, bts = 0;
     const top = () => stack[stack.length - 1];
@@ -436,22 +584,23 @@
       stack.push({ depth, asg: asgTxt(a), v: null, val: null });
       const k = Object.keys(a).length;
       if (k === n) {
-        snap({ lines: [5, 6, 7, 8], kind: 'solution', title: 'Complete assignment → solution', explain: `Call #${nodes} (depth ${depth}): <code>len(assignment) = ${k} = len(csp.variables)</code>. Every region has a colour and no constraint is violated, so this call <strong>returns the assignment</strong>.` });
+        snap({ lines: [5, 6, 7, 8], kind: 'solution', title: 'Complete assignment → solution', explain: `Call #${nodes} (depth ${depth}): <code>len(assignment) = ${k} = len(csp.variables)</code>. ${P.doneWhy}, so this call <strong>returns the assignment</strong>.` });
         stack.pop();
         return Object.assign({}, a);
       }
       snap({ lines: [5, 6, 7], kind: 'call', title: `Call backtrack() — depth ${depth}`, explain: `<code>nodes_expanded</code> becomes ${nodes}. <code>len(assignment) = ${k}</code> &lt; ${n}, so the assignment is not complete yet — keep going.` });
       const v = order.find(x => !(x in a));
       top().v = v;
-      snap({ lines: [10], kind: 'select', v, title: `Select variable ${v}`, explain: `<code>select_unassigned_variable</code> returns <strong>${v}</strong>, the first unassigned region in the fixed order ${order.join(', ')}.` });
-      for (const c of colors) {
+      const vals = P.values(v);
+      snap({ lines: [10], kind: 'select', v, title: `Select variable ${v}`, explain: `<code>select_unassigned_variable</code> returns <strong>${v}</strong>, the first unassigned ${P.noun} in the fixed order ${order.join(', ')}. Its domain has ${plural(vals.length, 'value')}: ${setOf(vals)}.` });
+      for (const c of vals) {
         top().val = c;
-        const clash = N[v].find(u => a[u] === c);
+        const clash = P.clash(v, c, a);
         if (clash) {
-          snap({ lines: [11, 12], kind: 'reject', v, val: c, conflict: [v, clash], title: `Try ${v} = ${c} ✗`, explain: `<code>is_consistent(${v}, ${c})</code> is <strong>False</strong>: neighbour ${clash} is already ${c}. Skip lines 13–18 and try the next value.` });
+          snap({ lines: [11, 12], kind: 'reject', v, val: c, conflict: [v, clash.with], clash, title: `Try ${v} = ${c} ✗`, explain: `<code>is_consistent(${v}, ${c})</code> is <strong>False</strong>: ${clash.why}. Skip lines 13–18 and try the next value.` });
           continue;
         }
-        snap({ lines: [11, 12], kind: 'ok', v, val: c, title: `Try ${v} = ${c} ✓`, explain: `<code>is_consistent(${v}, ${c})</code> is <strong>True</strong>: no neighbour of ${v} (${N[v].join(', ') || 'none'}) is ${c}.` });
+        snap({ lines: [11, 12], kind: 'ok', v, val: c, title: `Try ${v} = ${c} ✓`, explain: `<code>is_consistent(${v}, ${c})</code> is <strong>True</strong>: ${P.okWhy(v, c)}.` });
         a[v] = c;
         snap({ lines: [13, 14], kind: 'assign', v, val: c, title: `Assign ${v} = ${c}, then recurse`, explain: `<code>csp.assign</code> adds ${v} = ${c} to the assignment, and <code>backtrack(assignment)</code> goes one level deeper (depth ${depth + 1}).` });
         const r = bt(depth + 1);
@@ -465,7 +614,7 @@
         snap({ lines: [15, 17, 18], kind: 'undo', v, val: c, title: `Backtrack: undo ${v} = ${c}`, explain: `The deeper call returned <code>None</code> — the search cannot be finished with ${v} = ${c}. <code>csp.unassign</code> removes it and <code>backtracks</code> becomes ${bts}. Try the next value of ${v}.` });
       }
       top().val = null;
-      snap({ lines: [20], kind: 'fail', v, title: `No colour works for ${v}`, explain: `Every value of ${v} failed, so this call (depth ${depth}) <strong>returns None</strong> — its caller will undo its own choice.` });
+      snap({ lines: [20], kind: 'fail', v, title: P.failTitle(v), explain: `Every value of ${v} failed, so this call (depth ${depth}) <strong>returns None</strong> — its caller will undo its own choice.` });
       stack.pop();
       return null;
     }
@@ -818,7 +967,7 @@
         pathColors: 2,
         allM: 3, allN: 2,
         sudStep: 0,
-        btVar: 'bad', btVal: 'static', btInf: 'none', btStep: 0,
+        btVar: 'aima', btVal: 'static', btInf: 'none', btStep: 0,
         btcOrder: 'bad', btcStep: 0,
         mrvAssign: { WA: 'red', NT: 'green' },
         degAssign: {},
@@ -1525,8 +1674,8 @@
 
     btOrders() {
       return {
-        bad: { label: 'Fixed: WA, NSW, NT, Q, SA, V, T', varOrder: 'static', order: ['WA', 'NSW', 'NT', 'Q', 'SA', 'V', 'T'] },
         aima: { label: 'Fixed: WA, NT, Q, NSW, V, SA, T', varOrder: 'static', order: ['WA', 'NT', 'Q', 'NSW', 'V', 'SA', 'T'] },
+        bad: { label: 'Fixed: WA, NSW, NT, Q, SA, V, T', varOrder: 'static', order: ['WA', 'NSW', 'NT', 'Q', 'SA', 'V', 'T'] },
         mrv: { label: 'MRV', varOrder: 'mrv', order: ['WA', 'NSW', 'NT', 'Q', 'SA', 'V', 'T'] },
         mrvdeg: { label: 'MRV + Degree', varOrder: 'mrv-degree', order: ['WA', 'NSW', 'NT', 'Q', 'SA', 'V', 'T'] }
       };
@@ -1541,6 +1690,7 @@
     }
 
     ill_bt_stepper() {
+      if (this.st.btEx === 'tt' || this.st.btEx === 'tte') return this.ill_bt_tt();
       const O = this.btOrders()[this.st.btVar];
       const key = [this.st.btVar, this.st.btVal, this.st.btInf].join('/');
       if (this._btKey !== key) {
@@ -1561,6 +1711,7 @@
       const sel = (id, opts, val) => `<select class="csp-select" id="${id}">${opts.map(([k, l]) => `<option value="${k}" ${k === val ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
       this.graphColEl.innerHTML = shell(
         'BACKTRACKING-SEARCH on Australia',
+        seg('csp-bt-ex', BT_EXAMPLES, 'map') +
         sel('csp-bt-var', Object.entries(this.btOrders()).map(([k, v]) => [k, v.label]), this.st.btVar) +
         sel('csp-bt-val', [['static', 'Values: R, G, B'], ['lcv', 'Values: LCV']], this.st.btVal) +
         sel('csp-bt-inf', [['none', 'No inference'], ['fc', 'Forward checking'], ['mac', 'MAC']], this.st.btInf) +
@@ -1579,10 +1730,11 @@
          <div class="csp-status-row"><span class="csp-pill ${kindPill[0]}">${kindPill[1]}</span><span class="csp-muted">Whole run: ${this._bt.stats.assignments} assignments · ${this._bt.stats.backtracks} backtracks</span></div>`
       );
       const reset = () => { this.clearTimer(); this.st.btStep = 0; this.refresh(); };
+      this.bindSeg('csp-bt-ex', v => { this.clearTimer(); this.st.btEx = v; this.st.btStep = 0; this.refresh(); });
       this.on('csp-bt-var', 'change', e => { this.st.btVar = e.target.value; reset(); });
       this.on('csp-bt-val', 'change', e => { this.st.btVal = e.target.value; reset(); });
       this.on('csp-bt-inf', 'change', e => { this.st.btInf = e.target.value; reset(); });
-      this.on('csp-bt-code', 'click', () => { this.clearTimer(); this.topicIdx = CSP_TOPICS.findIndex(t => t.id === 'code'); this.conceptIdx = 0; this.render(); });
+      this.on('csp-bt-code', 'click', () => { this.clearTimer(); this.st.ctBtEx = 'map'; this.topicIdx = CSP_TOPICS.findIndex(t => t.id === 'code'); this.conceptIdx = 0; this.render(); });
       this.bindStepper('csp-bt', 'btStep', steps.length, 800);
     }
 
@@ -1617,7 +1769,7 @@
       const p = `csp-ct-${o.id}`;
       this.graphColEl.innerHTML = shell(
         o.title,
-        `<select class="csp-select" id="${p}-preset">${opts}</select>`,
+        `${o.extraTools || ''}<select class="csp-select" id="${p}-preset">${opts}</select>`,
         `<div class="csp-trace csp-trace-side">
            <div class="csp-trace-toolbar">
              <div class="csp-trace-count">Step ${i + 1} of ${total}</div>
@@ -1639,6 +1791,7 @@
       );
       this.on(`${p}-preset`, 'change', e => { this.clearTimer(); this.st[pk] = e.target.value; this.st[sk] = 0; this.refresh(); });
       this.bindStepper(p, sk, total, o.interval || 900);
+      if (o.bindExtra) o.bindExtra();
       const pre = document.querySelector('#csp-concept-code .csp-trace-code');
       const hot = pre && pre.querySelector('.csp-trace-line.is-active');
       if (pre && hot && pre.scrollHeight > pre.clientHeight + 2) pre.scrollTop = Math.max(0, hot.offsetTop - pre.clientHeight / 2 + hot.offsetHeight);
@@ -1650,7 +1803,50 @@
     }
 
     ill_bt_code() {
+      const exSeg = seg('csp-ct-bt-ex', BT_EXAMPLES, this.st.ctBtEx || 'map');
+      const bindEx = () => this.bindSeg('csp-ct-bt-ex', v => { this.clearTimer(); this.st.ctBtEx = v; this.refresh(); });
+      if (this.st.ctBtEx === 'tte') return this.renderCodeTrace({
+        id: 'bttte', file: 'python_sandbox/csp.py', code: BT_PY, presets: TTE_ORDERS, extraTools: exSeg, bindExtra: bindEx,
+        steps: k => traceBacktrackingCode(TTE_ORDERS[k].order, BT_TTE_P),
+        title: 'Trace the code: backtracking_search', stateTitle: 'Timetable (easy)',
+        tags: { start: ['Ready', ''], reject: ['Clash', 'bad'], undo: ['Backtrack', 'warn'], fail: ['Return None', 'warn'], solution: ['Solution', 'ok'], done: ['Done', 'ok'] },
+        stateBody: s => {
+          const frames = s.stack.length
+            ? s.stack.map((f, k) => `<div class="csp-trace-frame ${k === s.stack.length - 1 ? 'is-top' : ''}" style="margin-left:${Math.min(k, 7) * 6}px"><b>#${f.depth}</b> backtrack(${f.asg})${f.v ? ` · var=${f.v}` : ''}${f.val ? ` · val=${f.val}` : ''}</div>`).join('')
+            : '<p class="csp-trace-empty">No active calls.</p>';
+          const tryOn = s.v && s.val && (s.kind === 'reject' || s.kind === 'ok');
+          return `<div class="csp-trace-state csp-trace-state-tt">
+              <div>${tteStateHTML(s.assignment, { hl: s.v, tryVal: tryOn ? s.val : null, bad: s.kind === 'reject', clashWith: s.kind === 'reject' ? s.clash.with : null })}</div>
+              <div class="csp-trace-regions">
+                <div class="csp-trace-region"><div class="csp-trace-region-label">Call stack (recursion)</div>${frames}</div>
+                ${this.ctVars([['assignment', Object.keys(s.assignment).length ? asgTxt(s.assignment) : '{}'], ['nodes_expanded', s.nodes], ['backtracks', s.bts, s.bts ? 'bad' : '']])}
+              </div>
+            </div>`;
+        },
+        foot: steps => { const l = steps[steps.length - 1]; return `${TTE_NOTE} Whole run: <b>${l.nodes}</b> calls to <code>backtrack()</code>, <b>${l.bts}</b> backtrack${l.bts === 1 ? '' : 's'}.`; }
+      });
+      if (this.st.ctBtEx === 'tt') return this.renderCodeTrace({
+        id: 'bttt', file: 'python_sandbox/csp.py', code: BT_PY, presets: BT_TT_ORDERS, extraTools: exSeg, bindExtra: bindEx,
+        steps: k => traceBacktrackingCode(BT_TT_ORDERS[k].order, BT_TT_P),
+        title: 'Trace the code: backtracking_search', stateTitle: 'Timetable',
+        tags: { start: ['Ready', ''], reject: ['Clash', 'bad'], undo: ['Backtrack', 'warn'], fail: ['Return None', 'warn'], solution: ['Solution', 'ok'], done: ['Done', 'ok'] },
+        stateBody: s => {
+          const frames = s.stack.length
+            ? s.stack.map((f, k) => `<div class="csp-trace-frame ${k === s.stack.length - 1 ? 'is-top' : ''}" style="margin-left:${Math.min(k, 7) * 6}px"><b>#${f.depth}</b>${f.v ? ` var=${f.v}` : ''}${f.val ? ` · val=${f.val}` : ''}</div>`).join('')
+            : '<p class="csp-trace-empty">No active calls.</p>';
+          const tryOn = s.v && s.val && (s.kind === 'reject' || s.kind === 'ok');
+          return `<div class="csp-trace-state csp-trace-state-tt">
+              <div>${ttGridHTML(s.assignment, { hl: s.v, tryCourse: tryOn ? s.v : null, tryVal: tryOn ? s.val : null, bad: s.kind === 'reject', clashWith: s.kind === 'reject' ? s.clash.with : null })}</div>
+              <div class="csp-trace-regions">
+                <div class="csp-trace-region"><div class="csp-trace-region-label">Call stack (recursion)</div>${frames}</div>
+                ${this.ctVars([['assigned', `${Object.keys(s.assignment).length} / ${TT.vars.length}`], ['nodes_expanded', s.nodes], ['backtracks', s.bts, s.bts ? 'bad' : '']])}
+              </div>
+            </div>`;
+        },
+        foot: steps => { const l = steps[steps.length - 1]; return `${TT_NOTE} Whole run: <b>${l.nodes}</b> calls to <code>backtrack()</code>, <b>${l.bts}</b> backtrack${l.bts === 1 ? '' : 's'}.`; }
+      });
       this.renderCodeTrace({
+        extraTools: exSeg, bindExtra: bindEx,
         id: 'bt', file: 'python_sandbox/csp.py', code: BT_PY, presets: BT_CODE_ORDERS,
         steps: k => traceBacktrackingCode(BT_CODE_ORDERS[k].order),
         title: 'Trace the code: backtracking_search',
@@ -1841,6 +2037,62 @@
       this.on('csp-ct-cmp-run', 'click', rerun);
     }
 
+
+    /** Backtracking Search on the mini timetabling CSP (same engine, timetable view). */
+    ill_bt_tt() {
+      const easy = this.st.btEx === 'tte';
+      const orders = easy
+        ? { list: { label: 'Fixed: CS101, CS102, CS201, CS202', varOrder: 'static', order: TTE_ORDERS.list.order }, rev: { label: 'Fixed: CS202, CS201, CS102, CS101', varOrder: 'static', order: TTE_ORDERS.rev.order }, mrv: { label: 'MRV', varOrder: 'mrv', order: TTE.vars }, mrvdeg: { label: 'MRV + Degree', varOrder: 'mrv-degree', order: TTE.vars } }
+        : { list: { label: 'Fixed: course list order', varOrder: 'static', order: TT.vars }, mrv: { label: 'MRV', varOrder: 'mrv', order: TT.vars }, mrvdeg: { label: 'MRV + Degree', varOrder: 'mrv-degree', order: TT.vars } };
+      if (!orders[this.st.bttVar]) this.st.bttVar = 'list';
+      const key = [this.st.btEx, this.st.bttVar, this.st.btVal, this.st.btInf].join('/');
+      if (this._btKey !== key) {
+        this._bt = E.backtrackingSearch(easy ? makeTTECSP() : makeTTCSP(), { varOrder: orders[this.st.bttVar].varOrder, staticOrder: orders[this.st.bttVar].order, valOrder: this.st.btVal, inference: this.st.btInf });
+        this._btKey = key;
+      }
+      const steps = this._bt.steps;
+      const i = Math.min(this.st.btStep, steps.length - 1), s = steps[i];
+      const reject = s.kind === 'reject';
+      const grid = easy
+        ? tteStateHTML(s.assignment, { hl: s.var, tryVal: reject ? s.val : null, bad: reject, clashWith: reject ? s.conflictWith : null })
+        : ttGridHTML(s.assignment, { hl: s.var, tryCourse: reject ? s.var : null, tryVal: reject ? s.val : null, bad: reject, clashWith: reject ? s.conflictWith : null });
+      const whyTxt = !reject ? '' : easy ? `${s.var}–${s.conflictWith}: ${TTE.why[s.var + '|' + s.conflictWith]}` : TT_WHY[ttReason(s.var, s.val, s.conflictWith, s.assignment[s.conflictWith])];
+      const log = steps.slice(Math.max(0, i - 5), i + 1).map((x, k, arr) => `<div class="csp-log-row ${k === arr.length - 1 ? 'cur' : ''} k-${x.kind}" style="padding-left:${0.4 + (x.depth || 0) * 0.55}rem">${x.msg}${x === s && whyTxt ? ` <b>(${whyTxt})</b>` : ''}</div>`).join('');
+      const kindPill = { start: ['neutral', 'START'], select: ['info', 'SELECT'], reject: ['bad', 'REJECT'], assign: ['ok', 'ASSIGN'], infer: ['info', 'INFERENCE'], wipeout: ['bad', 'WIPE-OUT'], undo: ['warn', 'BACKTRACK'], deadend: ['warn', 'DEAD END'], solution: ['ok', 'SOLUTION'], failure: ['bad', 'FAILURE'] }[s.kind] || ['neutral', s.kind.toUpperCase()];
+      const sel = (id, opts, val) => `<select class="csp-select" id="${id}">${opts.map(([k, l]) => `<option value="${k}" ${k === val ? 'selected' : ''}>${l}</option>`).join('')}</select>`;
+      const doms = this.st.btInf === 'none' ? (easy ? TTE.domains : TT.domains) : s.domains;
+      const table = easy
+        ? `<table class="csp-table csp-trace-table"><thead><tr><th>Course</th><th>Linked to</th><th>Domain</th><th>Assigned</th></tr></thead><tbody>${TTE.vars.map(v => `<tr class="${v === s.var ? 'best' : ''}"><td><b>${v}</b></td><td>${TTE.neighbors[v].join(', ')}</td><td class="mono">${doms[v].join(', ') || '∅'}</td><td class="mono">${s.assignment[v] || '—'}</td></tr>`).join('')}</tbody></table>`
+        : ttCoursesHTML(s.assignment, s.var, doms);
+      this.graphColEl.innerHTML = shell(
+        easy ? 'BACKTRACKING-SEARCH on an easy timetable (4 courses, 3 slots)' : 'BACKTRACKING-SEARCH on a mini timetable',
+        seg('csp-bt-ex', BT_EXAMPLES, this.st.btEx) +
+        sel('csp-btt-var', Object.entries(orders).map(([k, v]) => [k, v.label]), this.st.bttVar) +
+        sel('csp-bt-val', [['static', 'Values: slot order'], ['lcv', 'Values: LCV']], this.st.btVal) +
+        sel('csp-bt-inf', [['none', 'No inference'], ['fc', 'Forward checking'], ['mac', 'MAC']], this.st.btInf) +
+        `<button class="csp-btn" id="csp-bt-code" title="Step through the Python code of this algorithm"><i data-lucide="code-2"></i> Code trace</button>`,
+        `<div class="csp-bt-tt">
+           ${grid}
+           <div class="csp-bt-tt-row">${table}<div class="csp-log">${log}</div></div>
+         </div>
+         <div class="csp-metric-row">
+           <div class="csp-metric"><span>Assignments</span><b>${s.stats.assignments}</b></div>
+           <div class="csp-metric ${s.stats.backtracks ? 'bad' : 'ok'}"><span>Backtracks</span><b>${s.stats.backtracks}</b></div>
+           <div class="csp-metric"><span>Constraint checks</span><b>${s.stats.checks}</b></div>
+           <div class="csp-metric"><span>Values pruned</span><b>${s.stats.pruned}</b></div>
+         </div>`,
+        `${stepperHTML('csp-bt', i, steps.length, !!this.timer)}
+         <div class="csp-status-row"><span class="csp-pill ${kindPill[0]}">${kindPill[1]}</span><span class="csp-muted">Whole run: ${this._bt.stats.assignments} assignments · ${this._bt.stats.backtracks} backtracks</span></div>
+         <p class="csp-note">${easy ? TTE_NOTE : TT_NOTE}</p>`
+      );
+      const reset = () => { this.clearTimer(); this.st.btStep = 0; this.refresh(); };
+      this.bindSeg('csp-bt-ex', v => { this.clearTimer(); this.st.btEx = v; this.st.btStep = 0; this.refresh(); });
+      this.on('csp-btt-var', 'change', e => { this.st.bttVar = e.target.value; reset(); });
+      this.on('csp-bt-val', 'change', e => { this.st.btVal = e.target.value; reset(); });
+      this.on('csp-bt-inf', 'change', e => { this.st.btInf = e.target.value; reset(); });
+      this.on('csp-bt-code', 'click', () => { this.clearTimer(); this.st.ctBtEx = this.st.btEx; this.topicIdx = CSP_TOPICS.findIndex(t => t.id === 'code'); this.conceptIdx = 0; this.render(); });
+      this.bindStepper('csp-bt', 'btStep', steps.length, 800);
+    }
 
     heuristicMap(mode) {
       const key = mode === 'mrv' ? 'mrvAssign' : 'degAssign';
