@@ -6725,3 +6725,56 @@ text.csp-hyper-label { paint-order: normal; }
 .csp-tte-chip { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; font-weight: 700; padding: 1px 6px; border-radius: 6px; background: #0f172a; color: #fff; }
 .csp-tte-chip.try { background: transparent; color: var(--csp-accent); border: 1.5px dashed var(--csp-accent); }
 .csp-tte-chip.try.bad { color: var(--csp-bad); border-color: var(--csp-bad); text-decoration: line-through; }
+
+/* ============================================================
+   TOPIC 05: Knowledge & Reasoning (knowledge.html, #view-knowledge, topic05_reading.html)
+   ============================================================ */
+
+.knowledge-page,
+#view-knowledge,
+.knowledge-reading {
+  --kl-accent: #8b5cf6;
+  --kl-accent-soft: rgba(139, 92, 246, 0.12);
+  --kl-accent-border: rgba(139, 92, 246, 0.3);
+  --kl-indigo: #6366f1;
+  --kl-cyan: #38bdf8;
+  --kl-ok: #10b981;
+  --kl-bad: #f43f5e;
+}
+
+.knowledge-badge-accent {
+  background: var(--kl-accent-soft) !important;
+  border-color: var(--kl-accent-border) !important;
+  color: #c4b5fd !important;
+}
+
+.knowledge-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.knowledge-page .sl-concept-col { padding: 1.4rem 1.9rem; }
+.knowledge-page .sl-graph-col { padding: 1.2rem 1.4rem; }
+
+/* Subview switching in playground */
+#view-knowledge .kl-subview {
+  display: none;
+}
+
+#view-knowledge .kl-subview.active {
+  display: block;
+}
+
+/* Wumpus cells & hover */
+.wumpus-cell:hover,
+.wumpus-lab-cell:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.dag-node:hover circle,
+.kl-bn-node:hover circle {
+  filter: brightness(1.25);
+}
+

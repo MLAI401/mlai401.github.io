@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Knowledge &amp; Reasoning - MLAI401 Foundational AI &amp; ML</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="An illustrated lecture page on knowledge representation, logical reasoning, and probabilistic inference: knowledge-based agents, propositional logic, truth tables, resolution refutation, Horn clauses, forward and backward chaining, First-Order Logic, Bayes' Rule, Bayesian Networks, variable elimination, and Monte Carlo sampling.">
+  <meta name="keywords" content="Knowledge Representation, Propositional Logic, Resolution, Horn Clauses, Forward Chaining, Backward Chaining, First-Order Logic, Bayesian Networks, Bayes' Rule, Variable Elimination, Likelihood Weighting, Wumpus World, AIMA">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="MLAI401 - Knowledge &amp; Reasoning">
+  <meta property="og:description" content="Formal logical inference and probabilistic reasoning under uncertainty — one screen at a time.">
+  <meta property="og:type" content="website">
+
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="style.css?v=14">
+</head>
+<body class="sl-page knowledge-page">
+
+  <!-- Navigation Header -->
+  <header class="navbar" id="navbar-header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo" id="logo-link">
+        <span class="logo-icon">M</span>
+        MLAI401
+      </a>
+
+      <button class="menu-toggle" id="menu-toggle-btn" aria-label="Toggle Navigation Menu">
+        <i data-lucide="menu"></i>
+      </button>
+
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="index.html" class="nav-link" id="nav-home">Home</a></li>
+        <li><a href="curriculum.html" class="nav-link active" id="nav-curr">Curriculum</a></li>
+        <li><a href="playground.html" class="nav-link" id="nav-play">Playground</a></li>
+        <li><a href="index.html#resources" class="nav-link" id="nav-res">Resources</a></li>
+      </ul>
+
+      <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="nav-btn" id="nav-github-btn">
+        <i data-lucide="github"></i> GitHub Profile
+      </a>
+    </div>
+  </header>
+
+  <!-- Single-screen lecture shell: fixed height, no body scroll on desktop -->
+  <main class="sl-shell knowledge-shell">
+
+    <div class="sl-topbar">
+      <a href="curriculum.html" class="sl-breadcrumb"><i data-lucide="arrow-left"></i> Curriculum</a>
+      <div class="sl-title-block">
+        <span class="sl-topic-badge knowledge-badge-accent"><i data-lucide="brain"></i> Topic 05</span>
+        <h1>Knowledge &amp; Reasoning</h1>
+      </div>
+      <div class="knowledge-topbar-actions">
+        <a href="topic05_reading.html" class="sl-reading-btn"><i data-lucide="book-open"></i> Reading Notes</a>
+        <a href="playground.html#view-knowledge" class="sl-reading-btn knowledge-demo-btn"><i data-lucide="play-circle"></i> Interactive Demo</a>
+      </div>
+    </div>
+
+    <!-- Topic selector bar -->
+    <div class="sl-topic-bar-wrap">
+      <div class="sl-topic-tabs" id="knowledge-topic-tabs"></div>
+    </div>
+
+    <!-- Main two-column concept + illustration viewport -->
+    <div class="sl-main-grid" id="knowledge-main-grid">
+
+      <div class="sl-concept-col glass-panel" id="knowledge-concept-col">
+        <!-- Rendered by demos/knowledge_demo/ui.js -->
+      </div>
+
+      <div class="sl-graph-col glass-panel" id="knowledge-graph-col">
+        <!-- Rendered by demos/knowledge_demo/ui.js -->
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+
+  <!-- Shared Logic & Bayesian Engines -->
+  <script src="demos/knowledge_demo/logic_engine.js?v=1"></script>
+  <script src="demos/knowledge_demo/bayes_engine.js?v=1"></script>
+
+  <!-- Page controller — renders topic tabs, concepts and illustrations -->
+  <script src="demos/knowledge_demo/ui.js?v=1"></script>
+
+  <!-- Application JS -->
+  <script src="main.js?v=3"></script>
+</body>
+</html>
