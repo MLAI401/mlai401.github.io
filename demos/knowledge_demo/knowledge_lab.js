@@ -140,7 +140,9 @@
       if (!formula) return;
 
       try {
-        // Evaluate Truth Table
+        // Evaluate Truth Table (guard: 2^n rows would freeze the page)
+        const nSyms = L.getPropSymbols(L.parseExpr(formula)).length;
+        if (nSyms > 10) throw new Error(`Formula has ${nSyms} symbols; truth table limited to 10 (2^10 = 1024 rows).`);
         const ttRes = L.ttEntails([], formula);
         if (tableContainer) {
           tableContainer.innerHTML = `

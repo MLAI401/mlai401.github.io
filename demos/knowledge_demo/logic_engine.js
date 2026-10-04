@@ -530,25 +530,100 @@
       // Add percept assertions to KB
       this.kb.push(parseExpr(isBreeze ? `B${x}${y}` : `¬B${x}${y}`));
       this.kb.push(parseExpr(isStench ? `S${x}${y}` : `¬S${x}${y}`));
+      this.sensed = this.sensed || new Map();
+      this.sensed.set(`${x},${y}`, { breeze: isBreeze, stench: isStench });
+      this._inference = null; // invalidate cached entailments
 
       return { isBreeze, isStench, isGlitter };
     }
 
+    // ---------------------------------------------------------------------
+    // Entailment queries.
+    // NOTE: Running ttEntails over the full KB enumerates 2^64 models
+    // (16 B + 16 S + 16 P + 16 W symbols) and freezes the browser.
+    // Equivalent, tractable model checking:
+    //   * A rule Bxy <=> (P..) for a room that was never sensed has Bxy free,
+    //     so it can always be satisfied -> it never prunes a model -> skip it.
+    //   * Pit rules and Wumpus rules share no symbols -> check them separately.
+    // So we enumerate only the P (or W) symbols next to sensed rooms, with
+    // backtracking, and record which values appear in some model of the KB.
+    //   KB |= Pxy   <=> no model has Pxy = false
+    //   KB |= ¬Pxy  <=> no model has Pxy = true
+    // ---------------------------------------------------------------------
+    _inferKind(perceptKey) {
+      const sensed = this.sensed || new Map();
+      const constraints = [];
+      const varSet = new Set(['1,1']); // ¬P11 and ¬W11 are in the KB
+      sensed.forEach((pc, key) => {
+        const [cx, cy] = key.split(',').map(Number);
+        const vars = this.getAdjacent(cx, cy).map(p => `${p.x},${p.y}`);
+        vars.forEach(v => varSet.add(v));
+        constraints.push({ vars, value: pc[perceptKey] });
+      });
+      const vars = Array.from(varSet);
+      const fixed = { '1,1': false };
+      const canTrue = new Set(), canFalse = new Set();
+      const model = {};
+
+      const consistent = () => {
+        for (const c of constraints) {
+          let anyTrue = false, anyUnknown = false;
+          for (const v of c.vars) {
+            if (!(v in model)) anyUnknown = true;
+            else if (model[v]) anyTrue = true;
+          }
+          if (c.value && !anyTrue && !anyUnknown) return false; // needs a true neighbour
+          if (!c.value && anyTrue) return false;                // must have none
+        }
+        return true;
+      };
+
+      const search = (i) => {
+        if (i === vars.length) {
+          vars.forEach(v => (model[v] ? canTrue : canFalse).add(v));
+          return;
+        }
+        const v = vars[i];
+        const options = v in fixed ? [fixed[v]] : [true, false];
+        for (const val of options) {
+          // backtrack as soon as a sensed-room constraint is violated
+          model[v] = val;
+          if (consistent()) search(i + 1);
+          delete model[v];
+        }
+      };
+      search(0);
+      return { vars: varSet, canTrue, canFalse };
+    }
+
+    _getInference() {
+      if (!this._inference) {
+        this._inference = { P: this._inferKind('breeze'), W: this._inferKind('stench') };
+      }
+      return this._inference;
+    }
+
+    _entailsFalse(kind, x, y) {
+      const r = this._getInference()[kind], k = `${x},${y}`;
+      return r.vars.has(k) && !r.canTrue.has(k);
+    }
+
+    _entailsTrue(kind, x, y) {
+      const r = this._getInference()[kind], k = `${x},${y}`;
+      return r.vars.has(k) && !r.canFalse.has(k);
+    }
+
     isSafe(x, y) {
       // Room is proven safe if KB |= (¬Pxy ∧ ¬Wxy)
-      const q = parseExpr(`¬P${x}${y} & ¬W${x}${y}`);
-      const res = ttEntails(this.kb, q);
-      return res.entailed;
+      return this._entailsFalse('P', x, y) && this._entailsFalse('W', x, y);
     }
 
     isPit(x, y) {
-      const q = parseExpr(`P${x}${y}`);
-      return ttEntails(this.kb, q).entailed;
+      return this._entailsTrue('P', x, y);
     }
 
     isWumpus(x, y) {
-      const q = parseExpr(`W${x}${y}`);
-      return ttEntails(this.kb, q).entailed;
+      return this._entailsTrue('W', x, y);
     }
   }
 
