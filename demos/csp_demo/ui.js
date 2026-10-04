@@ -511,7 +511,7 @@
     vars: ['CS101', 'CS102', 'CS201', 'CS202'],
     edges: [['CS101', 'CS102', 'same instructor'], ['CS102', 'CS201', 'shared students'], ['CS201', 'CS202', 'same instructor']],
     unavailable: { CS202: ['1:00 PM'] },
-    pos: { CS101: [8, 50], CS102: [36, 18], CS201: [64, 82], CS202: [92, 50] }
+    pos: { CS101: [18, 50], CS102: [38, 18], CS201: [62, 82], CS202: [84, 50] }
   };
   TTE.neighbors = {}; TTE.vars.forEach(v => { TTE.neighbors[v] = []; });
   TTE.why = {};
@@ -541,7 +541,7 @@
       if (asg[v]) { col[v] = TTE_COLOR[asg[v]]; sub[v] = asg[v]; }
       else sub[v] = '{' + TTE.domains[v].map(s => s.replace(' AM', 'a').replace(' PM', 'p')).join(', ') + '}';
     });
-    const graph = graphSVG({ vars: TTE.vars, neighbors: TTE.neighbors, pos: TTE.pos, assignment: col, sub, W: 320, H: 170, r: 19, highlight: o.hl ? [o.hl] : [], hlEdges: o.clashWith ? [[o.hl, o.clashWith]] : [] });
+    const graph = graphSVG({ vars: TTE.vars, neighbors: TTE.neighbors, pos: TTE.pos, assignment: col, sub, W: 400, H: 175, r: 19, highlight: o.hl ? [o.hl] : [], hlEdges: o.clashWith ? [[o.hl, o.clashWith]] : [] });
     const board = TTE.slots.map(s => {
       const here = TTE.vars.filter(v => asg[v] === s);
       const tried = o.tryVal === s && o.hl;

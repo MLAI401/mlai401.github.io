@@ -6754,7 +6754,7 @@ text.csp-hyper-label { paint-order: normal; }
 
 /* Timetable (easy) — constraint graph + slot board */
 .csp-tte { display: flex; flex-direction: column; gap: 0.45rem; }
-.csp-tte .csp-graph-svg { max-width: 340px; margin: 0 auto; }
+.csp-tte .csp-graph-svg { max-width: 420px; width: 100%; margin: 0 auto; overflow: visible; }
 .csp-tte-legend { display: flex; flex-wrap: wrap; gap: 0.3rem; justify-content: center; }
 .csp-tte-legend span { font-size: 0.64rem; padding: 1px 7px; border-radius: 999px; background: #f1f5f9; color: var(--text-muted); }
 .csp-tte-legend span.on { background: rgba(220, 38, 38, 0.1); color: var(--csp-bad); font-weight: 700; }
