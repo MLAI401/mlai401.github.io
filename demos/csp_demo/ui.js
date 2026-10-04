@@ -1724,7 +1724,7 @@
       const i = Math.min(this.st.btStep, steps.length - 1);
       const s = steps[i];
       const a = Object.assign({}, s.assignment);
-      const domains = this.st.btInf === 'none' ? this.legalValues(a) : s.domains;
+      const domains = s.domains; // plain backtracking prunes nothing — conflicts are found only when a value is tried
       const conflicts = [];
       const tint = {};
       if (s.kind === 'reject') { tint[s.var] = s.val; conflicts.push([s.var, s.conflictWith]); }
