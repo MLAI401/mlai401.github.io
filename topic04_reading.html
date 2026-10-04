@@ -115,6 +115,11 @@
           <a class="rp-toc-h3" href="#ex4">6.4 Ordering Heuristics</a>
           <a class="rp-toc-h3" href="#ex5">6.5 A Min-Conflicts Step</a>
           <a class="rp-toc-h3" href="#ex6">6.6 Exploiting Structure</a>
+          <a class="rp-toc-h3" href="#ex7">6.7 Cryptarithmetic by Hand</a>
+          <a class="rp-toc-h3" href="#ex8">6.8 Ternary to Binary</a>
+          <a class="rp-toc-h3" href="#ex9">6.9 Conflict-Directed Backjumping</a>
+          <a class="rp-toc-h3" href="#ex10">6.10 AC-3 Finds a Dead End</a>
+          <a class="rp-toc-h3" href="#ex11">6.11 Tree-CSP Direction</a>
         </nav>
       </aside>
 
@@ -412,7 +417,7 @@ function BACKTRACK(csp, assignment) returns a solution or failure
         <!-- ================= 6. EXERCISES ================= -->
         <section id="exercises">
           <h2><span class="rp-num">6.</span>Practice Exercises</h2>
-          <p>Six worked exercises covering formulation, AC-3, forward checking, ordering heuristics, min-conflicts and structure. Try each one before opening the answer; every answer was checked with the lecture's engine.</p>
+          <p>Eleven worked exercises covering formulation, AC-3, forward checking, ordering heuristics, min-conflicts and structure. Exercises 7&ndash;11 are adapted from the <a href="https://aimacode.github.io/aima-exercises/csp-exercises/" target="_blank" rel="noopener noreferrer">AIMA Chapter 6 exercise set</a> (Exercises 6.5, 6.6, 6.8, 6.11 and 6.15), reworded and illustrated for clarity. Try each one before opening the answer; every answer was checked with the lecture's engine or a short solver script.</p>
 
           <!-- Exercise 1 -->
           <div class="rp-exercise" id="ex1">
@@ -630,6 +635,266 @@ brute force         : d<sup>n</sup>              = 3<sup>7</sup>       = 2,187</
             </details>
           </div>
 
+
+
+
+          <!-- Exercise 7 (AIMA Ex 6.5) -->
+          <div class="rp-exercise" id="ex7">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 7</span>
+              <h3 class="rp-exercise-title">Cryptarithmetic by Hand: TWO + TWO = FOUR</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p><em>Adapted from AIMA Exercise 6.5.</em> In the puzzle below every letter stands for a different digit, and the leading letters T and F cannot be 0. The small variables C<sub>1</sub>, C<sub>2</sub>, C<sub>3</sub> are the <strong>carries</strong> passed from one column to the next (each is 0 or 1).</p>
+              <figure class="rp-ex-figure">
+                <svg viewBox="0 0 280 165" class="rp-ex-graph-svg" style="max-width:300px" xmlns="http://www.w3.org/2000/svg"><text x="55" y="22" class="csp-carry">C<tspan baseline-shift="sub" font-size="8">3</tspan></text><text x="115" y="22" class="csp-carry">C<tspan baseline-shift="sub" font-size="8">2</tspan></text><text x="175" y="22" class="csp-carry">C<tspan baseline-shift="sub" font-size="8">1</tspan></text><text x="115" y="62" class="csp-digit">T</text><text x="175" y="62" class="csp-digit">W</text><text x="235" y="62" class="csp-digit">O</text><text x="115" y="100" class="csp-digit">T</text><text x="175" y="100" class="csp-digit">W</text><text x="235" y="100" class="csp-digit">O</text><text x="18" y="100" class="csp-digit">+</text><line x1="30" y1="115" x2="262" y2="115" class="csp-sumline"></line><text x="55" y="150" class="csp-digit">F</text><text x="115" y="150" class="csp-digit">O</text><text x="175" y="150" class="csp-digit">U</text><text x="235" y="150" class="csp-digit">R</text><path d="M227 30 Q 205.0 6 189 18" class="csp-carry-arrow"></path><path d="M167 30 Q 145.0 6 129 18" class="csp-carry-arrow"></path><path d="M107 30 Q 85.0 6 69 18" class="csp-carry-arrow"></path></svg>
+                <figcaption>The puzzle as a column addition. Each arrow is a carry: C<sub>1</sub> goes from the units column to the tens, C<sub>2</sub> from the tens to the hundreds, C<sub>3</sub> from the hundreds into the thousands.</figcaption>
+              </figure>
+              <div class="csp-notation-box csp-rp-box"><div class="csp-box-label"><i data-lucide="sigma"></i> The CSP (one constraint per column)</div><div class="csp-notation-text">X = {F, T, U, W, R, O, C<sub>1</sub>, C<sub>2</sub>, C<sub>3</sub>}<br>D(letters) = {0,…,9} &nbsp;·&nbsp; D(T), D(F) = {1,…,9} &nbsp;·&nbsp; D(C<sub>i</sub>) = {0, 1}<br>Alldiff(F, T, U, W, R, O)<br>units:&nbsp;&nbsp;&nbsp;&nbsp; O + O &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= R + 10·C<sub>1</sub><br>tens:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; C<sub>1</sub> + W + W = U + 10·C<sub>2</sub><br>hundreds: C<sub>2</sub> + T + T = O + 10·C<sub>3</sub><br>thousands: C<sub>3</sub> = F</div></div>
+              <p><strong>Task.</strong> Solve the puzzle by hand with <strong>backtracking search + forward checking</strong>, choosing variables with <strong>MRV</strong> and values with <strong>LCV</strong>. Draw the search tree you explore and give the final digits.</p>
+              <div class="csp-tip-box csp-rp-box"><div class="csp-box-label"><i data-lucide="list-checks"></i> Rules for this trace</div><div class="csp-tip-text"><strong>Variable:</strong> MRV (fewest legal values); break ties by the <em>degree</em> heuristic (most constraints on unassigned variables), then alphabetically.<br><strong>Value:</strong> LCV (the value that leaves neighbours the most options); break ties with the smaller digit.<br><strong>Forward checking</strong> on a column constraint fires only when exactly one of its variables is still unassigned.</div></div>
+            </div>
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
+              <div class="rp-answer-body">
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">1. The first variable: MRV ties, degree decides</span>
+                  <p>The three carries each have 2 values, so MRV is a 3-way tie. Count how many other variables each carry shares a constraint with:</p>
+                  <div class="rp-pseudocode"><pre>C<sub>1</sub> : O, R, W, U, C<sub>2</sub>            → degree 5
+C<sub>2</sub> : C<sub>1</sub>, W, U, T, O, C<sub>3</sub>        → degree 6   ← chosen
+C<sub>3</sub> : C<sub>2</sub>, T, O, F               → degree 4</pre></div>
+                  <p>C<sub>2</sub> = 0 and C<sub>2</sub> = 1 leave the same domain sizes, so LCV ties and picks 0. Then C<sub>1</sub> (MRV, 2 values) = 0 by the same argument.</p>
+                </div>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">2. C<sub>3</sub> and F: the "thousands" column decides</span>
+                  <p>C<sub>3</sub> is next (2 values). LCV <em>reverses</em> the usual order here: C<sub>3</sub> = 0 would force F = 0, but F ≠ 0, so forward checking would wipe out D(F). LCV therefore tries <strong>C<sub>3</sub> = 1</strong>, and forward checking leaves D(F) = 1. MRV now picks F (1 value): <strong>F = 1</strong>.</p>
+                </div>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">3. Search tree</span>
+                  <figure class="rp-ex-figure">
+                    <svg viewBox="0 0 640 470" class="rp-ex-graph-svg" xmlns="http://www.w3.org/2000/svg"><line x1="320" y1="40" x2="320" y2="60" class="csp-tedge path"></line><line x1="320" y1="84" x2="320" y2="104" class="csp-tedge path"></line><line x1="320" y1="128" x2="320" y2="148" class="csp-tedge path"></line><line x1="320" y1="172" x2="320" y2="192" class="csp-tedge path"></line><g class="csp-tn root"><rect x="289" y="16" width="62" height="24" rx="6"></rect><text x="320" y="29">{ }</text></g><text x="12" y="32" class="rp-ex-tree-level">start</text><g class="csp-tn path"><rect x="289" y="60" width="62" height="24" rx="6"></rect><text x="320" y="73">C₂ = 0</text></g><text x="12" y="76" class="rp-ex-tree-level">MRV+degree: C₂</text><g class="csp-tn path"><rect x="289" y="104" width="62" height="24" rx="6"></rect><text x="320" y="117">C₁ = 0</text></g><text x="12" y="120" class="rp-ex-tree-level">MRV: C₁</text><g class="csp-tn path"><rect x="289" y="148" width="62" height="24" rx="6"></rect><text x="320" y="161">C₃ = 1</text></g><text x="12" y="164" class="rp-ex-tree-level">MRV: C₃ (LCV: 1)</text><g class="csp-tn path"><rect x="289" y="192" width="62" height="24" rx="6"></rect><text x="320" y="205">F = 1</text></g><text x="12" y="208" class="rp-ex-tree-level">MRV: F (forced)</text><text x="12" y="266" class="rp-ex-tree-level">T (LCV order)</text><line x1="320" y1="216" x2="150" y2="250" class="csp-tedge "></line><g class="csp-tn fail"><rect x="119" y="250" width="62" height="24" rx="6"></rect><text x="150" y="263">T = 5</text></g><line x1="320" y1="216" x2="320" y2="250" class="csp-tedge "></line><g class="csp-tn dead"><rect x="289" y="250" width="62" height="24" rx="6"></rect><text x="320" y="263">T = 6</text></g><line x1="320" y1="216" x2="490" y2="250" class="csp-tedge path"></line><g class="csp-tn path"><rect x="459" y="250" width="62" height="24" rx="6"></rect><text x="490" y="263">T = 7</text></g><g class="csp-tn fail"><rect x="119" y="300" width="62" height="24" rx="6"></rect><text x="150" y="313">O = 0</text></g><line x1="150" y1="274" x2="150" y2="300" class="csp-tedge fail"></line><text x="150" y="344" class="csp-tn-note bad">FC: R must be 0 = O</text><text x="150" y="357" class="csp-tn-note bad">D(R) = ∅ → wipe-out</text><line x1="320" y1="274" x2="320" y2="300" class="csp-tedge "></line><g class="csp-tn dead"><rect x="289" y="300" width="62" height="24" rx="6"></rect><text x="320" y="313">O = 2</text></g><line x1="320" y1="324" x2="320" y2="348" class="csp-tedge "></line><g class="csp-tn dead"><rect x="289" y="348" width="62" height="24" rx="6"></rect><text x="320" y="361">R = 4</text></g><line x1="320" y1="372" x2="320" y2="396" class="csp-tedge "></line><g class="csp-tn fail"><rect x="256" y="397" width="128" height="26" rx="6"></rect><text x="320" y="411">U ∈ {0,3,5,7,8,9}</text></g><text x="320" y="438" class="csp-tn-note bad">every U wipes out D(W)</text><text x="320" y="451" class="csp-tn-note bad">(W = U/2 is used or not a digit)</text><line x1="490" y1="274" x2="490" y2="300" class="csp-tedge path"></line><g class="csp-tn path"><rect x="459" y="300" width="62" height="24" rx="6"></rect><text x="490" y="313">O = 4</text></g><line x1="490" y1="324" x2="490" y2="348" class="csp-tedge path"></line><g class="csp-tn path"><rect x="459" y="348" width="62" height="24" rx="6"></rect><text x="490" y="361">R = 8</text></g><line x1="490" y1="372" x2="490" y2="396" class="csp-tedge path"></line><g class="csp-tn path"><rect x="459" y="396" width="62" height="24" rx="6"></rect><text x="490" y="409">U = 6</text></g><line x1="490" y1="420" x2="490" y2="436" class="csp-tedge path"></line><g class="csp-tn goal"><rect x="459" y="436" width="62" height="24" rx="6"></rect><text x="490" y="449">W = 3</text></g><text x="570" y="452" class="csp-tn-note ok">solution ✓</text></svg>
+                    <figcaption>The search tree explored. Teal = the path to the solution; red dashed = a forward-checking wipe-out; grey = a branch that is explored and then abandoned. The hundreds column with C<sub>2</sub> = 0, C<sub>3</sub> = 1 reads 2T = O + 10, so T ≥ 5: values 2–4 would wipe out D(O), which is why LCV puts them last and tries T = 5 first.</figcaption>
+                  </figure>
+                  <div class="rp-pseudocode"><pre>T = 5 : O = 2·5 − 10 = 0   → units: R = O+O = 0 = O   ✗ D(R) = ∅
+T = 6 : O = 2, R = 4        → tens: U = 2W (C<sub>1</sub> = C<sub>2</sub> = 0)
+        W ∈ {0,…,4} \ {1,2,4} = {0,3} → U = 0 (= W) or 6 (= T)  ✗ every U fails
+T = 7 : O = 4, R = 8        → U = 6, W = 3                         ✓</pre></div>
+                </div>
+                <div class="formula-box">734 + 734 = 1468 &nbsp;·&nbsp; T = 7, W = 3, O = 4, F = 1, U = 6, R = 8 &nbsp;(C<sub>1</sub> = 0, C<sub>2</sub> = 0, C<sub>3</sub> = 1)</div>
+                <div class="teaching-tip"><i data-lucide="lightbulb"></i><span>Notice where the work went: the carries and F were settled with no backtracking at all, because MRV pushed the most-constrained variables to the top of the tree. All of the failures happen at the T level, and forward checking catches each one within one or two levels instead of at the bottom of the tree.</span></div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Exercise 8 (AIMA Ex 6.6) -->
+          <div class="rp-exercise" id="ex8">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 8</span>
+              <h3 class="rp-exercise-title">From a Ternary Constraint to Binary Constraints</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p><em>Adapted from AIMA Exercise 6.6.</em> Algorithms such as AC-3 work on <strong>binary</strong> constraints (two variables each). The constraint <code>A + B = C</code> is <strong>ternary</strong>: it ties three variables together at once. Show how to replace it by <strong>three binary constraints</strong> by adding one new (auxiliary) variable.</p>
+              <p>Use the domains <code>D(A) = {1, 2}</code>, <code>D(B) = {1, 2, 3}</code>, <code>D(C) = {3, 4}</code> to make your answer concrete:</p>
+              <ol>
+                <li>Define the auxiliary variable X and its domain.</li>
+                <li>Write the three binary constraints that link X to A, B and C.</li>
+                <li>Make the new CSP arc-consistent. Which values of X survive, and do they match the solutions of the original constraint?</li>
+              </ol>
+              <div class="csp-def-box csp-rp-box"><div class="csp-box-label"><i data-lucide="lightbulb"></i> Key idea</div><div class="csp-def-text">A value of the new variable should store <em>everything the old constraint needs to know</em> about A and B at once. Then each original variable only has to "agree" with one part of it — a two-variable check.</div></div>
+            </div>
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
+              <div class="rp-answer-body">
+                <figure class="rp-ex-figure">
+                  <svg viewBox="0 0 560 210" class="rp-ex-graph-svg" xmlns="http://www.w3.org/2000/svg"><text x="135" y="18" class="rp-ex-panel-title">BEFORE: ONE TERNARY CONSTRAINT</text><text x="425" y="18" class="rp-ex-panel-title">AFTER: AUXILIARY VARIABLE X</text><line x1="280" y1="10" x2="280" y2="200" class="rp-ex-divider"></line><line x1="135" y1="85" x2="55" y2="170" class="csp-gedge "></line><line x1="135" y1="85" x2="135" y2="170" class="csp-gedge "></line><line x1="135" y1="85" x2="215" y2="170" class="csp-gedge "></line><g class="csp-hyper"><rect x="95" y="70" width="80" height="30" rx="4"></rect><text x="135" y="89">A + B = C</text></g><g class="csp-gnode "><circle cx="55" cy="170" r="17" fill="#ffffff"></circle><text x="55" y="174" class="csp-gnode-label ">A</text></g><g class="csp-gnode "><circle cx="135" cy="170" r="17" fill="#ffffff"></circle><text x="135" y="174" class="csp-gnode-label ">B</text></g><g class="csp-gnode "><circle cx="215" cy="170" r="17" fill="#ffffff"></circle><text x="215" y="174" class="csp-gnode-label ">C</text></g><text x="55" y="202" class="csp-gnode-sub">{1,2}</text><text x="135" y="202" class="csp-gnode-sub">{1,2,3}</text><text x="215" y="202" class="csp-gnode-sub">{3,4}</text><text x="135" y="45" class="csp-tn-note">one constraint, scope of size 3</text><line x1="425" y1="75" x2="330" y2="170" class="csp-gedge "></line><rect x="359" y="109" width="47" height="18" rx="4" class="rp-ex-edge-cost-bg"></rect><text x="382.25" y="117.75" class="rp-ex-edge-cost-text">A = X₁</text><line x1="425" y1="75" x2="425" y2="170" class="csp-gedge "></line><rect x="401" y="137" width="47" height="18" rx="4" class="rp-ex-edge-cost-bg"></rect><text x="425.0" y="146.25" class="rp-ex-edge-cost-text">B = X₂</text><line x1="425" y1="75" x2="520" y2="170" class="csp-gedge "></line><rect x="429" y="109" width="78" height="18" rx="4" class="rp-ex-edge-cost-bg"></rect><text x="467.75" y="117.75" class="rp-ex-edge-cost-text">C = X₁ + X₂</text><g class="csp-gnode "><circle cx="425" cy="75" r="19" fill="#0d9488"></circle><text x="425" y="79" class="csp-gnode-label on">X</text></g><text x="453" y="61" class="csp-tn-note" style="text-anchor:start">D(X) = pairs ⟨a, b⟩</text><g class="csp-gnode "><circle cx="330" cy="170" r="17" fill="#ffffff"></circle><text x="330" y="174" class="csp-gnode-label ">A</text></g><text x="330" y="202" class="csp-gnode-sub">{1,2}</text><g class="csp-gnode "><circle cx="425" cy="170" r="17" fill="#ffffff"></circle><text x="425" y="174" class="csp-gnode-label ">B</text></g><text x="425" y="202" class="csp-gnode-sub">{1,2,3}</text><g class="csp-gnode "><circle cx="520" cy="170" r="17" fill="#ffffff"></circle><text x="520" y="174" class="csp-gnode-label ">C</text></g><text x="520" y="202" class="csp-gnode-sub">{3,4}</text></svg>
+                  <figcaption>Left: the ternary constraint drawn as a box joined to all three variables. Right: the auxiliary variable X becomes the hub of a star of three binary constraints.</figcaption>
+                </figure>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">1. The auxiliary variable</span>
+                  <p>Let X range over <strong>pairs</strong> ⟨a, b⟩, one entry for A and one for B: <code>D(X) = D(A) × D(B)</code>. Write X<sub>1</sub> and X<sub>2</sub> for the first and second entries.</p>
+                  <div class="rp-pseudocode"><pre>D(X) = {⟨1,1⟩, ⟨1,2⟩, ⟨1,3⟩, ⟨2,1⟩, ⟨2,2⟩, ⟨2,3⟩}     (2 × 3 = 6 pairs)</pre></div>
+                </div>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">2. Three binary constraints</span>
+                  <div class="rp-pseudocode"><pre>⟨X, A⟩ :  A = X<sub>1</sub>
+⟨X, B⟩ :  B = X<sub>2</sub>
+⟨X, C⟩ :  C = X<sub>1</sub> + X<sub>2</sub></pre></div>
+                  <p>Each constraint mentions only two variables, yet together they say exactly "A + B = C": X fixes A and B, and the third constraint checks their sum against C.</p>
+                </div>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">3. Arc consistency</span>
+                  <div class="rp-pseudocode"><pre>REVISE(X, C): keep pairs whose sum is in D(C) = {3, 4}
+  ⟨1,1⟩ sum 2 ✗   ⟨1,2⟩ sum 3 ✓   ⟨1,3⟩ sum 4 ✓
+  ⟨2,1⟩ sum 3 ✓   ⟨2,2⟩ sum 4 ✓   ⟨2,3⟩ sum 5 ✗
+  → D(X) = {⟨1,2⟩, ⟨1,3⟩, ⟨2,1⟩, ⟨2,2⟩}
+REVISE(A, X): A = 1 ✓ (⟨1,2⟩), A = 2 ✓ (⟨2,1⟩)   → no change
+REVISE(B, X): B = 1 ✓, 2 ✓, 3 ✓ (⟨1,3⟩)           → no change
+REVISE(C, X): C = 3 ✓, C = 4 ✓                    → no change</pre></div>
+                  <p>The 4 surviving pairs are exactly the 4 solutions of <code>A + B = C</code> with these domains: (1, 2, 3), (1, 3, 4), (2, 1, 3), (2, 2, 4).</p>
+                </div>
+                <div class="formula-box">A + B = C &nbsp;⟶&nbsp; X ∈ D(A) × D(B), &nbsp; A = X<sub>1</sub>, &nbsp; B = X<sub>2</sub>, &nbsp; C = X<sub>1</sub> + X<sub>2</sub></div>
+                <div class="teaching-tip"><i data-lucide="lightbulb"></i><span>The same trick works for any constraint with k variables: create one auxiliary variable whose values are the allowed k-tuples, and link it to each original variable with a "projection" constraint. The price is the size of D(X), which can grow as d<sup>k</sup>.</span></div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Exercise 9 (AIMA Ex 6.8) -->
+          <div class="rp-exercise" id="ex9">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 9</span>
+              <h3 class="rp-exercise-title">3-Colouring with Conflict-Directed Backjumping</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p><em>Adapted from AIMA Exercise 6.8.</em> The graph below has 8 nodes. The chain A<sub>1</sub> – A<sub>2</sub> – A<sub>3</sub> – A<sub>4</sub> is joined node-by-node; every A<sub>i</sub> is also joined to the hub H; H is joined to T; and T is joined to both F<sub>1</sub> and F<sub>2</sub>. Colour the graph with {R, G, B} so that joined nodes differ.</p>
+              <figure class="rp-ex-figure">
+                <svg viewBox="0 0 420 320" class="rp-ex-graph-svg" style="max-width:420px" xmlns="http://www.w3.org/2000/svg"><line x1="60" y1="45" x2="160" y2="45" class="csp-gedge "></line><line x1="160" y1="45" x2="260" y2="45" class="csp-gedge "></line><line x1="260" y1="45" x2="360" y2="45" class="csp-gedge "></line><line x1="60" y1="45" x2="210" y2="135" class="csp-gedge "></line><line x1="160" y1="45" x2="210" y2="135" class="csp-gedge "></line><line x1="260" y1="45" x2="210" y2="135" class="csp-gedge "></line><line x1="360" y1="45" x2="210" y2="135" class="csp-gedge "></line><line x1="210" y1="135" x2="210" y2="215" class="csp-gedge "></line><line x1="210" y1="215" x2="140" y2="285" class="csp-gedge "></line><line x1="210" y1="215" x2="280" y2="285" class="csp-gedge "></line><g class="csp-gnode "><circle cx="60" cy="45" r="17" fill="#ffffff"></circle><text x="60" y="49" class="csp-gnode-label ">A<tspan baseline-shift="sub" font-size="8">1</tspan></text></g><text x="79" y="31" class="csp-order-tag">#1</text><g class="csp-gnode "><circle cx="160" cy="45" r="17" fill="#ffffff"></circle><text x="160" y="49" class="csp-gnode-label ">A<tspan baseline-shift="sub" font-size="8">2</tspan></text></g><text x="179" y="31" class="csp-order-tag">#5</text><g class="csp-gnode "><circle cx="260" cy="45" r="17" fill="#ffffff"></circle><text x="260" y="49" class="csp-gnode-label ">A<tspan baseline-shift="sub" font-size="8">3</tspan></text></g><text x="279" y="31" class="csp-order-tag">#7</text><g class="csp-gnode "><circle cx="360" cy="45" r="17" fill="#ffffff"></circle><text x="360" y="49" class="csp-gnode-label ">A<tspan baseline-shift="sub" font-size="8">4</tspan></text></g><text x="379" y="31" class="csp-order-tag">#3</text><g class="csp-gnode "><circle cx="210" cy="135" r="17" fill="#ffffff"></circle><text x="210" y="139" class="csp-gnode-label ">H</text></g><text x="229" y="121" class="csp-order-tag">#2</text><g class="csp-gnode "><circle cx="210" cy="215" r="17" fill="#ffffff"></circle><text x="210" y="219" class="csp-gnode-label ">T</text></g><text x="229" y="201" class="csp-order-tag">#8</text><g class="csp-gnode "><circle cx="140" cy="285" r="17" fill="#ffffff"></circle><text x="140" y="289" class="csp-gnode-label ">F<tspan baseline-shift="sub" font-size="8">1</tspan></text></g><text x="159" y="271" class="csp-order-tag">#4</text><g class="csp-gnode "><circle cx="280" cy="285" r="17" fill="#ffffff"></circle><text x="280" y="289" class="csp-gnode-label ">F<tspan baseline-shift="sub" font-size="8">2</tspan></text></g><text x="299" y="271" class="csp-order-tag">#6</text></svg>
+                <figcaption>The constraint graph. The small <code>#k</code> tag beside each node is its position in the fixed variable order.</figcaption>
+              </figure>
+              <p><strong>Task.</strong> Use <strong>backtracking with conflict-directed backjumping</strong> (no forward checking), with</p>
+              <div class="formula-box">variable order: A<sub>1</sub>, H, A<sub>4</sub>, F<sub>1</sub>, A<sub>2</sub>, F<sub>2</sub>, A<sub>3</sub>, T &nbsp;·&nbsp; value order: R, G, B</div>
+              <p>Show every assignment, the <strong>conflict set</strong> of each variable that fails, and where the search jumps back to. Then compare with plain (chronological) backtracking.</p>
+              <div class="csp-tip-box csp-rp-box"><div class="csp-box-label"><i data-lucide="undo-2"></i> Reminder: how backjumping works</div><div class="csp-tip-text">The <strong>conflict set</strong> of X is the set of earlier-assigned variables that ruled out some value of X. When X runs out of values, jump back to the <em>most recent</em> variable in its conflict set (call it Y), and pass the rest along: <code>conf(Y) ← conf(Y) ∪ conf(X) − {Y}</code>.</div></div>
+            </div>
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
+              <div class="rp-answer-body">
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">1. Forward until the first dead end</span>
+                  <div class="rp-pseudocode"><pre>#1 A<sub>1</sub> = R
+#2 H  = G      (R taken by A<sub>1</sub>)
+#3 A<sub>4</sub> = R      (only H is assigned among its neighbours)
+#4 F<sub>1</sub> = R      (T not assigned yet)
+#5 A<sub>2</sub> = B      (R by A<sub>1</sub>, G by H)                 conf(A<sub>2</sub>) = {A<sub>1</sub>, H}
+#6 F<sub>2</sub> = R
+#7 A<sub>3</sub> : R ✗ by A<sub>4</sub>,  G ✗ by H,  B ✗ by A<sub>2</sub>        conf(A<sub>3</sub>) = {A<sub>4</sub>, H, A<sub>2</sub>}</pre></div>
+                </div>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">2. Two backjumps</span>
+                  <div class="rp-pseudocode"><pre>Jump ① from A<sub>3</sub>: most recent in {A<sub>4</sub>, H, A<sub>2</sub>} is A<sub>2</sub>   (F<sub>2</sub> is skipped)
+        conf(A<sub>2</sub>) = {A<sub>1</sub>, H} ∪ {A<sub>4</sub>, H, A<sub>2</sub>} − {A<sub>2</sub>} = {A<sub>1</sub>, H, A<sub>4</sub>}
+        A<sub>2</sub> has no values left (B was its only legal value)
+Jump ② from A<sub>2</sub>: most recent in {A<sub>1</sub>, H, A<sub>4</sub>} is A<sub>4</sub>   (F<sub>1</sub> is skipped)
+        A<sub>4</sub> : G ✗ (H),  B ✓  → A<sub>4</sub> = B</pre></div>
+                  <figure class="rp-ex-figure">
+                    <svg viewBox="0 0 640 150" class="rp-ex-graph-svg" xmlns="http://www.w3.org/2000/svg"><g class="csp-tn "><rect x="20" y="92" width="50" height="26" rx="6"></rect><text x="45" y="106">A<tspan baseline-shift="sub" font-size="8">1</tspan></text></g><text x="45" y="138" class="csp-tn-note">R</text><g class="csp-tn "><rect x="98" y="92" width="50" height="26" rx="6"></rect><text x="123" y="106">H</text></g><text x="123" y="138" class="csp-tn-note">G</text><g class="csp-tn jump"><rect x="176" y="92" width="50" height="26" rx="6"></rect><text x="201" y="106">A<tspan baseline-shift="sub" font-size="8">4</tspan></text></g><text x="201" y="138" class="csp-tn-note">R</text><g class="csp-tn skip"><rect x="254" y="92" width="50" height="26" rx="6"></rect><text x="279" y="106">F<tspan baseline-shift="sub" font-size="8">1</tspan></text></g><text x="279" y="138" class="csp-tn-note">R</text><g class="csp-tn jump"><rect x="332" y="92" width="50" height="26" rx="6"></rect><text x="357" y="106">A<tspan baseline-shift="sub" font-size="8">2</tspan></text></g><text x="357" y="138" class="csp-tn-note">B</text><g class="csp-tn skip"><rect x="410" y="92" width="50" height="26" rx="6"></rect><text x="435" y="106">F<tspan baseline-shift="sub" font-size="8">2</tspan></text></g><text x="435" y="138" class="csp-tn-note">R</text><g class="csp-tn fail"><rect x="488" y="92" width="50" height="26" rx="6"></rect><text x="513" y="106">A<tspan baseline-shift="sub" font-size="8">3</tspan></text></g><text x="513" y="138" class="csp-tn-note">✗</text><g class="csp-tn "><rect x="566" y="92" width="50" height="26" rx="6"></rect><text x="591" y="106">T</text></g><text x="591" y="138" class="csp-tn-note"></text><defs><marker id="cbjArrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#dc2626"></path></marker></defs><path d="M513 90 C 513 45, 357 45, 357 92" class="csp-jump" marker-end="url(#cbjArrow)"></path><text x="435.0" y="52.25" class="csp-tn-note bad">jump ①</text><path d="M357 90 C 357 10, 201 10, 201 92" class="csp-jump" marker-end="url(#cbjArrow)"></path><text x="279.0" y="26.0" class="csp-tn-note bad">jump ②</text></svg>
+                    <figcaption>Backjumps along the variable order. F<sub>2</sub> and F<sub>1</sub> (grey) are jumped over: they are not connected to the failure, so changing them could never help.</figcaption>
+                  </figure>
+                </div>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">3. Forward again to a solution</span>
+                  <div class="rp-pseudocode"><pre>#4 F<sub>1</sub> = R   #5 A<sub>2</sub> = B   #6 F<sub>2</sub> = R
+#7 A<sub>3</sub> = R   (A<sub>2</sub> = B, A<sub>4</sub> = B, H = G → R is free)
+#8 T  = B   (H = G, F<sub>1</sub> = F<sub>2</sub> = R)</pre></div>
+                  <figure class="rp-ex-figure">
+                    <svg viewBox="0 0 420 320" class="rp-ex-graph-svg" style="max-width:420px" xmlns="http://www.w3.org/2000/svg"><line x1="60" y1="45" x2="160" y2="45" class="csp-gedge "></line><line x1="160" y1="45" x2="260" y2="45" class="csp-gedge "></line><line x1="260" y1="45" x2="360" y2="45" class="csp-gedge "></line><line x1="60" y1="45" x2="210" y2="135" class="csp-gedge "></line><line x1="160" y1="45" x2="210" y2="135" class="csp-gedge "></line><line x1="260" y1="45" x2="210" y2="135" class="csp-gedge "></line><line x1="360" y1="45" x2="210" y2="135" class="csp-gedge "></line><line x1="210" y1="135" x2="210" y2="215" class="csp-gedge "></line><line x1="210" y1="215" x2="140" y2="285" class="csp-gedge "></line><line x1="210" y1="215" x2="280" y2="285" class="csp-gedge "></line><g class="csp-gnode "><circle cx="60" cy="45" r="17" fill="#ef4444"></circle><text x="60" y="49" class="csp-gnode-label on">A<tspan baseline-shift="sub" font-size="8">1</tspan></text></g><text x="79" y="31" class="csp-order-tag">#1</text><g class="csp-gnode "><circle cx="160" cy="45" r="17" fill="#3b82f6"></circle><text x="160" y="49" class="csp-gnode-label on">A<tspan baseline-shift="sub" font-size="8">2</tspan></text></g><text x="179" y="31" class="csp-order-tag">#5</text><g class="csp-gnode "><circle cx="260" cy="45" r="17" fill="#ef4444"></circle><text x="260" y="49" class="csp-gnode-label on">A<tspan baseline-shift="sub" font-size="8">3</tspan></text></g><text x="279" y="31" class="csp-order-tag">#7</text><g class="csp-gnode "><circle cx="360" cy="45" r="17" fill="#3b82f6"></circle><text x="360" y="49" class="csp-gnode-label on">A<tspan baseline-shift="sub" font-size="8">4</tspan></text></g><text x="379" y="31" class="csp-order-tag">#3</text><g class="csp-gnode "><circle cx="210" cy="135" r="17" fill="#22c55e"></circle><text x="210" y="139" class="csp-gnode-label on">H</text></g><text x="229" y="121" class="csp-order-tag">#2</text><g class="csp-gnode "><circle cx="210" cy="215" r="17" fill="#3b82f6"></circle><text x="210" y="219" class="csp-gnode-label on">T</text></g><text x="229" y="201" class="csp-order-tag">#8</text><g class="csp-gnode "><circle cx="140" cy="285" r="17" fill="#ef4444"></circle><text x="140" y="289" class="csp-gnode-label on">F<tspan baseline-shift="sub" font-size="8">1</tspan></text></g><text x="159" y="271" class="csp-order-tag">#4</text><g class="csp-gnode "><circle cx="280" cy="285" r="17" fill="#ef4444"></circle><text x="280" y="289" class="csp-gnode-label on">F<tspan baseline-shift="sub" font-size="8">2</tspan></text></g><text x="299" y="271" class="csp-order-tag">#6</text></svg>
+                    <figcaption>The colouring found: A<sub>1</sub> = R, H = G, A<sub>4</sub> = B, F<sub>1</sub> = R, A<sub>2</sub> = B, F<sub>2</sub> = R, A<sub>3</sub> = R, T = B.</figcaption>
+                  </figure>
+                </div>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">4. Comparison with chronological backtracking</span>
+                  <p>Plain backtracking returns to the <em>previous</em> variable, F<sub>2</sub>, and tries G and B — but F<sub>2</sub> has nothing to do with A<sub>3</sub>'s problem, so A<sub>3</sub> fails again each time. It then backs up through A<sub>2</sub> to F<sub>1</sub> and repeats the same useless work for F<sub>1</sub> = G and F<sub>1</sub> = B before finally reaching A<sub>4</sub>.</p>
+                  <div class="rp-table-wrap">
+                    <table class="rp-table">
+                      <thead><tr><th>Method</th><th>Assignments made</th><th>Same solution?</th></tr></thead>
+                      <tbody>
+                        <tr><td><strong>Chronological backtracking</strong></td><td>24</td><td>Yes</td></tr>
+                        <tr><td><strong>Conflict-directed backjumping</strong></td><td>12</td><td>Yes</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <div class="formula-box">A<sub>1</sub> = R, H = G, A<sub>4</sub> = B, F<sub>1</sub> = R, A<sub>2</sub> = B, F<sub>2</sub> = R, A<sub>3</sub> = R, T = B &nbsp;·&nbsp; 12 assignments vs. 24</div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Exercise 10 (AIMA Ex 6.11) -->
+          <div class="rp-exercise" id="ex10">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 10</span>
+              <h3 class="rp-exercise-title">AC-3 Detects a Hidden Dead End</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p><em>Adapted from AIMA Exercise 6.11.</em> In the Australia map-colouring CSP (Figure 1), we have made only two assignments: <code>WA = green</code> and <code>V = red</code>. Every other region still has {R, G, B}. Nothing is violated yet — but the assignment cannot be extended to a full solution.</p>
+              <figure class="rp-ex-figure">
+                <svg viewBox="0 0 300 240" class="csp-graph-svg" xmlns="http://www.w3.org/2000/svg"><line x1="53.52" y1="107.52" x2="117.84" y2="53.44" class="csp-gedge "></line><line x1="53.52" y1="107.52" x2="133.92" y2="136.64" class="csp-gedge "></line><line x1="117.84" y1="53.44" x2="133.92" y2="136.64" class="csp-gedge "></line><line x1="117.84" y1="53.44" x2="192.88" y2="65.92" class="csp-gedge "></line><line x1="133.92" y1="136.64" x2="192.88" y2="65.92" class="csp-gedge "></line><line x1="133.92" y1="136.64" x2="230.4" y2="132.48" class="csp-gedge "></line><line x1="133.92" y1="136.64" x2="176.8" y2="190.72" class="csp-gedge "></line><line x1="192.88" y1="65.92" x2="230.4" y2="132.48" class="csp-gedge "></line><line x1="230.4" y1="132.48" x2="176.8" y2="190.72" class="csp-gedge "></line><g class="csp-gnode "><circle cx="53.5" cy="107.5" r="15" fill="#22c55e"></circle><text x="53.5" y="111.5" class="csp-gnode-label on">WA</text></g><g class="csp-gnode "><circle cx="117.8" cy="53.4" r="15" fill="#ffffff"></circle><text x="117.8" y="57.4" class="csp-gnode-label ">NT</text><text x="117.8" y="81.4" class="csp-gnode-sub">{R,G,B}</text></g><g class="csp-gnode "><circle cx="192.9" cy="65.9" r="15" fill="#ffffff"></circle><text x="192.9" y="69.9" class="csp-gnode-label ">Q</text><text x="192.9" y="93.9" class="csp-gnode-sub">{R,G,B}</text></g><g class="csp-gnode "><circle cx="230.4" cy="132.5" r="15" fill="#ffffff"></circle><text x="230.4" y="136.5" class="csp-gnode-label ">NSW</text><text x="230.4" y="160.5" class="csp-gnode-sub">{R,G,B}</text></g><g class="csp-gnode "><circle cx="176.8" cy="190.7" r="15" fill="#ef4444"></circle><text x="176.8" y="194.7" class="csp-gnode-label on">V</text></g><g class="csp-gnode "><circle cx="133.9" cy="136.6" r="15" fill="#ffffff"></circle><text x="133.9" y="140.6" class="csp-gnode-label ">SA</text><text x="133.9" y="164.6" class="csp-gnode-sub">{R,G,B}</text></g><g class="csp-gnode "><circle cx="246.5" cy="203.2" r="15" fill="#ffffff"></circle><text x="246.5" y="207.2" class="csp-gnode-label ">T</text><text x="246.5" y="231.2" class="csp-gnode-sub">{R,G,B}</text></g></svg>
+                <figcaption>The partial assignment WA = green, V = red. Edges are ≠ constraints.</figcaption>
+              </figure>
+              <p><strong>Task.</strong> Run AC-3 on this state (treat each assigned variable as having a one-value domain) and show that it empties some domain — proving the partial assignment is inconsistent. Start with all 18 arcs in the queue, in the order the constraints are listed in Section 1.1 (SA ≠ WA, SA ≠ NT, …, NSW ≠ V), each constraint X ≠ Y giving the arc (X, Y) and then (Y, X).</p>
+              <div class="csp-tip-box csp-rp-box"><div class="csp-box-label"><i data-lucide="refresh-cw"></i> Recall</div><div class="csp-tip-text">REVISE(X, Y) removes from D(X) every value that has <em>no</em> compatible value left in D(Y). If D(X) shrinks, every arc (Z, X) pointing into X goes back on the queue. If any domain becomes empty, AC-3 returns <strong>false</strong>.</div></div>
+            </div>
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
+              <div class="rp-answer-body">
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">1. Trace (only the revisions that remove something)</span>
+                  <p>AC-3 pops 27 arcs before it stops; the 9 that change a domain are:</p>
+                  <div class="rp-pseudocode"><pre> 1. REVISE(SA,  WA) : remove G  → SA  = {R, B}
+ 2. REVISE(SA,  V ) : remove R  → SA  = {B}        arcs into SA re-queued
+ 3. REVISE(NT,  WA) : remove G  → NT  = {R, B}
+ 4. REVISE(NSW, V ) : remove R  → NSW = {G, B}
+ 5. REVISE(NT,  SA) : remove B  → NT  = {R}
+ 6. REVISE(Q,   SA) : remove B  → Q   = {R, G}
+ 7. REVISE(NSW, SA) : remove B  → NSW = {G}
+ 8. REVISE(Q,  NSW) : remove G  → Q   = {R}
+ 9. REVISE(Q,   NT) : remove R  → Q   = { }         ✗ empty → return false</pre></div>
+                </div>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">2. Why it fails</span>
+                  <figure class="rp-ex-figure">
+                    <svg viewBox="0 0 300 240" class="csp-graph-svg" xmlns="http://www.w3.org/2000/svg"><line x1="53.52" y1="107.52" x2="117.84" y2="53.44" class="csp-gedge "></line><line x1="53.52" y1="107.52" x2="133.92" y2="136.64" class="csp-gedge "></line><line x1="117.84" y1="53.44" x2="133.92" y2="136.64" class="csp-gedge "></line><line x1="117.84" y1="53.44" x2="192.88" y2="65.92" class="csp-gedge bad"></line><line x1="133.92" y1="136.64" x2="192.88" y2="65.92" class="csp-gedge bad"></line><line x1="133.92" y1="136.64" x2="230.4" y2="132.48" class="csp-gedge "></line><line x1="133.92" y1="136.64" x2="176.8" y2="190.72" class="csp-gedge "></line><line x1="192.88" y1="65.92" x2="230.4" y2="132.48" class="csp-gedge bad"></line><line x1="230.4" y1="132.48" x2="176.8" y2="190.72" class="csp-gedge "></line><g class="csp-gnode "><circle cx="53.5" cy="107.5" r="15" fill="#22c55e"></circle><text x="53.5" y="111.5" class="csp-gnode-label on">WA</text></g><g class="csp-gnode "><circle cx="117.8" cy="53.4" r="15" fill="#ef4444"></circle><text x="117.8" y="57.4" class="csp-gnode-label on">NT</text><text x="117.8" y="81.4" class="csp-gnode-sub">{R}</text></g><g class="csp-gnode bad"><circle cx="192.9" cy="65.9" r="15" fill="#ffffff"></circle><text x="192.9" y="69.9" class="csp-gnode-label ">Q</text><text x="192.9" y="93.9" class="csp-gnode-sub">∅</text></g><g class="csp-gnode "><circle cx="230.4" cy="132.5" r="15" fill="#22c55e"></circle><text x="230.4" y="136.5" class="csp-gnode-label on">NSW</text><text x="230.4" y="160.5" class="csp-gnode-sub">{G}</text></g><g class="csp-gnode "><circle cx="176.8" cy="190.7" r="15" fill="#ef4444"></circle><text x="176.8" y="194.7" class="csp-gnode-label on">V</text></g><g class="csp-gnode "><circle cx="133.9" cy="136.6" r="15" fill="#3b82f6"></circle><text x="133.9" y="140.6" class="csp-gnode-label on">SA</text><text x="133.9" y="164.6" class="csp-gnode-sub">{B}</text></g><g class="csp-gnode "><circle cx="246.5" cy="203.2" r="15" fill="#ffffff"></circle><text x="246.5" y="207.2" class="csp-gnode-label ">T</text><text x="246.5" y="231.2" class="csp-gnode-sub">{R,G,B}</text></g></svg>
+                    <figcaption>The state when AC-3 stops. Q's three neighbours have been forced to R, B and G — one of each colour — so nothing is left for Q.</figcaption>
+                  </figure>
+                  <p>The two assignments force a chain of consequences: SA must avoid both green (WA) and red (V), so SA = blue. Then NT (next to WA and SA) must be red and NSW (next to V and SA) must be green. Q touches NT, SA and NSW, which now use all three colours.</p>
+                </div>
+                <div class="formula-box">WA = G, V = R &nbsp;⟹&nbsp; SA = B &nbsp;⟹&nbsp; NT = R, NSW = G &nbsp;⟹&nbsp; D(Q) = ∅ &nbsp;·&nbsp; inconsistent</div>
+                <div class="teaching-tip"><i data-lucide="lightbulb"></i><span>Forward checking would <em>not</em> catch this right away: after WA = green and V = red it only prunes the direct neighbours of WA and V, and every domain is still non-empty. Arc consistency follows the chain through SA, NT and NSW to Q, so a solver using MAC would reject V = red immediately instead of searching beneath it.</span></div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Exercise 11 (AIMA Ex 6.15) -->
+          <div class="rp-exercise" id="ex11">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 11</span>
+              <h3 class="rp-exercise-title">Why TREE-CSP-SOLVER Works from the Leaves Up</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p><em>Adapted from AIMA Exercise 6.15.</em> In its first pass, TREE-CSP-SOLVER (Section 4.4) makes each arc (PARENT(X<sub>j</sub>), X<sub>j</sub>) consistent for j = n <em>down to</em> 2 — that is, starting at the leaves and moving towards the root. Why does it go in this direction? What would go wrong if it went from the root towards the leaves instead?</p>
+              <p>Use this small tree (all edges are ≠ constraints, topological order A, B, D, C) to support your answer:</p>
+              <figure class="rp-ex-figure">
+                <svg viewBox="0 0 220 252" class="rp-ex-graph-svg" style="max-width:260px" xmlns="http://www.w3.org/2000/svg"><text x="110" y="16" class="rp-ex-panel-title">ROOT A · ORDER A, B, D, C</text><line x1="110" y1="48" x2="60" y2="128" class="csp-gedge "></line><line x1="110" y1="48" x2="160" y2="128" class="csp-gedge "></line><line x1="60" y1="128" x2="60" y2="208" class="csp-gedge "></line><g class="csp-gnode "><circle cx="110" cy="48" r="17" fill="#ffffff"></circle><text x="110" y="52" class="csp-gnode-label ">A</text><text x="110" y="78" class="csp-gnode-sub">{G, R}</text></g><g class="csp-gnode "><circle cx="60" cy="128" r="17" fill="#ffffff"></circle><text x="60" y="132" class="csp-gnode-label ">B</text><text x="60" y="158" class="csp-gnode-sub">{R, G}</text></g><g class="csp-gnode "><circle cx="160" cy="128" r="17" fill="#ffffff"></circle><text x="160" y="132" class="csp-gnode-label ">D</text><text x="160" y="158" class="csp-gnode-sub">{G, B}</text></g><g class="csp-gnode "><circle cx="60" cy="208" r="17" fill="#ffffff"></circle><text x="60" y="212" class="csp-gnode-label ">C</text><text x="60" y="238" class="csp-gnode-sub">{R}</text></g></svg>
+                <figcaption>Root A with children B and D; C is a child of B. Values are tried in the order listed in each domain.</figcaption>
+              </figure>
+              <div class="csp-tip-box csp-rp-box"><div class="csp-box-label"><i data-lucide="search"></i> Hint</div><div class="csp-tip-text">Making the arc (P, X) consistent can only remove values from the <strong>parent</strong> P. Ask: after a domain shrinks, which arcs that were already processed could become inconsistent again?</div></div>
+            </div>
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
+              <div class="rp-answer-body">
+                <figure class="rp-ex-figure">
+                  <svg viewBox="0 0 470 300" class="rp-ex-graph-svg" xmlns="http://www.w3.org/2000/svg"><text x="110" y="16" class="rp-ex-panel-title">LEAVES → ROOT (correct)</text><line x1="110" y1="48" x2="60" y2="128" class="csp-gedge "></line><line x1="110" y1="48" x2="160" y2="128" class="csp-gedge "></line><line x1="60" y1="128" x2="60" y2="208" class="csp-gedge "></line><circle cx="37" cy="168" r="9" class="csp-step-dot"></circle><text x="37" y="172" class="csp-step-num">1</text><circle cx="158" cy="88" r="9" class="csp-step-dot"></circle><text x="158" y="92" class="csp-step-num">2</text><circle cx="62" cy="88" r="9" class="csp-step-dot"></circle><text x="62" y="92" class="csp-step-num">3</text><g class="csp-gnode "><circle cx="110" cy="48" r="17" fill="#ffffff"></circle><text x="110" y="52" class="csp-gnode-label ">A</text><text x="110" y="78" class="csp-gnode-sub">{R}</text></g><g class="csp-gnode "><circle cx="60" cy="128" r="17" fill="#ffffff"></circle><text x="60" y="132" class="csp-gnode-label ">B</text><text x="60" y="158" class="csp-gnode-sub">{G}</text></g><g class="csp-gnode "><circle cx="160" cy="128" r="17" fill="#ffffff"></circle><text x="160" y="132" class="csp-gnode-label ">D</text><text x="160" y="158" class="csp-gnode-sub">{G, B}</text></g><g class="csp-gnode "><circle cx="60" cy="208" r="17" fill="#ffffff"></circle><text x="60" y="212" class="csp-gnode-label ">C</text><text x="60" y="238" class="csp-gnode-sub">{R}</text></g><text x="110" y="258" class="csp-tn-note ok">A = R, B = G, D = G, C = R</text><text x="110" y="272" class="csp-tn-note ok">no backtracking</text><line x1="235" y1="8" x2="235" y2="290" class="rp-ex-divider"></line><text x="360" y="16" class="rp-ex-panel-title">ROOT → LEAVES (wrong)</text><line x1="360" y1="48" x2="310" y2="128" class="csp-gedge "></line><line x1="360" y1="48" x2="410" y2="128" class="csp-gedge "></line><line x1="310" y1="128" x2="310" y2="208" class="csp-gedge "></line><circle cx="312" cy="88" r="9" class="csp-step-dot"></circle><text x="312" y="92" class="csp-step-num">1</text><circle cx="408" cy="88" r="9" class="csp-step-dot"></circle><text x="408" y="92" class="csp-step-num">2</text><circle cx="287" cy="168" r="9" class="csp-step-dot"></circle><text x="287" y="172" class="csp-step-num">3</text><g class="csp-gnode bad"><circle cx="360" cy="48" r="17" fill="#ffffff"></circle><text x="360" y="52" class="csp-gnode-label ">A</text><text x="360" y="78" class="csp-gnode-sub">{G, R}</text></g><g class="csp-gnode bad"><circle cx="310" cy="128" r="17" fill="#ffffff"></circle><text x="310" y="132" class="csp-gnode-label ">B</text><text x="310" y="158" class="csp-gnode-sub">{G}</text></g><g class="csp-gnode "><circle cx="410" cy="128" r="17" fill="#ffffff"></circle><text x="410" y="132" class="csp-gnode-label ">D</text><text x="410" y="158" class="csp-gnode-sub">{G, B}</text></g><g class="csp-gnode "><circle cx="310" cy="208" r="17" fill="#ffffff"></circle><text x="310" y="212" class="csp-gnode-label ">C</text><text x="310" y="238" class="csp-gnode-sub">{R}</text></g><text x="360" y="258" class="csp-tn-note bad">arc (A, B) broken by step 3</text><text x="360" y="272" class="csp-tn-note bad">A = G → B has no value → backtrack</text></svg>
+                  <figcaption>Numbered circles show the order in which arcs are revised. Left: leaves first — every domain is final before its parent is revised. Right: root first — step 3 shrinks D(B) after (A, B) was already checked, leaving A = G without support.</figcaption>
+                </figure>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">1. Leaves → root (the algorithm's order)</span>
+                  <div class="rp-pseudocode"><pre>1. (B, C): B = R has no support (C = R)  → D(B) = {G}
+2. (A, D): every A value has support    → no change
+3. (A, B): A = G has no support (B = G)  → D(A) = {R}
+Forward pass: A = R, B = G, D = G, C = R   ✓ no backtracking</pre></div>
+                  <p>When (A, B) is revised, D(B) is already final: all of B's own children were handled earlier and nothing later will touch D(B). So once the pass ends, every parent value has a supporting value in each child, and the forward pass from the root can always pick a consistent value.</p>
+                </div>
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">2. Root → leaves (the wrong order)</span>
+                  <div class="rp-pseudocode"><pre>1. (A, B): both A values have support (B still {R, G}) → no change
+2. (A, D): no change
+3. (B, C): B = R has no support                         → D(B) = {G}
+Forward pass: A = G (first value) → B must be ≠ G but D(B) = {G}   ✗ backtrack</pre></div>
+                  <p>Step 3 removed a value from B <em>after</em> the arc (A, B) had been declared consistent, so A = G lost its only support. The pass ends with an arc that is not consistent, and the forward pass can hit a dead end. To fix it we would have to re-check (A, B) — i.e. go back up the tree, which is exactly the leaves-first order.</p>
+                </div>
+                <div class="formula-box">Revising (P, X) shrinks only D(P) &nbsp;⟹&nbsp; process children before parents so no finished arc is ever broken &nbsp;⟹&nbsp; O(n·d²), no backtracking</div>
+              </div>
+            </details>
+          </div>
         </section>
 
       </article>

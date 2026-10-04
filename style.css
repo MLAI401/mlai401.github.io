@@ -6450,6 +6450,46 @@ text.csp-hyper-label { paint-order: normal; }
 .csp-reading .rp-ex-figure .csp-queen text { fill: #fff; text-anchor: middle; }
 @media (max-width: 640px) { .csp-rp-duo { grid-template-columns: 1fr; } }
 
+/* ---- Topic 04 reading: exercises 7-11 (search trees, demo boxes, jump arrows) ---- */
+.csp-reading .csp-rp-box { margin: 0.9rem 0 0; }
+.csp-reading .csp-rp-box .csp-notation-text,
+.csp-reading .csp-rp-box .csp-def-text,
+.csp-reading .csp-rp-box .csp-tip-text { font-size: 0.86rem; }
+.csp-reading .rp-answer-body .teaching-tip { margin-top: 0.9rem; }
+.csp-reading .rp-answer-body > .rp-ex-figure { margin: 0 0 1rem; }
+.csp-reading .csp-rp-box + p { margin-top: 0.9rem; }
+.csp-reading .rp-ex-figure .csp-graph-svg { max-width: 340px; margin: 0 auto; display: block; }
+.csp-tn rect { fill: #ffffff; stroke: #334155; stroke-width: 1.4; }
+.csp-tn text { font: 700 11px 'Outfit', sans-serif; fill: #0f172a; text-anchor: middle; dominant-baseline: middle; }
+.csp-tn.root rect { fill: #1e293b; stroke: #1e293b; }
+.csp-tn.root text { fill: #ffffff; }
+.csp-tn.path rect { stroke: var(--csp-accent); stroke-width: 2.2; fill: #f0fdfa; }
+.csp-tn.dead rect, .csp-tn.skip rect { stroke: #94a3b8; fill: #f8fafc; }
+.csp-tn.dead text, .csp-tn.skip text { fill: #64748b; }
+.csp-tn.fail rect { stroke: var(--csp-bad); stroke-dasharray: 4 3; fill: #fef2f2; }
+.csp-tn.fail text { fill: var(--csp-bad); }
+.csp-tn.jump rect { stroke: var(--csp-warn); stroke-width: 2.2; fill: #fffbeb; }
+.csp-tn.goal rect { stroke: var(--csp-ok); stroke-width: 2.8; fill: #ecfdf5; }
+.csp-tn.goal text { fill: var(--csp-ok); }
+.csp-tn-note { font: 600 9.5px 'Outfit', sans-serif; fill: var(--text-muted); text-anchor: middle; }
+.csp-tn-note.bad { fill: var(--csp-bad); }
+.csp-tn-note.ok { fill: var(--csp-ok); font-weight: 800; }
+.csp-tedge { stroke: #cbd5e1; stroke-width: 1.6; }
+.csp-tedge.path { stroke: var(--csp-accent); stroke-width: 2.4; }
+.csp-tedge.fail { stroke: var(--csp-bad); stroke-dasharray: 4 4; opacity: 0.7; }
+.csp-gedge.bad { stroke: var(--csp-bad); stroke-width: 2.6; }
+.csp-gnode.bad circle { stroke: var(--csp-bad); stroke-width: 3.2; }
+.csp-hyper rect { fill: #fffbeb; stroke: var(--csp-warn); stroke-width: 1.8; }
+.csp-hyper text { font: 800 11px 'JetBrains Mono', monospace; fill: #92400e; text-anchor: middle; }
+.csp-digit { font: 800 26px 'JetBrains Mono', monospace; fill: #0f172a; text-anchor: middle; }
+.csp-carry { font: 700 12px 'Outfit', sans-serif; fill: var(--csp-accent); text-anchor: middle; }
+.csp-carry-arrow { fill: none; stroke: var(--csp-accent); stroke-width: 1.3; stroke-dasharray: 3 3; }
+.csp-sumline { stroke: #0f172a; stroke-width: 2; }
+.csp-order-tag { font: 700 9.5px 'Outfit', sans-serif; fill: var(--csp-accent); }
+.csp-jump { fill: none; stroke: var(--csp-bad); stroke-width: 2; }
+.csp-step-dot { fill: var(--csp-accent); }
+.csp-step-num { font: 800 10px 'Outfit', sans-serif; fill: #ffffff; text-anchor: middle; }
+
 /* Compact lecture layout for short (laptop / projector) screens */
 @media (min-width: 901px) and (max-height: 820px) {
   .csp-page .sl-topbar { padding: 0.5rem 1.5rem; }
