@@ -1643,7 +1643,29 @@
         const csp = E.makeSudokuCSP(p.puzzle, 4);
         const d = E.copyDomains(csp.domains);
         const r = E.ac3(csp, d, null, { trace: true });
-        const steps = r.steps.filter(s => s.kind !== 'keep');
+        // Split every REVISE into two steps: (a) select the arc — highlight Xi/Xj with
+        // the domains still unchanged; (b) apply REVISE — remove the unsupported values.
+        // Stop the demo once propagation alone has fixed the first two blank cells.
+        const nm = v => v.replace(/r(\d)c(\d)/, (m, a, b) => `(${+a + 1},${+b + 1})`);
+        const set = vals => '{' + vals.join(', ') + '}';
+        const blanks = csp.variables.filter((v, idx) => p.puzzle[idx] === '.');
+        const steps = [];
+        let prev = null;
+        for (const s of r.steps) {
+          if (s.kind === 'keep') { prev = s; continue; }
+          if (s.kind === 'revise' || s.kind === 'wipeout') {
+            const [Xi, Xj] = s.arc, d = prev.domains;
+            steps.push({ kind: 'select', arc: s.arc, domains: d,
+              msg: `Next arc from the queue: (${nm(Xi)}, ${nm(Xj)}). Check every value of D${nm(Xi)} = ${set(d[Xi])} for a supporting value in D${nm(Xj)} = ${set(d[Xj])} — nothing removed yet.` });
+          }
+          steps.push(s);
+          prev = s;
+          if (s.kind === 'revise' && blanks.filter(v => s.domains[v].length === 1).length >= 2) {
+            steps.push({ kind: 'stop', domains: s.domains,
+              msg: 'Two blank cells are now fixed by propagation alone — demo stops here. AC-3 keeps popping arcs the same way until the queue is empty and the whole grid is solved.' });
+            break;
+          }
+        }
         this._sud = { csp, steps, puzzle: p.puzzle, checks: r.checks };
       }
       const { csp, steps, puzzle } = this._sud;
@@ -1653,7 +1675,8 @@
         const dom = s.domains[v];
         const given = puzzle[idx] !== '.';
         const cur = s.arc && s.arc[0] === v, src = s.arc && s.arc[1] === v;
-        const inner = dom.length === 1 ? `<span class="csp-sud-val">${dom[0]}</span>` : `<div class="csp-sud-cands">${[1, 2, 3, 4].map(dg => `<span class="${dom.includes(dg) ? '' : 'off'}">${dg}</span>`).join('')}</div>`;
+        const rem = s.kind === 'revise' && cur ? s.removed : [];
+        const inner = dom.length === 1 && !rem.length ? `<span class="csp-sud-val">${dom[0]}</span>` : `<div class="csp-sud-cands">${[1, 2, 3, 4].map(dg => `<span class="${rem.includes(dg) ? 'cut' : dom.includes(dg) ? '' : 'off'}">${dg}</span>`).join('')}</div>`;
         return `<div class="csp-sud-cell ${given ? 'given' : ''} ${dom.length === 1 && !given ? 'solved' : ''} ${cur ? 'cur' : ''} ${src ? 'src' : ''} ${this.sudBorder(idx, 4)}">${inner}</div>`;
       }).join('');
       const solved = csp.variables.filter(v => s.domains[v].length === 1).length;

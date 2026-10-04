@@ -6217,6 +6217,7 @@ text.csp-hyper-label { paint-order: normal; }
 .csp-sud-cell.solved { background: rgba(13, 148, 136, 0.08); }
 .csp-sud-cell.cur { background: rgba(13, 148, 136, 0.25); }
 .csp-sud-cell.src { box-shadow: inset 0 0 0 2.5px #f59e0b; }
+.csp-sud-cands span.cut { color: #dc2626; text-decoration: line-through; font-weight: 700; }
 .csp-sud-cell.guess { color: var(--accent-purple); }
 .csp-sud-cands { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0 6px; font: 600 0.72rem 'Outfit', sans-serif; color: var(--text-muted); }
 .csp-sudoku-9 .csp-sud-cands { grid-template-columns: repeat(3, 1fr); gap: 0 2px; font-size: 0.5rem; line-height: 1.05; }
