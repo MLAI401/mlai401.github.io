@@ -6786,7 +6786,7 @@ text.csp-hyper-label { paint-order: normal; }
 .knowledge-badge-accent {
   background: var(--kl-accent-soft) !important;
   border-color: var(--kl-accent-border) !important;
-  color: #c4b5fd !important;
+  color: var(--kl-accent) !important;
 }
 
 .knowledge-topbar-actions {
@@ -6811,11 +6811,11 @@ text.csp-hyper-label { paint-order: normal; }
 .wumpus-cell:hover,
 .wumpus-lab-cell:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: var(--shadow-md);
 }
 
 .dag-node:hover circle,
 .kl-bn-node:hover circle {
-  filter: brightness(1.25);
+  filter: brightness(0.95);
 }
 

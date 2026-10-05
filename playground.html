@@ -15,7 +15,7 @@
   <meta property="og:type" content="website">
   
   <!-- Style Sheet -->
-  <link rel="stylesheet" href="style.css?v=13">
+  <link rel="stylesheet" href="style.css?v=16">
 </head>
 <body>
   
@@ -1376,8 +1376,8 @@
                     <i data-lucide="rotate-ccw"></i> Reset World
                   </button>
                 </div>
-                <div style="font-size: 0.78rem; font-weight: 700; color: #94a3b8; margin-bottom: 0.4rem;">Live KB Assertion Log:</div>
-                <div id="kl-wumpus-kb-log" style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; background: rgba(0,0,0,0.4); border-radius: 6px; padding: 0.75rem; height: 160px; overflow-y: auto; color: #c4b5fd;"></div>
+                <div style="font-size: 0.78rem; font-weight: 700; color: #64748b; margin-bottom: 0.4rem;">Live KB Assertion Log:</div>
+                <div id="kl-wumpus-kb-log" style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; background: rgba(15,23,42,0.06); border-radius: 6px; padding: 0.75rem; height: 160px; overflow-y: auto; color: #6d28d9;"></div>
               </div>
             </div>
           </div>
@@ -1387,9 +1387,9 @@
         <div class="kl-subview" id="kl-logic-view">
           <div class="playground-grid">
             <div class="canvas-container glass-panel" style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; min-height: 420px; overflow-y: auto;">
-              <h4 style="font-size: 0.95rem; color: #fff; font-weight: 700;">Truth Table &amp; Model Counter</h4>
-              <div id="kl-logic-tt-output" style="background: rgba(15,23,42,0.6); border-radius: 8px; padding: 0.75rem; overflow-x: auto;"></div>
-              <h4 style="font-size: 0.95rem; color: #fff; font-weight: 700; margin-top: 0.5rem;">4-Step CNF Transformation</h4>
+              <h4 style="font-size: 0.95rem; color: var(--text-primary); font-weight: 700;">Truth Table &amp; Model Counter</h4>
+              <div id="kl-logic-tt-output" style="background: #ffffff; border-radius: 8px; padding: 0.75rem; overflow-x: auto;"></div>
+              <h4 style="font-size: 0.95rem; color: var(--text-primary); font-weight: 700; margin-top: 0.5rem;">4-Step CNF Transformation</h4>
               <div id="kl-logic-cnf-output"></div>
             </div>
             <div class="playground-controls glass-panel">
@@ -1399,8 +1399,8 @@
                   Enter any propositional sentence using standard syntax: <code>&amp;</code> (AND), <code>|</code> (OR), <code>~</code> (NOT), <code>&gt;&gt;</code> (IMPLIES), <code>&lt;=&gt;</code> (BICONDITIONAL).
                 </p>
                 <div style="margin-bottom: 1rem;">
-                  <label style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 0.3rem;">Propositional Formula:</label>
-                  <input type="text" id="kl-logic-input" value="(P | Q) >> (R &amp; S)" style="width: 100%; padding: 0.6rem; border-radius: 6px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-family: monospace; font-size: 0.85rem;">
+                  <label style="font-size: 0.8rem; color: #64748b; display: block; margin-bottom: 0.3rem;">Propositional Formula:</label>
+                  <input type="text" id="kl-logic-input" value="(P | Q) >> (R &amp; S)" style="width: 100%; padding: 0.6rem; border-radius: 6px; background: rgba(15,23,42,0.06); border: 1px solid rgba(15,23,42,0.1); color: var(--text-primary); font-family: monospace; font-size: 0.85rem;">
                 </div>
                 <button class="control-btn primary" id="kl-logic-eval-btn" style="width: 100%;">
                   <i data-lucide="play"></i> Parse &amp; Evaluate
@@ -1418,17 +1418,17 @@
               <div class="controls-group">
                 <h3>Bayesian Network Workbench</h3>
                 <div style="margin-bottom: 1rem;">
-                  <label style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 0.3rem;">Preloaded Network:</label>
-                  <select id="kl-bayes-net-select" style="width: 100%; padding: 0.5rem; border-radius: 6px; background: #1e293b; color: #fff; border: 1px solid rgba(255,255,255,0.1);">
+                  <label style="font-size: 0.8rem; color: #64748b; display: block; margin-bottom: 0.3rem;">Preloaded Network:</label>
+                  <select id="kl-bayes-net-select" style="width: 100%; padding: 0.5rem; border-radius: 6px; background: #ffffff; color: var(--text-primary); border: 1px solid rgba(15,23,42,0.1);">
                     <option value="alarm">AIMA Burglar Alarm Network (5 Nodes)</option>
                     <option value="wetgrass">Wet Grass / Sprinkler Network (4 Nodes)</option>
                     <option value="medical">Medical Diagnostic Test (2 Nodes)</option>
                   </select>
                 </div>
                 <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                  Click any node on the DAG to toggle evidence: <strong style="color: #10b981;">True</strong> &rarr; <strong style="color: #f43f5e;">False</strong> &rarr; <strong style="color: #94a3b8;">Unobserved</strong>. Posteriors update instantly via exact enumeration.
+                  Click any node on the DAG to toggle evidence: <strong style="color: #10b981;">True</strong> &rarr; <strong style="color: #f43f5e;">False</strong> &rarr; <strong style="color: #64748b;">Unobserved</strong>. Posteriors update instantly via exact enumeration.
                 </p>
-                <div style="font-size: 0.78rem; font-weight: 700; color: #94a3b8; margin-bottom: 0.4rem;">Marginal Posteriors:</div>
+                <div style="font-size: 0.78rem; font-weight: 700; color: #64748b; margin-bottom: 0.4rem;">Marginal Posteriors:</div>
                 <div id="kl-bayes-posteriors"></div>
               </div>
             </div>
@@ -1439,7 +1439,7 @@
         <div class="kl-subview" id="kl-sampling-view">
           <div class="playground-grid">
             <div class="canvas-container glass-panel" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: center; gap: 1.25rem; min-height: 420px;">
-              <div class="glass-panel" style="padding: 1rem; border-radius: 10px; background: rgba(30,41,59,0.5); border-left: 4px solid #f43f5e;">
+              <div class="glass-panel" style="padding: 1rem; border-radius: 10px; background: rgba(15,23,42,0.03); border-left: 4px solid #f43f5e;">
                 <div style="font-size: 0.85rem; font-weight: 700; color: #f43f5e; margin-bottom: 0.3rem;">Rejection Sampling Estimate:</div>
                 <div id="kl-sampling-rej-out"></div>
               </div>
@@ -1455,8 +1455,8 @@
                   Simulate stochastic sampling for query <code>P(Burglary | JohnCalls=True, MaryCalls=True)</code> (Ground Truth = 28.42%).
                 </p>
                 <div style="margin-bottom: 1rem;">
-                  <label style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 0.3rem;">Sample Size (N):</label>
-                  <select id="kl-sampling-n-select" style="width: 100%; padding: 0.5rem; border-radius: 6px; background: #1e293b; color: #fff; border: 1px solid rgba(255,255,255,0.1);">
+                  <label style="font-size: 0.8rem; color: #64748b; display: block; margin-bottom: 0.3rem;">Sample Size (N):</label>
+                  <select id="kl-sampling-n-select" style="width: 100%; padding: 0.5rem; border-radius: 6px; background: #ffffff; color: var(--text-primary); border: 1px solid rgba(15,23,42,0.1);">
                     <option value="1000">1,000 Samples</option>
                     <option value="5000" selected>5,000 Samples</option>
                     <option value="20000">20,000 Samples</option>
@@ -1800,7 +1800,7 @@
   <!-- Knowledge & Reasoning (Topic 05): logic engine → bayes engine → lab -->
   <script src="demos/knowledge_demo/logic_engine.js?v=2"></script>
   <script src="demos/knowledge_demo/bayes_engine.js?v=1"></script>
-  <script src="demos/knowledge_demo/knowledge_lab.js?v=2"></script>
+  <script src="demos/knowledge_demo/knowledge_lab.js?v=3"></script>
 
   <script src="demos/vaccum_demo/environment.js?v=2"></script>
   <script src="demos/vaccum_demo/agents.js?v=2"></script>
