@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learning &amp; Decision Making — Reading Notes - MLAI401 Foundational AI &amp; ML</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Textbook-style reading notes for Topic 06, Learning & Decision Making: Supervised Learning (Bag-of-Words, TF-IDF, Naive Bayes Classification, Confusion Matrix, Precision, Recall, F1), Neural Networks (Perceptron, Multi-Layer Perceptrons, Loss & Gradient Descent), Unsupervised Learning (K-Means Clustering), and Reinforcement Learning (Markov Decision Processes, Value Iteration, Tabular Q-Learning). Adapted from AIMA, Sutton & Barto, and Manning et al.">
+  <meta name="keywords" content="Machine Learning, Supervised Learning, Text Features, Bag of Words, TF-IDF, Naive Bayes, Laplace Smoothing, Confusion Matrix, Precision, Recall, F1 Score, Neural Networks, Perceptron, Gradient Descent, Deep Learning, K-Means Clustering, Reinforcement Learning, MDP, Bellman Equations, Value Iteration, Q-Learning, SARSA, AIMA">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="MLAI401 - Learning &amp; Decision Making: Reading Notes">
+  <meta property="og:description" content="A comprehensive textbook companion to Learning & Decision Making: Supervised Features, Naive Bayes, Neural Networks, K-Means, and Reinforcement Learning.">
+  <meta property="og:type" content="article">
+
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="style.css?v=17">
+</head>
+<body class="learning-reading">
+
+  <!-- Navigation Header -->
+  <header class="navbar" id="navbar-header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo" id="logo-link">
+        <span class="logo-icon">M</span>
+        MLAI401
+      </a>
+
+      <button class="menu-toggle" id="menu-toggle-btn" aria-label="Toggle Navigation Menu">
+        <i data-lucide="menu"></i>
+      </button>
+
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="index.html" class="nav-link" id="nav-home">Home</a></li>
+        <li><a href="curriculum.html" class="nav-link active" id="nav-curr">Curriculum</a></li>
+        <li><a href="playground.html" class="nav-link" id="nav-play">Playground</a></li>
+        <li><a href="index.html#resources" class="nav-link" id="nav-res">Resources</a></li>
+      </ul>
+
+      <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="nav-btn" id="nav-github-btn">
+        <i data-lucide="github"></i> GitHub Profile
+      </a>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Masthead -->
+    <section class="rp-masthead">
+      <div class="container rp-masthead-inner">
+        <a href="learning.html" class="sl-breadcrumb"><i data-lucide="arrow-left"></i> Learning &amp; Decision Making</a>
+
+        <div class="rp-title-row">
+          <span class="sl-topic-badge learning-badge-accent"><i data-lucide="book-open"></i> Topic 06 &middot; Reading</span>
+        </div>
+        <h1>Learning &amp; Decision Making — Reading Notes</h1>
+
+        <p class="rp-lede">These notes follow the structured 4-pillar curriculum of the interactive <a href="learning.html">Learning &amp; Decision Making</a> lecture: <strong>Supervised Machine Learning</strong> (Text Features: BoW &amp; TF-IDF, Naive Bayes Classification, and Model Evaluation), <strong>Neural Networks</strong> (Perceptrons, Activations, Loss, and Gradient Descent), <strong>Unsupervised Learning</strong> (K-Means Clustering), and <strong>Reinforcement Learning</strong> (Markov Decision Processes, Bellman Equations, and Tabular Q-Learning). Every algorithm and numerical formula on this page matches the reference implementations in <a href="playground.html#view-kmeans">Playground</a> and <code>python_sandbox/</code>.</p>
+
+        <div class="rp-citation">
+          <i data-lucide="quote"></i>
+          <span>Adapted from <em>Artificial Intelligence: A Modern Approach</em> (AIMA, 4th ed.) by Stuart Russell &amp; Peter Norvig, <em>Reinforcement Learning: An Introduction</em> (2nd ed.) by Richard S. Sutton &amp; Andrew G. Barto, and <em>Introduction to Information Retrieval</em> by Christopher D. Manning, Prabhakar Raghavan, &amp; Hinrich Schütze.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- TOC + Article Layout -->
+    <div class="container rp-layout">
+
+      <aside class="rp-toc" id="rp-toc">
+        <div class="rp-toc-label">On This Page</div>
+        <nav aria-label="Table of contents">
+          <a class="rp-toc-h2" href="#sec-supervised-ml">1. Supervised Machine Learning</a>
+          <a class="rp-toc-h3" href="#text-features">1.1 Text Features: BoW &amp; TF-IDF</a>
+          <a class="rp-toc-h3" href="#naive-bayes">1.2 Naive Bayes Classification</a>
+          <a class="rp-toc-h3" href="#model-eval">1.3 Model Evaluation &amp; Metrics</a>
+
+          <a class="rp-toc-h2" href="#sec-neural-nets">2. Neural Networks &amp; Optimization</a>
+          <a class="rp-toc-h3" href="#perceptron">2.1 The Perceptron Model</a>
+          <a class="rp-toc-h3" href="#mlp-layers">2.2 Multi-Layer Networks &amp; Activations</a>
+          <a class="rp-toc-h3" href="#gradient-descent">2.3 Loss Functions &amp; Gradient Descent</a>
+          <a class="rp-toc-h3" href="#deep-learning-overview">2.4 Deep Learning &amp; Representations</a>
+
+          <a class="rp-toc-h2" href="#sec-unsupervised">3. Unsupervised Learning</a>
+          <a class="rp-toc-h3" href="#kmeans-algorithm">3.1 K-Means Clustering Algorithm</a>
+          <a class="rp-toc-h3" href="#voronoi-elbow">3.2 Voronoi Cells &amp; The Elbow Method</a>
+
+          <a class="rp-toc-h2" href="#sec-rl">4. Reinforcement Learning</a>
+          <a class="rp-toc-h3" href="#mdp-formulation">4.1 Markov Decision Processes (MDPs)</a>
+          <a class="rp-toc-h3" href="#value-iteration">4.2 Bellman Equations &amp; Value Iteration</a>
+          <a class="rp-toc-h3" href="#q-learning">4.3 Tabular Q-Learning &amp; SARSA</a>
+
+          <a class="rp-toc-h2" href="#sec-comparison">5. Paradigm Comparison</a>
+          <a class="rp-toc-h3" href="#comparison-table">5.1 ML vs. Neural Nets vs. K-Means vs. RL</a>
+
+          <a class="rp-toc-h2" href="#exercises">6. Practice Exercises &amp; Worked Solutions</a>
+          <a class="rp-toc-h3" href="#ex1">6.1 Bag-of-Words &amp; TF-IDF Calculation</a>
+          <a class="rp-toc-h3" href="#ex2">6.2 Naive Bayes Spam Classification</a>
+          <a class="rp-toc-h3" href="#ex3">6.3 Confusion Matrix &amp; F1-Score</a>
+          <a class="rp-toc-h3" href="#ex4">6.4 Perceptron Learning Rule Update</a>
+          <a class="rp-toc-h3" href="#ex5">6.5 K-Means Centroid Assignment &amp; Shift</a>
+          <a class="rp-toc-h3" href="#ex6">6.6 Bellman Value Iteration Step</a>
+          <a class="rp-toc-h3" href="#ex7">6.7 Q-Learning TD Update Calculation</a>
+        </nav>
+      </aside>
+
+      <article class="rp-article">
+
+        <!-- ================= 1. SUPERVISED MACHINE LEARNING ================= -->
+        <section id="sec-supervised-ml">
+          <h2><span class="rp-num">1.</span>Supervised Machine Learning</h2>
+
+          <p>In classical knowledge engineering, rules are handcrafted by humans. In <strong>Supervised Machine Learning</strong>, the agent receives a dataset of labeled training examples <code>D = {(&lang;x<sub>1</sub>, y<sub>1</sub>&rang;), &hellip;, (&lang;x<sub>N</sub>, y<sub>N</sub>&rang;)}</code> and learns a statistical hypothesis function <code>h: X &rarr; Y</code> that generalizes accurately to unseen test instances.</p>
+
+          <h3 id="text-features"><span class="rp-num">1.1</span>Text Features: Bag-of-Words &amp; TF-IDF</h3>
+          <p>Text is unstructured. To classify text with machine learning algorithms, documents must be mapped into numerical feature vectors.</p>
+
+          <ul>
+            <li><strong>Tokenization &amp; Vocabulary:</strong> The raw text is split into tokens, normalized to lowercase, and mapped against a vocabulary index <code>V = {w<sub>1</sub>, &hellip;, w<sub>|V|}</sub></code>.</li>
+            <li><strong>Bag-of-Words (BoW):</strong> Represents document <code>d</code> as a multiset count vector <code>x = &lang;c(w<sub>1</sub>, d), &hellip;, c(w<sub>|V|</sub>, d)&rang;</code>. Word order is discarded, but term frequencies provide strong topical signals.</li>
+            <li><strong>Term Frequency (TF):</strong> The relative frequency of term <code>t</code> in document <code>d</code>: <code>TF(t, d) = count(t, d) / |d|</code>.</li>
+            <li><strong>Inverse Document Frequency (IDF):</strong> Quantifies how much discriminative information a term carries across all <code>N</code> documents in corpus <code>D</code>:
+              <div class="formula-box">IDF(t, D) = log[ N / DF(t) ] &emsp; (where DF(t) is document frequency of term t)</div>
+            </li>
+            <li><strong>TF-IDF Weighting:</strong> High TF-IDF means a word is frequent in the specific document but rare across the general corpus:
+              <div class="formula-box">TF-IDF(t, d, D) = TF(t, d) &times; IDF(t, D)</div>
+            </li>
+          </ul>
+
+          <h3 id="naive-bayes"><span class="rp-num">1.2</span>Naive Bayes Classification</h3>
+          <p><strong>Naive Bayes</strong> is a generative probabilistic classifier rooted in Bayes' Rule. Given a feature vector <code>x = &lang;x<sub>1</sub>, &hellip;, x<sub>d</sub>&rang;</code>, the agent finds the class <code>c &isin; C</code> that maximizes the posterior probability (Maximum A Posteriori / MAP):</p>
+
+          <div class="formula-box">
+            c<sup>*</sup> = argmax<sub>c &isin; C</sub> P(c | x) = argmax<sub>c &isin; C</sub> [ P(c) &middot; P(x | c) ]
+          </div>
+
+          <p>The <strong>Conditional Independence Assumption</strong> asserts that all feature attributes are conditionally independent given the class:</p>
+
+          <div class="formula-box">
+            P(x<sub>1</sub>, &hellip;, x<sub>d</sub> | c) = &prod;<sub>i=1</sub><sup>d</sup> P(x<sub>i</sub> | c)
+          </div>
+
+          <p>For text classification (Multinomial Naive Bayes), word counts multiply across the document. To prevent unseen words from multiplying the total probability to zero (the <em>zero-probability trap</em>), <strong>Laplace (Add-1) Smoothing</strong> is applied:</p>
+
+          <div class="formula-box">
+            P̂(w | c) = [ count(w, c) + 1 ] / [ &sum;<sub>w'</sub> count(w', c) + |V| ]
+          </div>
+
+          <p>In practice, computations are performed in <strong>log-space</strong> to prevent floating-point underflow:</p>
+          <div class="formula-box">
+            c<sup>*</sup> = argmax<sub>c &isin; C</sub> [ log P(c) + &sum;<sub>i=1</sub><sup>d</sup> log P(x<sub>i</sub> | c) ]
+          </div>
+
+          <h3 id="model-eval"><span class="rp-num">1.3</span>Model Evaluation &amp; Performance Metrics</h3>
+          <p>Evaluating a classifier on held-out test data produces a 2&times;2 <strong>Confusion Matrix</strong>:</p>
+
+          <div style="overflow-x: auto; margin: 1rem 0;">
+            <table style="width: 100%; border-collapse: collapse; text-align: center;">
+              <thead>
+                <tr style="background: rgba(16,185,129,0.15); border-bottom: 2px solid rgba(16,185,129,0.3);">
+                  <th style="padding: 0.5rem;"></th>
+                  <th style="padding: 0.5rem;">Predicted Positive (1)</th>
+                  <th style="padding: 0.5rem;">Predicted Negative (0)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+                  <td style="padding: 0.5rem; font-weight: 700;">Actual Positive (1)</td>
+                  <td style="padding: 0.5rem; color: #10b981; font-weight: 700;">True Positive (TP)</td>
+                  <td style="padding: 0.5rem; color: #f43f5e; font-weight: 700;">False Negative (FN) [Type II]</td>
+                </tr>
+                <tr>
+                  <td style="padding: 0.5rem; font-weight: 700;">Actual Negative (0)</td>
+                  <td style="padding: 0.5rem; color: #f43f5e; font-weight: 700;">False Positive (FP) [Type I]</td>
+                  <td style="padding: 0.5rem; color: #10b981; font-weight: 700;">True Negative (TN)</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="formula-box">
+            Accuracy = (TP + TN) / (TP + TN + FP + FN)<br>
+            Precision = TP / (TP + FP) &emsp; [Quality of positive alarms]<br>
+            Recall (Sensitivity) = TP / (TP + FN) &emsp; [Completeness of detections]<br>
+            F1-Score = 2 &times; (Precision &times; Recall) / (Precision + Recall) = 2TP / (2TP + FP + FN)
+          </div>
+
+          <p><strong>Accuracy Paradox:</strong> On imbalanced datasets (e.g. 99% legitimate emails, 1% spam), a degenerate model predicting everything as legitimate achieves 99% accuracy but 0% recall on spam. F1-Score balances precision and recall via the harmonic mean.</p>
+        </section>
+
+        <!-- ================= 2. NEURAL NETWORKS ================= -->
+        <section id="sec-neural-nets">
+          <h2><span class="rp-num">2.</span>Neural Networks &amp; Gradient Optimization</h2>
+
+          <h3 id="perceptron"><span class="rp-num">2.1</span>The Perceptron Model &amp; Linear Separability</h3>
+          <p>The <strong>Perceptron</strong> computes a weighted linear sum of its inputs, shifts it by bias <code>b</code>, and passes it through an activation threshold:</p>
+
+          <div class="formula-box">
+            z = w<sup>T</sup> x + b = &sum;<sub>j=1</sub><sup>d</sup> w<sub>j</sub> x<sub>j</sub> + b &emsp;&rarr;&emsp; ŷ = step(z) = { 1 if z &ge; 0 else 0 }
+          </div>
+
+          <p>A single perceptron defines a linear hyperplane in <code>&Ropf;<sup>d</sup></code>. In 1969, Minsky and Papert proved that single perceptrons cannot solve non-linearly separable problems like <strong>XOR</strong> (Exclusive OR).</p>
+
+          <h3 id="mlp-layers"><span class="rp-num">2.2</span>Multi-Layer Networks &amp; Activation Functions</h3>
+          <p>A <strong>Multi-Layer Perceptron (MLP)</strong> overcomes linear separability by inserting one or more hidden layers with non-linear activation functions:</p>
+
+          <div class="formula-box">
+            Hidden Layer: h = g(W<sub>1</sub> x + b<sub>1</sub>)<br>
+            Output Layer: ŷ = &sigma;(W<sub>2</sub> h + b<sub>2</sub>)
+          </div>
+
+          <ul>
+            <li><strong>Sigmoid (&sigma;):</strong> <code>&sigma;(z) = 1 / (1 + e<sup>-z</sup>)</code> &mdash; maps <code>&Ropf; &rarr; (0, 1)</code> for binary probabilities.</li>
+            <li><strong>ReLU (Rectified Linear Unit):</strong> <code>ReLU(z) = max(0, z)</code> &mdash; modern default; avoids vanishing gradients for positive inputs.</li>
+          </ul>
+
+          <h3 id="gradient-descent"><span class="rp-num">2.3</span>Loss Functions &amp; Gradient Descent</h3>
+          <p>To train network weights <code>w</code>, we define a scalar <strong>Loss Function</strong> (e.g. Binary Cross-Entropy) and iteratively step in the direction of steepest descent:</p>
+
+          <div class="formula-box">
+            Cross-Entropy Loss: L(w) = - [ y log(ŷ) + (1 - y) log(1 - ŷ) ]<br>
+            Weight Update: w &larr; w - &alpha; &nabla;<sub>w</sub> L(w)
+          </div>
+
+          <p>where <code>&alpha; &gt; 0</code> is the <strong>learning rate</strong> governing the step size.</p>
+
+          <h3 id="deep-learning-overview"><span class="rp-num">2.4</span>Deep Learning Overview &amp; Backpropagation</h3>
+          <p>Deep neural networks learn hierarchical representations (e.g., Pixels &rarr; Edges &rarr; Textures &rarr; Parts &rarr; Objects). Gradients of the loss with respect to all layer weights are computed efficiently via the chain rule using the <strong>Backpropagation</strong> algorithm.</p>
+        </section>
+
+        <!-- ================= 3. UNSUPERVISED LEARNING ================= -->
+        <section id="sec-unsupervised">
+          <h2><span class="rp-num">3.</span>Unsupervised Learning: K-Means Clustering</h2>
+
+          <h3 id="kmeans-algorithm"><span class="rp-num">3.1</span>The K-Means Clustering Algorithm</h3>
+          <p>In unsupervised learning, data points <code>x<sub>1</sub>, &hellip;, x<sub>N</sub></code> have no teacher labels <code>y</code>. <strong>K-Means</strong> partitions <code>N</code> data points into <code>K</code> disjoint clusters <code>C<sub>1</sub>, &hellip;, C<sub>K</sub></code> by minimizing the Within-Cluster Sum of Squares (WCSS):</p>
+
+          <div class="formula-box">
+            WCSS = &sum;<sub>k=1</sub><sup>K</sup> &sum;<sub>x &isin; C<sub>k</sub></sub> ||x - &mu;<sub>k</sub>||<sup>2</sup>
+          </div>
+
+          <p>The algorithm alternates between two steps until convergence (Lloyd's Algorithm):</p>
+          <ol>
+            <li><strong>Assignment Step:</strong> Assign each point <code>x<sub>i</sub></code> to the nearest centroid: <code>c<sub>i</sub> = argmin<sub>k</sub> ||x<sub>i</sub> - &mu;<sub>k</sub>||<sup>2</sup></code>.</li>
+            <li><strong>Update Step:</strong> Recalculate each centroid as the center of mass of its assigned points: <code>&mu;<sub>k</sub> = (1 / |C<sub>k</sub>|) &sum;<sub>x &isin; C<sub>k</sub></sub> x</code>.</li>
+          </ol>
+
+          <h3 id="voronoi-elbow"><span class="rp-num">3.2</span>Voronoi Partitions &amp; The Elbow Method</h3>
+          <p>Cluster centroids partition the space into convex <strong>Voronoi Polygons</strong>. To choose the number of clusters <code>K</code>, the <strong>Elbow Method</strong> plots WCSS against <code>K</code>. The optimal <code>K</code> is located at the inflection bend ("elbow") where further clusters provide diminishing variance reduction.</p>
+        </section>
+
+        <!-- ================= 4. REINFORCEMENT LEARNING ================= -->
+        <section id="sec-rl">
+          <h2><span class="rp-num">4.</span>Reinforcement Learning</h2>
+
+          <h3 id="mdp-formulation"><span class="rp-num">4.1</span>Markov Decision Processes (MDPs)</h3>
+          <p>Reinforcement Learning studies agents that learn sequential decision policies through environmental interaction. A discrete-time <strong>Markov Decision Process</strong> is formally defined by the 5-tuple <code>&lang;S, A, P, R, &gamma;&rang;</code>:</p>
+
+          <ul>
+            <li><strong>State Space (<code>S</code>):</strong> Set of all valid environment states.</li>
+            <li><strong>Action Space (<code>A</code>):</strong> Set of available actions in each state.</li>
+            <li><strong>Transition Model (<code>P</code>):</strong> <code>P(s' | s, a) = P(S<sub>t+1</sub>=s' | S<sub>t</sub>=s, A<sub>t</sub>=a)</code>.</li>
+            <li><strong>Reward Function (<code>R</code>):</strong> <code>R(s, a, s')</code> received after transition.</li>
+            <li><strong>Discount Factor (<code>&gamma; &isin; [0, 1)</code>):</strong> Discount factor for future rewards. Cumulative Return: <code>G<sub>t</sub> = &sum;<sub>k=0</sub><sup>&infin;</sup> &gamma;<sup>k</sup> R<sub>t+k+1</sub></code>.</li>
+          </ul>
+
+          <div class="formula-box">
+            State-Value Function: V<sup>&pi;</sup>(s) = &Eopf;<sub>&pi;</sub> [ G<sub>t</sub> | S<sub>t</sub> = s ]<br>
+            Action-Value Function: Q<sup>&pi;</sup>(s, a) = &Eopf;<sub>&pi;</sub> [ G<sub>t</sub> | S<sub>t</sub> = s, A<sub>t</sub> = a ]
+          </div>
+
+          <h3 id="value-iteration"><span class="rp-num">4.2</span>Bellman Equations &amp; Value Iteration</h3>
+          <p>The <strong>Bellman Optimality Equation</strong> expresses the value of a state under the optimal policy <code>&pi;<sup>*</sup></code>:</p>
+
+          <div class="formula-box">
+            V<sup>*</sup>(s) = max<sub>a &isin; A</sub> &sum;<sub>s'</sub> P(s' | s, a) [ R(s, a, s') + &gamma; V<sup>*</sup>(s') ]
+          </div>
+
+          <p><strong>Value Iteration</strong> turns this equation into an iterative dynamic programming update rule. Once values converge, the optimal policy is extracted greedily:</p>
+          <div class="formula-box">
+            &pi;<sup>*</sup>(s) = argmax<sub>a &isin; A</sub> &sum;<sub>s'</sub> P(s' | s, a) [ R(s, a, s') + &gamma; V<sup>*</sup>(s') ]
+          </div>
+
+          <h3 id="q-learning"><span class="rp-num">4.3</span>Model-Free RL: Tabular Q-Learning &amp; SARSA</h3>
+          <p>When transition probabilities <code>P</code> and rewards <code>R</code> are unknown, the agent learns directly from experience transitions <code>(s, a, r, s')</code> via Temporal Difference learning:</p>
+
+          <div class="formula-box">
+            TD Target = r + &gamma; max<sub>a'</sub> Q(s', a')<br>
+            TD Error: &delta; = TD Target - Q(s, a)<br>
+            Q-Learning Update Rule: Q(s, a) &larr; Q(s, a) + &alpha; [ r + &gamma; max<sub>a'</sub> Q(s', a') - Q(s, a) ]
+          </div>
+
+          <p>To balance <strong>Exploration vs. Exploitation</strong>, the agent uses an <strong>&epsilon;-greedy policy</strong>: selecting the best known action with probability <code>1 - &epsilon;</code> and a random exploratory action with probability <code>&epsilon;</code>.</p>
+        </section>
+
+        <!-- ================= 5. PARADIGM COMPARISON ================= -->
+        <section id="sec-comparison">
+          <h2><span class="rp-num">5.</span>Paradigm Comparison</h2>
+
+          <h3 id="comparison-table"><span class="rp-num">5.1</span>Comparing Learning &amp; Decision Paradigms</h3>
+
+          <div style="overflow-x: auto; margin-top: 1rem;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.82rem;">
+              <thead>
+                <tr style="background: rgba(16,185,129,0.15); border-bottom: 2px solid rgba(16,185,129,0.3);">
+                  <th style="padding: 0.75rem; text-align: left;">Dimension</th>
+                  <th style="padding: 0.75rem;">1. Naive Bayes (Supervised)</th>
+                  <th style="padding: 0.75rem;">2. Neural Networks</th>
+                  <th style="padding: 0.75rem;">3. K-Means (Unsupervised)</th>
+                  <th style="padding: 0.75rem;">4. Value Iteration (MDP)</th>
+                  <th style="padding: 0.75rem;">5. Q-Learning (Model-Free RL)</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+                  <td style="padding: 0.6rem; font-weight: 700;">Task Goal</td>
+                  <td>Classify text <code>x &rarr; y</code></td>
+                  <td>Non-linear mapping <code>x &rarr; y</code></td>
+                  <td>Cluster unlabeled <code>x</code></td>
+                  <td>Optimal policy in known MDP</td>
+                  <td>Learn policy by interaction</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+                  <td style="padding: 0.6rem; font-weight: 700;">Feedback</td>
+                  <td>Ground-truth labels <code>y</code></td>
+                  <td>Ground-truth labels <code>y</code></td>
+                  <td>None (unlabeled)</td>
+                  <td>Known transition &amp; reward</td>
+                  <td>Scalar delayed reward <code>r</code></td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+                  <td style="padding: 0.6rem; font-weight: 700;">Optimization</td>
+                  <td>MLE counts + Laplace</td>
+                  <td>Gradient Descent</td>
+                  <td>Lloyd's Algorithm (EM)</td>
+                  <td>Bellman Dynamic Prog</td>
+                  <td>Temporal Difference TD(0)</td>
+                </tr>
+                <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
+                  <td style="padding: 0.6rem; font-weight: 700;">Complexity</td>
+                  <td style="color:#10b981; font-weight:700;">O(N &middot; d) Linear</td>
+                  <td>O(N &middot; epochs &middot; |W|)</td>
+                  <td>O(N &middot; K &middot; d &middot; iters)</td>
+                  <td>O(|A| &middot; |S|<sup>2</sup>)</td>
+                  <td>O(1) per step</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ================= 6. PRACTICE EXERCISES ================= -->
+        <section id="exercises">
+          <h2><span class="rp-num">6.</span>Practice Exercises &amp; Worked Solutions</h2>
+
+          <!-- Exercise 1 -->
+          <div class="rp-exercise" id="ex1">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 1</span>
+              <h3 class="rp-exercise-title">Bag-of-Words &amp; TF-IDF Calculation</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Consider a corpus of <code>N = 3</code> documents:</p>
+              <ul>
+                <li><strong>d1:</strong> "win cash prize" (3 words)</li>
+                <li><strong>d2:</strong> "win lottery bonus cash" (4 words)</li>
+                <li><strong>d3:</strong> "team project meeting" (3 words)</li>
+              </ul>
+              <p>Compute the Term Frequency <code>TF("cash", d1)</code>, Inverse Document Frequency <code>IDF("cash", D)</code>, and the resulting <code>TF-IDF("cash", d1)</code> (using standard natural log formula <code>IDF = log(N / DF)</code>).</p>
+            </div>
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
+              <div class="rp-answer-body">
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Step-by-step Calculation</span>
+                  <div class="rp-pseudocode"><pre>1. Term Frequency in d1:
+   count("cash", d1) = 1, total words in d1 = 3
+   TF("cash", d1) = 1 / 3 &approx; 0.3333
+
+2. Document Frequency DF across corpus:
+   "cash" appears in d1 and d2 &rarr; DF("cash") = 2
+   Total documents N = 3
+   IDF("cash", D) = ln(3 / 2) = ln(1.5) &approx; 0.4055
+
+3. TF-IDF Score:
+   TF-IDF("cash", d1) = 0.3333 &times; 0.4055 &approx; 0.1352</pre></div>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Exercise 2 -->
+          <div class="rp-exercise" id="ex2">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 2</span>
+              <h3 class="rp-exercise-title">Naive Bayes Spam Classification with Laplace Smoothing</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Given training counts across a vocabulary <code>|V| = 6</code> (words: <em>lottery, prize, cash, meeting, report, project</em>):</p>
+              <ul>
+                <li><strong>Spam (N=4 docs):</strong> Total words = 12. Word counts: <em>lottery=4, prize=4, cash=3, meeting=0, report=0, project=1</em>. Prior <code>P(Spam) = 4/10 = 0.4</code>.</li>
+                <li><strong>Ham (N=6 docs):</strong> Total words = 18. Word counts: <em>lottery=0, prize=0, cash=1, meeting=6, report=6, project=5</em>. Prior <code>P(Ham) = 6/10 = 0.6</code>.</li>
+              </ul>
+              <p>Classify the test message <strong>"lottery prize"</strong> using Laplace Add-1 smoothing.</p>
+            </div>
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
+              <div class="rp-answer-body">
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Likelihood &amp; Posterior Calculation</span>
+                  <div class="rp-pseudocode"><pre>Denominator with Add-1 smoothing:
+  Spam denominator = 12 + |V| = 12 + 6 = 18
+  Ham denominator  = 18 + |V| = 18 + 6 = 24
+
+Word Likelihoods:
+  P(lottery | Spam) = (4 + 1) / 18 = 5/18 &approx; 0.2778
+  P(prize | Spam)   = (4 + 1) / 18 = 5/18 &approx; 0.2778
+
+  P(lottery | Ham)  = (0 + 1) / 24 = 1/24 &approx; 0.0417
+  P(prize | Ham)    = (0 + 1) / 24 = 1/24 &approx; 0.0417
+
+Unnormalized Posteriors:
+  Spam Score = P(Spam) &times; P(lottery|Spam) &times; P(prize|Spam)
+             = 0.4 &times; (5/18) &times; (5/18) = 0.4 &times; 0.07716 &approx; 0.03086
+
+  Ham Score  = P(Ham) &times; P(lottery|Ham) &times; P(prize|Ham)
+             = 0.6 &times; (1/24) &times; (1/24) = 0.6 &times; 0.001736 &approx; 0.00104
+
+Normalized Probability:
+  P(Spam | "lottery prize") = 0.03086 / (0.03086 + 0.00104) &approx; 96.7%
+
+Decision: SPAM (MAP Rule)</pre></div>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Exercise 3 -->
+          <div class="rp-exercise" id="ex3">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 3</span>
+              <h3 class="rp-exercise-title">Confusion Matrix, Precision, Recall, and F1-Score</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>A spam filter is tested on 1,000 emails resulting in: <code>TP = 80, FP = 20, FN = 10, TN = 890</code>. Compute Accuracy, Precision, Recall, and F1-Score.</p>
+            </div>
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
+              <div class="rp-answer-body">
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Metrics Calculation</span>
+                  <div class="rp-pseudocode"><pre>Accuracy  = (TP + TN) / Total = (80 + 890) / 1000 = 970 / 1000 = 97.0%
+Precision = TP / (TP + FP)    = 80 / (80 + 20)   = 80 / 100  = 80.0%
+Recall    = TP / (TP + FN)    = 80 / (80 + 10)   = 80 / 90   = 88.89%
+F1-Score  = 2 &times; (0.80 &times; 0.8889) / (0.80 + 0.8889)
+          = 1.4222 / 1.6889 &approx; 0.8421 (84.21%)</pre></div>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Exercise 4 -->
+          <div class="rp-exercise" id="ex4">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 4</span>
+              <h3 class="rp-exercise-title">Perceptron Learning Rule Update Step</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Given weights <code>w = [0.2, -0.4]</code>, bias <code>b = 0.1</code>, learning rate <code>&alpha; = 0.5</code>, and an input sample <code>x = [1, 2]</code> with true target <code>y = 1</code>. Perform one step of the Perceptron learning rule.</p>
+            </div>
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
+              <div class="rp-answer-body">
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Perceptron Step</span>
+                  <div class="rp-pseudocode"><pre>1. Forward activation:
+   z = w1&middot;x1 + w2&middot;x2 + b = 0.2(1) + (-0.4)(2) + 0.1 = 0.2 - 0.8 + 0.1 = -0.5
+   ŷ = step(z) = step(-0.5) = 0
+
+2. Error:
+   error = y - ŷ = 1 - 0 = 1
+
+3. Weight Update (w &larr; w + &alpha; &middot; error &middot; x):
+   w1' = 0.2 + 0.5(1)(1) = 0.2 + 0.5 = 0.7
+   w2' = -0.4 + 0.5(1)(2) = -0.4 + 1.0 = 0.6
+   b'  = 0.1 + 0.5(1) = 0.6
+
+New Weights: w' = [0.7, 0.6], b' = 0.6</pre></div>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Exercise 5 -->
+          <div class="rp-exercise" id="ex5">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 5</span>
+              <h3 class="rp-exercise-title">K-Means Centroid Assignment &amp; Shift</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>Consider 4 2D points: <code>A(1, 1), B(2, 1), C(4, 5), D(5, 5)</code> and initial centroids <code>&mu;<sub>1</sub> = (1, 2)</code> and <code>&mu;<sub>2</sub> = (5, 4)</code>. Assign each point to its closest centroid and compute the new centroids.</p>
+            </div>
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
+              <div class="rp-answer-body">
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Assignment &amp; Update Step</span>
+                  <div class="rp-pseudocode"><pre>Squared Euclidean Distances to &mu;1(1,2) vs &mu;2(5,4):
+  Point A(1,1): dist²(&mu;1) = (1-1)² + (1-2)² = 1
+                dist²(&mu;2) = (1-5)² + (1-4)² = 16 + 9 = 25 &rarr; Cluster 1
+  Point B(2,1): dist²(&mu;1) = (2-1)² + (1-2)² = 1 + 1 = 2
+                dist²(&mu;2) = (2-5)² + (1-4)² = 9 + 9 = 18  &rarr; Cluster 1
+  Point C(4,5): dist²(&mu;1) = (4-1)² + (5-2)² = 9 + 9 = 18
+                dist²(&mu;2) = (4-5)² + (5-4)² = 1 + 1 = 2   &rarr; Cluster 2
+  Point D(5,5): dist²(&mu;1) = (5-1)² + (5-2)² = 16 + 9 = 25
+                dist²(&mu;2) = (5-5)² + (5-4)² = 0 + 1 = 1   &rarr; Cluster 2
+
+Centroid Update:
+  &mu;1' = mean(A, B) = ((1+2)/2, (1+1)/2) = (1.5, 1.0)
+  &mu;2' = mean(C, D) = ((4+5)/2, (5+5)/2) = (4.5, 5.0)</pre></div>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Exercise 6 -->
+          <div class="rp-exercise" id="ex6">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 6</span>
+              <h3 class="rp-exercise-title">Bellman Value Iteration Step on 4×3 Grid World</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>In the 4&times;3 Grid World, state <code>(3, 3)</code> is adjacent to the goal state <code>(4, 3)</code> with value <code>+1.0</code>. Living reward <code>R = -0.04</code> and discount <code>&gamma; = 0.99</code>. Current values: <code>V(3,3)=0.70, V(3,2)=0.65, V(2,3)=0.60</code>. Transition probabilities: intended direction <code>0.8</code>, left slip <code>0.1</code>, right slip <code>0.1</code>. Compute the expected value for action <code>Right</code>.</p>
+            </div>
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
+              <div class="rp-answer-body">
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Action Value Calculation</span>
+                  <div class="rp-pseudocode"><pre>Action Right from (3,3):
+- Intended (0.8) &rarr; Goal (4,3) with value 1.0
+- Slip Left (0.1) &rarr; North wall bounce (stays at 3,3 with value 0.70)
+- Slip Right (0.1) &rarr; South (3,2 with value 0.65)
+
+Expected Future Value:
+  E[V(s')] = 0.8(1.0) + 0.1(0.70) + 0.1(0.65)
+           = 0.800 + 0.070 + 0.065 = 0.935
+
+Q((3,3), Right) = R + &gamma; &middot; E[V(s')]
+                = -0.04 + 0.99(0.935)
+                = -0.04 + 0.92565 = 0.88565</pre></div>
+                </div>
+              </div>
+            </details>
+          </div>
+
+          <!-- Exercise 7 -->
+          <div class="rp-exercise" id="ex7">
+            <div class="rp-exercise-head">
+              <span class="rp-exercise-num">Exercise 7</span>
+              <h3 class="rp-exercise-title">Q-Learning Step-by-Step TD Update</h3>
+            </div>
+            <div class="rp-exercise-body">
+              <p>An RL agent in state <code>s = (3,3)</code> has prior <code>Q((3,3), Right) = 0.50</code>. It takes action <code>Right</code>, receives living reward <code>r = -0.04</code>, and lands in terminal goal state <code>(4,3)</code> with terminal value <code>0.0</code>. Given learning rate <code>&alpha; = 0.2</code> and discount <code>&gamma; = 0.99</code>, compute the TD target, TD error <code>&delta;</code>, and updated <code>Q((3,3), Right)</code>.</p>
+            </div>
+            <details class="rp-answer">
+              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
+              <div class="rp-answer-body">
+                <div class="rp-answer-part">
+                  <span class="rp-answer-part-label">Q-Learning Update</span>
+                  <div class="rp-pseudocode"><pre>1. TD Target (Goal reward + terminal max Q):
+   TD Target = r_goal + &gamma; &middot; max Q(terminal, a') = 1.0 + 0.99(0.0) = 1.00
+
+2. TD Error &delta;:
+   &delta; = TD Target - Q((3,3), Right) = 1.00 - 0.50 = +0.50
+
+3. Q-Value Update:
+   Q_new = Q_old + &alpha; &middot; &delta; = 0.50 + 0.2(0.50) = 0.50 + 0.10 = 0.60</pre></div>
+                </div>
+              </div>
+            </details>
+          </div>
+
+        </section>
+
+      </article>
+    </div>
+
+  </main>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+
+  <!-- Application JS -->
+  <script src="main.js?v=3"></script>
+</body>
+</html>

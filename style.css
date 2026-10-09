@@ -6819,3 +6819,46 @@ text.csp-hyper-label { paint-order: normal; }
   filter: brightness(0.95);
 }
 
+/* ==========================================================================
+   Topic 06: Learning & Decision Making Styles
+   ========================================================================== */
+.learning-page,
+.learning-shell,
+#view-kmeans,
+.learning-reading {
+  --lr-accent: #10b981;
+  --lr-accent-soft: rgba(16, 185, 129, 0.12);
+  --lr-accent-border: rgba(16, 185, 129, 0.3);
+  --lr-amber: #f59e0b;
+  --lr-blue: #3b82f6;
+  --lr-rose: #f43f5e;
+  --lr-purple: #8b5cf6;
+}
+
+.learning-badge-accent {
+  background: var(--lr-accent-soft) !important;
+  border-color: var(--lr-accent-border) !important;
+  color: var(--lr-accent) !important;
+}
+
+.learning-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.learning-demo-btn {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+  color: #34d399 !important;
+}
+
+.learning-demo-btn:hover {
+  background: rgba(16, 185, 129, 0.25) !important;
+  color: #6ee7b7 !important;
+}
+
+.learning-page .sl-concept-col { padding: 1.4rem 1.9rem; }
+.learning-page .sl-graph-col { padding: 1.2rem 1.4rem; }
+
+

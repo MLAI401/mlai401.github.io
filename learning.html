@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learning &amp; Decision Making - MLAI401 Foundational AI &amp; ML</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="An illustrated single-screen lecture on Learning &amp; Decision Making: Supervised Learning (Bag-of-Words, TF-IDF, Naive Bayes Classification, Confusion Matrix, Precision, Recall, F1), Neural Networks (Perceptron, Multi-Layer Perceptrons, Loss &amp; Gradient Descent), Unsupervised Learning (K-Means Clustering), and Reinforcement Learning (Markov Decision Processes, Value Iteration, Tabular Q-Learning).">
+  <meta name="keywords" content="Machine Learning, Supervised Learning, Text Features, Bag of Words, TF-IDF, Naive Bayes, Laplace Smoothing, Confusion Matrix, Precision, Recall, F1 Score, Neural Networks, Perceptron, Gradient Descent, Deep Learning, K-Means Clustering, Reinforcement Learning, MDP, Bellman Equations, Value Iteration, Q-Learning, SARSA, AIMA">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="MLAI401 - Learning &amp; Decision Making">
+  <meta property="og:description" content="Empirical data patterns, neural representations, unsupervised clustering, and sequential decision policies — one screen at a time.">
+  <meta property="og:type" content="website">
+
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="style.css?v=17">
+</head>
+<body class="sl-page learning-page">
+
+  <!-- Navigation Header -->
+  <header class="navbar" id="navbar-header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo" id="logo-link">
+        <span class="logo-icon">M</span>
+        MLAI401
+      </a>
+
+      <button class="menu-toggle" id="menu-toggle-btn" aria-label="Toggle Navigation Menu">
+        <i data-lucide="menu"></i>
+      </button>
+
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="index.html" class="nav-link" id="nav-home">Home</a></li>
+        <li><a href="curriculum.html" class="nav-link active" id="nav-curr">Curriculum</a></li>
+        <li><a href="playground.html" class="nav-link" id="nav-play">Playground</a></li>
+        <li><a href="index.html#resources" class="nav-link" id="nav-res">Resources</a></li>
+      </ul>
+
+      <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="nav-btn" id="nav-github-btn">
+        <i data-lucide="github"></i> GitHub Profile
+      </a>
+    </div>
+  </header>
+
+  <!-- Single-screen lecture shell: fixed height, no body scroll on desktop -->
+  <main class="sl-shell learning-shell">
+
+    <div class="sl-topbar">
+      <a href="curriculum.html" class="sl-breadcrumb"><i data-lucide="arrow-left"></i> Curriculum</a>
+      <div class="sl-title-block">
+        <span class="sl-topic-badge learning-badge-accent"><i data-lucide="line-chart"></i> Topic 06</span>
+        <h1>Learning &amp; Decision Making</h1>
+      </div>
+      <div class="learning-topbar-actions">
+        <a href="topic06_reading.html" class="sl-reading-btn"><i data-lucide="book-open"></i> Reading Notes</a>
+        <a href="playground.html#view-kmeans" class="sl-reading-btn learning-demo-btn"><i data-lucide="play-circle"></i> Interactive Demo</a>
+      </div>
+    </div>
+
+    <!-- Topic selector bar -->
+    <div class="sl-topic-bar-wrap">
+      <div class="sl-topic-tabs" id="learning-topic-tabs"></div>
+    </div>
+
+    <!-- Main two-column concept + illustration viewport -->
+    <div class="sl-main-grid" id="learning-main-grid">
+
+      <div class="sl-concept-col glass-panel" id="learning-concept-col">
+        <!-- Rendered by demos/learning_demo/ui.js -->
+      </div>
+
+      <div class="sl-graph-col glass-panel" id="learning-graph-col">
+        <!-- Rendered by demos/learning_demo/ui.js -->
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+
+  <!-- Shared ML & RL Engines -->
+  <script src="demos/learning_demo/ml_engine.js?v=2"></script>
+  <script src="demos/learning_demo/rl_engine.js?v=2"></script>
+
+  <!-- Page controller — renders topic tabs, concepts and illustrations -->
+  <script src="demos/learning_demo/ui.js?v=2"></script>
+
+  <!-- Application JS -->
+  <script src="main.js?v=3"></script>
+</body>
+</html>
