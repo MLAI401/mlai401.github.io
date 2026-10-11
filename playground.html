@@ -1359,28 +1359,9 @@
           </button>
         </div>
 
-        <!-- 1. Wumpus Lab Sub-view -->
+        <!-- 1. Wumpus Lab Sub-view — rendered by demos/knowledge_demo/knowledge_lab.js (engine: wumpus_engine.js) -->
         <div class="kl-subview active" id="kl-wumpus-view">
-          <div class="playground-grid">
-            <div class="canvas-container glass-panel" style="padding: 1.5rem; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 420px;">
-              <div id="kl-wumpus-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; max-width: 380px; aspect-ratio: 1;"></div>
-            </div>
-            <div class="playground-controls glass-panel">
-              <div class="controls-group">
-                <h3>Wumpus World Percept &amp; KB Engine</h3>
-                <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                  Click any room to move the agent. Senses breezes and stenches, adds assertions to KB, and derives proven safe rooms (✓) and pitfalls (💀) via propositional resolution.
-                </p>
-                <div style="margin-bottom: 1rem;">
-                  <button class="control-btn primary" id="kl-wumpus-reset" style="width: 100%;">
-                    <i data-lucide="rotate-ccw"></i> Reset World
-                  </button>
-                </div>
-                <div style="font-size: 0.78rem; font-weight: 700; color: #64748b; margin-bottom: 0.4rem;">Live KB Assertion Log:</div>
-                <div id="kl-wumpus-kb-log" style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; background: rgba(15,23,42,0.06); border-radius: 6px; padding: 0.75rem; height: 160px; overflow-y: auto; color: #6d28d9;"></div>
-              </div>
-            </div>
-          </div>
+          <div id="kl-wumpus-pane"></div>
         </div>
 
         <!-- 2. Logic Studio Sub-view -->
@@ -1799,8 +1780,9 @@
 
   <!-- Knowledge & Reasoning (Topic 05): logic engine → bayes engine → lab -->
   <script src="demos/knowledge_demo/logic_engine.js?v=2"></script>
+  <script src="demos/knowledge_demo/wumpus_engine.js?v=1"></script>
   <script src="demos/knowledge_demo/bayes_engine.js?v=1"></script>
-  <script src="demos/knowledge_demo/knowledge_lab.js?v=3"></script>
+  <script src="demos/knowledge_demo/knowledge_lab.js?v=4"></script>
 
   <!-- Learning & Decision Making (Topic 06): ML engine → RL engine → lab -->
   <script src="demos/learning_demo/ml_engine.js?v=1"></script>
