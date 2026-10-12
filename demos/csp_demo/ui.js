@@ -343,6 +343,14 @@
       </div>`;
   }
 
+  /** Short note explaining how the attacking-pairs number is obtained. */
+  function attackInfoHTML(d) {
+    if (!d.total) return 'No two queens share a row or diagonal → 0 pairs, so this is a solution.';
+    const list = d.pairs.slice(0, 6).map(p => `c${p.a}–c${p.b} (${p.kind === 'row' ? 'row' : 'diag'})`).join(', ') + (d.pairs.length > 6 ? ', …' : '');
+    return `Count each pair of queens that share a row or diagonal once: ${d.row} row + ${d.diag} diagonal = <strong>${d.total}</strong>. ` +
+      `(Summing each queen's conflicts gives ${d.perQueen} = 2 × ${d.total}, since every pair is seen from both ends.) Pairs: ${list}.`;
+  }
+
   function shell(title, tools, body, foot) {
     return `
       <div class="csp-ill">
@@ -2317,7 +2325,7 @@
         `<div class="csp-mc-grid">
            <div class="csp-board-wrap">${this.queensBoard(8, s.rows, { col: s.kind === 'move' ? s.col : null, counts: s.kind === 'move' ? s.counts : null, from: s.kind === 'move' ? s.from : null })}</div>
            <div class="csp-mc-side">
-             <div class="csp-metric ${s.total ? 'bad' : 'ok'}"><span>Attacking pairs</span><b>${s.total}</b></div>
+             <div class="csp-metric ${s.total ? 'bad' : 'ok'}"><span>Attacking pairs</span><b>${s.total}</b><em class="csp-pairs-info">${attackInfoHTML(E.queensAttackingPairsDetail(s.rows))}</em></div>
              <div class="csp-metric"><span>Steps taken</span><b>${i}</b></div>
              <div class="csp-legend csp-legend-col"><span><i class="csp-lg att"></i> attacked queen</span><span><i class="csp-lg col"></i> chosen column · numbers = conflicts per row</span><span><i class="csp-lg ghost"></i> previous position</span></div>
            </div>

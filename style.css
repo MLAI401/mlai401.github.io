@@ -7033,3 +7033,8 @@ text.csp-hyper-label { paint-order: normal; }
 .learning-page .sl-graph-col { padding: 1.2rem 1.4rem; }
 
 
+
+/* Attacking-pairs explanation (min-conflicts stepper + playground lab) */
+.csp-pairs-info { display: block; font-style: normal; font-size: 0.72rem; line-height: 1.4; color: var(--text-muted); }
+.csp-pairs-info strong { color: var(--text-primary); }
+.csp-pairs-info-row { padding: 0.15rem 0 0.4rem; }

@@ -427,6 +427,7 @@
             <div class="csp-card">${chart}</div>
             <div class="playground-stats">
               <div class="pg-stat-row"><span>Attacking pairs now</span><span class="pg-stat-val" style="color:${s.total ? 'var(--danger)' : 'var(--success)'}">${s.total}</span></div>
+              <div class="csp-pairs-info csp-pairs-info-row">${(() => { const d = E.queensAttackingPairsDetail(s.rows); return d.total ? `Each pair of queens sharing a row or diagonal counts once: ${d.row} row + ${d.diag} diagonal = <strong>${d.total}</strong> (sum of per-queen conflicts ${d.perQueen} ÷ 2).` : 'No two queens share a row or diagonal → 0 pairs: solved.'; })()}</div>
               <div class="pg-stat-row"><span>Min-conflicts steps to solve</span><span class="pg-stat-val">${q.run.solved ? q.run.iterations : 'not solved (5000)'}</span></div>
               <div class="pg-stat-row"><span>Plain backtracking assignments</span><span class="pg-stat-val">${q.bt.plain.toLocaleString()}${q.bt.plainAborted ? '+ (limit)' : ''}</span></div>
               <div class="pg-stat-row"><span>Backtracking + MRV + FC assignments</span><span class="pg-stat-val">${q.bt.fc.toLocaleString()}${q.bt.fcAborted ? '+ (limit)' : ''}</span></div>

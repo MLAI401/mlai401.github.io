@@ -218,6 +218,21 @@
     return n;
   }
 
+  /**
+   * Breakdown of the attacking-pairs count, for teaching displays.
+   * Each unordered pair of queens (i < j) is counted once, if they share a row
+   * or a diagonal. Columns are 1-based in the returned labels.
+   */
+  function queensAttackingPairsDetail(rows) {
+    const pairs = []; let row = 0, diag = 0, perQueen = 0;
+    for (let i = 0; i < rows.length; i++) for (let j = i + 1; j < rows.length; j++) {
+      if (rows[i] === rows[j]) { row++; pairs.push({ a: i + 1, b: j + 1, kind: 'row' }); }
+      else if (Math.abs(rows[i] - rows[j]) === j - i) { diag++; pairs.push({ a: i + 1, b: j + 1, kind: 'diag' }); }
+    }
+    for (let c = 0; c < rows.length; c++) perQueen += queenConflicts(rows, c, rows[c]);
+    return { total: row + diag, row, diag, perQueen, pairs };
+  }
+
   // ---------------------------------------------------------------------------
   // AC-3 (AIMA Fig 6.3)
   // ---------------------------------------------------------------------------
@@ -853,7 +868,7 @@
   window.CSPEngine = {
     CSP, makeRng, copyDomains,
     AUSTRALIA, projectAus, COLOR_HEX, COLOR_LIST, makeMapCSP, randomMap,
-    makeQueensCSP, queenConflicts, queensAttackingPairs, queensMinConflicts,
+    makeQueensCSP, queenConflicts, queensAttackingPairs, queensAttackingPairsDetail, queensMinConflicts,
     revise, ac3, backtrackingSearch, countSolutions, minConflicts,
     TREE_EXAMPLE, treeCspSolve,
     makeSudokuCSP, SUDOKU_PRESETS,
