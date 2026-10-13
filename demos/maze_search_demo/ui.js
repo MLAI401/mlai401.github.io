@@ -251,6 +251,21 @@ class MazeSearchDemoUI {
     const ev = this.primaryResult.events[this.currentStepIdx];
     if (!ev) return;
 
+    // Stage header (title + status badge), CSP-lab style
+    const titleEl = document.getElementById('ms-stage-title');
+    if (titleEl) {
+      const names = { 'A*': 'A* search', UCS: 'Uniform-cost search', BFS: 'Breadth-first search', DFS: 'Depth-first search', Greedy: 'Greedy best-first search', IDS: 'Iterative deepening search' };
+      const total = this.primaryResult.events.length;
+      titleEl.textContent = `${names[this.currentAlgorithm] || this.currentAlgorithm} on ${this.searchMode === 'abstract' ? 'the abstract graph' : 'grid cells'} — step ${this.currentStepIdx} of ${total - 1}`;
+    }
+    const pillEl = document.getElementById('ms-stage-pill');
+    if (pillEl) {
+      const map = { INIT: ['neutral', 'START'], SELECT: ['info', 'SELECT'], EXPAND: ['warn', 'EXPAND'], GOAL_FOUND: ['ok', 'GOAL FOUND'], IDS_ITERATION: ['neutral', 'NEW ITERATION'] };
+      const [cls, label] = map[ev.type] || ['neutral', ev.type];
+      pillEl.className = `csp-pill ${cls}`;
+      pillEl.textContent = label;
+    }
+
     // Metrics
     if (this.metricExpanded) {
       this.metricExpanded.textContent = ev.expandedCount;

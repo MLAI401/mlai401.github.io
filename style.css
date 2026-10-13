@@ -5560,6 +5560,7 @@ body.sl-page::after {
 
 .csp-page,
 #view-csp,
+#view-maze-search,
 .csp-reading {
   --csp-accent: #0d9488;
   --csp-accent-soft: rgba(13, 148, 136, 0.1);
@@ -7090,3 +7091,80 @@ text.csp-hyper-label { paint-order: normal; }
 }
 .puz-answer p { font-size: 0.84rem; line-height: 1.5; margin: 0 0 0.35rem; color: var(--text-primary); }
 .puz-answer p:last-child { margin-bottom: 0; }
+
+/* 8-puzzle: build-a-state tray */
+.puz-rep-tray { display: grid; grid-template-columns: repeat(9, 1fr); gap: 4px; }
+.puz-rep-tray .btn-ctrl { padding: 0.45rem 0; font-weight: 700; font-size: 0.95rem; justify-content: center; min-width: 0; }
+.puz-rep-actions { grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 5px; margin-top: 5px; }
+@media (max-width: 480px) { .puz-rep-tray { grid-template-columns: repeat(5, 1fr); } }
+
+/* 8-puzzle: search-tree algorithm tabs */
+.puz-alg-tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; }
+.puz-alg-tabs .btn-ctrl { padding: 0.45rem 0.2rem; font-weight: 700; font-size: 0.82rem; justify-content: center; min-width: 0; }
+.puz-alg-tabs .btn-ctrl.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+/* 8-puzzle: compact search-tree panel */
+#puzzle-controls-panel { padding: 1.4rem 1.5rem; gap: 1rem; }
+.puzzle-teaching-panel.puz-st-panel.active { gap: 0.55rem; }
+.puz-st-panel h3 { font-size: 1.1rem; }
+.puz-st-intro { font-size: 0.82rem !important; line-height: 1.4 !important; margin: 0; }
+.puz-st-row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; }
+.puz-st-row .select-input { flex: 1 1 auto; min-width: 0; padding: 0.3rem 0.4rem; font-size: 0.8rem; }
+.puz-st-row input[type="range"] { flex: 0 1 90px; min-width: 60px; }
+.puz-st-msg { font-size: 0.78rem !important; text-align: left; font-family: sans-serif !important; font-weight: normal !important; line-height: 1.4; min-height: 74px; padding: 0.5rem 0.7rem !important; margin: 0; }
+.puz-st-controls { display: grid; grid-template-columns: auto 1fr 1fr 1fr 1fr; gap: 4px; }
+.puz-st-controls .btn-ctrl { padding: 0.45rem 0.4rem; font-size: 0.8rem; justify-content: center; min-width: 0; }
+.puz-st-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.puz-st-stats > div { display: flex; flex-direction: column; align-items: center; padding: 0.3rem 0.2rem; border: 1px solid var(--border-light); border-radius: 6px; background: #fff; }
+.puz-st-stats span { font-size: 0.66rem; font-weight: 600; color: var(--text-muted); }
+.puz-st-stats b { font-size: 0.95rem; color: var(--text-primary); }
+.puz-st-solution { padding: 0.55rem 0.7rem !important; gap: 0.35rem !important; }
+.puz-st-metrics { font-size: 0.74rem; color: var(--text-secondary); }
+.puz-st-metrics b { color: var(--text-primary); }
+.puz-st-controls .btn-ctrl-primary { grid-column: auto; font-size: 0.8rem; }
+.puzzle-flow-progress-bar { margin-bottom: 1rem; padding: 0.55rem 1.25rem; }
+
+/* 8-puzzle: compact reachability-test panel */
+.puzzle-teaching-panel.puz-rt-panel.active { gap: 0.6rem; }
+.puz-rt-panel h3 { font-size: 1.1rem; }
+.puz-rt-panel p { font-size: 0.82rem !important; line-height: 1.45 !important; margin: 0; }
+.puz-rt-btns { grid-template-columns: 1fr 1fr; gap: 5px; }
+.puz-rt-btns .btn-ctrl { padding: 0.45rem 0.5rem; font-size: 0.8rem; grid-column: auto; }
+.puz-rt-panel .search-status-banner { padding: 0.45rem 0.6rem !important; font-size: 0.8rem; }
+.puz-rt-panel .teaching-tip { padding: 0.45rem 0.7rem; font-size: 0.78rem; }
+
+/* Graph Search Algorithms: compact control panel */
+#search-controls-panel { padding: 1.25rem 1.4rem; gap: 0.8rem; }
+#search-controls-panel .teaching-panel { gap: 0.5rem !important; }
+#search-controls-panel h3 { font-size: 1.1rem; margin: 0; }
+#search-controls-panel .search-controls-container { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem 0.8rem; padding: 0.45rem 0.7rem; }
+#search-controls-panel .search-controls-container .control-row { padding: 0; margin: 0; font-size: 0.8rem; }
+#search-controls-panel #sma-maxnodes-row { grid-column: 1 / -1; }
+#search-controls-panel #search-explanation-text { min-height: 44px !important; padding: 0.45rem 0.7rem; font-size: 0.78rem !important; margin: 0; }
+#search-controls-panel .btn-group { grid-template-columns: repeat(5, 1fr) !important; gap: 4px !important; }
+#search-controls-panel .btn-group .btn-ctrl { grid-column: auto !important; padding: 0.45rem 0.3rem; font-size: 0.8rem; min-width: 0; }
+#search-controls-panel .controls-group { gap: 2px !important; }
+#search-controls-panel .controls-group .control-label { font-size: 0.72rem; }
+#search-controls-panel .live-search-stats { margin-top: 0 !important; gap: 4px; }
+#search-controls-panel .mini-stat-card { padding: 0.3rem 0.55rem; }
+#search-controls-panel .search-solution-card { padding: 0.55rem 0.7rem; gap: 0.35rem; }
+#search-controls-panel .comparison-table-wrapper { max-height: 104px !important; }
+
+/* CSP lab: Backtracking / Local search method switch */
+.csp-method-seg { display: grid; grid-template-columns: 1fr 1fr; width: 100%; }
+.csp-method-seg button { white-space: nowrap; font-size: 0.8rem; padding: 0.45rem 0.4rem; }
+
+/* Maze Search: CSP-style layout */
+#view-maze-search .ms-canvas-box { aspect-ratio: auto; height: 440px; min-height: 0; box-shadow: none; border-radius: 10px; }
+#view-maze-search .ms-legend { display: flex; flex-wrap: wrap; gap: 0.9rem; font-size: 0.75rem; color: var(--text-muted); }
+#view-maze-search .csp-lab-msg { min-height: 2.6rem; }
+#view-maze-search .ms-log-entry { color: var(--text-primary); }
+#view-maze-search .ms-log-step { color: var(--text-muted); }
+#view-maze-search .ms-log-entry.select { color: #7c3aed; }
+#view-maze-search .ms-log-entry.expand { color: #1d4ed8; }
+#view-maze-search .ms-log-entry.goal_found { color: #047857; }
+#view-maze-search .ms-frontier-block { display: flex; flex-direction: column; gap: 0.35rem; }
+#view-maze-search .ms-frontier-block .control-label { font-size: 0.75rem; }
+#view-maze-search .ms-check { display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer; }
+#view-maze-search .ms-summary-table { max-height: 170px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 6px; }
+#view-maze-search .ms-summary-table .comparison-table { font-size: 0.66rem; box-shadow: none; }

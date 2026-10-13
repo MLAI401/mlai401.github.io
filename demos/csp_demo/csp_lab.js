@@ -2,7 +2,8 @@
  * Constraint Satisfaction Problems — Playground Lab (playground.html#view-csp)
  *
  * Four sub-tabs, all running on window.CSPEngine (csp_engine.js) and drawn
- * with window.CSPRender (csp_render.js):
+ * with window.CSPRender (csp_render.js). Every sub-tab has a method switch:
+ * Backtracking search  |  Local search (min-conflicts, AIMA Fig 6.8).
  *   1. Map Colouring Solver   — backtracking with MRV / Degree / LCV and
  *                               FC / MAC inference, full step-by-step replay
  *   2. Course Scheduling      — the H1–H6 / S1–S5 timetabling CSP from
@@ -31,10 +32,12 @@
       this.root = root;
       this.active = 'map';
       this.timer = null;
-      this.map = { problem: 'aus', colors: 3, seed: 7, varOrder: 'static', valOrder: 'static', inference: 'none', speed: 3, step: 0, run: null, key: null };
-      this.sched = { tt: null, sel: null, history: [], soft: { S1: true, S2: true, S3: true, S4: true, S5: true }, log: 'Press “Solve hard constraints” to build a feasible timetable.', btStats: null };
-      this.q = { n: 8, seed: 1, init: 'random', speed: 3, step: 0, run: null, key: null };
-      this.sud = { preset: 'easy', domains: null, msg: '', stats: null, trace: null, step: 0 };
+      this.map = { method: 'bt', init: 'random', lsSeed: 1, problem: 'aus', colors: 3, seed: 7, varOrder: 'static', valOrder: 'static', inference: 'none', speed: 3, step: 0, run: null, key: null };
+      this.sched = { method: 'bt', mc: null, mcStep: 0, mcSeed: 1, tt: null, sel: null, history: [], soft: { S1: true, S2: true, S3: true, S4: true, S5: true }, log: 'Press “Solve hard constraints” to build a feasible timetable.', btStats: null };
+      this.q = { method: 'ls', n: 8, seed: 1, init: 'random', speed: 3, step: 0, run: null, key: null };
+      this.qb = { varOrder: 'static', inference: 'none', speed: 3, step: 0, run: null, full: null, key: null };
+      this.sud = { method: 'bt', preset: 'easy', domains: null, msg: '', stats: null, trace: null, step: 0 };
+      this.sudLS = { seed: 1, speed: 4, step: 0, run: null, key: null };
       this.bindSubtabs();
       this.render();
     }
@@ -93,6 +96,44 @@
       this.on(prefix + '-play', 'click', () => this.togglePlay(state, total, rerender));
     }
 
+    /** Method switch shown at the top of every CSP sub-tab. */
+    methodHTML(id, method) {
+      return `<div class="controls-group csp-method-group">
+        <div class="control-label"><span>Method</span></div>
+        <div class="csp-seg csp-method-seg" id="${id}">
+          <button data-val="bt" class="${method === 'bt' ? 'active' : ''}">Backtracking</button>
+          <button data-val="ls" class="${method === 'ls' ? 'active' : ''}">Local search (min-conflicts)</button>
+        </div>
+      </div>`;
+    }
+
+    bindMethod(id, state, rerender) {
+      const el = this.$(id);
+      if (!el) return;
+      el.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+        this.stop();
+        state.method = b.getAttribute('data-val');
+        rerender();
+      }));
+    }
+
+    /** Badge for a min-conflicts step. */
+    lsPill(s) {
+      if (s.kind === 'move') return s.from === s.to ? ['neutral', 'NO MOVE'] : ['info', 'MOVE'];
+      if (s.kind === 'failure') return ['bad', 'GAVE UP'];
+      return kindPill[s.kind] || ['neutral', s.kind];
+    }
+
+    /** Small "violated constraints vs. step" chart for a min-conflicts trace. */
+    lsChart(steps, i, label) {
+      const vals = steps.map(x => x.total);
+      const W = 360, H = 80, mx = Math.max(...vals, 1);
+      const X = k => 6 + k / Math.max(1, vals.length - 1) * (W - 12);
+      const Y = v => H - 10 - v / mx * (H - 22);
+      const pts = vals.map((v, k) => `${X(k).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
+      return `<svg viewBox="0 0 ${W} ${H}" class="csp-chart-svg"><polyline points="${pts}" class="csp-chart-line"></polyline><line x1="${X(i)}" x2="${X(i)}" y1="6" y2="${H - 6}" stroke="#f59e0b" stroke-width="1.5"></line><text x="8" y="12" class="csp-axis-t">${label}</text></svg>`;
+    }
+
     // =======================================================================
     // 1. MAP COLOURING
     // =======================================================================
@@ -109,10 +150,15 @@
 
     ensureMapRun() {
       const m = this.map;
-      const key = [m.problem, m.seed, m.colors, m.varOrder, m.valOrder, m.inference].join('|');
+      const key = [m.method, m.problem, m.seed, m.colors, m.varOrder, m.valOrder, m.inference, m.init, m.lsSeed].join('|');
       if (m.key === key) return;
       const def = this.mapDef();
       const csp = E.makeMapCSP(def, m.colors);
+      if (m.method === 'ls') {
+        m.run = E.minConflicts(csp, { randomInit: m.init === 'random', seed: m.lsSeed, maxSteps: 2000, maxTrace: 2002 });
+        m.full = null; m.csp = csp; m.key = key; m.step = 0;
+        return;
+      }
       m.run = E.backtrackingSearch(csp, { varOrder: m.varOrder, valOrder: m.valOrder, inference: m.inference, maxSteps: 6000, maxChecks: 3e6 });
       m.full = m.run.aborted ? E.backtrackingSearch(csp, { varOrder: m.varOrder, valOrder: m.valOrder, inference: m.inference, trace: false, maxChecks: 3e6 }) : m.run;
       m.csp = csp;
@@ -121,6 +167,7 @@
     }
 
     renderMap() {
+      if (this.map.method === 'ls') return this.renderMapLS();
       this.ensureMapRun();
       const m = this.map;
       const pane = this.$('csp-pane-map');
@@ -160,6 +207,7 @@
             <div class="csp-log csp-lab-log">${log}</div>
           </div>
           <div class="playground-controls glass-panel csp-lab-controls">
+            ${this.methodHTML('csp-map-method', m.method)}
             <div class="controls-group">
               <div class="control-label"><span>Problem</span></div>
               <div class="csp-lab-row">
@@ -194,12 +242,92 @@
         </div>`;
       const rerender = () => { this.renderMap(); this.icons(); };
       const change = (k, v) => { this.stop(); m[k] = v; m.key = null; rerender(); };
+      this.bindMethod('csp-map-method', m, rerender);
       this.on('csp-map-problem', 'change', e => change('problem', e.target.value));
       this.on('csp-map-newmap', 'click', () => change('seed', m.seed + 1));
       this.$('csp-map-colors').querySelectorAll('button').forEach(b => b.addEventListener('click', () => change('colors', +b.getAttribute('data-val'))));
       this.on('csp-map-var', 'change', e => change('varOrder', e.target.value));
       this.on('csp-map-val', 'change', e => change('valOrder', e.target.value));
       this.on('csp-map-inf', 'change', e => change('inference', e.target.value));
+      this.on('csp-map-speed', 'input', e => { m.speed = +e.target.value; if (this.timer) { this.stop(); this.togglePlay(m, steps.length, rerender); } });
+      this.bindStepper('csp-map', m, steps.length, rerender);
+      const logEl = pane.querySelector('.csp-lab-log');
+      if (logEl) logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    /** Map colouring with min-conflicts: complete colourings repaired one region at a time. */
+    renderMapLS() {
+      this.ensureMapRun();
+      const m = this.map;
+      const pane = this.$('csp-pane-map');
+      const steps = m.run.steps;
+      const i = Math.min(m.step, steps.length - 1);
+      const s = steps[i];
+      const def = this.mapDef();
+      const colors = E.COLOR_LIST.slice(0, m.colors);
+      const a = s.assignment;
+      const conflicts = m.csp.conflictedEdges(a);
+      const hl = s.var ? [s.var] : [];
+      let visual;
+      if (m.problem === 'aus') {
+        visual = R.mapSVG({ assignment: a, colors, highlight: hl, conflicts, W: 400, H: 340 });
+      } else {
+        visual = R.graphSVG({ vars: def.variables, neighbors: def.neighbors, pos: def.graph, assignment: a, W: 560, H: 420, r: 14, highlight: hl, hlEdges: conflicts, sub: {} });
+      }
+      const log = steps.slice(Math.max(0, i - 5), i + 1).map((x, k, arr) => `<div class="csp-log-row ${k === arr.length - 1 ? 'cur' : ''} k-${x.kind}">${x.kind === 'move' ? `${x.var}: ${x.from} → ${x.to}${x.from === x.to ? ' (no move)' : ''} · ${x.total} violated` : x.msg}</div>`).join('');
+      const pill = this.lsPill(s);
+      const opt = (arr, val) => arr.map(([k, l]) => `<option value="${k}" ${k === val ? 'selected' : ''}>${l}</option>`).join('');
+      const last = steps[steps.length - 1];
+      const verdict = m.run.solution ? `<span class="csp-pill ok">Solved in ${m.run.iterations} steps</span>` : `<span class="csp-pill bad">Gave up after ${m.run.iterations} steps</span>`;
+      pane.innerHTML = `
+        <div class="playground-grid csp-lab-grid">
+          <div class="csp-lab-stage">
+            <div class="csp-lab-stage-head">
+              <span class="csp-ill-title">${m.problem === 'aus' ? 'Australia (AIMA Fig 6.1)' : `Random planar map — ${def.variables.length} regions`} — min-conflicts</span>
+              <span class="csp-pill ${pill[0]}">${pill[1]}</span>
+            </div>
+            <div class="csp-lab-visual">${visual}</div>
+            <div class="csp-lab-msg">${s.msg}</div>
+            <div class="csp-log csp-lab-log">${log}</div>
+          </div>
+          <div class="playground-controls glass-panel csp-lab-controls">
+            ${this.methodHTML('csp-map-method', m.method)}
+            <div class="controls-group">
+              <div class="control-label"><span>Problem</span></div>
+              <div class="csp-lab-row">
+                <select class="csp-select" id="csp-map-problem">${opt([['aus', 'Australia (7 regions)'], ['rand12', 'Random map — 12 regions'], ['rand20', 'Random map — 20 regions'], ['rand30', 'Random map — 30 regions']], m.problem)}</select>
+                <button class="csp-btn" id="csp-map-newmap" ${m.problem === 'aus' ? 'disabled' : ''}><i data-lucide="shuffle"></i> New map</button>
+              </div>
+              <div class="csp-lab-row"><span class="csp-muted">Colours</span>
+                <div class="csp-seg" id="csp-map-colors">${[2, 3, 4].map(k => `<button data-val="${k}" class="${k === m.colors ? 'active' : ''}">${k}</button>`).join('')}</div>
+              </div>
+              <div class="csp-lab-row"><span class="csp-muted">Start</span>
+                <div class="csp-seg" id="csp-map-init"><button data-val="random" class="${m.init === 'random' ? 'active' : ''}">Random</button><button data-val="greedy" class="${m.init === 'greedy' ? 'active' : ''}">Greedy</button></div>
+                <button class="csp-btn" id="csp-map-rerun"><i data-lucide="shuffle"></i> New run</button>
+              </div>
+            </div>
+            <div class="controls-group">
+              <div class="control-label"><span>Step ${i} of ${steps.length - 1}</span></div>
+              ${this.stepperHTML('csp-map', i, steps.length)}
+              <div class="control-label"><span>Speed</span></div>
+              <input type="range" id="csp-map-speed" min="1" max="6" value="${m.speed}">
+            </div>
+            <div class="csp-card">${this.lsChart(steps, i, 'violated constraints vs. step')}</div>
+            <div class="playground-stats">
+              <div class="pg-stat-row"><span>Violated constraints now</span><span class="pg-stat-val" style="color:${s.total ? 'var(--danger)' : 'var(--success)'}">${s.total}</span></div>
+              <div class="pg-stat-row"><span>Outcome</span>${verdict}</div>
+            </div>
+            <div class="teaching-tip"><i data-lucide="lightbulb"></i><span>Local search never builds a partial colouring: every region always has a colour, and each step repairs one conflicted region. With <strong>2 colours</strong> no solution exists — backtracking proves that, but min-conflicts just keeps trying until it gives up.</span></div>
+          </div>
+        </div>`;
+      const rerender = () => { this.renderMap(); this.icons(); };
+      const change = (k, v) => { this.stop(); m[k] = v; m.key = null; rerender(); };
+      this.bindMethod('csp-map-method', m, rerender);
+      this.on('csp-map-problem', 'change', e => change('problem', e.target.value));
+      this.on('csp-map-newmap', 'click', () => change('seed', m.seed + 1));
+      this.$('csp-map-colors').querySelectorAll('button').forEach(b => b.addEventListener('click', () => change('colors', +b.getAttribute('data-val'))));
+      this.$('csp-map-init').querySelectorAll('button').forEach(b => b.addEventListener('click', () => change('init', b.getAttribute('data-val'))));
+      this.on('csp-map-rerun', 'click', () => change('lsSeed', m.lsSeed + 1));
       this.on('csp-map-speed', 'input', e => { m.speed = +e.target.value; if (this.timer) { this.stop(); this.togglePlay(m, steps.length, rerender); } });
       this.bindStepper('csp-map', m, steps.length, rerender);
       const logEl = pane.querySelector('.csp-lab-log');
@@ -214,6 +342,15 @@
       const S = E.SCHEDULE;
       const st = this.sched;
       const pane = this.$('csp-pane-schedule');
+      // Local-search replay: the timetable shown is the assignment at the current step.
+      const mcOn = st.method === 'ls' && st.mc;
+      let mcStep = null;
+      if (mcOn) {
+        st.mcStep = Math.min(st.mcStep, st.mc.steps.length - 1);
+        mcStep = st.mc.steps[st.mcStep];
+        st.tt = E.valsToTimetable(mcStep.assignment);
+        if (!st.sel) st.log = `<b>Step ${st.mcStep} / ${st.mc.steps.length - 1}.</b> ${mcStep.msg}`;
+      }
       const tt = st.tt || {};
       const ev = E.evaluateSchedule(tt, st.soft);
       const hardCourses = new Set(); Object.values(ev.hard).forEach(list => list.forEach(x => x.courses.forEach(c => hardCourses.add(c))));
@@ -255,9 +392,13 @@
             ${unscheduled.length ? `<div class="csp-status-row"><span class="csp-pill warn">Unscheduled</span>${unscheduled.map(c => `<button class="csp-tt-chip" data-course="${c.id}" style="--co:${S.cohorts[c.cohort].color}"><b>${c.id}</b><span>Dr. ${c.instr}</span></button>`).join('')}</div>` : ''}
           </div>
           <div class="playground-controls glass-panel csp-lab-controls">
+            ${this.methodHTML('csp-sch-method', st.method)}
             <div class="controls-group">
               <div class="control-label"><span>Solver</span></div>
-              <button class="csp-btn csp-btn-primary csp-btn-wide" id="csp-sch-solve"><i data-lucide="cpu"></i> Solve hard constraints (BT + MRV + FC)</button>
+              ${st.method === 'ls'
+                ? `<button class="csp-btn csp-btn-primary csp-btn-wide" id="csp-sch-mc"><i data-lucide="shuffle"></i> Solve hard constraints (min-conflicts)</button><div class="csp-muted" style="font-size:0.75rem">Starts from a random timetable, then repairs one conflicted course per step.</div>
+                   ${mcOn ? `<div class="control-label"><span>Step ${st.mcStep} of ${st.mc.steps.length - 1} · ${mcStep.total} violated</span></div>${this.stepperHTML('csp-sch', st.mcStep, st.mc.steps.length)}` : ''}`
+                : `<button class="csp-btn csp-btn-primary csp-btn-wide" id="csp-sch-solve"><i data-lucide="cpu"></i> Solve hard constraints (BT + MRV + FC)</button>`}
               <button class="csp-btn csp-btn-wide" id="csp-sch-opt" ${st.tt && !ev.hardCount ? '' : 'disabled'}><i data-lucide="trending-down"></i> Optimise soft constraints (local search)</button>
               <div class="csp-lab-row">
                 <button class="csp-btn" id="csp-sch-random"><i data-lucide="shuffle"></i> Random timetable</button>
@@ -280,6 +421,20 @@
           </div>
         </div>`;
       const rerender = () => { this.renderSchedule(); this.icons(); };
+      this.bindMethod('csp-sch-method', st, () => { st.mc = null; rerender(); });
+      this.on('csp-sch-mc', 'click', () => {
+        this.stop();
+        st.mcSeed++;
+        const label = x => { const p = E.parseVal(x); return `${E.slotLabel(p.slot)} ${p.room}`; };
+        st.mc = E.minConflicts(E.makeScheduleCSP(true), { randomInit: true, seed: st.mcSeed, maxSteps: 3000, maxTrace: 3002, label });
+        st.mcStep = 0; st.sel = null; st.btStats = null;
+        st.history = [];
+        rerender();
+      });
+      if (mcOn) {
+        const proxy = { get step() { return st.mcStep; }, set step(v) { st.mcStep = v; }, speed: 3 };
+        this.bindStepper('csp-sch', proxy, st.mc.steps.length, rerender);
+      }
       pane.querySelectorAll('.csp-tt-chip').forEach(ch => ch.addEventListener('click', e => {
         e.stopPropagation();
         const id = ch.getAttribute('data-course');
@@ -290,6 +445,7 @@
         if (!st.sel) return;
         st.tt = st.tt || {};
         const slot = +td.getAttribute('data-slot'), room = td.getAttribute('data-room');
+        st.mc = null;
         const old = st.tt[st.sel];
         st.tt[st.sel] = { slot, room };
         const ev2 = E.evaluateSchedule(st.tt, st.soft);
@@ -309,6 +465,7 @@
         rerender();
       });
       this.on('csp-sch-opt', 'click', () => {
+        st.mc = null;
         const before = E.evaluateSchedule(st.tt, st.soft).softCost;
         const improved = this.localSearchSchedule(st);
         st.log = `Local search made ${improved} improving move${improved === 1 ? '' : 's'} while keeping H1–H6 satisfied: soft penalty ${before} → ${E.evaluateSchedule(st.tt, st.soft).softCost}.`;
@@ -317,12 +474,12 @@
       this.on('csp-sch-random', 'click', () => {
         const tt2 = {};
         for (const c of S.courses) tt2[c.id] = { slot: Math.floor(Math.random() * S.nSlots), room: S.rooms[Math.floor(Math.random() * S.rooms.length)].id };
-        st.tt = tt2; st.sel = null; st.btStats = null;
+        st.tt = tt2; st.sel = null; st.btStats = null; st.mc = null;
         st.history = [E.evaluateSchedule(tt2, st.soft).softCost];
         st.log = 'A random complete assignment — typically riddled with hard violations (red). Fix them by hand or press Solve.';
         rerender();
       });
-      this.on('csp-sch-clear', 'click', () => { st.tt = null; st.sel = null; st.history = []; st.btStats = null; st.log = 'Cleared. Every course is unscheduled (H6 violated).'; rerender(); });
+      this.on('csp-sch-clear', 'click', () => { st.mc = null; st.tt = null; st.sel = null; st.history = []; st.btStats = null; st.log = 'Cleared. Every course is unscheduled (H6 violated).'; rerender(); });
       pane.querySelectorAll('[data-soft]').forEach(cb => cb.addEventListener('change', () => { st.soft[cb.getAttribute('data-soft')] = cb.checked; rerender(); }));
     }
 
@@ -375,6 +532,7 @@
     }
 
     renderQueens() {
+      if (this.q.method === 'bt') return this.renderQueensBT();
       this.ensureQueens();
       const q = this.q;
       const pane = this.$('csp-pane-queens');
@@ -401,7 +559,7 @@
       const Y = v => H - 10 - v / mx * (H - 22);
       const pts = vals.map((v, k) => `${X(k).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
       const chart = `<svg viewBox="0 0 ${W} ${H}" class="csp-chart-svg"><polyline points="${pts}" class="csp-chart-line"></polyline><line x1="${X(i)}" x2="${X(i)}" y1="6" y2="${H - 6}" stroke="#f59e0b" stroke-width="1.5"></line><text x="8" y="12" class="csp-axis-t">attacking pairs vs. step</text></svg>`;
-      const pill = kindPill[s.kind] || ['neutral', s.kind];
+      const pill = s.kind === 'move' && s.from === s.to ? ['neutral', 'NO MOVE'] : (kindPill[s.kind] || ['neutral', s.kind]);
       pane.innerHTML = `
         <div class="playground-grid csp-lab-grid">
           <div class="csp-lab-stage">
@@ -410,6 +568,7 @@
             <div class="csp-lab-msg">${s.msg}</div>
           </div>
           <div class="playground-controls glass-panel csp-lab-controls">
+            ${this.methodHTML('csp-q-method', q.method)}
             <div class="controls-group">
               <div class="control-label"><span>Board size n</span><span class="slider-val">${n}</span></div>
               <input type="range" id="csp-q-n" min="4" max="48" value="${n}">
@@ -432,15 +591,98 @@
               <div class="pg-stat-row"><span>Plain backtracking assignments</span><span class="pg-stat-val">${q.bt.plain.toLocaleString()}${q.bt.plainAborted ? '+ (limit)' : ''}</span></div>
               <div class="pg-stat-row"><span>Backtracking + MRV + FC assignments</span><span class="pg-stat-val">${q.bt.fc.toLocaleString()}${q.bt.fcAborted ? '+ (limit)' : ''}</span></div>
             </div>
-            <div class="teaching-tip"><i data-lucide="lightbulb"></i><span>Increase n: plain backtracking's cost explodes, while min-conflicts still needs only a few dozen repair steps — its run-time is roughly independent of n. Here the chosen queen must leave its current row and may not return to the row it just left (a small tabu list), so every step is a real move — sideways or even uphill when no better row exists.</span></div>
+            <div class="teaching-tip"><i data-lucide="lightbulb"></i><span>Increase n: plain backtracking's cost explodes, while min-conflicts still needs only a few dozen repair steps — its run-time is roughly independent of n. A step can leave the queen where it is when its current row is already least-conflicted; those steps are labelled NO MOVE.</span></div>
           </div>
         </div>`;
       const rerender = () => { this.renderQueens(); this.icons(); };
+      this.bindMethod('csp-q-method', q, rerender);
       this.on('csp-q-n', 'change', e => { this.stop(); q.n = +e.target.value; q.key = null; rerender(); });
       this.on('csp-q-new', 'click', () => { this.stop(); q.seed++; q.key = null; rerender(); });
       this.$('csp-q-init').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { this.stop(); q.init = b.getAttribute('data-val'); q.key = null; rerender(); }));
       this.on('csp-q-speed', 'input', e => { q.speed = +e.target.value; if (this.timer) { this.stop(); this.togglePlay(q, steps.length, rerender); } });
       this.bindStepper('csp-q', q, steps.length, rerender);
+    }
+
+    /** N-Queens with backtracking search (one queen per column, assigned left to right or by MRV). */
+    renderQueensBT() {
+      const q = this.q, b = this.qb, n = q.n;
+      const key = [n, b.varOrder, b.inference].join('|');
+      if (b.key !== key) {
+        b.run = E.backtrackingSearch(E.makeQueensCSP(n), { varOrder: b.varOrder, inference: b.inference, maxSteps: 3000 });
+        b.full = b.run.aborted ? E.backtrackingSearch(E.makeQueensCSP(n), { varOrder: b.varOrder, inference: b.inference, trace: false, maxChecks: 4e6 }) : b.run;
+        b.key = key; b.step = 0;
+      }
+      const steps = b.run.steps;
+      const i = Math.min(b.step, steps.length - 1);
+      const s = steps[i];
+      const a = s.assignment, doms = s.domains || {};
+      const col = v => +String(v).slice(1);
+      const size = 460, cs = size / n;
+      const curCol = s.var ? col(s.var) : null;
+      let svg = `<svg viewBox="0 0 ${size} ${size}" class="csp-board-svg">`;
+      for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) svg += `<rect x="${c * cs}" y="${r * cs}" width="${cs}" height="${cs}" class="${(r + c) % 2 ? 'csp-sq-d' : 'csp-sq-l'} ${c === curCol ? 'csp-sq-col' : ''}"></rect>`;
+      // Rows removed from an unassigned column's domain by inference
+      if (b.inference !== 'none' && n <= 16) {
+        for (let c = 0; c < n; c++) {
+          const v = 'Q' + c;
+          if (v in a || !doms[v]) continue;
+          for (let r = 0; r < n; r++) if (!doms[v].includes(r)) svg += `<text x="${c * cs + cs / 2}" y="${r * cs + cs / 2 + cs * 0.12}" class="csp-q-count" style="font-size:${cs * 0.34}px;opacity:.45">✕</text>`;
+        }
+      }
+      for (const v in a) {
+        const c = col(v), r = a[v];
+        svg += `<g class="csp-queen"><circle cx="${c * cs + cs / 2}" cy="${r * cs + cs / 2}" r="${cs * 0.34}"></circle>${n <= 24 ? `<text x="${c * cs + cs / 2}" y="${r * cs + cs / 2 + cs * 0.13}" style="font-size:${cs * 0.42}px">♛</text>` : ''}</g>`;
+      }
+      if (s.kind === 'reject' && s.var != null) {
+        svg += `<g class="csp-queen att" opacity="0.6"><circle cx="${curCol * cs + cs / 2}" cy="${s.val * cs + cs / 2}" r="${cs * 0.34}"></circle>${n <= 24 ? `<text x="${curCol * cs + cs / 2}" y="${s.val * cs + cs / 2 + cs * 0.13}" style="font-size:${cs * 0.42}px">♛</text>` : ''}</g>`;
+      }
+      svg += '</svg>';
+      const pill = kindPill[s.kind] || ['neutral', s.kind];
+      const log = steps.slice(Math.max(0, i - 6), i + 1).map((x, k, arr) => `<div class="csp-log-row ${k === arr.length - 1 ? 'cur' : ''} k-${x.kind}" style="padding-left:${0.4 + Math.min(x.depth || 0, 12) * 0.45}rem">${x.msg}</div>`).join('');
+      const full = b.full.stats;
+      const verdict = b.full.solution ? '<span class="csp-pill ok">Solution found</span>' : b.full.aborted ? '<span class="csp-pill warn">Check limit reached</span>' : '<span class="csp-pill bad">No solution</span>';
+      const opt = (arr, val) => arr.map(([k, l]) => `<option value="${k}" ${k === val ? 'selected' : ''}>${l}</option>`).join('');
+      const pane = this.$('csp-pane-queens');
+      pane.innerHTML = `
+        <div class="playground-grid csp-lab-grid">
+          <div class="csp-lab-stage">
+            <div class="csp-lab-stage-head"><span class="csp-ill-title">${n}-Queens — backtracking: variables Q0…Q${n - 1} = columns, values = rows 0…${n - 1}</span><span class="csp-pill ${pill[0]}">${pill[1]}</span></div>
+            <div class="csp-board-wrap csp-board-lg">${svg}</div>
+            <div class="csp-lab-msg">${s.msg}</div>
+            <div class="csp-log csp-lab-log">${log}</div>
+          </div>
+          <div class="playground-controls glass-panel csp-lab-controls">
+            ${this.methodHTML('csp-q-method', q.method)}
+            <div class="controls-group">
+              <div class="control-label"><span>Board size n</span><span class="slider-val">${n}</span></div>
+              <input type="range" id="csp-qb-n" min="4" max="16" value="${Math.min(n, 16)}">
+              <select class="csp-select" id="csp-qb-var">${opt([['static', 'Variable order: left to right'], ['mrv', 'Variable order: MRV']], b.varOrder)}</select>
+              <select class="csp-select" id="csp-qb-inf">${opt([['none', 'Inference: none'], ['fc', 'Inference: forward checking'], ['mac', 'Inference: MAC (AC-3)']], b.inference)}</select>
+            </div>
+            <div class="controls-group">
+              <div class="control-label"><span>Step ${i + 1} of ${steps.length}${b.run.aborted ? '+' : ''}</span></div>
+              ${this.stepperHTML('csp-qb', i, steps.length)}
+              <div class="control-label"><span>Speed</span></div>
+              <input type="range" id="csp-qb-speed" min="1" max="6" value="${b.speed}">
+            </div>
+            <div class="playground-stats">
+              <div class="pg-stat-row"><span>Assignments (so far / total)</span><span class="pg-stat-val">${s.stats.assignments} / ${full.assignments.toLocaleString()}</span></div>
+              <div class="pg-stat-row"><span>Backtracks</span><span class="pg-stat-val" style="color: var(--danger)">${s.stats.backtracks} / ${full.backtracks.toLocaleString()}</span></div>
+              <div class="pg-stat-row"><span>Constraint checks</span><span class="pg-stat-val">${s.stats.checks.toLocaleString()} / ${full.checks.toLocaleString()}</span></div>
+              <div class="pg-stat-row"><span>Outcome</span>${verdict}</div>
+            </div>
+            <div class="teaching-tip"><i data-lucide="lightbulb"></i><span>Backtracking builds a <strong>partial</strong> assignment one column at a time and undoes it at dead ends. Compare the total assignments here with the number of min-conflicts steps for the same n.${b.inference !== 'none' ? ' ✕ marks rows already removed from a column\'s domain by inference.' : ''}</span></div>
+          </div>
+        </div>`;
+      const rerender = () => { this.renderQueens(); this.icons(); };
+      this.bindMethod('csp-q-method', q, rerender);
+      this.on('csp-qb-n', 'change', e => { this.stop(); q.n = +e.target.value; q.key = null; b.key = null; rerender(); });
+      this.on('csp-qb-var', 'change', e => { this.stop(); b.varOrder = e.target.value; b.key = null; rerender(); });
+      this.on('csp-qb-inf', 'change', e => { this.stop(); b.inference = e.target.value; b.key = null; rerender(); });
+      this.on('csp-qb-speed', 'input', e => { b.speed = +e.target.value; if (this.timer) { this.stop(); this.togglePlay(b, steps.length, rerender); } });
+      this.bindStepper('csp-qb', b, steps.length, rerender);
+      const logEl = pane.querySelector('.csp-lab-log');
+      if (logEl) logEl.scrollTop = logEl.scrollHeight;
     }
 
     // =======================================================================
@@ -453,6 +695,7 @@
     }
 
     renderSudoku() {
+      if (this.sud.method === 'ls') return this.renderSudokuLS();
       const st = this.sud;
       const { p, csp } = this.sudokuCSP();
       if (!st.domains) { st.domains = E.copyDomains(csp.domains); st.msg = `${p.label}: ${p.puzzle.replace(/[.0]/g, '').length} givens. Each blank cell starts with the full domain {1 … ${p.size}}.`; st.stats = null; st.trace = null; }
@@ -483,6 +726,7 @@
             <div class="csp-lab-msg">${tr ? tr.steps[Math.min(st.step, tr.steps.length - 1)].msg.replace(/r(\d)c(\d)/g, (m, a, b) => `(${+a + 1},${+b + 1})`) : st.msg}</div>
           </div>
           <div class="playground-controls glass-panel csp-lab-controls">
+            ${this.methodHTML('csp-sud-method', st.method)}
             <div class="controls-group">
               <div class="control-label"><span>Puzzle</span></div>
               <select class="csp-select" id="csp-sud-preset">${opt}</select>
@@ -503,6 +747,7 @@
           </div>
         </div>`;
       const rerender = () => { this.renderSudoku(); this.icons(); };
+      this.bindMethod('csp-sud-method', st, rerender);
       this.on('csp-sud-preset', 'change', e => { this.stop(); st.preset = e.target.value; st.domains = null; rerender(); });
       this.on('csp-sud-reset', 'click', () => { this.stop(); st.domains = null; rerender(); });
       this.on('csp-sud-ac3', 'click', () => {
@@ -541,6 +786,69 @@
         rerender();
       });
       if (tr) this.bindStepper('csp-sud', st, tr.steps.length, rerender);
+    }
+
+    /** Sudoku with min-conflicts: every blank cell holds a digit; givens never change. */
+    renderSudokuLS() {
+      const st = this.sud, L = this.sudLS;
+      const { p, csp } = this.sudokuCSP();
+      const key = [st.preset, L.seed].join('|');
+      if (L.key !== key) {
+        L.run = E.minConflicts(csp, { randomInit: true, seed: L.seed, maxSteps: 3000, maxTrace: 3002 });
+        L.key = key; L.step = 0;
+      }
+      const steps = L.run.steps;
+      const i = Math.min(L.step, steps.length - 1);
+      const s = steps[i];
+      const a = s.assignment, n = p.size;
+      const cells = csp.variables.map((v, idx) => {
+        const given = p.puzzle[idx] !== '.' && p.puzzle[idx] !== '0';
+        const bad = !given && csp.nConflicts(v, a[v], a) > 0;
+        const cur = v === s.var;
+        return `<div class="csp-sud-cell ${given ? 'given' : ''} ${cur ? 'guess' : ''} ${this.sudBorder(idx, n)}" style="${bad ? 'color:var(--danger);font-weight:700;' : ''}${cur ? 'outline:2px solid #f59e0b;outline-offset:-2px;' : ''}"><span class="csp-sud-val">${a[v]}</span></div>`;
+      }).join('');
+      const pill = this.lsPill(s);
+      const conflictedCells = csp.variables.filter(v => csp.nConflicts(v, a[v], a) > 0).length;
+      const opt = Object.entries(E.SUDOKU_PRESETS).map(([k, v]) => `<option value="${k}" ${k === st.preset ? 'selected' : ''}>${v.label}</option>`).join('');
+      const fix = t => t.replace(/r(\d)c(\d)/g, (m, x, y) => `(${+x + 1},${+y + 1})`);
+      const verdict = L.run.solution ? `<span class="csp-pill ok">Solved in ${L.run.iterations} steps</span>` : `<span class="csp-pill bad">Gave up after ${L.run.iterations} steps</span>`;
+      const pane = this.$('csp-pane-sudoku');
+      pane.innerHTML = `
+        <div class="playground-grid csp-lab-grid">
+          <div class="csp-lab-stage">
+            <div class="csp-lab-stage-head"><span class="csp-ill-title">Sudoku — min-conflicts on a complete grid (red = clashes with a row, column or box)</span><span class="csp-pill ${pill[0]}">${pill[1]}</span></div>
+            <div class="csp-sud-wrap"><div class="csp-sudoku csp-sudoku-${n}">${cells}</div>
+              <div class="csp-sud-legend"><span><i class="given"></i> given (fixed)</span><span><i style="background:rgba(139,92,246,0.25)"></i> cell picked this step</span><span style="color:var(--danger);font-weight:700">7</span> in conflict</div></div>
+            <div class="csp-lab-msg">${fix(s.msg)}</div>
+          </div>
+          <div class="playground-controls glass-panel csp-lab-controls">
+            ${this.methodHTML('csp-sud-method', st.method)}
+            <div class="controls-group">
+              <div class="control-label"><span>Puzzle</span></div>
+              <select class="csp-select" id="csp-sud-preset">${opt}</select>
+              <button class="csp-btn" id="csp-sudls-new"><i data-lucide="shuffle"></i> New random start</button>
+            </div>
+            <div class="controls-group">
+              <div class="control-label"><span>Step ${i} of ${steps.length - 1}</span></div>
+              ${this.stepperHTML('csp-sudls', i, steps.length)}
+              <div class="control-label"><span>Speed</span></div>
+              <input type="range" id="csp-sudls-speed" min="1" max="6" value="${L.speed}">
+            </div>
+            <div class="csp-card">${this.lsChart(steps, i, 'violated constraints vs. step')}</div>
+            <div class="playground-stats">
+              <div class="pg-stat-row"><span>Violated constraints now</span><span class="pg-stat-val" style="color:${s.total ? 'var(--danger)' : 'var(--success)'}">${s.total}</span></div>
+              <div class="pg-stat-row"><span>Cells in conflict</span><span class="pg-stat-val">${conflictedCells}</span></div>
+              <div class="pg-stat-row"><span>Outcome</span>${verdict}</div>
+            </div>
+            <div class="teaching-tip"><i data-lucide="lightbulb"></i><span>The <strong>4×4 Mini</strong> is solved quickly, but on 9×9 puzzles min-conflicts usually gets <strong>stuck</strong>: the last few clashes form a local minimum that single-cell repairs cannot escape. Sudoku is tightly constrained — switch to <strong>Backtracking</strong> to see AC-3 and MAC solve it.</span></div>
+          </div>
+        </div>`;
+      const rerender = () => { this.renderSudoku(); this.icons(); };
+      this.bindMethod('csp-sud-method', st, rerender);
+      this.on('csp-sud-preset', 'change', e => { this.stop(); st.preset = e.target.value; st.domains = null; L.key = null; rerender(); });
+      this.on('csp-sudls-new', 'click', () => { this.stop(); L.seed++; rerender(); });
+      this.on('csp-sudls-speed', 'input', e => { L.speed = +e.target.value; if (this.timer) { this.stop(); this.togglePlay(L, steps.length, rerender); } });
+      this.bindStepper('csp-sudls', L, steps.length, rerender);
     }
 
     sudBorder(i, n) {

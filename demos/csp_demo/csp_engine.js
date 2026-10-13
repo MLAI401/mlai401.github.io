@@ -492,11 +492,14 @@
    * @returns {{solution, steps, iterations}}
    */
   function minConflicts(csp, opts) {
-    opts = Object.assign({ maxSteps: 1000, seed: 1, trace: true, initial: null, maxTrace: 1500 }, opts || {});
+    opts = Object.assign({ maxSteps: 1000, seed: 1, trace: true, initial: null, randomInit: false, maxTrace: 1500, label: x => String(x) }, opts || {});
     const rng = makeRng(opts.seed);
+    const L = opts.label;
     const current = {};
     if (opts.initial) Object.assign(current, opts.initial);
-    else {
+    else if (opts.randomInit) {
+      for (const v of csp.variables) { const d = csp.domains[v]; current[v] = d[Math.floor(rng() * d.length)]; }
+    } else {
       // Greedy initial assignment (AIMA: "a complete assignment, chosen greedily")
       for (const v of csp.variables) {
         const counts = csp.domains[v].map(x => csp.nConflicts(v, x, current));
@@ -507,7 +510,11 @@
     }
     const steps = [];
     const totalConf = () => csp.conflictedEdges(current).length;
-    if (opts.trace) steps.push({ kind: 'start', assignment: Object.assign({}, current), total: totalConf(), msg: 'Start from a complete (greedy) assignment.' });
+    const keyOf = () => csp.variables.map(v => current[v]).join('|');
+    const seenAt = new Map([[keyOf(), 0]]);
+    let prevVar = null;
+    if (opts.trace) steps.push({ kind: 'start', assignment: Object.assign({}, current), total: totalConf(),
+      msg: `Start from a complete ${opts.initial ? 'given' : opts.randomInit ? 'random' : 'greedy'} assignment: every variable has a value, ${totalConf()} constraint${totalConf() === 1 ? ' is' : 's are'} violated.` });
     for (let i = 1; i <= opts.maxSteps; i++) {
       const conflicted = csp.variables.filter(v => csp.nConflicts(v, current[v], current) > 0);
       if (!conflicted.length) {
@@ -515,16 +522,36 @@
         return { solution: Object.assign({}, current), steps, iterations: i - 1 };
       }
       const v = conflicted[Math.floor(rng() * conflicted.length)];
-      const counts = csp.domains[v].map(x => csp.nConflicts(v, x, current));
+      const dom = csp.domains[v];
+      const counts = dom.map(x => csp.nConflicts(v, x, current));
       const m = Math.min(...counts);
-      const ties = csp.domains[v].filter((x, k) => counts[k] === m);
+      const ties = dom.filter((x, k) => counts[k] === m);
       const old = current[v];
       const val = ties[Math.floor(rng() * ties.length)];
+      const before = totalConf();
       current[v] = val;
       if (opts.trace && steps.length < opts.maxTrace) {
-        steps.push({ kind: 'move', var: v, from: old, to: val, counts, domain: csp.domains[v].slice(), assignment: Object.assign({}, current), total: totalConf(), conflictedVars: conflicted, msg: `Pick conflicted ${v} (${conflicted.length} conflicted). Value conflicts: ${csp.domains[v].map((x, k) => `${x}:${counts[k]}`).join(' ')} → set ${v} = ${val}${val === old ? ' (sideways / stay)' : ''}.` });
+        const after = totalConf();
+        const shown = conflicted.length <= 8 ? conflicted.join(', ') : `${conflicted.slice(0, 8).join(', ')}, …`;
+        const pick = `PICK: ${v}, at random from the ${conflicted.length} conflicted variable${conflicted.length === 1 ? '' : 's'} (${shown})${prevVar === v ? ' — the same variable as the last step' : ''}.`;
+        const count = dom.length <= 10
+          ? `COUNT: conflicts for each value of ${v}: ${dom.map((x, k) => `${L(x)}=${counts[k]}`).join(', ')}.`
+          : `COUNT: conflicts for all ${dom.length} values of ${v}; its current value ${L(old)} has ${counts[dom.indexOf(old)]}.`;
+        const tieTxt = ties.length <= 6 ? ties.map(L).join(', ') : `${ties.length} values`;
+        const choose = `CHOOSE: the fewest is ${m}, at ${tieTxt}${ties.length > 1 ? `; the random tie-break picked ${L(val)}` : ''}.`;
+        let result;
+        if (val === old) result = `RESULT: NO MOVE. ${L(val)} is ${v}'s current value, so nothing changes (this still counts as one step).`;
+        else {
+          result = `RESULT: ${v} = ${L(old)} → ${L(val)}; violated constraints ${before} → ${after}${after === before ? ' (a sideways move)' : ''}.`;
+          const k = keyOf();
+          if (seenAt.has(k)) result += ` The assignment is back to how it was at step ${seenAt.get(k)} — a plateau; progress needs a pick of a different variable.`;
+        }
+        const k2 = keyOf(); if (!seenAt.has(k2)) seenAt.set(k2, i);
+        steps.push({ kind: 'move', var: v, from: old, to: val, counts, domain: dom.slice(), assignment: Object.assign({}, current), total: after, conflictedVars: conflicted, msg: `${pick} ${count} ${choose} ${result}` });
       }
+      prevVar = v;
     }
+    if (opts.trace) steps.push({ kind: 'failure', assignment: Object.assign({}, current), total: totalConf(), msg: `Gave up after max_steps = ${opts.maxSteps}: ${totalConf()} constraint${totalConf() === 1 ? ' is' : 's are'} still violated. Min-conflicts is incomplete — it can get stuck on plateaus or local minima.` });
     return { solution: null, steps, iterations: opts.maxSteps };
   }
 
@@ -542,8 +569,9 @@
       }
       rows[c] = best[Math.floor(rng() * best.length)];
     }
-    const lastLeft = new Array(n).fill(null);
     const steps = [];
+    const seenAt = new Map([[rows.join(','), 0]]);   // board -> first step it appeared
+    let prevCol = null;
     if (opts.trace) steps.push({ kind: 'start', rows: rows.slice(), total: queensAttackingPairs(rows), msg: opts.randomInit ? 'Random complete assignment: one queen per column.' : 'Greedy complete assignment: each queen placed on a least-conflicted row, column by column.' });
     for (let i = 1; i <= opts.maxSteps; i++) {
       const conflicted = [];
@@ -556,29 +584,34 @@
       const counts = [];
       for (let r = 0; r < n; r++) counts.push(queenConflicts(rows, c, r));
       const from = rows[c];
-      // Min-conflicts with a small tabu list (current row + the row it last left): the chosen queen
-      // always moves to the least-conflicted *other* row (ties broken randomly).
-      // Plain min-conflicts may leave the queen where it is (a step with no visible
-      // action); forbidding the current row makes every step a real move and lets
-      // the search cross plateaus (AIMA §6.4: sideways moves / tabu search).
-      // Short tabu memory: a queen may not jump straight back to the row it just left
-      // (unless that is its only alternative), so moves are never immediately undone.
-      const tabu = new Set([from]);
-      if (lastLeft[c] != null && n > 2) tabu.add(lastLeft[c]);
+      // Textbook MIN-CONFLICTS (AIMA Fig 6.8): the value with the fewest conflicts,
+      // ties broken at random. The current row is allowed, so a step may leave the queen in place.
       let m = Infinity, ties = [];
-      counts.forEach((k, r) => { if (tabu.has(r)) return; if (k < m) { m = k; ties = [r]; } else if (k === m) ties.push(r); });
-      lastLeft[c] = from;
+      counts.forEach((k, r) => { if (k < m) { m = k; ties = [r]; } else if (k === m) ties.push(r); });
       const to = ties[Math.floor(rng() * ties.length)];
       const before = queensAttackingPairs(rows);
       rows[c] = to;
       const after = queensAttackingPairs(rows);
-      const cw = k => `${k} conflict${k === 1 ? '' : 's'}`;
-      const head = `Row ${from + 1} → row ${to + 1} (${cw(counts[from])} → ${cw(m)}).`;
-      let note;
-      if (after < before) note = `${head} Attacking pairs ${before} → ${after}.`;
-      else if (after === before) note = `${head} Same total (${after}): a sideways move across a plateau.`;
-      else note = `${head} No better row exists, so this uphill move raises attacking pairs ${before} → ${after}.`;
-      if (opts.trace && steps.length < opts.maxTrace) steps.push({ kind: 'move', col: c, from, to, counts, conflicted, rows: rows.slice(), total: after, msg: `Column ${c + 1} is conflicted (${conflicted.length} conflicted queens). ${note}` });
+      const list = xs => xs.map(x => x + 1).join(', ');
+      const key = rows.join(',');
+
+      // One explanation per step: PICK -> COUNT -> CHOOSE -> RESULT
+      const pick = `PICK: column ${c + 1}, at random from the conflicted columns ${list(conflicted)}` +
+        (prevCol === c ? ' (the same column as the last step).' : '.');
+      const count = `COUNT: its conflicts in rows 1–${n} = ${counts.join(', ')}.`;
+      const choose = `CHOOSE: the fewest is ${m}, at row${ties.length > 1 ? 's' : ''} ${list(ties)}` +
+        (ties.length > 1 ? `; the random tie-break picked row ${to + 1}.` : '.');
+      let result;
+      if (to === from) {
+        result = `RESULT: NO MOVE. Row ${to + 1} is where the queen already is, so the board is unchanged (this still counts as one step).`;
+      } else {
+        result = `RESULT: the queen moves row ${from + 1} → ${to + 1}; attacking pairs ${before} → ${after}` +
+          (after === before ? ' (a sideways move).' : '.');
+        if (seenAt.has(key)) result += ` The board is back to how it was at step ${seenAt.get(key)}: this queen is swapping between equally good rows (a plateau), and only a pick of another column can make progress.`;
+      }
+      if (!seenAt.has(key)) seenAt.set(key, i);
+      prevCol = c;
+      if (opts.trace && steps.length < opts.maxTrace) steps.push({ kind: 'move', col: c, from, to, counts, conflicted, rows: rows.slice(), total: after, msg: `${pick} ${count} ${choose} ${result}` });
     }
     return { solved: false, rows, steps, iterations: opts.maxSteps };
   }

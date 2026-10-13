@@ -2331,7 +2331,7 @@
            </div>
          </div>`,
         `${stepperHTML('csp-mc', i, steps.length, !!this.timer)}
-         <div class="csp-status-row"><span class="csp-pill ${s.kind === 'solution' ? 'ok' : s.kind === 'start' ? 'neutral' : 'info'}">${s.kind.toUpperCase()}</span><span class="csp-msg">${s.msg}</span></div>`
+         <div class="csp-status-row"><span class="csp-pill ${s.kind === 'solution' ? 'ok' : s.kind === 'start' || (s.kind === 'move' && s.from === s.to) ? 'neutral' : 'info'}">${s.kind === 'move' && s.from === s.to ? 'NO MOVE' : s.kind.toUpperCase()}</span><span class="csp-msg">${s.msg}</span></div>`
       );
       this.on('csp-mc-new', 'click', () => { this.clearTimer(); this.st.mcSeed++; this.st.mcStep = 0; this.refresh(); });
       this.bindStepper('csp-mc', 'mcStep', steps.length, 700);

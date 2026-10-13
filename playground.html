@@ -15,7 +15,7 @@
   <meta property="og:type" content="website">
   
   <!-- Style Sheet -->
-  <link rel="stylesheet" href="style.css?v=18">
+  <link rel="stylesheet" href="style.css?v=25">
 </head>
 <body>
   
@@ -51,23 +51,21 @@
       <div class="section-header playground-tabs-bar" style="margin-bottom: 2rem;">
         <!-- Playground Tab Navigation -->
         <div class="playground-tabs">
-          <!-- Topic 01 · Problem Formulation -->
+          <!-- Topic 01 · Problem Formulation & Topic 02 · Search -->
           <button class="playground-tab active" data-target="view-vaccum" title="Topic 01 · Problem Formulation">
             <i data-lucide="bot"></i> Two-Room Vacuum Agents
           </button>
           <button class="playground-tab" data-target="view-maze" title="Topic 01 · Problem Formulation">
             <i data-lucide="grid"></i> Maze Abstraction
           </button>
-          <button class="playground-tab" data-target="view-puzzle" title="Topic 01 · Problem Formulation">
-            <i data-lucide="puzzle"></i> 8-Puzzle State-Space
+          <button class="playground-tab" data-target="view-maze-search" title="Topic 02 · Search">
+            <i data-lucide="compass"></i> Maze Search
           </button>
-          <span class="playground-tab-sep" aria-hidden="true"></span>
-          <!-- Topic 02 · Search -->
           <button class="playground-tab" data-target="view-search" title="Topic 02 · Search">
             <i data-lucide="git-commit"></i> Graph Search Algorithms
           </button>
-          <button class="playground-tab" data-target="view-maze-search" title="Topic 02 · Search">
-            <i data-lucide="compass"></i> Maze Search
+          <button class="playground-tab" data-target="view-puzzle" title="Topic 01 · Problem Formulation">
+            <i data-lucide="puzzle"></i> 8-Puzzle State-Space
           </button>
           <span class="playground-tab-sep" aria-hidden="true"></span>
           <!-- Topic 03 · Games -->
@@ -425,158 +423,91 @@
 
       <!-- Tab 2.5: Maze Search & Performance View -->
       <div class="playground-view" id="view-maze-search">
-        <div class="playground-grid">
-          <!-- Visualizer Canvas -->
-          <div class="canvas-container" id="maze-search-canvas-container">
-            <canvas id="ms-canvas"></canvas>
-            <div class="canvas-overlay" id="ms-overlay-info">
-              <div>Goal: <span style="color: #ef4444; font-weight: 700;">G</span> &bull; Start: <span style="color: #10b981; font-weight: 700;">S</span></div>
-              <div>Heuristic: <span style="color: var(--accent);">Manhattan Distance |Δx| + |Δy|</span></div>
+        <div class="playground-grid csp-lab-grid">
+          <!-- Stage: maze, current step, frontier -->
+          <div class="csp-lab-stage">
+            <div class="csp-lab-stage-head">
+              <span class="csp-ill-title" id="ms-stage-title">Maze search</span>
+              <span class="csp-pill neutral" id="ms-stage-pill">START</span>
+            </div>
+            <div class="canvas-container ms-canvas-box" id="maze-search-canvas-container">
+              <canvas id="ms-canvas"></canvas>
+            </div>
+            <div class="ms-legend"><span><b style="color:#10b981">S</b> start</span><span><b style="color:#ef4444">G</b> goal</span><span>h(n) = Manhattan distance |Δx| + |Δy|</span></div>
+            <div class="csp-lab-msg" id="ms-log-content"></div>
+            <div class="ms-frontier-block">
+              <div class="control-label"><span>Frontier (next node to pop is highlighted)</span></div>
+              <div id="ms-frontier-container" class="ms-frontier-grid"></div>
             </div>
           </div>
-          
-          <!-- Controls & Performance Dashboard Panel -->
-          <div class="playground-controls glass-panel" id="maze-search-controls-panel">
-            <!-- Header & Config -->
-            <div class="controls-header" style="margin-bottom: 0.75rem;">
-              <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">
-                Maze Search &amp; Complexity
-              </h3>
-              <p style="font-size: 0.8rem; color: var(--text-secondary); margin: 0;">
-                Evaluate time complexity, memory space, completeness, and optimality on maze topologies.
-              </p>
-            </div>
 
-            <!-- Primary Algorithm Selector & Mode Controls -->
-            <div class="controls-row-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.75rem;">
-              <div class="control-select-wrapper">
-                <label class="control-mini-label">Algorithm</label>
-                <select id="ms-alg-select" class="select-input">
-                  <option value="A*" selected>A* Search (f = g + h)</option>
-                  <option value="UCS">Uniform-Cost Search (UCS)</option>
-                  <option value="BFS">Breadth-First Search (BFS)</option>
-                  <option value="DFS">Depth-First Search (DFS)</option>
-                  <option value="Greedy">Greedy Best-First</option>
-                  <option value="IDS">Iterative Deepening (IDS)</option>
-                </select>
-              </div>
-
-              <div class="control-select-wrapper">
-                <label class="control-mini-label">Maze Preset</label>
-                <select id="ms-preset-select" class="select-input">
-                  <option value="dualRoute" selected>Dual Route &amp; Trap</option>
-                  <option value="looping">Cyclic Corridor Maze</option>
-                  <option value="openField">Open Room / Obstacles</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Search Mode & Comparison Toggle -->
-            <div class="controls-row-group" style="display: flex; gap: 0.5rem; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; padding: 0.4rem 0.6rem; background: rgba(15, 23, 42, 0.03); border-radius: 6px; border: 1px solid var(--border-light);">
-              <div style="display: flex; align-items: center; gap: 0.5rem;">
-                <label class="control-mini-label" style="margin: 0;">State Space:</label>
-                <select id="ms-mode-select" class="select-input" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; width: auto;">
-                  <option value="grid" selected>Grid Level (Cells)</option>
-                  <option value="abstract">Abstract Graph (Nodes)</option>
-                </select>
-              </div>
-
-              <label class="checkbox-label" style="font-size: 0.75rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.35rem; margin: 0;">
-                <input type="checkbox" id="ms-compare-toggle">
-                <span>Side-by-Side Compare</span>
-              </label>
-            </div>
-
-            <!-- Secondary Compare Algorithm (Hidden by default) -->
-            <div id="ms-compare-select-group" class="control-select-wrapper" style="display: none; margin-bottom: 0.75rem;">
-              <label class="control-mini-label">Compare Against:</label>
-              <select id="ms-alg-compare-select" class="select-input">
-                <option value="BFS" selected>Breadth-First Search (BFS)</option>
-                <option value="DFS">Depth-First Search (DFS)</option>
+          <!-- Controls -->
+          <div class="playground-controls glass-panel csp-lab-controls" id="maze-search-controls-panel">
+            <div class="controls-group">
+              <div class="control-label"><span>Algorithm</span></div>
+              <select id="ms-alg-select" class="csp-select">
+                <option value="A*" selected>A* Search (f = g + h)</option>
                 <option value="UCS">Uniform-Cost Search (UCS)</option>
+                <option value="BFS">Breadth-First Search (BFS)</option>
+                <option value="DFS">Depth-First Search (DFS)</option>
                 <option value="Greedy">Greedy Best-First</option>
-                <option value="A*">A* Search</option>
                 <option value="IDS">Iterative Deepening (IDS)</option>
+              </select>
+              <label class="ms-check"><input type="checkbox" id="ms-compare-toggle"> Compare side by side with another algorithm</label>
+              <div id="ms-compare-select-group" style="display: none;">
+                <select id="ms-alg-compare-select" class="csp-select">
+                  <option value="BFS" selected>Compare with: BFS</option>
+                  <option value="DFS">Compare with: DFS</option>
+                  <option value="UCS">Compare with: UCS</option>
+                  <option value="Greedy">Compare with: Greedy Best-First</option>
+                  <option value="A*">Compare with: A*</option>
+                  <option value="IDS">Compare with: IDS</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="controls-group">
+              <div class="control-label"><span>Problem</span></div>
+              <select id="ms-preset-select" class="csp-select">
+                <option value="dualRoute" selected>Maze: Dual Route &amp; Trap</option>
+                <option value="looping">Maze: Cyclic Corridor</option>
+                <option value="openField">Maze: Open Room / Obstacles</option>
+              </select>
+              <select id="ms-mode-select" class="csp-select">
+                <option value="grid" selected>State space: grid cells</option>
+                <option value="abstract">State space: abstract graph (junctions)</option>
               </select>
             </div>
 
-            <!-- Playback Stepper Buttons -->
-            <div class="playback-controls-container" style="display: flex; gap: 0.4rem; margin-bottom: 0.75rem;">
-              <button class="btn-ctrl btn-ctrl-primary" id="ms-btn-play" style="flex: 1.4;">
-                <i data-lucide="play"></i> Auto Run
-              </button>
-              <button class="btn-ctrl" id="ms-btn-prev" title="Step Back">
-                <i data-lucide="skip-back"></i>
-              </button>
-              <button class="btn-ctrl" id="ms-btn-next" title="Step Next">
-                <i data-lucide="skip-forward"></i>
-              </button>
-              <button class="btn-ctrl" id="ms-btn-reset" title="Reset Search">
-                <i data-lucide="rotate-ccw"></i>
-              </button>
+            <div class="controls-group">
+              <div class="control-label"><span>Step through the search</span></div>
+              <div class="csp-stepper">
+                <button class="csp-btn" id="ms-btn-reset" title="Reset"><i data-lucide="rotate-ccw"></i></button>
+                <button class="csp-btn" id="ms-btn-prev" title="Previous step"><i data-lucide="chevron-left"></i> Prev</button>
+                <button class="csp-btn csp-btn-primary" id="ms-btn-play"><i data-lucide="play"></i> Auto Run</button>
+                <button class="csp-btn" id="ms-btn-next" title="Next step">Next <i data-lucide="chevron-right"></i></button>
+              </div>
+              <div class="control-label"><span>Step delay</span><span class="slider-val" id="ms-speed-display">200ms</span></div>
+              <input type="range" id="ms-speed-slider" min="30" max="600" step="10" value="200">
             </div>
 
-            <!-- Speed Slider -->
-            <div class="controls-group" style="margin-bottom: 0.75rem;">
-              <div class="control-label" style="font-size: 0.75rem;">
-                <span>Step Delay</span>
-                <span class="slider-val" id="ms-speed-display">200ms</span>
-              </div>
-              <input type="range" class="range-slider" id="ms-speed-slider" min="30" max="600" step="10" value="200">
+            <div class="playground-stats">
+              <div class="pg-stat-row"><span>Nodes expanded (time)</span><span class="pg-stat-val" id="ms-stat-expanded">0</span></div>
+              <div class="pg-stat-row"><span>Peak frontier + explored (space)</span><span class="pg-stat-val" id="ms-stat-memory">1 node</span></div>
+              <div class="pg-stat-row"><span>Path cost</span><span class="pg-stat-val" id="ms-stat-cost">0</span></div>
+              <div class="pg-stat-row"><span>Optimality</span><span class="badge-optimal-sm" id="ms-stat-optimality">Optimal</span></div>
             </div>
 
-            <!-- Live Performance Metrics Grid -->
-            <div class="stat-summary-box" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; padding: 0.5rem; margin-bottom: 0.75rem;">
-              <div class="summary-item" style="text-align: center;">
-                <span class="summary-label" style="font-size: 0.65rem;">Expanded (Time)</span>
-                <span class="summary-val" id="ms-stat-expanded" style="font-size: 0.95rem; color: var(--primary);">0</span>
-              </div>
-              <div class="summary-item" style="text-align: center;">
-                <span class="summary-label" style="font-size: 0.65rem;">Peak Memory (Space)</span>
-                <span class="summary-val" id="ms-stat-memory" style="font-size: 0.95rem; color: #f59e0b;">1 node</span>
-              </div>
-              <div class="summary-item" style="text-align: center;">
-                <span class="summary-label" style="font-size: 0.65rem;">Path Cost</span>
-                <span class="summary-val" id="ms-stat-cost" style="font-size: 0.95rem; color: #10b981;">0</span>
-              </div>
-              <div class="summary-item" style="text-align: center;">
-                <span class="summary-label" style="font-size: 0.65rem;">Optimality</span>
-                <span class="badge-optimal-sm" id="ms-stat-optimality" style="font-size: 0.7rem;">Optimal</span>
-              </div>
-            </div>
-
-            <!-- Live Action / Event Log -->
-            <div class="manual-log-box" style="margin-bottom: 0.75rem; max-height: 50px;">
-              <div id="ms-log-content" class="manual-log-content" style="font-size: 0.75rem;"></div>
-            </div>
-
-            <!-- Visual Frontier Container -->
-            <div class="frontier-visual-section" style="margin-bottom: 0.75rem;">
-              <div style="font-size: 0.7rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem;">
-                Frontier Queue / Stack (Next pop highlighted):
-              </div>
-              <div id="ms-frontier-container" class="ms-frontier-grid"></div>
-            </div>
-
-            <!-- Evaluation Summary Matrix Table -->
-            <div class="comparison-table-wrapper" style="max-height: 140px; overflow-y: auto; border: 1px solid var(--border-light); border-radius: 6px;">
-              <table class="comparison-table" style="font-size: 0.65rem; box-shadow: none;">
+            <div class="comparison-table-wrapper ms-summary-table">
+              <table class="comparison-table">
                 <thead>
-                  <tr>
-                    <th>Algorithm</th>
-                    <th>Time</th>
-                    <th>Space</th>
-                    <th>Expanded</th>
-                    <th>Memory</th>
-                    <th>Cost</th>
-                    <th>Opt?</th>
-                    <th>Action</th>
-                  </tr>
+                  <tr><th>Algorithm</th><th>Time</th><th>Space</th><th>Expanded</th><th>Memory</th><th>Cost</th><th>Opt?</th><th>Action</th></tr>
                 </thead>
                 <tbody id="ms-summary-table-body"></tbody>
               </table>
             </div>
 
+            <div class="teaching-tip"><i data-lucide="lightbulb"></i><span>Try the <strong>Dual Route &amp; Trap</strong> maze with DFS, then A*: DFS may follow the long route, A* uses h(n) to head for the goal and finds the cheapest path. Switch the state space to the <strong>abstract graph</strong> to see how much smaller the search becomes.</span></div>
           </div>
         </div>
       </div>
@@ -600,14 +531,10 @@
           </div>
           <div class="puzzle-flow-step" data-step="3">
             <span class="flow-step-num">4</span>
-            <span class="flow-step-name">Why: Parity Invariant</span>
+            <span class="flow-step-name">Search Tree</span>
           </div>
           <div class="puzzle-flow-step" data-step="4">
             <span class="flow-step-num">5</span>
-            <span class="flow-step-name">How Many: BFS Count</span>
-          </div>
-          <div class="puzzle-flow-step" data-step="5">
-            <span class="flow-step-num">6</span>
             <span class="flow-step-name">Reachability Test</span>
           </div>
         </div>
@@ -653,15 +580,27 @@
               <!-- Step 1: State Representation -->
               <div class="puzzle-teaching-panel" id="puzzle-panel-step-1">
                 <h3>2. State Representation</h3>
-                <p>To store the board state in computer memory, we represent it as a simple, immutable 9-element list or tuple: <code>(7, 2, 4, 5, 0, 6, 8, 3, 1)</code>, where <code>0</code> denotes the blank position.</p>
-                
-                <div class="formula-box">
-                  state = (7, 2, 4, 5, 0, 6, 8, 3, 1)
+                <p>A state is stored as a 9-element tuple read row by row, with <code>0</code> for the blank. How many different tuples are there? Build one yourself: <strong>Clear</strong> the board, then place pieces into the squares in order.</p>
+
+                <div class="formula-box" id="puz-rep-tuple">state = (7, 2, 4, 5, 0, 6, 8, 3, 1)</div>
+
+                <div class="manual-robot-tester">
+                  <div class="tester-header" id="puz-rep-prompt">Pieces left to place:</div>
+                  <div class="puz-rep-tray"><button class="btn-ctrl puz-rep-pick" data-piece="0" title="Place the blank">_</button><button class="btn-ctrl puz-rep-pick" data-piece="1" title="Place tile 1">1</button><button class="btn-ctrl puz-rep-pick" data-piece="2" title="Place tile 2">2</button><button class="btn-ctrl puz-rep-pick" data-piece="3" title="Place tile 3">3</button><button class="btn-ctrl puz-rep-pick" data-piece="4" title="Place tile 4">4</button><button class="btn-ctrl puz-rep-pick" data-piece="5" title="Place tile 5">5</button><button class="btn-ctrl puz-rep-pick" data-piece="6" title="Place tile 6">6</button><button class="btn-ctrl puz-rep-pick" data-piece="7" title="Place tile 7">7</button><button class="btn-ctrl puz-rep-pick" data-piece="8" title="Place tile 8">8</button></div>
+                  <div class="btn-group puz-rep-actions">
+                    <button class="btn-ctrl" id="btn-puz-rep-undo"><i data-lucide="undo-2"></i> Undo</button>
+                    <button class="btn-ctrl" id="btn-puz-rep-clear"><i data-lucide="eraser"></i> Clear</button>
+                    <button class="btn-ctrl" id="btn-puz-rep-random"><i data-lucide="shuffle"></i> Random</button>
+                  </div>
+                  <div class="btn-group puz-rep-actions">
+                    <button class="btn-ctrl" id="btn-puz-rep-prev"><i data-lucide="chevron-left"></i> Prev arrangement</button>
+                    <button class="btn-ctrl" id="btn-puz-rep-next">Next arrangement <i data-lucide="chevron-right"></i></button>
+                  </div>
                 </div>
 
                 <div class="teaching-tip">
                   <i data-lucide="info"></i>
-                  <span>Any two boards with tiles in different positions represent different states. For example, <code>(7,2,4,5,0,6,8,3,1) ≠ (7,2,4,5,3,6,8,0,1)</code>. Complete board arrangements define unique states.</span>
+                  <span>Square 1 has 9 choices, square 2 has 8 left, … the last square has 1. So there are <strong>9 &times; 8 &times; &hellip; &times; 1 = 9! = 362,880</strong> arrangements. Each one is a different state, numbered here from 1 to 362,880.</span>
                 </div>
               </div>
 
@@ -692,64 +631,55 @@
                 </div>
               </div>
 
-              <!-- Step 3: Parity invariant -->
-              <div class="puzzle-teaching-panel" id="puzzle-panel-step-3">
-                <h3>4. Why: the Parity Invariant</h3>
-                <div class="puz-question">
-                  <span class="puz-question-label">The question</span>
-                  In the 8-puzzle there are 9! possible arrangements of the 8 tiles and the blank. How many of these are <strong>reachable</strong> from a given initial state? Explain why.
+              <!-- Step 3: Search tree -->
+              <div class="puzzle-teaching-panel puz-st-panel" id="puzzle-panel-step-3">
+                <h3>4. Search Tree</h3>
+                <p class="puz-st-intro">The full tree to depth 2 is drawn; run an algorithm to see the order it visits the nodes.</p>
+
+                <div class="puz-alg-tabs" role="tablist"><button class="btn-ctrl puz-alg-btn active" data-alg="BFS">BFS</button><button class="btn-ctrl puz-alg-btn" data-alg="DFS">DFS</button><button class="btn-ctrl puz-alg-btn" data-alg="IDS">IDS</button><button class="btn-ctrl puz-alg-btn" data-alg="GREEDY">Greedy</button><button class="btn-ctrl puz-alg-btn" data-alg="ASTAR">A*</button></div>
+                <div class="puz-st-row">
+                  <span class="ctrl-label">Start:</span>
+                  <select id="puz-st-start" class="select-input">
+                    <option value="a" selected>A (blank in centre)</option>
+                    <option value="b">B (blank in centre)</option>
+                    <option value="c">C (blank in corner)</option>
+                  </select>
+                  <span class="ctrl-label">Speed</span>
+                  <input type="range" id="puz-st-speed" min="1" max="5" value="3" step="1">
                 </div>
-                <p>Read the tiles row by row, skipping the blank. An <strong>inversion</strong> is a pair where a larger tile comes before a smaller one. Make moves and watch the count:</p>
-                <ul class="puz-rule-list">
-                  <li><strong>Left/Right:</strong> the reading order does not change, so the change is <strong>0</strong>.</li>
-                  <li><strong>Up/Down:</strong> the tile jumps over exactly <strong>2</strong> tiles in reading order. Each of those 2 pairs flips, so the change is <strong>&minus;2, 0 or +2</strong>.</li>
-                </ul>
-                <div class="tester-btn-group puz-arrow-grid">
-                    <div></div>
-                    <button class="btn-ctrl" id="btn-par-up" title="Move blank up"><i data-lucide="arrow-up"></i> Up</button>
-                    <div></div>
-                    <button class="btn-ctrl" id="btn-par-left" title="Move blank left"><i data-lucide="arrow-left"></i> Left</button>
-                    <div class="puz-arrow-mid">Blank</div>
-                    <button class="btn-ctrl" id="btn-par-right" title="Move blank right"><i data-lucide="arrow-right"></i> Right</button>
-                    <div></div>
-                    <button class="btn-ctrl" id="btn-par-down" title="Move blank down"><i data-lucide="arrow-down"></i> Down</button>
-                    <div></div>
+
+                <div class="formula-box puz-st-msg" id="puz-st-msg">Initialize search...</div>
+
+                <div class="puz-st-controls">
+                  <button class="btn-ctrl" id="btn-puz-st-reset" title="Reset"><i data-lucide="rotate-ccw"></i></button>
+                  <button class="btn-ctrl" id="btn-puz-st-prev" title="Previous step"><i data-lucide="skip-back"></i> Prev</button>
+                  <button class="btn-ctrl btn-ctrl-primary" id="btn-puz-st-play" title="Run automatically"><i data-lucide="play"></i> Auto</button>
+                  <button class="btn-ctrl" id="btn-puz-st-pause" disabled title="Pause"><i data-lucide="pause"></i> Pause</button>
+                  <button class="btn-ctrl" id="btn-puz-st-next" title="Next step">Next <i data-lucide="skip-forward"></i></button>
+                </div>
+
+                <div class="puz-st-stats">
+                  <div><span>Frontier</span><b id="puz-st-frontier">1</b></div>
+                  <div><span id="puz-st-reached-label">Reached</span><b id="puz-st-reached">1</b></div>
+                  <div><span>Expanded</span><b id="puz-st-expanded">0</b></div>
+                  <div><span id="puz-st-extra-label">Generated</span><b id="puz-st-extra">1</b></div>
+                </div>
+
+                <div class="search-solution-card puz-st-solution">
+                  <div class="search-solution-header">
+                    <span class="search-solution-title"><i data-lucide="route"></i> <span id="puz-st-alg-name">BFS</span> Solution:</span>
+                    <span class="search-solution-badge" id="puz-st-badge">Searching...</span>
                   </div>
-                <div class="btn-group" style="margin-top: 2px;">
-                  <button class="btn-ctrl" id="btn-par-random"><i data-lucide="shuffle"></i> 50 random moves</button>
-                  <button class="btn-ctrl" id="btn-par-reset"><i data-lucide="refresh-cw"></i> Reset</button>
+                  <div class="search-solution-path-container" id="puz-st-path"><span class="path-placeholder">Step through or click Auto…</span></div>
+                  <div class="puz-st-metrics">Moves: <b id="puz-st-len">-</b> · Optimal: <b id="puz-st-opt">-</b> · Generated: <b id="puz-st-gen">-</b></div>
                 </div>
               </div>
 
-              <!-- Step 4: BFS count -->
-              <div class="puzzle-teaching-panel" id="puzzle-panel-step-4">
-                <h3>5. How Many: Count Them All</h3>
-                <p>Step 4 gives an <em>upper bound</em>: at most the even half is reachable. To show the bound is reached, run Breadth-First Search from s<sub>0</sub> over the <strong>whole</strong> state space. It records every distinct state it can reach.</p>
-                <div class="btn-group">
-                  <button class="btn-ctrl btn-ctrl-primary" id="btn-puz-bfs-run"><i data-lucide="play"></i> Run full BFS</button>
-                  <button class="btn-ctrl" id="btn-puz-bfs-reset"><i data-lucide="refresh-cw"></i> Reset</button>
-                </div>
-                <div class="live-search-stats">
-                  <div class="stats-mini-row">
-                    <div class="mini-stat-card"><span class="mini-stat-label">Depth reached</span><span class="mini-stat-val" id="puz-bfs-depth">0</span></div>
-                    <div class="mini-stat-card"><span class="mini-stat-label">States reached</span><span class="mini-stat-val" id="puz-bfs-count" style="color:var(--accent);">0</span></div>
-                  </div>
-                  <div class="stats-mini-row">
-                    <div class="mini-stat-card"><span class="mini-stat-label">Even-parity found</span><span class="mini-stat-val" id="puz-bfs-even">0</span></div>
-                    <div class="mini-stat-card"><span class="mini-stat-label">Odd-parity found</span><span class="mini-stat-val" id="puz-bfs-odd">0</span></div>
-                  </div>
-                </div>
-                <div class="teaching-tip" id="puz-bfs-tip">
-                  <i data-lucide="info"></i>
-                  <span>Each state's number (its position among all 9! orderings) indexes a 362,880-entry table, so BFS never stores the same state twice.</span>
-                </div>
-              </div>
-
-              <!-- Step 5: Reachability test -->
-              <div class="puzzle-teaching-panel" id="puzzle-panel-step-5">
-                <h3>6. Reachability Test</h3>
-                <p>To decide if a goal can be reached from s<sub>0</sub>, compare the parities. A match means reachable; the BFS table also gives the fewest moves needed.</p>
-                <div class="btn-group" style="grid-template-columns: 1fr 1fr; gap: 6px;">
+              <!-- Step 4: Reachability test -->
+              <div class="puzzle-teaching-panel puz-rt-panel" id="puzzle-panel-step-4">
+                <h3>5. Reachability Test</h3>
+                <p>Read the tiles row by row (skip the blank) and count <strong>inversions</strong>: pairs where a larger tile comes before a smaller one. A goal is reachable from s<sub>0</sub> only if both counts are even or both are odd.</p>
+                <div class="btn-group puz-rt-btns">
                   <button class="btn-ctrl" id="btn-puz-goal-solvable"><i data-lucide="check-circle"></i> Standard goal</button>
                   <button class="btn-ctrl" id="btn-puz-goal-unsolvable"><i data-lucide="alert-triangle"></i> Goal with 7 &amp; 8 swapped</button>
                   <button class="btn-ctrl" id="btn-puz-goal-swap"><i data-lucide="repeat"></i> Swap two tiles in goal</button>
@@ -758,7 +688,7 @@
                 <div class="search-status-banner" id="puz-goal-status" style="padding: 0.6rem;"></div>
                 <div class="teaching-tip">
                   <i data-lucide="info"></i>
-                  <span>Swapping any two tiles changes the inversion count by an odd number. So "Swap two tiles" always flips the goal between reachable and unreachable. Pairing every arrangement with its swapped twin also shows that exactly half of the 9! are even.</span>
+                  <span>Swapping two tiles changes the inversion count by an odd number, so it always flips reachable ↔ unreachable. That is why exactly half of the 9! arrangements are reachable.</span>
                 </div>
               </div>
 
@@ -901,7 +831,7 @@
                   <button class="btn-ctrl" id="btn-search-prev" title="Previous step"><i data-lucide="skip-back"></i> Prev</button>
                   <button class="btn-ctrl btn-ctrl-primary" id="btn-search-play" title="Run automatically"><i data-lucide="play"></i> Auto</button>
                   <button class="btn-ctrl" id="btn-search-pause" disabled title="Pause run"><i data-lucide="pause"></i> Pause</button>
-                  <button class="btn-ctrl" id="btn-search-next" title="Next step" style="grid-column: span 2;"><i data-lucide="skip-forward"></i> Next Step</button>
+                  <button class="btn-ctrl" id="btn-search-next" title="Next step"><i data-lucide="skip-forward"></i> Next</button>
                   <button class="btn-ctrl" id="btn-search-reset" title="Reset state"><i data-lucide="rotate-ccw"></i> Reset</button>
                 </div>
 
@@ -1236,10 +1166,10 @@
             <i data-lucide="calendar-clock"></i> Course Scheduling
           </button>
           <button class="search-tab csp-subtab-btn" data-subtab="queens">
-            <i data-lucide="crown"></i> N-Queens Min-Conflicts
+            <i data-lucide="crown"></i> N-Queens
           </button>
           <button class="search-tab csp-subtab-btn" data-subtab="sudoku">
-            <i data-lucide="grid-3x3"></i> Sudoku (AC-3 + MAC)
+            <i data-lucide="grid-3x3"></i> Sudoku
           </button>
         </div>
 
@@ -1672,11 +1602,12 @@
   <script src="demos/maze_demo/ui.js?v=2"></script>
   <!-- Maze Search & Performance Demo JS -->
   <script src="demos/maze_search_demo/maze_search_engine.js?v=1"></script>
-  <script src="demos/maze_search_demo/ui.js?v=1"></script>
+  <script src="demos/maze_search_demo/ui.js?v=2"></script>
   <!-- 8-Puzzle State-Space Demo JS -->
   <script src="demos/puzzle_demo/puzzle.js?v=2"></script>
   <script src="demos/puzzle_demo/reachability.js?v=3"></script>
-  <script src="demos/puzzle_demo/ui.js?v=5"></script>
+  <script src="demos/puzzle_demo/search_tree.js?v=2"></script>
+  <script src="demos/puzzle_demo/ui.js?v=11"></script>
   <!-- Graph Search Demo JS -->
   <script src="demos/search_demo/graph.js?v=3"></script>
   <script src="demos/search_demo/ui.js?v=3"></script>
@@ -1685,9 +1616,9 @@
   <script src="demos/adversarial_demo/adversarial_lab.js?v=1"></script>
   <!-- Two-Room Vacuum Robot Demo JS -->
   <!-- Constraint Satisfaction (Topic 04): engine → renderers → lab -->
-  <script src="demos/csp_demo/csp_engine.js?v=6"></script>
+  <script src="demos/csp_demo/csp_engine.js?v=11"></script>
   <script src="demos/csp_demo/csp_render.js?v=2"></script>
-  <script src="demos/csp_demo/csp_lab.js?v=3"></script>
+  <script src="demos/csp_demo/csp_lab.js?v=7"></script>
 
   <!-- Knowledge & Reasoning (Topic 05): logic engine → bayes engine → lab -->
   <script src="demos/knowledge_demo/logic_engine.js?v=2"></script>
