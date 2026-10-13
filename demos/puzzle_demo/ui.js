@@ -2,11 +2,10 @@
  * UI and Canvas Visualizer Engine for the 8-Puzzle State-Space Demo.
  *
  * Steps
- *   0  Puzzle setup                 5  How many: full BFS count
- *   1  State representation         6  Reachability test (goal presets)
- *   2  Actions & RESULT             7  Search tree & duplicates
- *   3  Count 9!                     8  Answer & summary
- *   4  Why: parity invariant
+ *   0  Puzzle setup                 4  How many: full BFS count
+ *   1  State representation         5  Reachability test (goal presets)
+ *   2  Actions & RESULT
+ *   3  Why: parity invariant
  */
 const PZ = {
   indigo: '#4f46e5', indigoSoft: '#e0e7ff', green: '#10b981', greenDark: '#047857',
@@ -35,24 +34,18 @@ class PuzzleDemoUI {
     this.btnNext = document.getElementById('btn-puzzle-next');
     this.puzManualLog = document.getElementById('puz-manual-log');
     this.puzGoalStatus = document.getElementById('puz-goal-status');
-    this.puzDepthSlider = document.getElementById('puz-depth-slider');
-    this.puzDepthVal = document.getElementById('puz-depth-val');
 
     this.currentStep = 0;
-    this.depthSelected = this.puzDepthSlider ? parseInt(this.puzDepthSlider.value, 10) : 2;
 
-    // Step 3: counting animation
-    this.countAnimStart = 0;
-    // Step 4: parity explorer
+    // Step 3: parity explorer
     this.parState = new PuzzleState(this.initialTiles);
     this.parHistory = [Reachability.getInversions(this.initialTiles)];
     this.parLast = null;
-    // Step 5: full BFS
+    // Step 4: full BFS
     this.bfs = null;          // cached result of Reachability.exploreAll
     this.bfsShown = -1;       // deepest layer revealed (-1 = not started)
     this.bfsTimer = null;
 
-    this.raf = null;
     this.init();
   }
 
@@ -70,19 +63,16 @@ class PuzzleDemoUI {
     // Step 2: actions & RESULT
     ['Up', 'Down', 'Left', 'Right'].forEach(a => this.on(`btn-puz-${a.toLowerCase()}`, 'click', () => this.applyAction(a)));
 
-    // Step 3: replay count
-    this.on('btn-puz-count-replay', 'click', () => this.startCountAnim());
-
-    // Step 4: parity explorer
+    // Step 3: parity explorer
     ['Up', 'Down', 'Left', 'Right'].forEach(a => this.on(`btn-par-${a.toLowerCase()}`, 'click', () => this.parMove(a)));
     this.on('btn-par-reset', 'click', () => this.parReset());
     this.on('btn-par-random', 'click', () => this.parRandom(50));
 
-    // Step 5: BFS
+    // Step 4: BFS
     this.on('btn-puz-bfs-run', 'click', () => this.runBfs());
     this.on('btn-puz-bfs-reset', 'click', () => this.resetBfs());
 
-    // Step 6: goal presets
+    // Step 5: goal presets
     const setGoal = tiles => { this.customGoalTiles = tiles; this.customGoalState = new PuzzleState(tiles); this.updateGoalStatus(); this.draw(); };
     this.on('btn-puz-goal-solvable', 'click', () => setGoal([...this.goalTiles]));
     this.on('btn-puz-goal-unsolvable', 'click', () => setGoal([0, 1, 2, 3, 4, 5, 6, 8, 7]));
@@ -103,16 +93,6 @@ class PuzzleDemoUI {
       setGoal(t);
     });
 
-    // Step 7: tree depth
-    if (this.puzDepthSlider) {
-      this.puzDepthSlider.addEventListener('input', e => {
-        this.depthSelected = parseInt(e.target.value, 10);
-        if (this.puzDepthVal) this.puzDepthVal.textContent = this.depthSelected;
-        this.updateTreeStats();
-        this.draw();
-      });
-    }
-
     window.addEventListener('keydown', e => {
       const view = document.getElementById('view-puzzle');
       if (view && !view.classList.contains('active')) return;
@@ -124,7 +104,7 @@ class PuzzleDemoUI {
       else if (['ArrowRight', 'KeyD'].includes(e.code)) action = 'Right';
       if (!action) return;
       if (this.currentStep === 2) { e.preventDefault(); this.applyAction(action); }
-      else if (this.currentStep === 4) { e.preventDefault(); this.parMove(action); }
+      else if (this.currentStep === 3) { e.preventDefault(); this.parMove(action); }
     });
 
     this.setStep(0);
@@ -153,17 +133,11 @@ class PuzzleDemoUI {
       if (this.puzManualLog) this.puzManualLog.innerHTML = `<div class="log-entry">State s0: <strong>${this.currentState.toString()}</strong></div>`;
       this.updateActionButtons(this.currentState, 'puz');
     } else if (step === 3) {
-      this.startCountAnim();
-    } else if (step === 4) {
       this.updateActionButtons(this.parState, 'par');
-    } else if (step === 5) {
+    } else if (step === 4) {
       this.updateBfsStats();
-    } else if (step === 6) {
+    } else if (step === 5) {
       this.updateGoalStatus();
-    } else if (step === 7) {
-      this.updateTreeStats();
-    } else if (step === 8) {
-      const el = this.$('puz-sum-maxd'); if (el) el.textContent = this.ensureBfs().layers.length - 1;
     }
     this.draw();
   }
@@ -194,24 +168,7 @@ class PuzzleDemoUI {
   }
 
   // ---------------------------------------------------------------------------
-  // Step 3: counting animation
-  // ---------------------------------------------------------------------------
-
-  startCountAnim() {
-    this.countAnimStart = performance.now();
-    this.loop(() => this.currentStep === 3 && this.countProgress() < 9.999);
-  }
-
-  countProgress() { return Math.min(10, (performance.now() - this.countAnimStart) / 320); }
-
-  loop(keepGoing) {
-    if (this.raf) cancelAnimationFrame(this.raf);
-    const tick = () => { this.draw(); if (keepGoing()) this.raf = requestAnimationFrame(tick); else { this.raf = null; this.draw(); } };
-    this.raf = requestAnimationFrame(tick);
-  }
-
-  // ---------------------------------------------------------------------------
-  // Step 4: parity invariant explorer
+  // Step 3: parity invariant explorer
   // ---------------------------------------------------------------------------
 
   parMove(action, silent) {
@@ -246,7 +203,7 @@ class PuzzleDemoUI {
   }
 
   // ---------------------------------------------------------------------------
-  // Step 5: full BFS
+  // Step 4: full BFS
   // ---------------------------------------------------------------------------
 
   ensureBfs() {
@@ -264,7 +221,7 @@ class PuzzleDemoUI {
       if (this.bfsShown >= maxD) { clearInterval(this.bfsTimer); this.bfsTimer = null; return; }
       this.bfsShown++;
       this.updateBfsStats();
-      if (this.currentStep === 5) this.draw();
+      if (this.currentStep === 4) this.draw();
     }, 140);
   }
 
@@ -298,7 +255,7 @@ class PuzzleDemoUI {
   }
 
   // ---------------------------------------------------------------------------
-  // Step 6: goal check
+  // Step 5: goal check
   // ---------------------------------------------------------------------------
 
   updateGoalStatus() {
@@ -316,13 +273,6 @@ class PuzzleDemoUI {
       <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.2rem;">
         Initial: <strong>${invI}</strong> inversions (${pI}) · Goal: <strong>${invG}</strong> inversions (${pG})${ok ? '' : ' — parities differ'}${swapNote}
       </div>`;
-  }
-
-  updateTreeStats() {
-    const { totalNodes, uniqueStatesCount } = Reachability.buildExpansionTree(this.initialState, this.depthSelected);
-    const set = (id, v) => { const el = this.$(id); if (el) el.textContent = v; };
-    set('puz-tree-nodes-total', totalNodes);
-    set('puz-tree-nodes-unique', uniqueStatesCount);
   }
 
   // ---------------------------------------------------------------------------
@@ -356,12 +306,9 @@ class PuzzleDemoUI {
         this.drawPuzzleBoard(this.currentState.tiles, (w - s) / 2, (h - s) / 2, s, 'Interactive State Transitions');
         break;
       }
-      case 3: this.drawCount(w, h); break;
-      case 4: this.drawParity(w, h); break;
-      case 5: this.drawBfs(w, h); break;
-      case 6: this.drawGoalTest(w, h); break;
-      case 7: this.drawSearchTreeExpansion(w, h); break;
-      case 8: this.drawSummary(w, h); break;
+      case 3: this.drawParity(w, h); break;
+      case 4: this.drawBfs(w, h); break;
+      case 5: this.drawGoalTest(w, h); break;
     }
   }
 
@@ -429,68 +376,7 @@ class PuzzleDemoUI {
     }
   }
 
-  // --- Step 3: 9 × 8 × … × 1 ------------------------------------------------
-
-  drawCount(w, h) {
-    const ctx = this.ctx;
-    const prog = this.countProgress();
-    const filled = Math.floor(prog);           // squares fully placed
-    const size = Math.min(h * 0.6, w * 0.36);
-    const bx = Math.max(20, w * 0.06), by = (h - size) / 2 + 10;
-    this.text('Fill the 9 squares one at a time', bx + size / 2, by - 14, { size: 12, weight: 'bold', color: PZ.slate, align: 'center' });
-
-    // Board with progressively placed pieces and "choices" badges
-    ctx.fillStyle = '#fff'; ctx.beginPath(); this.roundRect(bx, by, size, size, 12); ctx.fill();
-    ctx.strokeStyle = PZ.line; ctx.lineWidth = 1.5; ctx.stroke();
-    const pad = size * 0.04, ts = (size - pad * 2) / 3;
-    for (let i = 0; i < 9; i++) {
-      const x = bx + pad + (i % 3) * ts, y = by + pad + Math.floor(i / 3) * ts, s = ts - pad * 0.5;
-      ctx.beginPath(); this.roundRect(x, y, s, s, 6);
-      const v = this.initialTiles[i];
-      if (i < filled) {
-        ctx.fillStyle = v === 0 ? '#e2e8f0' : PZ.indigo; ctx.fill();
-        this.text(v === 0 ? '_' : String(v), x + s / 2, y + s / 2 + 1, { size: Math.round(ts * 0.34), weight: 'bold', color: v === 0 ? PZ.muted : '#fff', align: 'center', base: 'middle' });
-      } else if (i === filled) {
-        ctx.fillStyle = 'rgba(245,158,11,0.12)'; ctx.fill(); ctx.strokeStyle = PZ.amber; ctx.lineWidth = 2; ctx.stroke();
-        this.text(`${9 - i}`, x + s / 2, y + s / 2 - 4, { size: Math.round(ts * 0.3), weight: 'bold', color: PZ.amberDark, align: 'center', base: 'middle' });
-        this.text('choices', x + s / 2, y + s / 2 + ts * 0.2, { size: Math.max(9, Math.round(ts * 0.11)), color: PZ.amberDark, align: 'center', base: 'middle' });
-      } else {
-        ctx.fillStyle = PZ.bg; ctx.fill();
-        this.text('?', x + s / 2, y + s / 2 + 1, { size: Math.round(ts * 0.28), color: '#cbd5e1', align: 'center', base: 'middle' });
-      }
-    }
-
-    // Right: running product
-    const rx = bx + size + Math.max(24, w * 0.05), rw = w - rx - 20;
-    let y = by + 6;
-    this.text('Choices for each square', rx, y, { size: 12, weight: 'bold', color: PZ.slate }); y += 30;
-    const fs = Math.max(15, Math.min(24, rw / 14));
-    ctx.font = `bold ${fs}px Outfit, sans-serif`;
-    let x = rx, prod = 1;
-    for (let k = 0; k < 9; k++) {
-      const on = k < filled || (k === filled && prog < 9);
-      const str = String(9 - k) + (k < 8 ? ' ×' : '');
-      const col = k < filled ? PZ.indigo : k === filled ? PZ.amberDark : '#cbd5e1';
-      this.text(str, x, y, { size: fs, weight: 'bold', color: on ? col : '#cbd5e1' });
-      x += ctx.measureText(str + ' ').width;
-      if (k < filled) prod *= 9 - k;
-    }
-    y += fs + 18;
-    this.text('=', rx, y + 8, { size: fs + 10, weight: 'bold', color: PZ.slate });
-    this.text(fmt(filled === 0 ? 0 : prod), rx + fs + 6, y + 8, { size: fs + 14, weight: 'bold', color: filled >= 9 ? PZ.indigo : PZ.slate });
-    y += fs + 40;
-    if (filled >= 9) {
-      this.text('9! = 362,880 arrangements', rx, y, { size: 13, weight: 'bold', color: PZ.indigo }); y += 34;
-      // Question box
-      const qh = 64;
-      ctx.fillStyle = 'rgba(245,158,11,0.08)'; ctx.beginPath(); this.roundRect(rx, y, Math.min(rw, 360), qh, 10); ctx.fill();
-      ctx.strokeStyle = 'rgba(245,158,11,0.45)'; ctx.lineWidth = 1.2; ctx.stroke();
-      this.text('But how many are reachable from s₀', rx + 14, y + 26, { size: 13, weight: 'bold', color: PZ.amberDark });
-      this.text('by sliding tiles?   ?', rx + 14, y + 46, { size: 13, weight: 'bold', color: PZ.amberDark });
-    }
-  }
-
-  // --- Step 4: parity invariant ----------------------------------------------
+  // --- Step 3: parity invariant ----------------------------------------------
 
   drawParity(w, h) {
     const ctx = this.ctx;
@@ -599,7 +485,7 @@ class PuzzleDemoUI {
     this.pill('● even', cx1 - 64, top - 8, PZ.green, { size: 10 });
   }
 
-  // --- Step 5: full BFS -------------------------------------------------------
+  // --- Step 4: full BFS -------------------------------------------------------
 
   drawBfs(w, h) {
     const ctx = this.ctx;
@@ -660,7 +546,7 @@ class PuzzleDemoUI {
     }
   }
 
-  // --- Step 6: goal test ------------------------------------------------------
+  // --- Step 5: goal test ------------------------------------------------------
 
   drawGoalTest(w, h) {
     const s = Math.min(w * 0.3, h * 0.55);
@@ -686,79 +572,6 @@ class PuzzleDemoUI {
       this.text('✗ no path', mx, ay - 14, { size: 18, weight: 'bold', color: PZ.redDark, align: 'center' });
       this.text('parity differs', mx, ay + 22, { size: 11, color: PZ.redDark, align: 'center' });
     }
-  }
-
-  // --- Step 7: search tree ----------------------------------------------------
-
-  drawSearchTreeExpansion(w, h) {
-    this.text(`Search Tree Expansion (Depth: ${this.depthSelected})`, w / 2, 20, { size: 13, weight: 'bold', color: PZ.slate, align: 'center' });
-    const { root } = Reachability.buildExpansionTree(this.initialState, this.depthSelected);
-    this.assignTreeCoords(root, w / 2, 55, w * 0.94, Math.min(95, (h - 90) / Math.max(1, this.depthSelected)));
-    this.drawTreeLines(root);
-    this.drawTreeNodes(root);
-  }
-
-  assignTreeCoords(node, x, y, width, dy) {
-    node.x = x; node.y = y;
-    const n = node.children.length;
-    node.children.forEach((c, i) => this.assignTreeCoords(c, x - width / 2 + (width / n) * (i + 0.5), y + dy, width / n, dy));
-  }
-
-  drawTreeLines(node) {
-    const ctx = this.ctx;
-    node.children.forEach(child => {
-      ctx.beginPath(); ctx.moveTo(node.x, node.y); ctx.lineTo(child.x, child.y);
-      ctx.strokeStyle = child.isDuplicate ? 'rgba(245,158,11,0.3)' : 'rgba(79,70,229,0.25)'; ctx.lineWidth = 1.5; ctx.stroke();
-      this.text(child.action, (node.x + child.x) / 2, (node.y + child.y) / 2 - 2, { size: 8, weight: 'bold', color: child.isDuplicate ? '#d97706' : PZ.indigo, align: 'center', family: 'monospace' });
-      this.drawTreeLines(child);
-    });
-  }
-
-  drawTreeNodes(node) {
-    const ctx = this.ctx, size = 28, px = node.x - size / 2, py = node.y - size / 2;
-    ctx.fillStyle = '#fff'; ctx.beginPath(); this.roundRect(px, py, size, size, 4); ctx.fill();
-    ctx.strokeStyle = node.isDuplicate ? PZ.amber : node.depth === 0 ? PZ.green : 'rgba(79,70,229,0.4)';
-    ctx.lineWidth = node.depth === 0 ? 2 : 1.3; ctx.stroke();
-    const pad = 1.5, ts = (size - pad * 2) / 3;
-    for (let i = 0; i < 9; i++) {
-      const v = node.state.tiles[i], x = px + pad + (i % 3) * ts, y = py + pad + Math.floor(i / 3) * ts;
-      ctx.fillStyle = v === 0 ? '#f1f5f9' : node.isDuplicate ? '#fef3c7' : PZ.indigoSoft;
-      ctx.fillRect(x, y, ts - 0.5, ts - 0.5);
-      if (v) this.text(String(v), x + ts / 2, y + ts / 2 + 0.5, { size: 6.5, weight: 'bold', color: node.isDuplicate ? PZ.amberDark : '#3730a3', align: 'center', base: 'middle', family: 'sans-serif' });
-    }
-    if (node.isDuplicate) this.text('DUP', node.x, py + size + 9, { size: 7, weight: 'bold', color: '#d97706', align: 'center', family: 'sans-serif' });
-    else if (node.depth === 0) this.text('ROOT', node.x, py + size + 9, { size: 7, weight: 'bold', color: '#059669', align: 'center', family: 'sans-serif' });
-    node.children.forEach(c => this.drawTreeNodes(c));
-  }
-
-  // --- Step 8: answer ---------------------------------------------------------
-
-  drawSummary(w, h) {
-    const ctx = this.ctx;
-    this.text('How many states are reachable — and why', w / 2, 24, { size: 14, weight: 'bold', color: PZ.slate, align: 'center' });
-    const cards = [
-      { n: '1', t: 'Count the arrangements', b: ['9 × 8 × … × 1 = 9! = 362,880 ways to place 8 tiles + blank.'], c: PZ.indigo },
-      { n: '2', t: 'Find an invariant', b: ['Each move changes the inversion count by 0 (sideways)', 'or ±2 (vertical: the tile passes exactly 2 tiles).', '⇒ the parity of the inversion count never changes.'], c: PZ.amberDark },
-      { n: '3', t: 'Split 9! in half', b: ['Swapping two tiles flips parity: a one-to-one pairing', 'of even and odd arrangements ⇒ exactly half are even.'], c: PZ.slate },
-      { n: '4', t: 'Confirm by search', b: ['BFS from s₀ reaches every even arrangement', '(181,440 of them) and no odd one.'], c: PZ.greenDark }
-    ];
-    const x0 = 24, cwid = w - 48;
-    let y = 44;
-    const gap = 10, avail = h - y - 78 - gap * cards.length;
-    const ch = Math.max(52, Math.min(78, avail / cards.length));
-    cards.forEach(card => {
-      ctx.fillStyle = '#fff'; ctx.beginPath(); this.roundRect(x0, y, cwid, ch, 10); ctx.fill();
-      ctx.strokeStyle = PZ.line; ctx.lineWidth = 1.2; ctx.stroke();
-      ctx.fillStyle = card.c; ctx.beginPath(); ctx.arc(x0 + 26, y + ch / 2, 14, 0, Math.PI * 2); ctx.fill();
-      this.text(card.n, x0 + 26, y + ch / 2 + 1, { size: 14, weight: 'bold', color: '#fff', align: 'center', base: 'middle' });
-      this.text(card.t, x0 + 54, y + 22, { size: 13, weight: 'bold', color: card.c });
-      card.b.forEach((line, i) => this.text(line, x0 + 54, y + 40 + i * 15, { size: 11.5, color: PZ.slate }));
-      y += ch + gap;
-    });
-    // Result banner
-    ctx.fillStyle = 'rgba(16,185,129,0.1)'; ctx.beginPath(); this.roundRect(x0, y + 4, cwid, 56, 12); ctx.fill();
-    ctx.strokeStyle = PZ.green; ctx.lineWidth = 1.5; ctx.stroke();
-    this.text('Reachable from any initial state:  9!/2 = 181,440 states', w / 2, y + 38, { size: Math.min(19, w / 34), weight: 'bold', color: PZ.greenDark, align: 'center' });
   }
 
   roundRect(x, y, width, height, radius) {

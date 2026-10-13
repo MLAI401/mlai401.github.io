@@ -600,27 +600,15 @@
           </div>
           <div class="puzzle-flow-step" data-step="3">
             <span class="flow-step-num">4</span>
-            <span class="flow-step-name">Count 9!</span>
+            <span class="flow-step-name">Why: Parity Invariant</span>
           </div>
           <div class="puzzle-flow-step" data-step="4">
             <span class="flow-step-num">5</span>
-            <span class="flow-step-name">Why: Parity Invariant</span>
+            <span class="flow-step-name">How Many: BFS Count</span>
           </div>
           <div class="puzzle-flow-step" data-step="5">
             <span class="flow-step-num">6</span>
-            <span class="flow-step-name">How Many: BFS Count</span>
-          </div>
-          <div class="puzzle-flow-step" data-step="6">
-            <span class="flow-step-num">7</span>
             <span class="flow-step-name">Reachability Test</span>
-          </div>
-          <div class="puzzle-flow-step" data-step="7">
-            <span class="flow-step-num">8</span>
-            <span class="flow-step-name">Search Tree</span>
-          </div>
-          <div class="puzzle-flow-step" data-step="8">
-            <span class="flow-step-num">9</span>
-            <span class="flow-step-name">Answer & Summary</span>
           </div>
         </div>
 
@@ -704,25 +692,13 @@
                 </div>
               </div>
 
-              <!-- Step 3: Count 9! -->
+              <!-- Step 3: Parity invariant -->
               <div class="puzzle-teaching-panel" id="puzzle-panel-step-3">
-                <h3>4. Counting the Arrangements</h3>
+                <h3>4. Why: the Parity Invariant</h3>
                 <div class="puz-question">
                   <span class="puz-question-label">The question</span>
                   In the 8-puzzle there are 9! possible arrangements of the 8 tiles and the blank. How many of these are <strong>reachable</strong> from a given initial state? Explain why.
                 </div>
-                <p>First, where does 9! come from? Fill the 9 squares one at a time: the first square can hold any of the 9 pieces, the next any of the 8 left, and so on.</p>
-                <div class="formula-box" style="font-size: 1.05rem;">9 &times; 8 &times; 7 &times; 6 &times; 5 &times; 4 &times; 3 &times; 2 &times; 1 = 362,880</div>
-                <button class="btn-ctrl" id="btn-puz-count-replay"><i data-lucide="play"></i> Replay the count</button>
-                <div class="teaching-tip">
-                  <i data-lucide="help-circle"></i>
-                  <span>9! counts every way to <em>place</em> the pieces. Being <em>reachable</em> means getting there by sliding tiles from s<sub>0</sub>. The next two steps show those numbers differ.</span>
-                </div>
-              </div>
-
-              <!-- Step 4: Parity invariant -->
-              <div class="puzzle-teaching-panel" id="puzzle-panel-step-4">
-                <h3>5. Why: the Parity Invariant</h3>
                 <p>Read the tiles row by row, skipping the blank. An <strong>inversion</strong> is a pair where a larger tile comes before a smaller one. Make moves and watch the count:</p>
                 <ul class="puz-rule-list">
                   <li><strong>Left/Right:</strong> the reading order does not change, so the change is <strong>0</strong>.</li>
@@ -743,16 +719,12 @@
                   <button class="btn-ctrl" id="btn-par-random"><i data-lucide="shuffle"></i> 50 random moves</button>
                   <button class="btn-ctrl" id="btn-par-reset"><i data-lucide="refresh-cw"></i> Reset</button>
                 </div>
-                <div class="teaching-tip">
-                  <i data-lucide="lightbulb"></i>
-                  <span>No move ever changes the count by an odd number, so the <strong>parity</strong> (even/odd) of the inversion count is an <strong>invariant</strong>. s<sub>0</sub> has 16 inversions (even), so every state reachable from it is even.</span>
-                </div>
               </div>
 
-              <!-- Step 5: BFS count -->
-              <div class="puzzle-teaching-panel" id="puzzle-panel-step-5">
-                <h3>6. How Many: Count Them All</h3>
-                <p>The invariant gives an <em>upper bound</em>: at most the even half is reachable. To show the bound is reached, run Breadth-First Search from s<sub>0</sub> over the <strong>whole</strong> state space. It records every distinct state it can reach.</p>
+              <!-- Step 4: BFS count -->
+              <div class="puzzle-teaching-panel" id="puzzle-panel-step-4">
+                <h3>5. How Many: Count Them All</h3>
+                <p>Step 4 gives an <em>upper bound</em>: at most the even half is reachable. To show the bound is reached, run Breadth-First Search from s<sub>0</sub> over the <strong>whole</strong> state space. It records every distinct state it can reach.</p>
                 <div class="btn-group">
                   <button class="btn-ctrl btn-ctrl-primary" id="btn-puz-bfs-run"><i data-lucide="play"></i> Run full BFS</button>
                   <button class="btn-ctrl" id="btn-puz-bfs-reset"><i data-lucide="refresh-cw"></i> Reset</button>
@@ -773,9 +745,9 @@
                 </div>
               </div>
 
-              <!-- Step 6: Reachability test -->
-              <div class="puzzle-teaching-panel" id="puzzle-panel-step-6">
-                <h3>7. Reachability Test</h3>
+              <!-- Step 5: Reachability test -->
+              <div class="puzzle-teaching-panel" id="puzzle-panel-step-5">
+                <h3>6. Reachability Test</h3>
                 <p>To decide if a goal can be reached from s<sub>0</sub>, compare the parities. A match means reachable; the BFS table also gives the fewest moves needed.</p>
                 <div class="btn-group" style="grid-template-columns: 1fr 1fr; gap: 6px;">
                   <button class="btn-ctrl" id="btn-puz-goal-solvable"><i data-lucide="check-circle"></i> Standard goal</button>
@@ -787,49 +759,6 @@
                 <div class="teaching-tip">
                   <i data-lucide="info"></i>
                   <span>Swapping any two tiles changes the inversion count by an odd number. So "Swap two tiles" always flips the goal between reachable and unreachable. Pairing every arrangement with its swapped twin also shows that exactly half of the 9! are even.</span>
-                </div>
-              </div>
-
-              <!-- Step 7: Search tree -->
-              <div class="puzzle-teaching-panel" id="puzzle-panel-step-7">
-                <h3>8. Search Tree &amp; Duplicates</h3>
-                <p>BFS from s<sub>0</sub> grows a search tree. Many paths lead back to states already seen (marked <strong>DUP</strong>), which is why the count in step 6 uses a visited table.</p>
-                <div class="controls-group" style="gap: 5px;">
-                  <div class="control-label">
-                    <span>BFS Tree Depth (d)</span>
-                    <span class="slider-val" id="puz-depth-val">2</span>
-                  </div>
-                  <div class="control-slider-container">
-                    <input type="range" id="puz-depth-slider" min="0" max="3" value="2" step="1">
-                  </div>
-                </div>
-                <div class="live-search-stats" style="margin-top: 8px;">
-                  <div class="stats-mini-row">
-                    <div class="mini-stat-card"><span class="mini-stat-label">Total Tree Nodes:</span><span class="mini-stat-val" id="puz-tree-nodes-total">0</span></div>
-                    <div class="mini-stat-card"><span class="mini-stat-label">Unique States:</span><span class="mini-stat-val" id="puz-tree-nodes-unique" style="color:var(--accent);">0</span></div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Step 8: Answer & Summary -->
-              <div class="puzzle-teaching-panel" id="puzzle-panel-step-8">
-                <h3>9. Answer &amp; Summary</h3>
-                <div class="puz-answer">
-                  <p><strong>Answer: 9!/2 = 181,440 states</strong>, exactly half of the 362,880 arrangements.</p>
-                  <p><strong>Why:</strong> Read the tiles row by row, skipping the blank. Every legal move changes the number of inversions by 0 (Left/Right) or by &plusmn;2 (Up/Down: the tile passes exactly 2 others). So the parity of the inversion count never changes, and only arrangements with the same parity as the initial state can be reached. Swapping two tiles flips the parity, which pairs every even arrangement with an odd one, so exactly half of the 9! share the initial parity. Every one of those can in fact be reached: BFS from s<sub>0</sub> finds all 181,440 of them and none of the others.</p>
-                </div>
-                <div class="comparison-table-wrapper" style="max-height: 170px; overflow-y: auto;">
-                  <table class="comparison-table">
-                    <thead><tr><th>Question</th><th>Answer</th></tr></thead>
-                    <tbody>
-                      <tr><td><strong>State</strong></td><td>One board arrangement of tiles &amp; blank</td></tr>
-                      <tr><td><strong>All arrangements</strong></td><td>9! = 362,880</td></tr>
-                      <tr><td><strong>Reachable from s<sub>0</sub></strong></td><td>9!/2 = 181,440 (same parity as s<sub>0</sub>)</td></tr>
-                      <tr><td><strong>Invariant</strong></td><td>Parity of the inversion count</td></tr>
-                      <tr><td><strong>Goal check</strong></td><td>Reachable &hArr; same inversion parity as s<sub>0</sub></td></tr>
-                      <tr><td><strong>Farthest state from s<sub>0</sub></strong></td><td><span id="puz-sum-maxd">30</span> moves (from BFS)</td></tr>
-                    </tbody>
-                  </table>
                 </div>
               </div>
 
@@ -1747,7 +1676,7 @@
   <!-- 8-Puzzle State-Space Demo JS -->
   <script src="demos/puzzle_demo/puzzle.js?v=2"></script>
   <script src="demos/puzzle_demo/reachability.js?v=3"></script>
-  <script src="demos/puzzle_demo/ui.js?v=3"></script>
+  <script src="demos/puzzle_demo/ui.js?v=5"></script>
   <!-- Graph Search Demo JS -->
   <script src="demos/search_demo/graph.js?v=3"></script>
   <script src="demos/search_demo/ui.js?v=3"></script>
