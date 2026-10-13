@@ -432,7 +432,7 @@
               <div class="pg-stat-row"><span>Plain backtracking assignments</span><span class="pg-stat-val">${q.bt.plain.toLocaleString()}${q.bt.plainAborted ? '+ (limit)' : ''}</span></div>
               <div class="pg-stat-row"><span>Backtracking + MRV + FC assignments</span><span class="pg-stat-val">${q.bt.fc.toLocaleString()}${q.bt.fcAborted ? '+ (limit)' : ''}</span></div>
             </div>
-            <div class="teaching-tip"><i data-lucide="lightbulb"></i><span>Increase n: plain backtracking's cost explodes, while min-conflicts still needs only a few dozen repair steps — its run-time is roughly independent of n.</span></div>
+            <div class="teaching-tip"><i data-lucide="lightbulb"></i><span>Increase n: plain backtracking's cost explodes, while min-conflicts still needs only a few dozen repair steps — its run-time is roughly independent of n. Here the chosen queen must leave its current row and may not return to the row it just left (a small tabu list), so every step is a real move — sideways or even uphill when no better row exists.</span></div>
           </div>
         </div>`;
       const rerender = () => { this.renderQueens(); this.icons(); };

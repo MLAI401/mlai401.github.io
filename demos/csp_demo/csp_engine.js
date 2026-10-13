@@ -542,6 +542,7 @@
       }
       rows[c] = best[Math.floor(rng() * best.length)];
     }
+    const lastLeft = new Array(n).fill(null);
     const steps = [];
     if (opts.trace) steps.push({ kind: 'start', rows: rows.slice(), total: queensAttackingPairs(rows), msg: opts.randomInit ? 'Random complete assignment: one queen per column.' : 'Greedy complete assignment: each queen placed on a least-conflicted row, column by column.' });
     for (let i = 1; i <= opts.maxSteps; i++) {
@@ -554,12 +555,30 @@
       const c = conflicted[Math.floor(rng() * conflicted.length)];
       const counts = [];
       for (let r = 0; r < n; r++) counts.push(queenConflicts(rows, c, r));
-      const m = Math.min(...counts);
-      const ties = []; counts.forEach((k, r) => { if (k === m) ties.push(r); });
       const from = rows[c];
+      // Min-conflicts with a small tabu list (current row + the row it last left): the chosen queen
+      // always moves to the least-conflicted *other* row (ties broken randomly).
+      // Plain min-conflicts may leave the queen where it is (a step with no visible
+      // action); forbidding the current row makes every step a real move and lets
+      // the search cross plateaus (AIMA §6.4: sideways moves / tabu search).
+      // Short tabu memory: a queen may not jump straight back to the row it just left
+      // (unless that is its only alternative), so moves are never immediately undone.
+      const tabu = new Set([from]);
+      if (lastLeft[c] != null && n > 2) tabu.add(lastLeft[c]);
+      let m = Infinity, ties = [];
+      counts.forEach((k, r) => { if (tabu.has(r)) return; if (k < m) { m = k; ties = [r]; } else if (k === m) ties.push(r); });
+      lastLeft[c] = from;
       const to = ties[Math.floor(rng() * ties.length)];
+      const before = queensAttackingPairs(rows);
       rows[c] = to;
-      if (opts.trace && steps.length < opts.maxTrace) steps.push({ kind: 'move', col: c, from, to, counts, conflicted, rows: rows.slice(), total: queensAttackingPairs(rows), msg: `Column ${c + 1} is conflicted (${conflicted.length} conflicted queens). Min-conflicts row → ${to + 1} (${m} conflict${m === 1 ? '' : 's'})${to === from ? ' — sideways move' : ''}.` });
+      const after = queensAttackingPairs(rows);
+      const cw = k => `${k} conflict${k === 1 ? '' : 's'}`;
+      const head = `Row ${from + 1} → row ${to + 1} (${cw(counts[from])} → ${cw(m)}).`;
+      let note;
+      if (after < before) note = `${head} Attacking pairs ${before} → ${after}.`;
+      else if (after === before) note = `${head} Same total (${after}): a sideways move across a plateau.`;
+      else note = `${head} No better row exists, so this uphill move raises attacking pairs ${before} → ${after}.`;
+      if (opts.trace && steps.length < opts.maxTrace) steps.push({ kind: 'move', col: c, from, to, counts, conflicted, rows: rows.slice(), total: after, msg: `Column ${c + 1} is conflicted (${conflicted.length} conflicted queens). ${note}` });
     }
     return { solved: false, rows, steps, iterations: opts.maxSteps };
   }

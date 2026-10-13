@@ -1,175 +1,130 @@
 /**
  * UI and Canvas Visualizer Engine for the 8-Puzzle State-Space Demo.
+ *
+ * Steps
+ *   0  Puzzle setup                 5  How many: full BFS count
+ *   1  State representation         6  Reachability test (goal presets)
+ *   2  Actions & RESULT             7  Search tree & duplicates
+ *   3  Count 9!                     8  Answer & summary
+ *   4  Why: parity invariant
  */
+const PZ = {
+  indigo: '#4f46e5', indigoSoft: '#e0e7ff', green: '#10b981', greenDark: '#047857',
+  red: '#ef4444', redDark: '#b91c1c', amber: '#f59e0b', amberDark: '#b45309',
+  ink: '#0f172a', slate: '#475569', muted: '#64748b', faint: '#94a3b8', line: '#e2e8f0', bg: '#f8fafc'
+};
+const fmt = n => n.toLocaleString('en-US');
+
 class PuzzleDemoUI {
   constructor() {
-    // Initial and goal states
     this.initialTiles = [7, 2, 4, 5, 0, 6, 8, 3, 1];
     this.goalTiles = [0, 1, 2, 3, 4, 5, 6, 7, 8];
-
     this.initialState = new PuzzleState(this.initialTiles);
     this.goalState = new PuzzleState(this.goalTiles);
-    this.currentState = new PuzzleState(this.initialTiles); // for playing/exploring
-    
-    // Custom goal state tracking (can be modified in step 5)
+    this.currentState = new PuzzleState(this.initialTiles);
+
     this.customGoalTiles = [...this.goalTiles];
     this.customGoalState = new PuzzleState(this.customGoalTiles);
 
-    // DOM Elements
     this.canvas = document.getElementById('puzzle-canvas');
     this.ctx = this.canvas.getContext('2d');
-    
     this.stepIndicators = document.querySelectorAll('.puzzle-flow-step');
     this.stepPanels = document.querySelectorAll('.puzzle-teaching-panel');
-    
+    this.lastStep = this.stepPanels.length - 1;
     this.btnPrev = document.getElementById('btn-puzzle-prev');
     this.btnNext = document.getElementById('btn-puzzle-next');
-
-    // Step 3 (Actions & Transitions)
-    this.btnPuzUp = document.getElementById('btn-puz-up');
-    this.btnPuzDown = document.getElementById('btn-puz-down');
-    this.btnPuzLeft = document.getElementById('btn-puz-left');
-    this.btnPuzRight = document.getElementById('btn-puz-right');
     this.puzManualLog = document.getElementById('puz-manual-log');
-
-    // Step 5 (Solvability Preset Goals)
-    this.btnPuzGoalSolvable = document.getElementById('btn-puz-goal-solvable');
-    this.btnPuzGoalUnsolvable = document.getElementById('btn-puz-goal-unsolvable');
-    this.btnPuzGoalSwap = document.getElementById('btn-puz-goal-swap');
     this.puzGoalStatus = document.getElementById('puz-goal-status');
-
-    // Step 6 (Interactive Exploration & Duplicates)
-    this.btnPlayUp = document.getElementById('btn-play-up');
-    this.btnPlayDown = document.getElementById('btn-play-down');
-    this.btnPlayLeft = document.getElementById('btn-play-left');
-    this.btnPlayRight = document.getElementById('btn-play-right');
-    this.btnPuzExploreReset = document.getElementById('btn-puz-explore-reset');
-    this.btnPuzExploreDup = document.getElementById('btn-puz-explore-dup');
-    this.puzExploreLog = document.getElementById('puz-explore-log');
-
-    // Step 7 (Depth-limited tree)
     this.puzDepthSlider = document.getElementById('puz-depth-slider');
     this.puzDepthVal = document.getElementById('puz-depth-val');
 
-    // UI state
-    this.currentStep = 0; // 0 to 7
-    this.explorationMoves = 0;
-    this.explorationHistory = []; // list of states visited
-    this.depthSelected = 1; // 0 to 3
+    this.currentStep = 0;
+    this.depthSelected = this.puzDepthSlider ? parseInt(this.puzDepthSlider.value, 10) : 2;
 
+    // Step 3: counting animation
+    this.countAnimStart = 0;
+    // Step 4: parity explorer
+    this.parState = new PuzzleState(this.initialTiles);
+    this.parHistory = [Reachability.getInversions(this.initialTiles)];
+    this.parLast = null;
+    // Step 5: full BFS
+    this.bfs = null;          // cached result of Reachability.exploreAll
+    this.bfsShown = -1;       // deepest layer revealed (-1 = not started)
+    this.bfsTimer = null;
+
+    this.raf = null;
     this.init();
   }
+
+  $(id) { return document.getElementById(id); }
+  on(id, ev, fn) { const el = this.$(id); if (el) el.addEventListener(ev, fn); }
 
   init() {
     this.resizeCanvas();
     window.addEventListener('resize', () => this.resizeCanvas());
 
-    // Navigation flow
     this.btnPrev.addEventListener('click', () => this.setStep(this.currentStep - 1));
     this.btnNext.addEventListener('click', () => this.setStep(this.currentStep + 1));
+    this.stepIndicators.forEach((ind, index) => ind.addEventListener('click', () => this.setStep(index)));
 
-    this.stepIndicators.forEach((ind, index) => {
-      ind.addEventListener('click', () => this.setStep(index));
+    // Step 2: actions & RESULT
+    ['Up', 'Down', 'Left', 'Right'].forEach(a => this.on(`btn-puz-${a.toLowerCase()}`, 'click', () => this.applyAction(a)));
+
+    // Step 3: replay count
+    this.on('btn-puz-count-replay', 'click', () => this.startCountAnim());
+
+    // Step 4: parity explorer
+    ['Up', 'Down', 'Left', 'Right'].forEach(a => this.on(`btn-par-${a.toLowerCase()}`, 'click', () => this.parMove(a)));
+    this.on('btn-par-reset', 'click', () => this.parReset());
+    this.on('btn-par-random', 'click', () => this.parRandom(50));
+
+    // Step 5: BFS
+    this.on('btn-puz-bfs-run', 'click', () => this.runBfs());
+    this.on('btn-puz-bfs-reset', 'click', () => this.resetBfs());
+
+    // Step 6: goal presets
+    const setGoal = tiles => { this.customGoalTiles = tiles; this.customGoalState = new PuzzleState(tiles); this.updateGoalStatus(); this.draw(); };
+    this.on('btn-puz-goal-solvable', 'click', () => setGoal([...this.goalTiles]));
+    this.on('btn-puz-goal-unsolvable', 'click', () => setGoal([0, 1, 2, 3, 4, 5, 6, 8, 7]));
+    this.on('btn-puz-goal-swap', 'click', () => {
+      // Swap two random tiles (never the blank): always flips parity.
+      const t = [...this.customGoalTiles];
+      const idx = t.map((v, i) => (v === 0 ? -1 : i)).filter(i => i >= 0);
+      const i = idx.splice(Math.floor(Math.random() * idx.length), 1)[0];
+      const j = idx[Math.floor(Math.random() * idx.length)];
+      [t[i], t[j]] = [t[j], t[i]];
+      this.lastSwap = [t[j], t[i]];
+      setGoal(t);
+    });
+    this.on('btn-puz-goal-random', 'click', () => {
+      const t = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+      for (let i = 8; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [t[i], t[j]] = [t[j], t[i]]; }
+      this.lastSwap = null;
+      setGoal(t);
     });
 
-    // Step 3 Actions
-    const bindAction = (btn, act, logBox, stateProp) => {
-      if (btn) {
-        btn.addEventListener('click', () => this.applyAction(act, logBox, stateProp));
-      }
-    };
-    bindAction(this.btnPuzUp, 'Up', this.puzManualLog, 'currentState');
-    bindAction(this.btnPuzDown, 'Down', this.puzManualLog, 'currentState');
-    bindAction(this.btnPuzLeft, 'Left', this.puzManualLog, 'currentState');
-    bindAction(this.btnPuzRight, 'Right', this.puzManualLog, 'currentState');
-
-    // Step 5 Presets
-    if (this.btnPuzGoalSolvable) {
-      this.btnPuzGoalSolvable.addEventListener('click', () => {
-        this.customGoalTiles = [...this.goalTiles];
-        this.customGoalState = new PuzzleState(this.customGoalTiles);
-        this.updateGoalStatus();
-        this.draw();
-      });
-    }
-    if (this.btnPuzGoalUnsolvable) {
-      this.btnPuzGoalUnsolvable.addEventListener('click', () => {
-        // Swap tiles 7 and 8 in the goal state to create an unreachable state (odd parity)
-        this.customGoalTiles = [0, 1, 2, 3, 4, 5, 6, 8, 7];
-        this.customGoalState = new PuzzleState(this.customGoalTiles);
-        this.updateGoalStatus();
-        this.draw();
-      });
-    }
-    if (this.btnPuzGoalSwap) {
-      this.btnPuzGoalSwap.addEventListener('click', () => {
-        // Swap any two non-zero tiles in custom goal to toggle reachability parity
-        // Find first two non-zero tiles
-        let idx1 = -1;
-        let idx2 = -1;
-        for (let i = 0; i < 9; i++) {
-          if (this.customGoalTiles[i] !== 0) {
-            if (idx1 === -1) idx1 = i;
-            else if (idx2 === -1) {
-              idx2 = i;
-              break;
-            }
-          }
-        }
-        if (idx1 !== -1 && idx2 !== -1) {
-          const temp = this.customGoalTiles[idx1];
-          this.customGoalTiles[idx1] = this.customGoalTiles[idx2];
-          this.customGoalTiles[idx2] = temp;
-          this.customGoalState = new PuzzleState(this.customGoalTiles);
-          this.updateGoalStatus();
-          this.draw();
-        }
-      });
-    }
-
-    // Step 6 Exploration Play Actions
-    bindAction(this.btnPlayUp, 'Up', this.puzExploreLog, 'currentState');
-    bindAction(this.btnPlayDown, 'Down', this.puzExploreLog, 'currentState');
-    bindAction(this.btnPlayLeft, 'Left', this.puzExploreLog, 'currentState');
-    bindAction(this.btnPlayRight, 'Right', this.puzExploreLog, 'currentState');
-
-    if (this.btnPuzExploreReset) {
-      this.btnPuzExploreReset.addEventListener('click', () => {
-        this.currentState = new PuzzleState(this.initialTiles);
-        this.explorationMoves = 0;
-        this.explorationHistory = [this.currentState.tiles.join(',')];
-        if (this.puzExploreLog) {
-          this.puzExploreLog.innerHTML = `<div class="log-entry">Reset puzzle to Initial State.</div>`;
-        }
-        document.getElementById('puz-explore-moves').textContent = '0';
-        this.draw();
-      });
-    }
-
-    if (this.btnPuzExploreDup) {
-      this.btnPuzExploreDup.addEventListener('click', () => {
-        this.triggerDuplicateLoopDemo();
-      });
-    }
-
-    // Step 7 Tree Depth Slider
+    // Step 7: tree depth
     if (this.puzDepthSlider) {
-      this.puzDepthSlider.addEventListener('input', (e) => {
-        this.depthSelected = parseInt(e.target.value);
+      this.puzDepthSlider.addEventListener('input', e => {
+        this.depthSelected = parseInt(e.target.value, 10);
         if (this.puzDepthVal) this.puzDepthVal.textContent = this.depthSelected;
         this.updateTreeStats();
         this.draw();
       });
     }
 
-    // Keyboard handlers
-    window.addEventListener('keydown', (e) => {
-      // Step 3 (Actions & Transitions) or Step 6 (Exploration)
-      if (this.currentStep === 2) {
-        this.handleKeyboardMove(e, this.puzManualLog, 'currentState');
-      } else if (this.currentStep === 5) {
-        this.handleKeyboardMove(e, this.puzExploreLog, 'currentState');
-      }
+    window.addEventListener('keydown', e => {
+      const view = document.getElementById('view-puzzle');
+      if (view && !view.classList.contains('active')) return;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target.tagName || ''))) return;
+      let action = null;
+      if (['ArrowUp', 'KeyW'].includes(e.code)) action = 'Up';
+      else if (['ArrowDown', 'KeyS'].includes(e.code)) action = 'Down';
+      else if (['ArrowLeft', 'KeyA'].includes(e.code)) action = 'Left';
+      else if (['ArrowRight', 'KeyD'].includes(e.code)) action = 'Right';
+      if (!action) return;
+      if (this.currentStep === 2) { e.preventDefault(); this.applyAction(action); }
+      else if (this.currentStep === 4) { e.preventDefault(); this.parMove(action); }
     });
 
     this.setStep(0);
@@ -180,725 +135,632 @@ class PuzzleDemoUI {
     const dpr = window.devicePixelRatio || 1;
     this.canvas.width = rect.width * dpr;
     this.canvas.height = rect.height * dpr;
-    this.ctx.scale(dpr, dpr);
+    this.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     this.draw();
   }
 
   setStep(step) {
-    if (step < 0 || step > 7) return;
-
+    if (step < 0 || step > this.lastStep) return;
     this.currentStep = step;
-
-    // Update Progress Indicators
-    this.stepIndicators.forEach((ind, index) => {
-      ind.classList.toggle('active', index === step);
-      ind.classList.toggle('completed', index < step);
-    });
-
-    // Update Panels
-    this.stepPanels.forEach((panel, index) => {
-      panel.classList.toggle('active', index === step);
-    });
-
-    // Nav button disabled state
+    this.stepIndicators.forEach((ind, i) => { ind.classList.toggle('active', i === step); ind.classList.toggle('completed', i < step); });
+    this.stepPanels.forEach((p, i) => p.classList.toggle('active', i === step));
     this.btnPrev.disabled = step === 0;
-    this.btnNext.textContent = step === 7 ? "Finished" : "Next Step";
-    this.btnNext.disabled = step === 7;
+    this.btnNext.textContent = step === this.lastStep ? 'Finished' : 'Next Step';
+    this.btnNext.disabled = step === this.lastStep;
 
-    // Specific Step Init
     if (step === 2) {
       this.currentState = new PuzzleState(this.initialTiles);
-      if (this.puzManualLog) {
-        this.puzManualLog.innerHTML = `<div class="log-entry">State s0: <strong>${this.currentState.toString()}</strong></div>`;
-      }
+      if (this.puzManualLog) this.puzManualLog.innerHTML = `<div class="log-entry">State s0: <strong>${this.currentState.toString()}</strong></div>`;
       this.updateActionButtons(this.currentState, 'puz');
+    } else if (step === 3) {
+      this.startCountAnim();
     } else if (step === 4) {
-      this.updateGoalStatus();
+      this.updateActionButtons(this.parState, 'par');
     } else if (step === 5) {
-      this.currentState = new PuzzleState(this.initialTiles);
-      this.explorationMoves = 0;
-      this.explorationHistory = [this.currentState.tiles.join(',')];
-      if (this.puzExploreLog) {
-        this.puzExploreLog.innerHTML = `<div class="log-entry">State s0: <strong>${this.currentState.toString()}</strong></div>`;
-      }
-      document.getElementById('puz-explore-moves').textContent = '0';
-      this.updateActionButtons(this.currentState, 'play');
+      this.updateBfsStats();
     } else if (step === 6) {
+      this.updateGoalStatus();
+    } else if (step === 7) {
       this.updateTreeStats();
+    } else if (step === 8) {
+      const el = this.$('puz-sum-maxd'); if (el) el.textContent = this.ensureBfs().layers.length - 1;
     }
-
     this.draw();
   }
+
+  // ---------------------------------------------------------------------------
+  // Step 2: actions
+  // ---------------------------------------------------------------------------
 
   updateActionButtons(state, prefix) {
     const legal = state.getLegalActions();
-    const upBtn = document.getElementById(`btn-${prefix}-up`);
-    const downBtn = document.getElementById(`btn-${prefix}-down`);
-    const leftBtn = document.getElementById(`btn-${prefix}-left`);
-    const rightBtn = document.getElementById(`btn-${prefix}-right`);
-
-    if (upBtn) upBtn.disabled = !legal.includes('Up');
-    if (downBtn) downBtn.disabled = !legal.includes('Down');
-    if (leftBtn) leftBtn.disabled = !legal.includes('Left');
-    if (rightBtn) rightBtn.disabled = !legal.includes('Right');
+    ['Up', 'Down', 'Left', 'Right'].forEach(a => { const b = this.$(`btn-${prefix}-${a.toLowerCase()}`); if (b) b.disabled = !legal.includes(a); });
   }
 
-  applyAction(action, logBox, stateProp) {
-    const state = this[stateProp];
-    const legal = state.getLegalActions();
-    
-    if (!legal.includes(action)) return;
-
-    const nextState = state.transition(action);
-    const prevStateStr = state.toString();
-    this[stateProp] = nextState;
-
-    // If exploration step, update moves and duplicate detection
-    if (stateProp === 'currentState' && this.currentStep === 5) {
-      this.explorationMoves++;
-      document.getElementById('puz-explore-moves').textContent = this.explorationMoves;
-      
-      const stateKey = nextState.tiles.join(',');
-      const isDup = this.explorationHistory.includes(stateKey);
-      this.explorationHistory.push(stateKey);
-      
-      this.updateActionButtons(nextState, 'play');
-
-      if (logBox) {
-        const logEntry = document.createElement('div');
-        logEntry.className = 'log-entry';
-        
-        if (isDup) {
-          logEntry.innerHTML = `RESULT(${prevStateStr}, <span style="color:#f59e0b;">${action}</span>) = <strong style="color:#ef4444;">${nextState.toString()}</strong> <span class="badge-g" style="background:#f59e0b;font-size:0.65rem;">DUPLICATE STATE</span>`;
-        } else {
-          logEntry.innerHTML = `RESULT(${prevStateStr}, <span style="color:#38bdf8;">${action}</span>) = <strong style="color:#10b981;">${nextState.toString()}</strong>`;
-        }
-        
-        logBox.appendChild(logEntry);
-        logBox.scrollTop = logBox.scrollHeight;
-      }
-    } 
-    // If step 3
-    else if (stateProp === 'currentState' && this.currentStep === 2) {
-      this.updateActionButtons(nextState, 'puz');
-      if (logBox) {
-        const logEntry = document.createElement('div');
-        logEntry.className = 'log-entry';
-        logEntry.innerHTML = `RESULT(${prevStateStr}, <span style="color:#38bdf8;">${action}</span>) = <strong>${nextState.toString()}</strong>`;
-        logBox.appendChild(logEntry);
-        logBox.scrollTop = logBox.scrollHeight;
-      }
+  applyAction(action) {
+    const state = this.currentState;
+    if (!state.getLegalActions().includes(action)) return;
+    const next = state.transition(action);
+    if (this.puzManualLog) {
+      const row = document.createElement('div');
+      row.className = 'log-entry';
+      row.innerHTML = `RESULT(${state.toString()}, <span style="color:#38bdf8;">${action}</span>) = <strong>${next.toString()}</strong>`;
+      this.puzManualLog.appendChild(row);
+      this.puzManualLog.scrollTop = this.puzManualLog.scrollHeight;
     }
-
+    this.currentState = next;
+    this.updateActionButtons(next, 'puz');
     this.draw();
   }
 
-  handleKeyboardMove(e, logBox, stateProp) {
-    let action = null;
-    if (['ArrowUp', 'KeyW'].includes(e.code)) action = 'Up';
-    else if (['ArrowDown', 'KeyS'].includes(e.code)) action = 'Down';
-    else if (['ArrowLeft', 'KeyA'].includes(e.code)) action = 'Left';
-    else if (['ArrowRight', 'KeyD'].includes(e.code)) action = 'Right';
+  // ---------------------------------------------------------------------------
+  // Step 3: counting animation
+  // ---------------------------------------------------------------------------
 
-    if (action) {
-      e.preventDefault();
-      this.applyAction(action, logBox, stateProp);
+  startCountAnim() {
+    this.countAnimStart = performance.now();
+    this.loop(() => this.currentStep === 3 && this.countProgress() < 9.999);
+  }
+
+  countProgress() { return Math.min(10, (performance.now() - this.countAnimStart) / 320); }
+
+  loop(keepGoing) {
+    if (this.raf) cancelAnimationFrame(this.raf);
+    const tick = () => { this.draw(); if (keepGoing()) this.raf = requestAnimationFrame(tick); else { this.raf = null; this.draw(); } };
+    this.raf = requestAnimationFrame(tick);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Step 4: parity invariant explorer
+  // ---------------------------------------------------------------------------
+
+  parMove(action, silent) {
+    if (!this.parState.getLegalActions().includes(action)) return false;
+    const info = Reachability.explainMove(this.parState, action);
+    this.parState = info.after;
+    this.parHistory.push(info.invAfter);
+    this.parLast = { action, ...info };
+    if (!silent) { this.updateActionButtons(this.parState, 'par'); this.draw(); }
+    return true;
+  }
+
+  parReset() {
+    this.parState = new PuzzleState(this.initialTiles);
+    this.parHistory = [Reachability.getInversions(this.initialTiles)];
+    this.parLast = null;
+    this.updateActionButtons(this.parState, 'par');
+    this.draw();
+  }
+
+  parRandom(n) {
+    let prevBlank = -1;
+    for (let k = 0; k < n; k++) {
+      // Random legal move, avoiding an immediate undo so the walk wanders further.
+      const acts = this.parState.getLegalActions().filter(a => this.parState.transition(a).blankIndex !== prevBlank);
+      const a = acts[Math.floor(Math.random() * acts.length)];
+      prevBlank = this.parState.blankIndex;
+      this.parMove(a, true);
+    }
+    this.updateActionButtons(this.parState, 'par');
+    this.draw();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Step 5: full BFS
+  // ---------------------------------------------------------------------------
+
+  ensureBfs() {
+    if (!this.bfs) this.bfs = Reachability.exploreAll(this.initialTiles);
+    return this.bfs;
+  }
+
+  runBfs() {
+    this.ensureBfs();
+    clearInterval(this.bfsTimer);
+    this.bfsShown = 0;
+    const maxD = this.bfs.layers.length - 1;
+    this.updateBfsStats(); this.draw();
+    this.bfsTimer = setInterval(() => {
+      if (this.bfsShown >= maxD) { clearInterval(this.bfsTimer); this.bfsTimer = null; return; }
+      this.bfsShown++;
+      this.updateBfsStats();
+      if (this.currentStep === 5) this.draw();
+    }, 140);
+  }
+
+  resetBfs() {
+    clearInterval(this.bfsTimer); this.bfsTimer = null;
+    this.bfsShown = -1;
+    this.updateBfsStats(); this.draw();
+  }
+
+  bfsReached() {
+    if (!this.bfs || this.bfsShown < 0) return 0;
+    let s = 0; for (let d = 0; d <= this.bfsShown; d++) s += this.bfs.layers[d];
+    return s;
+  }
+
+  updateBfsStats() {
+    const reached = this.bfsReached();
+    const set = (id, v) => { const el = this.$(id); if (el) el.textContent = v; };
+    set('puz-bfs-depth', this.bfsShown < 0 ? '–' : this.bfsShown);
+    set('puz-bfs-count', fmt(reached));
+    set('puz-bfs-even', fmt(reached));   // s0 is even, so everything reached is even
+    set('puz-bfs-odd', '0');
+    const tip = this.$('puz-bfs-tip');
+    const done = this.bfs && this.bfsShown === this.bfs.layers.length - 1;
+    if (tip) {
+      const span = tip.querySelector('span');
+      if (span) span.innerHTML = done
+        ? `BFS stopped: the frontier is empty after depth ${this.bfsShown}. It reached <strong>${fmt(this.bfs.total)} = 9!/2</strong> states, all even. Not one odd state was reached, which matches the invariant.`
+        : 'Each state\'s number (its position among all 9! orderings) indexes a 362,880-entry table, so BFS never stores the same state twice.';
     }
   }
 
-  updateGoalStatus() {
-    const reachable = Reachability.isReachable(this.initialState, this.customGoalState);
-    const parityInit = Reachability.getInversions(this.initialTiles) % 2;
-    const parityGoal = Reachability.getInversions(this.customGoalTiles) % 2;
+  // ---------------------------------------------------------------------------
+  // Step 6: goal check
+  // ---------------------------------------------------------------------------
 
-    if (this.puzGoalStatus) {
-      if (reachable) {
-        this.puzGoalStatus.innerHTML = `
-          <div style="color: #10b981; font-weight: bold; display: flex; align-items: center; gap: 0.25rem;">
-            <span style="font-size: 1.25rem;">✓</span> Reachable from Initial State
-          </div>
-          <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.2rem;">
-            Initial Inversions: <strong>${Reachability.getInversions(this.initialTiles)}</strong> (Parity: ${parityInit === 0 ? 'Even' : 'Odd'}) <br>
-            Goal Inversions: <strong>${Reachability.getInversions(this.customGoalTiles)}</strong> (Parity: ${parityGoal === 0 ? 'Even' : 'Odd'})
-          </div>
-        `;
-      } else {
-        this.puzGoalStatus.innerHTML = `
-          <div style="color: #ef4444; font-weight: bold; display: flex; align-items: center; gap: 0.25rem;">
-            <span style="font-size: 1.25rem;">✗</span> Not Reachable from Initial State
-          </div>
-          <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.2rem;">
-            Initial Inversions: <strong>${Reachability.getInversions(this.initialTiles)}</strong> (Parity: ${parityInit === 0 ? 'Even' : 'Odd'}) <br>
-            Goal Inversions: <strong>${Reachability.getInversions(this.customGoalTiles)}</strong> (Parity: ${parityGoal === 0 ? 'Even' : 'Odd'})
-          </div>
-        `;
-      }
-    }
+  updateGoalStatus() {
+    if (!this.puzGoalStatus) return;
+    const invI = Reachability.getInversions(this.initialTiles);
+    const invG = Reachability.getInversions(this.customGoalTiles);
+    const pI = invI % 2 === 0 ? 'even' : 'odd', pG = invG % 2 === 0 ? 'even' : 'odd';
+    const d = this.ensureBfs().dist[Reachability.rank(this.customGoalTiles)];
+    const ok = d >= 0;
+    const swapNote = this.lastSwap ? `<br>Last change: swapped tiles ${this.lastSwap[0]} and ${this.lastSwap[1]}, which flips the parity.` : '';
+    this.puzGoalStatus.innerHTML = `
+      <div style="color:${ok ? PZ.green : PZ.red}; font-weight:bold; display:flex; align-items:center; gap:0.25rem;">
+        <span style="font-size:1.2rem;">${ok ? '✓' : '✗'}</span> ${ok ? `Reachable: ${d} moves at minimum (from BFS)` : 'Not reachable from the initial state'}
+      </div>
+      <div style="font-size:0.75rem; color:var(--text-secondary); margin-top:0.2rem;">
+        Initial: <strong>${invI}</strong> inversions (${pI}) · Goal: <strong>${invG}</strong> inversions (${pG})${ok ? '' : ' — parities differ'}${swapNote}
+      </div>`;
   }
 
   updateTreeStats() {
     const { totalNodes, uniqueStatesCount } = Reachability.buildExpansionTree(this.initialState, this.depthSelected);
-    
-    const setSafeText = (id, val) => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = val;
-    };
-    
-    setSafeText('puz-tree-nodes-total', totalNodes);
-    setSafeText('puz-tree-nodes-unique', uniqueStatesCount);
+    const set = (id, v) => { const el = this.$(id); if (el) el.textContent = v; };
+    set('puz-tree-nodes-total', totalNodes);
+    set('puz-tree-nodes-unique', uniqueStatesCount);
   }
 
-  triggerDuplicateLoopDemo() {
-    // Force a sequence of Right -> Left -> Right moves to show duplication
-    const sequence = ['Right', 'Left', 'Right'];
-    let stepCount = 0;
-    
-    this.currentState = new PuzzleState(this.initialTiles);
-    this.explorationMoves = 0;
-    this.explorationHistory = [this.currentState.tiles.join(',')];
-    if (this.puzExploreLog) {
-      this.puzExploreLog.innerHTML = `<div class="log-entry"><strong>Demo Cycle: Loop detection sequence initialized.</strong></div>`;
-    }
-    
-    const interval = setInterval(() => {
-      if (stepCount < sequence.length) {
-        this.applyAction(sequence[stepCount], this.puzExploreLog, 'currentState');
-        stepCount++;
-      } else {
-        clearInterval(interval);
-      }
-    }, 600);
-  }
+  // ---------------------------------------------------------------------------
+  // Drawing
+  // ---------------------------------------------------------------------------
 
-  /**
-   * Main Drawing dispatcher
-   */
   draw() {
     const w = this.canvas.width / (window.devicePixelRatio || 1);
     const h = this.canvas.height / (window.devicePixelRatio || 1);
-    this.ctx.clearRect(0, 0, w, h);
+    if (!w || !h) return;
+    const ctx = this.ctx;
+    ctx.clearRect(0, 0, w, h);
+    ctx.textBaseline = 'alphabetic';
 
-    if (this.currentStep === 0) {
-      // Step 1: Show Initial and Goal state side-by-side
-      const boardSize = Math.min(w * 0.35, h * 0.7);
-      const leftX = w * 0.12;
-      const rightX = w * 0.52;
-      const centerY = (h - boardSize) / 2;
-
-      this.drawPuzzleBoard(this.initialTiles, leftX, centerY, boardSize, "Initial State");
-      this.drawPuzzleBoard(this.goalTiles, rightX, centerY, boardSize, "Goal State");
-    } 
-    else if (this.currentStep === 1) {
-      // Step 2: Explain State Representation
-      const boardSize = Math.min(w * 0.35, h * 0.6);
-      const boardX = (w - boardSize) / 2;
-      const boardY = (h - boardSize) / 2 - 20;
-
-      this.drawPuzzleBoard(this.initialTiles, boardX, boardY, boardSize, "State Representation Mapping");
-      
-      // Draw mapping boxes under it
-      this.drawArrayRepresentation(this.initialTiles, boardX, boardY + boardSize + 25, boardSize);
-    } 
-    else if (this.currentStep === 2) {
-      // Step 3: Actions & Transitions
-      const boardSize = Math.min(w * 0.45, h * 0.75);
-      const boardX = (w - boardSize) / 2;
-      const boardY = (h - boardSize) / 2;
-
-      this.drawPuzzleBoard(this.currentState.tiles, boardX, boardY, boardSize, "Interactive State transitions");
-    } 
-    else if (this.currentStep === 3) {
-      // Step 4: Possible Configurations Map
-      this.drawStateSpaceParityDivision(w, h);
-    } 
-    else if (this.currentStep === 4) {
-      // Step 5: Solvability presets check
-      const boardSize = Math.min(w * 0.35, h * 0.7);
-      const leftX = w * 0.12;
-      const rightX = w * 0.52;
-      const centerY = (h - boardSize) / 2;
-
-      this.drawPuzzleBoard(this.initialTiles, leftX, centerY, boardSize, "Initial State");
-      
-      const reachable = Reachability.isReachable(this.initialState, this.customGoalState);
-      this.drawPuzzleBoard(this.customGoalTiles, rightX, centerY, boardSize, "Custom Goal State", reachable);
-    } 
-    else if (this.currentStep === 5) {
-      // Step 6: Exploration and Duplicates
-      const boardSize = Math.min(w * 0.45, h * 0.75);
-      const boardX = (w - boardSize) / 2;
-      const boardY = (h - boardSize) / 2;
-
-      this.drawPuzzleBoard(this.currentState.tiles, boardX, boardY, boardSize, "Explore & Detect Duplicates");
-    } 
-    else if (this.currentStep === 6) {
-      // Step 7: Reachability BFS search Tree
-      this.drawSearchTreeExpansion(w, h);
-    }
-    else if (this.currentStep === 7) {
-      // Step 8: Summary view
-      // Draw Concept overview summary graphic
-      this.drawConceptIllustration(w, h);
+    switch (this.currentStep) {
+      case 0: {
+        const s = Math.min(w * 0.35, h * 0.7);
+        this.drawPuzzleBoard(this.initialTiles, w * 0.12, (h - s) / 2, s, 'Initial State');
+        this.drawPuzzleBoard(this.goalTiles, w * 0.52, (h - s) / 2, s, 'Goal State');
+        break;
+      }
+      case 1: {
+        const s = Math.min(w * 0.35, h * 0.6);
+        const x = (w - s) / 2, y = (h - s) / 2 - 20;
+        this.drawPuzzleBoard(this.initialTiles, x, y, s, 'State Representation Mapping', null, { indices: true });
+        this.drawArrayRepresentation(this.initialTiles, x, y + s + 25, s);
+        break;
+      }
+      case 2: {
+        const s = Math.min(w * 0.45, h * 0.75);
+        this.drawPuzzleBoard(this.currentState.tiles, (w - s) / 2, (h - s) / 2, s, 'Interactive State Transitions');
+        break;
+      }
+      case 3: this.drawCount(w, h); break;
+      case 4: this.drawParity(w, h); break;
+      case 5: this.drawBfs(w, h); break;
+      case 6: this.drawGoalTest(w, h); break;
+      case 7: this.drawSearchTreeExpansion(w, h); break;
+      case 8: this.drawSummary(w, h); break;
     }
   }
 
-  /**
-   * Draws a standard puzzle board on the canvas
-   */
-  drawPuzzleBoard(tiles, px, py, size, label = null, reachabilityStatus = null) {
+  text(str, x, y, { size = 12, weight = 'normal', color = PZ.ink, align = 'left', base = 'alphabetic', family = 'Outfit, sans-serif' } = {}) {
     const ctx = this.ctx;
-    
-    // Draw card background
+    ctx.font = `${weight} ${size}px ${family}`;
+    ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = base;
+    ctx.fillText(str, x, y);
+  }
+
+  pill(str, x, y, color, { size = 11, align = 'left' } = {}) {
+    const ctx = this.ctx;
+    ctx.font = `bold ${size}px Outfit, sans-serif`;
+    const tw = ctx.measureText(str).width, pw = tw + 16, ph = size + 9;
+    const px = align === 'center' ? x - pw / 2 : align === 'right' ? x - pw : x;
+    ctx.fillStyle = color; ctx.beginPath(); this.roundRect(px, y, pw, ph, ph / 2); ctx.fill();
+    this.text(str, px + pw / 2, y + ph / 2 + 0.5, { size, weight: 'bold', color: '#fff', align: 'center', base: 'middle' });
+    return pw;
+  }
+
+  /** Standard board. opts: { indices, highlightTile, ghostIndex, mini } */
+  drawPuzzleBoard(tiles, px, py, size, label = null, reachabilityStatus = null, opts = {}) {
+    const ctx = this.ctx;
     ctx.save();
     ctx.fillStyle = '#ffffff';
-    ctx.shadowColor = 'rgba(15, 23, 42, 0.05)';
-    ctx.shadowBlur = 10;
-    ctx.shadowOffsetY = 4;
-    ctx.beginPath();
-    this.roundRect(px, py, size, size, 16);
-    ctx.fill();
-    ctx.shadowBlur = 0; // Reset
-    ctx.strokeStyle = 'rgba(15, 23, 42, 0.06)';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
+    ctx.shadowColor = 'rgba(15, 23, 42, 0.05)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
+    ctx.beginPath(); this.roundRect(px, py, size, size, Math.max(6, size * 0.06)); ctx.fill();
+    ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
+    ctx.strokeStyle = 'rgba(15, 23, 42, 0.06)'; ctx.lineWidth = 1.5; ctx.stroke();
+    if (label) this.text(label, px + size / 2, py - 12, { size: 12, weight: 'bold', color: PZ.slate, align: 'center' });
 
-    // Title label
-    if (label) {
-      ctx.fillStyle = '#475569'; // Slate 600
-      ctx.font = 'bold 12px Outfit, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(label, px + size / 2, py - 12);
-    }
-
-    // Draw tiles
-    const padding = size * 0.04;
-    const innerSize = size - padding * 2;
-    const tileSize = innerSize / 3;
-
+    const pad = size * 0.04, tileSize = (size - pad * 2) / 3;
     for (let i = 0; i < 9; i++) {
-      const tileVal = tiles[i];
-      const tx = i % 3;
-      const ty = Math.floor(i / 3);
-      
-      const x = px + padding + tx * tileSize;
-      const y = py + padding + ty * tileSize;
-      const ts = tileSize - padding * 0.5;
-
-      if (tileVal === 0) {
-        // Blank space
-        ctx.fillStyle = '#f1f5f9'; // Slate 100
-        ctx.beginPath();
-        this.roundRect(x, y, ts, ts, 8);
-        ctx.fill();
+      const v = tiles[i];
+      const x = px + pad + (i % 3) * tileSize, y = py + pad + Math.floor(i / 3) * tileSize;
+      const ts = tileSize - pad * 0.5, r = Math.max(3, ts * 0.1);
+      ctx.beginPath(); this.roundRect(x, y, ts, ts, r);
+      if (v === 0) {
+        ctx.fillStyle = '#f1f5f9'; ctx.fill();
+        if (opts.ghostIndex === i) { ctx.setLineDash([4, 3]); ctx.strokeStyle = PZ.amber; ctx.lineWidth = 1.5; ctx.stroke(); ctx.setLineDash([]); }
       } else {
-        // Numbered Tile - Gradient & Glow style
-        ctx.beginPath();
-        this.roundRect(x, y, ts, ts, 8);
-        
-        ctx.fillStyle = '#4f46e5'; // Indigo
-        ctx.fill();
+        const hl = opts.highlightTile === v;
+        ctx.fillStyle = hl ? PZ.amber : PZ.indigo; ctx.fill();
+        this.text(String(v), x + ts / 2, y + ts / 2 + 1, { size: Math.round(tileSize * 0.38), weight: 'bold', color: '#fff', align: 'center', base: 'middle' });
+        if (opts.indices) this.text(`idx:${i}`, x + 5, y + ts - 5, { size: 9, weight: 'bold', color: 'rgba(255,255,255,0.45)', base: 'bottom', family: 'monospace' });
+      }
+    }
+    if (reachabilityStatus !== null) {
+      ctx.fillStyle = reachabilityStatus ? 'rgba(16,185,129,0.92)' : 'rgba(239,68,68,0.92)';
+      ctx.beginPath(); ctx.arc(px + size - 14, py + 14, 12, 0, 2 * Math.PI); ctx.fill();
+      this.text(reachabilityStatus ? '✓' : '✗', px + size - 14, py + 15, { size: 11, weight: 'bold', color: '#fff', align: 'center', base: 'middle', family: 'sans-serif' });
+    }
+    ctx.restore();
+  }
 
-        // White border
-        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
+  drawArrayRepresentation(tiles, px, py, size) {
+    const ctx = this.ctx, boxW = size / 9, gap = 2;
+    this.text('INTERNAL MEMORY ARRAY REPRESENTATION', px + size / 2, py - 12, { size: 9, weight: 'bold', color: PZ.muted, align: 'center', family: 'monospace' });
+    for (let i = 0; i < 9; i++) {
+      const bx = px + i * boxW;
+      ctx.fillStyle = tiles[i] === 0 ? '#cbd5e1' : PZ.indigo;
+      ctx.beginPath(); this.roundRect(bx + gap, py, boxW - gap * 2, 28, 4); ctx.fill();
+      this.text(tiles[i] === 0 ? '_' : String(tiles[i]), bx + boxW / 2, py + 14, { size: 12, weight: 'bold', color: '#fff', align: 'center', base: 'middle' });
+      this.text(String(i), bx + boxW / 2, py + 40, { size: 9, color: PZ.faint, align: 'center', base: 'middle', family: 'monospace' });
+    }
+  }
 
-        // Number Text
-        ctx.fillStyle = '#ffffff';
-        ctx.font = `bold ${Math.round(tileSize * 0.35)}px Outfit, sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(tileVal, x + ts / 2, y + ts / 2);
+  // --- Step 3: 9 × 8 × … × 1 ------------------------------------------------
 
-        // Drawing tiny index numbers for teaching representation mapping
-        if (this.currentStep === 1) {
-          ctx.fillStyle = 'rgba(255,255,255,0.4)';
-          ctx.font = 'bold 9px monospace';
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'bottom';
-          ctx.fillText(`idx:${i}`, x + 5, y + ts - 5);
-        }
+  drawCount(w, h) {
+    const ctx = this.ctx;
+    const prog = this.countProgress();
+    const filled = Math.floor(prog);           // squares fully placed
+    const size = Math.min(h * 0.6, w * 0.36);
+    const bx = Math.max(20, w * 0.06), by = (h - size) / 2 + 10;
+    this.text('Fill the 9 squares one at a time', bx + size / 2, by - 14, { size: 12, weight: 'bold', color: PZ.slate, align: 'center' });
+
+    // Board with progressively placed pieces and "choices" badges
+    ctx.fillStyle = '#fff'; ctx.beginPath(); this.roundRect(bx, by, size, size, 12); ctx.fill();
+    ctx.strokeStyle = PZ.line; ctx.lineWidth = 1.5; ctx.stroke();
+    const pad = size * 0.04, ts = (size - pad * 2) / 3;
+    for (let i = 0; i < 9; i++) {
+      const x = bx + pad + (i % 3) * ts, y = by + pad + Math.floor(i / 3) * ts, s = ts - pad * 0.5;
+      ctx.beginPath(); this.roundRect(x, y, s, s, 6);
+      const v = this.initialTiles[i];
+      if (i < filled) {
+        ctx.fillStyle = v === 0 ? '#e2e8f0' : PZ.indigo; ctx.fill();
+        this.text(v === 0 ? '_' : String(v), x + s / 2, y + s / 2 + 1, { size: Math.round(ts * 0.34), weight: 'bold', color: v === 0 ? PZ.muted : '#fff', align: 'center', base: 'middle' });
+      } else if (i === filled) {
+        ctx.fillStyle = 'rgba(245,158,11,0.12)'; ctx.fill(); ctx.strokeStyle = PZ.amber; ctx.lineWidth = 2; ctx.stroke();
+        this.text(`${9 - i}`, x + s / 2, y + s / 2 - 4, { size: Math.round(ts * 0.3), weight: 'bold', color: PZ.amberDark, align: 'center', base: 'middle' });
+        this.text('choices', x + s / 2, y + s / 2 + ts * 0.2, { size: Math.max(9, Math.round(ts * 0.11)), color: PZ.amberDark, align: 'center', base: 'middle' });
+      } else {
+        ctx.fillStyle = PZ.bg; ctx.fill();
+        this.text('?', x + s / 2, y + s / 2 + 1, { size: Math.round(ts * 0.28), color: '#cbd5e1', align: 'center', base: 'middle' });
       }
     }
 
-    // Reachability label overlay
-    if (reachabilityStatus !== null) {
-      ctx.fillStyle = reachabilityStatus ? 'rgba(16, 185, 129, 0.9)' : 'rgba(239, 68, 68, 0.9)'; // Green/Red
-      ctx.beginPath();
-      ctx.arc(px + size - 16, py + 16, 12, 0, 2 * Math.PI);
-      ctx.fill();
+    // Right: running product
+    const rx = bx + size + Math.max(24, w * 0.05), rw = w - rx - 20;
+    let y = by + 6;
+    this.text('Choices for each square', rx, y, { size: 12, weight: 'bold', color: PZ.slate }); y += 30;
+    const fs = Math.max(15, Math.min(24, rw / 14));
+    ctx.font = `bold ${fs}px Outfit, sans-serif`;
+    let x = rx, prod = 1;
+    for (let k = 0; k < 9; k++) {
+      const on = k < filled || (k === filled && prog < 9);
+      const str = String(9 - k) + (k < 8 ? ' ×' : '');
+      const col = k < filled ? PZ.indigo : k === filled ? PZ.amberDark : '#cbd5e1';
+      this.text(str, x, y, { size: fs, weight: 'bold', color: on ? col : '#cbd5e1' });
+      x += ctx.measureText(str + ' ').width;
+      if (k < filled) prod *= 9 - k;
+    }
+    y += fs + 18;
+    this.text('=', rx, y + 8, { size: fs + 10, weight: 'bold', color: PZ.slate });
+    this.text(fmt(filled === 0 ? 0 : prod), rx + fs + 6, y + 8, { size: fs + 14, weight: 'bold', color: filled >= 9 ? PZ.indigo : PZ.slate });
+    y += fs + 40;
+    if (filled >= 9) {
+      this.text('9! = 362,880 arrangements', rx, y, { size: 13, weight: 'bold', color: PZ.indigo }); y += 34;
+      // Question box
+      const qh = 64;
+      ctx.fillStyle = 'rgba(245,158,11,0.08)'; ctx.beginPath(); this.roundRect(rx, y, Math.min(rw, 360), qh, 10); ctx.fill();
+      ctx.strokeStyle = 'rgba(245,158,11,0.45)'; ctx.lineWidth = 1.2; ctx.stroke();
+      this.text('But how many are reachable from s₀', rx + 14, y + 26, { size: 13, weight: 'bold', color: PZ.amberDark });
+      this.text('by sliding tiles?   ?', rx + 14, y + 46, { size: 13, weight: 'bold', color: PZ.amberDark });
+    }
+  }
 
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 10px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(reachabilityStatus ? '✓' : '✗', px + size - 16, py + 16);
+  // --- Step 4: parity invariant ----------------------------------------------
+
+  drawParity(w, h) {
+    const ctx = this.ctx;
+    const tiles = this.parState.tiles;
+    const last = this.parLast;
+    const inv = Reachability.getInversions(tiles);
+    const even = inv % 2 === 0;
+
+    // Board (left)
+    const bs = Math.min(h * 0.42, w * 0.28);
+    const bx = 20, by = 34;
+    this.drawPuzzleBoard(tiles, bx, by, bs, 'Board', null, { highlightTile: last ? last.movedTile : null, ghostIndex: last ? this.parState.blankIndex : null });
+
+    // Reading-order strip (right)
+    const sx = bx + bs + 34, sw = w - sx - 18;
+    const seq = Reachability.readingOrder(tiles);
+    const cw = Math.min(46, (sw - 7 * 6) / 8), gap = Math.min(10, (sw - 8 * cw) / 7);
+    const stripW = 8 * cw + 7 * gap;
+    const sy = by + Math.min(110, bs * 0.55);
+    this.text('Reading order (row by row, blank skipped)', sx, by - 12, { size: 12, weight: 'bold', color: PZ.slate });
+
+    const cx = k => sx + k * (cw + gap) + cw / 2;
+    const pos = {}; seq.forEach((t, k) => (pos[t] = k));
+
+    // Inversion arcs above the strip
+    const pairs = Reachability.inversionPairs(tiles);
+    const changed = new Map();
+    if (last) last.flips.forEach(f => changed.set([last.movedTile, f.tile].sort().join('-'), f.delta));
+    const maxArc = sy - by - 6;
+    const arc = (a, b, color, lw, dash) => {
+      const x1 = cx(pos[a]), x2 = cx(pos[b]);
+      const span = Math.abs(pos[a] - pos[b]);
+      const ah = Math.min(maxArc, 10 + span * (maxArc / 7.5));
+      ctx.beginPath(); ctx.moveTo(x1, sy - 2);
+      ctx.bezierCurveTo(x1, sy - 2 - ah * 1.3, x2, sy - 2 - ah * 1.3, x2, sy - 2);
+      ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.setLineDash(dash || []); ctx.stroke(); ctx.setLineDash([]);
+    };
+    pairs.forEach(([a, b]) => { if (!changed.has([a, b].sort().join('-'))) arc(a, b, 'rgba(79,70,229,0.18)', 1); });
+    // Pairs flipped by the last move: green = new inversion (+1), red dashed = removed (−1)
+    if (last) last.flips.forEach(f => arc(last.movedTile, f.tile, f.delta > 0 ? PZ.green : PZ.red, 2.4, f.delta > 0 ? null : [5, 4]));
+
+    seq.forEach((t, k) => {
+      const x = sx + k * (cw + gap);
+      const hl = last && t === last.movedTile, jumped = last && last.jumped.includes(t);
+      ctx.beginPath(); this.roundRect(x, sy, cw, cw, 6);
+      ctx.fillStyle = hl ? PZ.amber : jumped ? PZ.indigoSoft : PZ.indigo; ctx.fill();
+      if (jumped) { ctx.strokeStyle = PZ.indigo; ctx.lineWidth = 1.5; ctx.stroke(); }
+      this.text(String(t), x + cw / 2, sy + cw / 2 + 1, { size: Math.round(cw * 0.45), weight: 'bold', color: jumped ? PZ.indigo : '#fff', align: 'center', base: 'middle' });
+    });
+
+    // Legend + count
+    let ly = sy + cw + 22;
+    this.text('Inversions', sx, ly + 4, { size: 12, weight: 'bold', color: PZ.slate });
+    this.text(String(inv), sx + 72, ly + 8, { size: 26, weight: 'bold', color: PZ.ink });
+    ctx.font = 'bold 26px Outfit, sans-serif';
+    this.pill(even ? 'EVEN' : 'ODD', sx + 82 + ctx.measureText(String(inv)).width, ly - 12, even ? PZ.green : PZ.red);
+    ly += 26;
+    this.text('Faint arcs = inversion pairs (larger tile before smaller).', sx, ly, { size: 10.5, color: PZ.muted });
+
+    // Last-move explanation
+    ly += 26;
+    const lineW = Math.min(sw, stripW + 40);
+    if (!last) {
+      this.text('Make a move with the buttons or arrow keys.', sx, ly, { size: 12.5, color: PZ.slate });
+    } else {
+      const dStr = last.delta > 0 ? `+${last.delta}` : String(last.delta);
+      this.text(`Last move: blank ${last.action} — tile ${last.movedTile} slid ${last.vertical ? 'vertically' : 'sideways'}`, sx, ly, { size: 12.5, weight: 'bold', color: PZ.ink });
+      ly += 19;
+      if (!last.vertical) {
+        this.text('Reading order unchanged → no pair flips → Δ = 0', sx, ly, { size: 12, color: PZ.slate });
+      } else {
+        const after = Reachability.readingOrder(tiles);
+        const ordered = t => (after.indexOf(last.movedTile) < after.indexOf(t) ? `(${last.movedTile},${t})` : `(${t},${last.movedTile})`);
+        const parts = last.flips.map(f => `${ordered(f.tile)} ${f.delta > 0 ? 'became' : 'stopped being'} an inversion`);
+        this.text(`It jumped over ${last.jumped.join(' and ')} in reading order:`, sx, ly, { size: 12, color: PZ.slate });
+        ly += 17;
+        parts.forEach((p, i) => { this.text(`• ${p} (${last.flips[i].delta > 0 ? '+1' : '−1'})`, sx + 6, ly, { size: 12, color: last.flips[i].delta > 0 ? PZ.greenDark : PZ.redDark }); ly += 17; });
+        ly -= 17;
+      }
+      ly += 21;
+      this.text(`Inversions ${last.invBefore} → ${last.invAfter}   (Δ = ${dStr}, an even number)`, sx, ly, { size: 12.5, weight: 'bold', color: PZ.indigo });
     }
 
-    ctx.restore();
-  }
-
-  /**
-   * Draws array boxes mapping array indices to board state
-   */
-  drawArrayRepresentation(tiles, px, py, size) {
-    const ctx = this.ctx;
-    const boxW = size / 9;
-    const gap = 2;
-
-    ctx.save();
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    
-    // Label
-    ctx.fillStyle = '#64748b'; // Slate 500
-    ctx.font = 'bold 9px monospace';
-    ctx.fillText("INTERNAL MEMORY ARRAY REPRESENTATION", px + size / 2, py - 12);
-
-    for (let i = 0; i < 9; i++) {
-      const tile = tiles[i];
-      const bx = px + i * boxW;
-      
-      // Box
-      ctx.fillStyle = tile === 0 ? '#cbd5e1' : '#4f46e5';
-      ctx.beginPath();
-      this.roundRect(bx + gap, py, boxW - gap * 2, 28, 4);
-      ctx.fill();
-
-      // Number text
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 12px Outfit, sans-serif';
-      ctx.fillText(tile === 0 ? '_' : tile, bx + boxW / 2, py + 14);
-
-      // Index label
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '9px monospace';
-      ctx.fillText(i, bx + boxW / 2, py + 40);
+    // History chart (bottom)
+    const top = Math.max(by + bs + 36, ly + 22), cx0 = 52, cx1 = w - 20, cy0 = top + 18, cy1 = h - 26;
+    if (cy1 - cy0 < 50) return;
+    this.text('Inversion count after every move — the colour (parity) never changes', 20, top + 4, { size: 12, weight: 'bold', color: PZ.slate });
+    const hist = this.parHistory.slice(-60);
+    const offset = this.parHistory.length - hist.length;
+    const ymax = Math.max(28, ...hist), ymin = 0;
+    const X = i => cx0 + (hist.length <= 1 ? 0 : i / Math.max(hist.length - 1, 20) * (cx1 - cx0));
+    const Y = v => cy1 - (v - ymin) / (ymax - ymin) * (cy1 - cy0);
+    ctx.strokeStyle = PZ.line; ctx.lineWidth = 1;
+    for (let v = 0; v <= ymax; v += 4) {
+      ctx.beginPath(); ctx.moveTo(cx0, Y(v)); ctx.lineTo(cx1, Y(v)); ctx.stroke();
+      this.text(String(v), cx0 - 8, Y(v) + 4, { size: 9.5, color: PZ.faint, align: 'right' });
     }
-    ctx.restore();
+    this.text('move', cx1, cy1 + 16, { size: 9.5, color: PZ.faint, align: 'right' });
+    if (offset) this.text(`(last 60 of ${this.parHistory.length - 1} moves)`, cx0, cy1 + 16, { size: 9.5, color: PZ.faint });
+    ctx.beginPath(); hist.forEach((v, i) => (i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v))));
+    ctx.strokeStyle = 'rgba(79,70,229,0.35)'; ctx.lineWidth = 1.5; ctx.stroke();
+    hist.forEach((v, i) => {
+      ctx.beginPath(); ctx.arc(X(i), Y(v), 3.6, 0, Math.PI * 2);
+      ctx.fillStyle = v % 2 === 0 ? PZ.green : PZ.red; ctx.fill();
+    });
+    this.pill('● even', cx1 - 64, top - 8, PZ.green, { size: 10 });
   }
 
-  /**
-   * Step 4: Division map
-   */
-  drawStateSpaceParityDivision(w, h) {
+  // --- Step 5: full BFS -------------------------------------------------------
+
+  drawBfs(w, h) {
     const ctx = this.ctx;
-    ctx.save();
+    const half = 181440;
+    const reached = this.bfsReached();
+    const done = this.bfs && this.bfsShown === this.bfs.layers.length - 1;
 
-    // Box Title
-    ctx.fillStyle = '#475569';
-    ctx.font = 'bold 13px Outfit, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText("Complete Permutations Division Scheme", w / 2, 20);
+    // 9! bar split by parity
+    const x0 = 30, x1 = w - 30, bw = x1 - x0, mid = x0 + bw / 2, by = 46, bh = 44;
+    this.text('All 9! = 362,880 arrangements, split by inversion parity', x0, by - 14, { size: 12, weight: 'bold', color: PZ.slate });
+    ctx.fillStyle = 'rgba(16,185,129,0.07)'; ctx.fillRect(x0, by, bw / 2, bh);
+    ctx.fillStyle = 'rgba(239,68,68,0.06)'; ctx.fillRect(mid, by, bw / 2, bh);
+    ctx.fillStyle = PZ.green; ctx.fillRect(x0, by, (bw / 2) * (reached / half), bh);
+    ctx.strokeStyle = PZ.line; ctx.lineWidth = 1; ctx.strokeRect(x0, by, bw, bh);
+    ctx.strokeStyle = PZ.slate; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(mid, by - 6); ctx.lineTo(mid, by + bh + 6); ctx.stroke();
+    this.text(`Even parity (like s₀): ${fmt(half)}`, x0 + bw / 4, by + bh + 18, { size: 11.5, weight: 'bold', color: PZ.greenDark, align: 'center' });
+    this.text(`Odd parity: ${fmt(half)}`, mid + bw / 4, by + bh + 18, { size: 11.5, weight: 'bold', color: PZ.redDark, align: 'center' });
+    this.text(reached ? `${fmt(reached)} reached` : 'not started', x0 + 10, by + bh / 2 + 1, { size: 13, weight: 'bold', color: reached > half * 0.25 ? '#fff' : PZ.greenDark, base: 'middle' });
+    this.text('0 reached — never', mid + bw / 4, by + bh / 2 + 1, { size: 12.5, weight: 'bold', color: PZ.redDark, align: 'center', base: 'middle' });
 
-    // Root block
-    const rootW = 210;
-    const rootH = 50;
-    const rx = (w - rootW) / 2;
-    const ry = 45;
+    // Histogram of new states per depth
+    const hx0 = 58, hx1 = w - 24, hy0 = by + bh + 58, hy1 = h - 34;
+    this.text('New states discovered at each BFS depth d (distance from s₀)', 20, hy0 - 12, { size: 12, weight: 'bold', color: PZ.slate });
+    const layers = this.bfs ? this.bfs.layers : new Array(31).fill(0);
+    const n = layers.length, maxV = 25000;
+    const colW = (hx1 - hx0) / n;
+    const Y = v => hy1 - v / maxV * (hy1 - hy0 - 10);
+    ctx.strokeStyle = PZ.line; ctx.lineWidth = 1;
+    for (let v = 0; v <= maxV; v += 5000) {
+      ctx.beginPath(); ctx.moveTo(hx0, Y(v)); ctx.lineTo(hx1, Y(v)); ctx.stroke();
+      this.text(v ? `${v / 1000}k` : '0', hx0 - 8, Y(v) + 4, { size: 9.5, color: PZ.faint, align: 'right' });
+    }
+    for (let d = 0; d < n; d++) {
+      const x = hx0 + d * colW + colW * 0.12, cwid = colW * 0.76;
+      if (this.bfs && d <= this.bfsShown) {
+        const v = layers[d];
+        ctx.fillStyle = d === this.bfsShown && !done ? PZ.amber : PZ.green;
+        const top = Y(v);
+        ctx.fillRect(x, Math.min(top, hy1 - 1.5), cwid, Math.max(1.5, hy1 - top));
+      }
+      if (d % 5 === 0 || d === n - 1) this.text(String(d), x + cwid / 2, hy1 + 14, { size: 9.5, color: PZ.faint, align: 'center' });
+    }
+    this.text('d', hx1, hy1 + 26, { size: 9.5, color: PZ.faint, align: 'right' });
 
-    ctx.fillStyle = '#0f172a'; // Slate 900
-    ctx.beginPath();
-    this.roundRect(rx, ry, rootW, rootH, 8);
-    ctx.fill();
-    
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 12px Outfit, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText("All Possible Configurations", w / 2, ry + 20);
-    ctx.font = 'bold 10px monospace';
-    ctx.fillText("9! = 362,880 arrangements", w / 2, ry + 36);
-
-    // Split branches
-    const by = ry + rootH;
-    const cy = by + 60;
-    const leftCX = w * 0.28;
-    const rightCX = w * 0.72;
-
-    ctx.strokeStyle = 'rgba(79, 70, 229, 0.2)';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(w / 2, by);
-    ctx.lineTo(w / 2, by + 20);
-    ctx.lineTo(leftCX, by + 20);
-    ctx.lineTo(leftCX, cy);
-    ctx.moveTo(w / 2, by + 20);
-    ctx.lineTo(rightCX, by + 20);
-    ctx.lineTo(rightCX, cy);
-    ctx.stroke();
-
-    // Two branches
-    const childW = 160;
-    const childH = 65;
-
-    // Class A (Reachable)
-    ctx.fillStyle = 'rgba(16, 185, 129, 0.08)';
-    ctx.beginPath();
-    this.roundRect(leftCX - childW / 2, cy, childW, childH, 8);
-    ctx.fill();
-    ctx.strokeStyle = '#10b981';
-    ctx.lineWidth = 1.5;
-    ctx.stroke();
-
-    ctx.fillStyle = '#065f46';
-    ctx.font = 'bold 11px Outfit, sans-serif';
-    ctx.fillText("Even Parity Group", leftCX, cy + 20);
-    ctx.font = 'bold 13px Outfit, sans-serif';
-    ctx.fillText("181,440 states", leftCX, cy + 38);
-    ctx.font = 'italic 9px sans-serif';
-    ctx.fillStyle = '#047857';
-    ctx.fillText("(Reachable from Initial State)", leftCX, cy + 52);
-
-    // Arrow to highlight
-    ctx.fillStyle = '#10b981';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillText("▲ Selected Initial State belongs here", leftCX, cy + childH + 20);
-
-    // Class B (Unreachable)
-    ctx.fillStyle = 'rgba(239, 68, 68, 0.04)';
-    ctx.beginPath();
-    this.roundRect(rightCX - childW / 2, cy, childW, childH, 8);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    ctx.fillStyle = '#991b1b';
-    ctx.font = 'bold 11px Outfit, sans-serif';
-    ctx.fillText("Odd Parity Group", rightCX, cy + 20);
-    ctx.font = 'bold 13px Outfit, sans-serif';
-    ctx.fillText("181,440 states", rightCX, cy + 38);
-    ctx.font = 'italic 9px sans-serif';
-    ctx.fillStyle = '#b91c1c';
-    ctx.fillText("(Unsolvable from Initial State)", rightCX, cy + 52);
-
-    ctx.restore();
+    if (this.bfsShown >= 0 && !done) {
+      this.text(`depth ${this.bfsShown}: +${fmt(layers[this.bfsShown])} new states`, hx1, hy0 + 8, { size: 12, weight: 'bold', color: PZ.amberDark, align: 'right' });
+    }
+    if (done) {
+      const bw2 = Math.min(360, (hx1 - hx0) * 0.5), bx2 = hx0 + 10, by2 = hy0 + 4;
+      ctx.fillStyle = 'rgba(255,255,255,0.94)'; ctx.beginPath(); this.roundRect(bx2, by2, bw2, 70, 10); ctx.fill();
+      ctx.strokeStyle = 'rgba(16,185,129,0.5)'; ctx.lineWidth = 1.5; ctx.stroke();
+      this.text(`Frontier empty after depth ${n - 1}`, bx2 + 14, by2 + 22, { size: 12, color: PZ.slate });
+      this.text(`Reached ${fmt(this.bfs.total)} = 9!/2 states ✓`, bx2 + 14, by2 + 46, { size: 16, weight: 'bold', color: PZ.greenDark });
+      this.text('odd-parity states reached: 0', bx2 + 14, by2 + 63, { size: 11, color: PZ.redDark });
+    }
+    if (this.bfsShown < 0) {
+      this.text('Press “Run full BFS” to explore every state reachable from s₀', (hx0 + hx1) / 2, (hy0 + hy1) / 2, { size: 14, weight: 'bold', color: PZ.faint, align: 'center' });
+    }
   }
 
-  /**
-   * Step 7: Render Search Tree
-   */
+  // --- Step 6: goal test ------------------------------------------------------
+
+  drawGoalTest(w, h) {
+    const s = Math.min(w * 0.3, h * 0.55);
+    const lx = w * 0.08, rx = w - w * 0.08 - s, y = (h - s) / 2 - 10;
+    const invI = Reachability.getInversions(this.initialTiles), invG = Reachability.getInversions(this.customGoalTiles);
+    const d = this.ensureBfs().dist[Reachability.rank(this.customGoalTiles)];
+    const ok = d >= 0;
+    this.drawPuzzleBoard(this.initialTiles, lx, y, s, 'Initial State s₀');
+    this.drawPuzzleBoard(this.customGoalTiles, rx, y, s, 'Goal', ok);
+    const lab = (inv, x) => this.pill(`${inv} inversions · ${inv % 2 ? 'odd' : 'even'}`, x + s / 2, y + s + 14, inv % 2 ? PZ.red : PZ.green, { align: 'center' });
+    lab(invI, lx); lab(invG, rx);
+
+    // Arrow between
+    const ctx = this.ctx, ax0 = lx + s + 18, ax1 = rx - 18, ay = y + s / 2;
+    ctx.strokeStyle = ok ? PZ.green : PZ.red; ctx.lineWidth = 2.5; ctx.setLineDash(ok ? [] : [7, 6]);
+    ctx.beginPath(); ctx.moveTo(ax0, ay); ctx.lineTo(ax1 - 8, ay); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle = ok ? PZ.green : PZ.red; ctx.beginPath(); ctx.moveTo(ax1, ay); ctx.lineTo(ax1 - 12, ay - 7); ctx.lineTo(ax1 - 12, ay + 7); ctx.fill();
+    const mx = (ax0 + ax1) / 2;
+    if (ok) {
+      this.text(`${d} moves`, mx, ay - 14, { size: 18, weight: 'bold', color: PZ.greenDark, align: 'center' });
+      this.text('shortest path (BFS)', mx, ay + 22, { size: 11, color: PZ.greenDark, align: 'center' });
+    } else {
+      this.text('✗ no path', mx, ay - 14, { size: 18, weight: 'bold', color: PZ.redDark, align: 'center' });
+      this.text('parity differs', mx, ay + 22, { size: 11, color: PZ.redDark, align: 'center' });
+    }
+  }
+
+  // --- Step 7: search tree ----------------------------------------------------
+
   drawSearchTreeExpansion(w, h) {
-    const ctx = this.ctx;
-    ctx.save();
-
-    ctx.fillStyle = '#475569';
-    ctx.font = 'bold 13px Outfit, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(`Search Tree Expansion (Depth: ${this.depthSelected})`, w / 2, 20);
-
+    this.text(`Search Tree Expansion (Depth: ${this.depthSelected})`, w / 2, 20, { size: 13, weight: 'bold', color: PZ.slate, align: 'center' });
     const { root } = Reachability.buildExpansionTree(this.initialState, this.depthSelected);
-
-    // Assign layout coordinates
-    const startX = w / 2;
-    const startY = 55;
-    const widthSpacing = w * 0.9;
-    this.assignTreeCoords(root, startX, startY, widthSpacing);
-
-    // Draw lines first
+    this.assignTreeCoords(root, w / 2, 55, w * 0.94, Math.min(95, (h - 90) / Math.max(1, this.depthSelected)));
     this.drawTreeLines(root);
-
-    // Draw nodes
     this.drawTreeNodes(root);
-
-    ctx.restore();
   }
 
-  assignTreeCoords(node, x, y, width) {
-    node.x = x;
-    node.y = y;
-    if (node.children && node.children.length > 0) {
-      const numChildren = node.children.length;
-      const childWidth = width / numChildren;
-      node.children.forEach((child, idx) => {
-        // Child X centers around parent
-        const cx = x - width / 2 + childWidth * (idx + 0.5);
-        const cy = y + 75;
-        this.assignTreeCoords(child, cx, cy, childWidth);
-      });
-    }
+  assignTreeCoords(node, x, y, width, dy) {
+    node.x = x; node.y = y;
+    const n = node.children.length;
+    node.children.forEach((c, i) => this.assignTreeCoords(c, x - width / 2 + (width / n) * (i + 0.5), y + dy, width / n, dy));
   }
 
   drawTreeLines(node) {
     const ctx = this.ctx;
     node.children.forEach(child => {
-      ctx.beginPath();
-      ctx.moveTo(node.x, node.y);
-      ctx.lineTo(child.x, child.y);
-      ctx.strokeStyle = child.isDuplicate ? 'rgba(245, 158, 11, 0.25)' : 'rgba(79, 70, 229, 0.25)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-
-      // Action label in the middle of line
-      const mx = (node.x + child.x) / 2;
-      const my = (node.y + child.y) / 2 - 2;
-      ctx.fillStyle = child.isDuplicate ? '#d97706' : '#4f46e5';
-      ctx.font = 'bold 8px monospace';
-      ctx.textAlign = 'center';
-      ctx.fillText(child.action, mx, my);
-
+      ctx.beginPath(); ctx.moveTo(node.x, node.y); ctx.lineTo(child.x, child.y);
+      ctx.strokeStyle = child.isDuplicate ? 'rgba(245,158,11,0.3)' : 'rgba(79,70,229,0.25)'; ctx.lineWidth = 1.5; ctx.stroke();
+      this.text(child.action, (node.x + child.x) / 2, (node.y + child.y) / 2 - 2, { size: 8, weight: 'bold', color: child.isDuplicate ? '#d97706' : PZ.indigo, align: 'center', family: 'monospace' });
       this.drawTreeLines(child);
     });
   }
 
   drawTreeNodes(node) {
-    const ctx = this.ctx;
-    const size = 26; // width/height of mini board
-
-    ctx.save();
-    
-    // Draw miniature board
-    const px = node.x - size / 2;
-    const py = node.y - size / 2;
-
-    ctx.fillStyle = '#ffffff';
-    ctx.beginPath();
-    this.roundRect(px, py, size, size, 4);
-    ctx.fill();
-
-    // Outline node
-    if (node.isDuplicate) {
-      ctx.strokeStyle = '#f59e0b'; // Amber for duplicate
-      ctx.lineWidth = 1.5;
-    } else if (node.depth === 0) {
-      ctx.strokeStyle = '#10b981'; // Green for root
-      ctx.lineWidth = 2;
-    } else {
-      ctx.strokeStyle = 'rgba(79, 70, 229, 0.4)';
-      ctx.lineWidth = 1;
-    }
-    ctx.stroke();
-
-    // Draw mini 3x3 tiles
-    const padding = 1.5;
-    const tileSize = (size - padding * 2) / 3;
-
+    const ctx = this.ctx, size = 28, px = node.x - size / 2, py = node.y - size / 2;
+    ctx.fillStyle = '#fff'; ctx.beginPath(); this.roundRect(px, py, size, size, 4); ctx.fill();
+    ctx.strokeStyle = node.isDuplicate ? PZ.amber : node.depth === 0 ? PZ.green : 'rgba(79,70,229,0.4)';
+    ctx.lineWidth = node.depth === 0 ? 2 : 1.3; ctx.stroke();
+    const pad = 1.5, ts = (size - pad * 2) / 3;
     for (let i = 0; i < 9; i++) {
-      const val = node.state.tiles[i];
-      const tx = i % 3;
-      const ty = Math.floor(i / 3);
-
-      const x = px + padding + tx * tileSize;
-      const y = py + padding + ty * tileSize;
-      const ts = tileSize - 0.5;
-
-      if (val !== 0) {
-        ctx.fillStyle = node.isDuplicate ? '#fef3c7' : '#e0e7ff';
-        ctx.fillRect(x, y, ts, ts);
-
-        ctx.fillStyle = node.isDuplicate ? '#b45309' : '#3730a3';
-        ctx.font = 'bold 6px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(val, x + ts / 2, y + ts / 2);
-      } else {
-        ctx.fillStyle = '#f1f5f9';
-        ctx.fillRect(x, y, ts, ts);
-      }
+      const v = node.state.tiles[i], x = px + pad + (i % 3) * ts, y = py + pad + Math.floor(i / 3) * ts;
+      ctx.fillStyle = v === 0 ? '#f1f5f9' : node.isDuplicate ? '#fef3c7' : PZ.indigoSoft;
+      ctx.fillRect(x, y, ts - 0.5, ts - 0.5);
+      if (v) this.text(String(v), x + ts / 2, y + ts / 2 + 0.5, { size: 6.5, weight: 'bold', color: node.isDuplicate ? PZ.amberDark : '#3730a3', align: 'center', base: 'middle', family: 'sans-serif' });
     }
-
-    // Label if duplicate
-    if (node.isDuplicate) {
-      ctx.fillStyle = '#d97706';
-      ctx.font = 'bold 6px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText("DUP", node.x, py + size + 8);
-    } else if (node.depth === 0) {
-      ctx.fillStyle = '#059669';
-      ctx.font = 'bold 6px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText("ROOT", node.x, py + size + 8);
-    }
-
-    ctx.restore();
-
-    node.children.forEach(child => this.drawTreeNodes(child));
+    if (node.isDuplicate) this.text('DUP', node.x, py + size + 9, { size: 7, weight: 'bold', color: '#d97706', align: 'center', family: 'sans-serif' });
+    else if (node.depth === 0) this.text('ROOT', node.x, py + size + 9, { size: 7, weight: 'bold', color: '#059669', align: 'center', family: 'sans-serif' });
+    node.children.forEach(c => this.drawTreeNodes(c));
   }
 
-  /**
-   * Step 8: Conceptual Graphic
-   */
-  drawConceptIllustration(w, h) {
+  // --- Step 8: answer ---------------------------------------------------------
+
+  drawSummary(w, h) {
     const ctx = this.ctx;
-    ctx.save();
-
-    ctx.fillStyle = '#475569';
-    ctx.font = 'bold 14px Outfit, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText("Core Conceptual Takeaway", w / 2, 22);
-
-    // Large illustration box
-    const boxW = w * 0.7;
-    const boxH = h * 0.65;
-    const bx = (w - boxW) / 2;
-    const by = (h - boxH) / 2 + 10;
-
-    // Draw main glass panel card
-    ctx.fillStyle = 'rgba(79, 70, 229, 0.02)';
-    ctx.beginPath();
-    this.roundRect(bx, by, boxW, boxH, 12);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(79, 70, 229, 0.1)';
-    ctx.stroke();
-
-    // Left and right visual representations
-    const cellW = boxW * 0.42;
-    const leftCX = bx + boxW * 0.05 + cellW / 2;
-    const rightCX = bx + boxW * 0.53 + cellW / 2;
-    const cellY = by + boxH * 0.15;
-    const cellH = boxH * 0.72;
-
-    // Draw imaginary box (all possible configurations)
-    ctx.fillStyle = '#f8fafc';
-    ctx.beginPath();
-    this.roundRect(bx + boxW * 0.05, cellY, cellW, cellH, 8);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(15,23,42,0.06)';
-    ctx.stroke();
-
-    // Draw reachable box (actual state space)
-    ctx.fillStyle = 'rgba(16, 185, 129, 0.03)';
-    ctx.beginPath();
-    this.roundRect(bx + boxW * 0.53, cellY, cellW, cellH, 8);
-    ctx.fill();
-    ctx.strokeStyle = 'rgba(16,185,129,0.2)';
-    ctx.stroke();
-
-    // Add labels
-    ctx.fillStyle = '#64748b';
-    ctx.font = 'bold 10px Outfit, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText("WHAT STUDENTS OFTEN IMAGINE", leftCX, cellY - 8);
-    ctx.fillStyle = '#10b981';
-    ctx.fillText("WHAT THE REAL STATE SPACE IS", rightCX, cellY - 8);
-
-    // Content text in left box
-    ctx.fillStyle = '#0f172a';
-    ctx.font = 'bold 12px Outfit, sans-serif';
-    ctx.fillText("Imagined Permutations Space", leftCX, cellY + 30);
-    ctx.font = '10px sans-serif';
-    ctx.fillStyle = '#475569';
-    ctx.fillText("Any board arrangement we think of.", leftCX, cellY + 50);
-    ctx.fillText("Includes all 362,880 combinations.", leftCX, cellY + 70);
-    ctx.fillStyle = '#ef4444';
-    ctx.font = 'bold 11px sans-serif';
-    ctx.fillText("Error: Contains unreachable states", leftCX, cellY + 110);
-
-    // Content text in right box
-    ctx.fillStyle = '#10b981';
-    ctx.font = 'bold 12px Outfit, sans-serif';
-    ctx.fillText("Reachable State Space (S_reachable)", rightCX, cellY + 30);
-    ctx.font = '10px sans-serif';
-    ctx.fillStyle = '#047857';
-    ctx.fillText("Only layouts obtainable from Initial State s0", rightCX, cellY + 50);
-    ctx.fillText("via sequential legal actions Up/Down/Left/Right.", rightCX, cellY + 70);
-    ctx.font = 'bold 12px Outfit, sans-serif';
-    ctx.fillText("Size: exactly 181,440 states", rightCX, cellY + 110);
-
-    ctx.restore();
+    this.text('How many states are reachable — and why', w / 2, 24, { size: 14, weight: 'bold', color: PZ.slate, align: 'center' });
+    const cards = [
+      { n: '1', t: 'Count the arrangements', b: ['9 × 8 × … × 1 = 9! = 362,880 ways to place 8 tiles + blank.'], c: PZ.indigo },
+      { n: '2', t: 'Find an invariant', b: ['Each move changes the inversion count by 0 (sideways)', 'or ±2 (vertical: the tile passes exactly 2 tiles).', '⇒ the parity of the inversion count never changes.'], c: PZ.amberDark },
+      { n: '3', t: 'Split 9! in half', b: ['Swapping two tiles flips parity: a one-to-one pairing', 'of even and odd arrangements ⇒ exactly half are even.'], c: PZ.slate },
+      { n: '4', t: 'Confirm by search', b: ['BFS from s₀ reaches every even arrangement', '(181,440 of them) and no odd one.'], c: PZ.greenDark }
+    ];
+    const x0 = 24, cwid = w - 48;
+    let y = 44;
+    const gap = 10, avail = h - y - 78 - gap * cards.length;
+    const ch = Math.max(52, Math.min(78, avail / cards.length));
+    cards.forEach(card => {
+      ctx.fillStyle = '#fff'; ctx.beginPath(); this.roundRect(x0, y, cwid, ch, 10); ctx.fill();
+      ctx.strokeStyle = PZ.line; ctx.lineWidth = 1.2; ctx.stroke();
+      ctx.fillStyle = card.c; ctx.beginPath(); ctx.arc(x0 + 26, y + ch / 2, 14, 0, Math.PI * 2); ctx.fill();
+      this.text(card.n, x0 + 26, y + ch / 2 + 1, { size: 14, weight: 'bold', color: '#fff', align: 'center', base: 'middle' });
+      this.text(card.t, x0 + 54, y + 22, { size: 13, weight: 'bold', color: card.c });
+      card.b.forEach((line, i) => this.text(line, x0 + 54, y + 40 + i * 15, { size: 11.5, color: PZ.slate }));
+      y += ch + gap;
+    });
+    // Result banner
+    ctx.fillStyle = 'rgba(16,185,129,0.1)'; ctx.beginPath(); this.roundRect(x0, y + 4, cwid, 56, 12); ctx.fill();
+    ctx.strokeStyle = PZ.green; ctx.lineWidth = 1.5; ctx.stroke();
+    this.text('Reachable from any initial state:  9!/2 = 181,440 states', w / 2, y + 38, { size: Math.min(19, w / 34), weight: 'bold', color: PZ.greenDark, align: 'center' });
   }
 
-  // Rounded rectangle helper
   roundRect(x, y, width, height, radius) {
     const ctx = this.ctx;
     ctx.moveTo(x + radius, y);
@@ -913,5 +775,4 @@ class PuzzleDemoUI {
   }
 }
 
-// Export UI to global window scope
 window.PuzzleDemoUI = PuzzleDemoUI;
