@@ -56,7 +56,7 @@
         </div>
         <h1>Knowledge &amp; Reasoning — Reading Notes</h1>
 
-        <p class="rp-lede">These notes follow the structured 3-pillar curriculum of the interactive <a href="knowledge.html">Knowledge &amp; Reasoning</a> lecture: <strong>Knowledge-Based Agents</strong> (Facts, Rules, Propositional Logic, and Forward Chaining), <strong>Probabilistic Reasoning</strong> (Conditional Probability, Bayes' Rule, and Bayesian Networks), and <strong>Temporal Reasoning</strong> (Hidden Markov Models, Filtering, and Viterbi Decoding). Every algorithm, formulation, and numerical result on this page matches the reference implementations in <a href="playground.html#view-knowledge">Playground</a> and <code>python_sandbox/</code>.</p>
+        <p class="rp-lede">These notes follow the structured 3-pillar curriculum of the interactive <a href="knowledge.html">Knowledge &amp; Reasoning</a> lecture: <strong>Knowledge-Based Agents</strong> (Facts, Rules, Propositional Logic, and Forward Chaining), <strong>Probabilistic Reasoning</strong> (Conditional Probability, Bayes' Rule, and Bayesian Networks), and <strong>Temporal Reasoning</strong> (Hidden Markov Models, Filtering, and Viterbi Decoding).</p>
 
         <div class="rp-citation">
           <i data-lucide="quote"></i>
@@ -273,7 +273,7 @@
             <li><strong>1. Filtering (<code>P(X<sub>t</sub> | e<sub>1:t</sub>)</code>):</strong> Tracks current state online as new data arrives. Time per step: <code>O(|S|<sup>2</sup>)</code>.</li>
             <li><strong>2. Prediction (<code>P(X<sub>t+k</sub> | e<sub>1:t</sub>)</code>):</strong> Projects belief <code>k</code> steps into the future using <code>f<sub>1:t+k</sub> = (T<sup>T</sup>)<sup>k</sup> f<sub>1:t</sub></code>. The belief distribution eventually converges to the stationary distribution of <code>T</code>.</li>
             <li><strong>3. Smoothing (<code>P(X<sub>k</sub> | e<sub>1:t</sub>)</code> for <code>k &lt; t</code>):</strong> Computes historical state estimates in hindsight by combining forward messages from the past with backward messages from the future (Forward-Backward algorithm).</li>
-            <li><strong>4. Most Likely Sequence (Viterbi Algorithm):</strong> Finds the single sequence of hidden states <code>x<sub>1:t</sub><sup>*</sup></code> that maximizes the joint probability <code>P(x<sub>1:t</sub> | e<sub>1:t</sub>)</code> using dynamic programming across the trellis:
+            <li><strong>4. Most Likely Sequence (Viterbi Algorithm):</strong> Finds the single sequence of hidden states <code>x<sub>1:t</sub><sup>*</sup></code> that maximizes the posterior probability <code>P(x<sub>1:t</sub> | e<sub>1:t</sub>)</code> (equivalently, the joint <code>P(x<sub>1:t</sub>, e<sub>1:t</sub>)</code>) using dynamic programming across the trellis:
               <div class="formula-box">
                 m<sub>t</sub>[j] = max<sub>i</sub> (m<sub>t-1</sub>[i] &middot; T<sub>i,j</sub>) &middot; P(e<sub>t</sub> | s<sub>j</sub>)
               </div>
@@ -483,7 +483,7 @@ Step 6: Pop PrescribeMedicationF
                 Transition T = [[0.70, 0.30], [0.30, 0.70]] &emsp; (P(R<sub>t</sub> | R<sub>t-1</sub>))<br>
                 Sensor O = [[0.90, 0.10], [0.20, 0.80]] &emsp; (P(U<sub>t</sub> | R<sub>t</sub>) for Umbrella, NoUmbrella)
               </div>
-              <p>If the guard observes an umbrella on Day 1 (<code>U<sub>1</sub> = true</code>) and Day 2 (<code>U<sub>2</sub> = true</code>), calculate the exact filtered belief distribution <code>P(Rain<sub>1</sub> | u<sub>1</sub>)</code> and <code>P(Rain<sub>2</sub> | u<sub>1}, u<sub>2</sub>)</code>.</p>
+              <p>If the guard observes an umbrella on Day 1 (<code>U<sub>1</sub> = true</code>) and Day 2 (<code>U<sub>2</sub> = true</code>), calculate the exact filtered belief distribution <code>P(Rain<sub>1</sub> | u<sub>1</sub>)</code> and <code>P(Rain<sub>2</sub> | u<sub>1</sub>, u<sub>2</sub>)</code>.</p>
             </div>
             <details class="rp-answer">
               <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
@@ -536,8 +536,9 @@ Step 6: Pop PrescribeMedicationF
                 <div class="rp-answer-part">
                   <span class="rp-answer-part-label">Viterbi Trellis Calculation</span>
                   <div class="rp-pseudocode"><pre>--- Time t = 1 (Observation U1 = true) ---
-m1[Rain]   = P(R0=Rain) &middot; P(u|Rain)   = 0.50 &times; 0.90 = 0.450
-m1[&not;Rain]  = P(R0=&not;Rain) &middot; P(u|&not;Rain) = 0.50 &times; 0.20 = 0.100
+P(R1=Rain) = 0.70 &times; 0.50 + 0.30 &times; 0.50 = 0.50   (prior pushed one step through T)
+m1[Rain]   = P(R1=Rain) &middot; P(u|Rain)   = 0.50 &times; 0.90 = 0.450
+m1[&not;Rain]  = P(R1=&not;Rain) &middot; P(u|&not;Rain) = 0.50 &times; 0.20 = 0.100
 
 --- Time t = 2 (Observation U2 = false: P(&not;u|Rain)=0.10, P(&not;u|&not;Rain)=0.80) ---
 For State Rain at t=2:
@@ -558,7 +559,7 @@ At t=2, max(m2[Rain]=0.03150, m2[&not;Rain]=0.10800) is m2[&not;Rain] (0.10800).
 - Backpointer from &not;Rain at t=2 points to: Rain at t=1.
 
 Optimal Most Likely Sequence: [Rain, &not;Rain]</pre></div>
-                  <p><strong>Result:</strong> The single most probable underlying weather history is <code>[Rain, &not;Rain]</code> with probability <code>0.1080</code>.</p>
+                  <p><strong>Result:</strong> The single most probable underlying weather history is <code>[Rain, &not;Rain]</code> with joint probability <code>P(x<sub>1:2</sub>, e<sub>1:2</sub>) = 0.1080</code>. Dividing by the evidence probability <code>P(u<sub>1</sub>, &not;u<sub>2</sub>) = 0.1985</code> gives the posterior <code>P(x<sub>1:2</sub> | e<sub>1:2</sub>) &asymp; 0.544</code> (54.4%).</p>
                 </div>
               </div>
             </details>

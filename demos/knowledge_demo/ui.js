@@ -33,7 +33,7 @@
     'A Knowledge-Based agent maintains an internal Knowledge Base (KB), tells it new percepts, and asks what action to take using crisp propositional logic syntax, semantics, models, and entailment.',
     'Restricting knowledge representation to Horn clauses enables linear-time O(N) data-driven Forward Chaining (PL-FC-Entails), deriving all entailed conclusions with sound mathematical guarantees.',
     'Real worlds are partially observable, noisy, and non-deterministic. Probabilities quantify continuous degrees of belief, and Bayes\' Rule inverts causal likelihoods into diagnostic probabilities.',
-    'Bayesian Networks are Directed Acyclic Graphs (DAGs) that compactly factor the full joint distribution, exposing conditional independence and Markov Blankets.',
+    'Bayesian Networks are Directed Acyclic Graphs (DAGs) that compactly factor the full joint distribution, exposing conditional independence and Markov Blankets. The Lab Code Trace steps through the Chapter 14 lab: network construction, exact enumeration, and rejection vs. likelihood-weighting sampling.',
     'Dynamic worlds evolve over time slices t. Hidden Markov Models combine transition dynamics and sensor models to maintain updated belief states (Filtering) and decode most likely paths (Viterbi).',
     'Comprehensive multi-dimensional comparison of logical theorem provers vs. static Bayesian networks vs. dynamic Hidden Markov Models across representation, complexity, and scale.',
     'Step through clean, standalone Python implementations line by line — Forward Chaining, Bayes\' Rule, Bayesian Network Enumeration, HMM Forward Filtering, and Viterbi Decoding.'
@@ -140,6 +140,13 @@
         notation: 'Exact: P(X | e) = α ∑ P(X, e, y) · Sampling: w = ∏ P(eⱼ | parents)',
         tip: 'Likelihood Weighting clamps evidence and weights samples by evidence probability, never discarding samples.',
         render: renderSamplingSimulation
+      },
+      {
+        key: 'bn_lab_trace', name: 'Lab Code Trace', codeInConcept: true,
+        def: 'Line-by-line trace of the Chapter 14 lab reference solution (aima/probability.py): BayesNode / BayesNet, chain-rule joint, enumeration_ask, explaining away, rejection sampling and likelihood weighting.',
+        notation: 'P(x₁…xₙ) = ∏ P(xᵢ | parents(Xᵢ)) · P(X | e) = α Σ_y P(X, e, y) · ŵ = ∏ P(eⱼ | parents(Eⱼ))',
+        tip: 'Pick a lab part in the illustration column, then step with Next / Run — the highlighted Python line is the one being executed.',
+        render: col => { if (window.BayesLabTrace) window.BayesLabTrace.render(col); }
       }
     ],
     hmm: [
@@ -219,6 +226,7 @@
   }
 
   function loadTopic(topicIdx, conceptIdx) {
+    if (window.BayesLabTrace) window.BayesLabTrace.stop();
     currentTopicIndex = topicIdx;
     currentConceptIndex = conceptIdx;
 
@@ -261,7 +269,7 @@
         `).join('')}
       </div>
 
-      <div class="sl-concept-card glass-panel" style="padding: 1.2rem; border-radius: 12px; background: #ffffff; border: 1px solid rgba(15,23,42,0.08); margin-bottom: 1rem;">
+      ${currentC.codeInConcept ? '<div class="kl-concept-code" id="kl-concept-code"></div>' : `      <div class="sl-concept-card glass-panel" style="padding: 1.2rem; border-radius: 12px; background: #ffffff; border: 1px solid rgba(15,23,42,0.08); margin-bottom: 1rem;">
         <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #4f46e5; font-weight: 700; margin-bottom: 0.4rem;">Formal Definition</div>
         <p style="font-size: 0.92rem; color: var(--text-primary); line-height: 1.55; margin-bottom: 1rem;">
           ${currentC.def}
@@ -276,7 +284,7 @@
           <i data-lucide="sparkles" style="color: #6d28d9; width: 1.25rem; height: 1.25rem; flex-shrink: 0; margin-top: 2px;"></i>
           <span style="font-size: 0.84rem; color: #5b21b6; line-height: 1.5;">${currentC.tip}</span>
         </div>
-      </div>
+      </div>`}
     `;
 
     col.querySelectorAll('.sl-concept-chip').forEach(btn => {
