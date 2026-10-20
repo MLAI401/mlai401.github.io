@@ -115,8 +115,9 @@
         key: 'bayes_rule_calc', name: 'Conditional Probability & Bayes\' Rule',
         def: 'Inverts conditioning to compute posterior P(Cause | Effect) from causal likelihood P(Effect | Cause), prior P(Cause), and marginal evidence P(Effect).',
         notation: 'P(Y | X) = [P(X | Y) P(Y)] / P(X) = α P(X | Y) P(Y)',
-        tip: 'Doctors know causal probabilities P(Symptom | Disease); Bayes\' rule converts them into diagnostic posteriors P(Disease | Symptom).',
-        render: renderBayesMedicalCalculator
+        tip: 'An agent\'s prior belief P(H) becomes a posterior belief P(H | E) as soon as evidence arrives. Switch between the three examples and drag the sliders to see how the prior, the true-positive rate and the false-positive rate shape the update.',
+        labInConcept: true,
+        render: col => { if (window.BayesUpdateLab) window.BayesUpdateLab.render(col); else renderBayesMedicalCalculator(col); }
       }
     ],
     bayesnet: [
@@ -285,6 +286,7 @@
           <span style="font-size: 0.84rem; color: #5b21b6; line-height: 1.5;">${currentC.tip}</span>
         </div>
       </div>`}
+      ${currentC.labInConcept ? '<div class="kl-concept-lab" id="kl-concept-lab"></div>' : ''}
     `;
 
     col.querySelectorAll('.sl-concept-chip').forEach(btn => {
