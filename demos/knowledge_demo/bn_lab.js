@@ -232,13 +232,21 @@
       const [cx, cy] = x.pos;
       const bar = vis && o.bar ? o.bar(x.v) : null;
       const badge = vis && o.badge ? o.badge(x.v) : null;
+      const changed = vis && o.changed ? o.changed(x.v) : false;
+      // The bar is a full-width rect scaled with a CSS transform, so it can
+      // animate from the previous value (o.prevBar) to the new one.
+      const from = o.prevBar ? o.prevBar(x.v) : null;
+      const bw = 2 * HW - 16, bx = cx - HW + 8, by = cy + HH - 6;
+      const mark = vis && o.mark ? o.mark(x.v) : null;
+      const scale = v => Math.max(0.004, Math.min(1, v));
       nodes += `
-        <g class="kbn-node ${vis ? '' : 'ghost'} ${o.cls(x.v)} ${sel === x.v && vis ? 'selected' : ''}" data-node="${x.v}" ${vis ? 'tabindex="0" role="button"' : ''} aria-label="${x.v}">
+        <g class="kbn-node ${vis ? '' : 'ghost'} ${o.cls(x.v)} ${sel === x.v && vis ? 'selected' : ''} ${changed ? 'changed' : ''}" data-node="${x.v}" ${vis ? 'tabindex="0" role="button"' : ''} aria-label="${x.v}">
           ${sel === x.v && vis ? `<rect class="kbn-ring" x="${cx - HW - 4}" y="${cy - HH - 4}" width="${2 * HW + 8}" height="${2 * HH + 8}" rx="12"/>` : ''}
           <rect class="kbn-box" x="${cx - HW}" y="${cy - HH}" width="${2 * HW}" height="${2 * HH}" rx="9"/>
           <text class="kbn-name" x="${cx}" y="${cy - 3}">${x.v} (${x.a})</text>
           <text class="kbn-sub" x="${cx}" y="${cy + 12}">${vis ? o.sub(x.v) : ''}</text>
-          ${bar != null && Number.isFinite(bar) ? `<rect class="kbn-bar-bg" x="${cx - HW + 8}" y="${cy + HH - 6}" width="${2 * HW - 16}" height="3" rx="1.5"/><rect class="kbn-bar" x="${cx - HW + 8}" y="${cy + HH - 6}" width="${Math.max(0.5, (2 * HW - 16) * bar)}" height="3" rx="1.5"/>` : ''}
+          ${bar != null && Number.isFinite(bar) ? `<rect class="kbn-bar-bg" x="${bx}" y="${by}" width="${bw}" height="3" rx="1.5"/><rect class="kbn-bar" x="${bx}" y="${by}" width="${bw}" height="3" rx="1.5" style="transform: scaleX(${scale(from != null && Number.isFinite(from) ? from : bar)})" data-to="${scale(bar)}"/>` : ''}
+          ${bar != null && mark != null && Number.isFinite(mark) ? `<line class="kbn-mark" x1="${bx + bw * Math.min(1, mark)}" x2="${bx + bw * Math.min(1, mark)}" y1="${by - 2.5}" y2="${by + 5.5}"/>` : ''}
           ${badge ? `<g class="kbn-badge ${badge === 'T' ? 't' : 'f'}"><circle cx="${cx + HW - 4}" cy="${cy - HH + 2}" r="9"/><text x="${cx + HW - 4}" y="${cy - HH + 5.5}">${badge}</text></g>` : ''}
         </g>`;
     });
@@ -598,14 +606,19 @@
         </div>
       </div>`;
     bindExTabs();
+    // A new query or new evidence is a new inference problem: results stay
+    // hidden until the student steps through enumeration again.
+    const restart = () => { s.steps = 0; if (s.view === 'enum') s.view = 'chart'; s.lastBar = null; s.lastSub = null; };
     ctrlHost.querySelector('#kbn-query').addEventListener('change', e => {
       s.query = e.target.value;
       delete s.evidence[s.query];
+      restart();
       draw();
     });
     ctrlHost.querySelectorAll('[data-ev]').forEach(b => b.addEventListener('click', () => {
       const v = b.dataset.ev, o = b.dataset.val;
       if (o === '?') delete s.evidence[v]; else s.evidence[v] = o === 'T';
+      restart();
       draw();
     }));
     ctrlHost.querySelector('#kbn-reset').addEventListener('click', () => {
@@ -653,14 +666,45 @@
 
     document.getElementById('kbn-title').textContent = `${n.name} · ${condQ(n, s)}`;
 
+    // What each step reveals on the graph:
+    //   0      roles only — no probabilities yet ("?")
+    //   1–2    query / hidden / irrelevant roles are labelled
+    //   3      every node shows its CPT factor; all edges light up
+    //   4, 5   query fixed to T then F; its node shows the running sum
+    //   6      query node shows its posterior (bar animates from the prior)
+    //   7      every unobserved node shows prior → posterior
+    const showPost = v => latest >= 7 || (latest >= 6 && v === s.query);
+    const priorOf = v => prob(n, v, {});
+    const postOf = v => prob(n, v, s.evidence);
+    const postKnown = latest >= 6;
+
     const shift = (post - prior) * 100;
     document.getElementById('kbn-summary').innerHTML = `
       <div class="kbu-belief kbn-belief">
         <div class="kbu-belief-box prior"><span>Prior · no evidence</span><b>${pct(prior)}</b><small>P(${lit(Q, true)})</small></div>
         <div class="kbu-belief-arrow"><span>observe ${evStr(n, s.evidence) || 'nothing'}</span><i data-lucide="arrow-right"></i>
-          <small class="${shift >= 0 ? 'up' : 'down'}">${Number.isFinite(shift) ? (shift >= 0 ? '+' : '−') + Math.abs(shift).toFixed(1) + ' pts' : '—'}</small></div>
-        <div class="kbu-belief-box post"><span>Posterior</span><b>${pct(post)}</b><small>${condQ(n, s).replace('P(' + Q.a, 'P(' + lit(Q, true))}</small></div>
+          <small class="${postKnown ? (shift >= 0 ? 'up' : 'down') : ''}">${postKnown && Number.isFinite(shift) ? (shift >= 0 ? '+' : '−') + Math.abs(shift).toFixed(1) + ' pts' : '? pts'}</small></div>
+        <div class="kbu-belief-box post ${postKnown ? '' : 'pending'}"><span>Posterior</span><b>${postKnown ? pct(post) : '?'}</b><small>${postKnown ? condQ(n, s).replace('P(' + Q.a, 'P(' + lit(Q, true)) : 'revealed at step 6'}</small></div>
       </div>`;
+
+    const sub = v => {
+      const x = n.byName[v];
+      if (latest === 3) return factorSym(n, s, x);
+      if (r[v] === 'evidence') return `observed = ${tf(s.evidence[v])}`;
+      if (showPost(v)) return latest >= 7 ? `${f4(priorOf(v))} → ${f4(postOf(v))}` : `P(${lit(x, true)} | obs) = ${f4(postOf(v))}`;
+      if (latest === 0) return v === s.query ? 'query · P = ?' : 'P = ?';
+      if (v === s.query) {
+        if (latest === 4) return `Σ = ${fp(res.en.sums.T)}`;
+        if (latest === 5) return `Σ = ${fp(res.en.sums.F)}`;
+        return 'query · P = ?';
+      }
+      return r[v] === 'irrelevant' ? 'irrelevant · Σ = 1' : 'hidden · Σ over T, F';
+    };
+    const subs = {};
+    n.vars.forEach(x => { subs[x.v] = sub(x.v); });
+    const stepChanged = s.lastStep !== latest;
+    const prevSub = s.lastSub || {};
+    const prevBar = s.lastBar || {};
 
     const dagHost = document.getElementById('kbn-dag');
     const allEdges = latest === 3;
@@ -669,11 +713,21 @@
       selected: s.view === 'cpt' ? s.selected : null,
       visible: () => true,
       cls: v => r[v],
-      sub: v => (r[v] === 'evidence' ? `observed = ${tf(s.evidence[v])}` : `P(${n.byName[v].a.toLowerCase()} | obs) = ${f4(prob(n, v, s.evidence))}`),
-      bar: v => (r[v] === 'evidence' ? null : prob(n, v, s.evidence)),
+      sub: v => subs[v],
+      bar: v => (r[v] !== 'evidence' && showPost(v) && latest !== 3 ? postOf(v) : null),
+      prevBar: v => (v in prevBar ? prevBar[v] : priorOf(v)),
+      mark: v => (latest >= 6 ? priorOf(v) : null),
+      changed: v => stepChanged && latest > 0 && prevSub[v] !== subs[v] && (latest === 3 || r[v] !== 'evidence'),
       badge: v => (r[v] === 'evidence' ? tf(s.evidence[v]) : v === s.query ? qBadge : null),
-      edge: (p, c) => (allEdges || (rel.has(p) && rel.has(c)) ? 'hi' : 'dim')
+      edge: (p, c) => (allEdges || (latest >= 1 && rel.has(p) && rel.has(c)) ? 'hi' : latest >= 1 ? 'dim' : '')
     });
+    // Animate the bars from their previous value to the new one
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      dagHost.querySelectorAll('.kbn-bar[data-to]').forEach(b => { b.style.transform = `scaleX(${b.dataset.to})`; });
+    }));
+    const nb = {};
+    n.vars.forEach(x => { if (r[x.v] !== 'evidence' && showPost(x.v) && latest !== 3) nb[x.v] = postOf(x.v); });
+    s.lastBar = nb; s.lastSub = subs; s.lastStep = latest;
     bindDag(dagHost, v => { s.selected = v; s.view = 'cpt'; refreshInfer(false); icons(); });
 
     // View tabs
@@ -699,14 +753,19 @@
             <span class="kbn-pp-name">${x.v}${x.v === s.query ? ' <em>query</em>' : ''}</span>
             <div class="kbn-pp-bars">
               <div class="kbn-pp-row"><span class="kbu-bar-track"><span class="kbu-bar-fill prior" style="width:${Math.max(0.4, p0 * 100)}%"></span></span><b>${pct(p0)}</b></div>
-              <div class="kbn-pp-row"><span class="kbu-bar-track"><span class="kbu-bar-fill post" style="width:${Math.max(0.4, (p1 || 0) * 100)}%"></span></span><b class="post">${pct(p1)}</b></div>
+              <div class="kbn-pp-row">${showPost(x.v)
+                ? `<span class="kbu-bar-track"><span class="kbu-bar-fill post" style="width:${Math.max(0.4, (p1 || 0) * 100)}%"></span></span><b class="post">${pct(p1)}</b>`
+                : '<span class="kbu-bar-track kbn-pending-track"></span><b class="post">?</b>'}</div>
             </div>
           </div>`;
       }).join('');
       panel.innerHTML = `
         <div class="kbn-pp-legend"><span><i class="lg prior"></i>prior P(X = T)</span><span><i class="lg post"></i>posterior P(X = T | ${evStr(n, s.evidence) || '∅'})</span></div>
         <div class="kbn-pp-list kbn-scroll">${rows}</div>
-        <div class="kbu-panel-foot">Every unobserved variable is updated, not just the query — evidence propagates through the network in both directions (causal and diagnostic).</div>`;
+        <div class="kbu-panel-foot">${latest >= 7
+          ? 'Every unobserved variable is updated, not just the query — evidence propagates through the network in both directions (causal and diagnostic).'
+          : latest >= 6 ? 'The query’s posterior is known; step 7 reveals how the evidence changed every other unobserved variable.'
+          : 'Posteriors appear as you step through enumeration: the query at step 6, every other variable at step 7.'}</div>`;
     } else if (s.view === 'cpt') {
       if (!keepEditor) {
         panel.innerHTML = `<div class="kbn-cpt-in">${cptEditor(n, s.selected)}</div>`;
