@@ -22,7 +22,7 @@
     { id: 'logic', title: 'Knowledge-Based Agents & Propositional Logic', short: '1 · Logic Agents' },
     { id: 'chaining', title: 'Logical Inference: Forward Chaining', short: '2 · Forward Chaining' },
     { id: 'uncertainty', title: 'Quantifying Uncertainty & Bayes\' Rule', short: '3 · Uncertainty & Bayes' },
-    { id: 'bayesnet', title: 'Bayesian Networks & Independence', short: '4 · Bayesian Networks' },
+    { id: 'bayesnet', title: 'Bayesian Networks & Inference', short: '4 · Bayesian Networks' },
     { id: 'hmm', title: 'Temporal Reasoning & Hidden Markov Models', short: '5 · Temporal HMMs' },
     { id: 'evaluation', title: 'Evaluating Knowledge & Reasoning Systems', short: '6 · Evaluation' },
     { id: 'code', title: 'Code Trace: Logic, Bayes & HMM', short: '7 · Code Trace' }
@@ -33,7 +33,7 @@
     'A Knowledge-Based agent maintains an internal Knowledge Base (KB), tells it new percepts, and asks what action to take using crisp propositional logic syntax, semantics, models, and entailment.',
     'Restricting knowledge representation to Horn clauses enables linear-time O(N) data-driven Forward Chaining (PL-FC-Entails), deriving all entailed conclusions with sound mathematical guarantees.',
     'Real worlds are partially observable, noisy, and non-deterministic. Probabilities quantify continuous degrees of belief, and Bayes\' Rule inverts causal likelihoods into diagnostic probabilities.',
-    'Bayesian Networks are Directed Acyclic Graphs (DAGs) that compactly factor the full joint distribution, exposing conditional independence and Markov Blankets. The Lab Code Trace steps through the Chapter 14 lab: network construction, exact enumeration, and rejection vs. likelihood-weighting sampling.',
+    'Bayesian Networks are Directed Acyclic Graphs (DAGs) whose CPTs compactly factor the full joint distribution. Build the AIMA networks, edit CPTs, and watch exact inference by enumeration update beliefs from evidence.',
     'Dynamic worlds evolve over time slices t. Hidden Markov Models combine transition dynamics and sensor models to maintain updated belief states (Filtering) and decode most likely paths (Viterbi).',
     'Comprehensive multi-dimensional comparison of logical theorem provers vs. static Bayesian networks vs. dynamic Hidden Markov Models across representation, complexity, and scale.',
     'Step through clean, standalone Python implementations line by line — Forward Chaining, Bayes\' Rule, Bayesian Network Enumeration, HMM Forward Filtering, and Viterbi Decoding.'
@@ -128,11 +128,18 @@
     ],
     bayesnet: [
       {
-        key: 'bn_syntax', name: 'Bayesian Network DAG & CPTs',
-        def: 'A Directed Acyclic Graph (DAG) where nodes represent random variables and directed edges represent direct probabilistic influence.',
-        notation: 'DAG G = (V, E) · Joint: P(x₁…xₙ) = ∏ P(xᵢ | Parents(Xᵢ))',
-        tip: 'A Bayesian Network is a compact factored representation of the full joint distribution.',
-        render: renderBurglarAlarmDAG
+        key: 'bn_construct', name: 'Network Construction', labInConcept: true,
+        def: 'Build a Bayesian Network node by node: directed edges from parents to children and one CPT per node.',
+        notation: 'P(x₁…xₙ) = ∏ P(xᵢ | Parents(Xᵢ))',
+        tip: 'Each node is conditionally independent of its non-descendants given its parents.',
+        render: col => { if (window.BNLab) window.BNLab.renderConstruction(col); }
+      },
+      {
+        key: 'bn_inference', name: 'Inference & Graph Exploration', labInConcept: true,
+        def: 'Query a Bayesian Network with observed evidence using exact inference by enumeration.',
+        notation: 'P(X | e) = α Σ_y P(X, e, y)',
+        tip: 'Set evidence, step through ENUMERATION-ASK, and click nodes to inspect or edit their CPTs.',
+        render: col => { if (window.BNLab) window.BNLab.renderInference(col); }
       },
       {
         key: 'markov_blanket', name: 'Markov Blanket & Independence',
@@ -551,30 +558,6 @@
   }
 
   // --- Topic 4: Bayesian Networks ---
-  function renderBurglarAlarmDAG(container) {
-    container.innerHTML = `
-      <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column;">
-        <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Burglar Alarm Network (AIMA Fig 13.2)</h3>
-        <div style="flex: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center;">
-          <div style="display: flex; gap: 3rem;">
-            <div style="padding: 6px 12px; background: #4f46e5; color: #fff; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Burglary (B)</div>
-            <div style="padding: 6px 12px; background: #4f46e5; color: #fff; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Earthquake (E)</div>
-          </div>
-          <div style="font-size: 1rem; color: #94a3b8;">↓ &emsp; ↓</div>
-          <div style="padding: 6px 16px; background: #0284c7; color: #fff; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Alarm (A)</div>
-          <div style="font-size: 1rem; color: #94a3b8;">↙ &emsp; ↘</div>
-          <div style="display: flex; gap: 3rem;">
-            <div style="padding: 6px 12px; background: #10b981; color: #fff; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">JohnCalls (J)</div>
-            <div style="padding: 6px 12px; background: #10b981; color: #fff; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">MaryCalls (M)</div>
-          </div>
-        </div>
-        <div style="font-size: 0.72rem; color: #64748b; text-align: center; margin-top: 0.4rem;">
-          P(B,E,A,J,M) = P(B)P(E)P(A|B,E)P(J|A)P(M|A) — 10 numbers instead of 31!
-        </div>
-      </div>
-    `;
-  }
-
   function renderMarkovBlanketInspector(container) {
     container.innerHTML = `
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
