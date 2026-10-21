@@ -15,7 +15,7 @@
   <meta property="og:type" content="website">
   
   <!-- Style Sheet -->
-  <link rel="stylesheet" href="style.css?v=25">
+  <link rel="stylesheet" href="style.css?v=27">
 </head>
 <body>
   
@@ -1171,6 +1171,9 @@
           <button class="search-tab csp-subtab-btn" data-subtab="sudoku">
             <i data-lucide="grid-3x3"></i> Sudoku
           </button>
+          <button class="search-tab csp-subtab-btn" data-subtab="btcompare">
+            <i data-lucide="git-compare"></i> Backtracking Comparison
+          </button>
         </div>
 
         <!-- Sub-tab panes — rendered by demos/csp_demo/csp_lab.js -->
@@ -1178,6 +1181,7 @@
         <div class="csp-subtab-pane" id="csp-pane-schedule"></div>
         <div class="csp-subtab-pane" id="csp-pane-queens"></div>
         <div class="csp-subtab-pane" id="csp-pane-sudoku"></div>
+        <div class="csp-subtab-pane" id="csp-pane-btcompare"></div>
 
       </div>
 
@@ -1618,7 +1622,8 @@
   <!-- Constraint Satisfaction (Topic 04): engine → renderers → lab -->
   <script src="demos/csp_demo/csp_engine.js?v=11"></script>
   <script src="demos/csp_demo/csp_render.js?v=2"></script>
-  <script src="demos/csp_demo/csp_lab.js?v=7"></script>
+  <script src="demos/csp_demo/csp_bt_compare.js?v=4"></script>
+  <script src="demos/csp_demo/csp_lab.js?v=8"></script>
 
   <!-- Knowledge & Reasoning (Topic 05): logic engine → bayes engine → lab -->
   <script src="demos/knowledge_demo/logic_engine.js?v=2"></script>

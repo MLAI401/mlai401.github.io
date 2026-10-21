@@ -10,6 +10,8 @@
  *                               instructions/csp.md; solve, optimise, edit
  *   3. N-Queens Min-Conflicts — local search with conflict history
  *   4. Sudoku (AC-3 + MAC)    — propagation vs. search on real puzzles
+ *   5. Backtracking Comparison — BT vs BT+FC vs BT+AC-3 side by side
+ *                               (rendered by csp_bt_compare.js)
  */
 
 (function () {
@@ -58,7 +60,8 @@
 
     render() {
       document.querySelectorAll('.csp-subtab-pane').forEach(p => p.classList.toggle('active', p.id === 'csp-pane-' + this.active));
-      const fn = { map: this.renderMap, schedule: this.renderSchedule, queens: this.renderQueens, sudoku: this.renderSudoku }[this.active];
+      const fn = { map: this.renderMap, schedule: this.renderSchedule, queens: this.renderQueens, sudoku: this.renderSudoku,
+        btcompare: () => { if (window.CSPBTCompare) window.CSPBTCompare.render(this.$('csp-pane-btcompare')); } }[this.active];
       fn.call(this);
       this.icons();
     }
