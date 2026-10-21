@@ -34,7 +34,7 @@
     'Restricting knowledge representation to Horn clauses enables linear-time O(N) data-driven Forward Chaining (PL-FC-Entails), deriving all entailed conclusions with sound mathematical guarantees.',
     'Real worlds are partially observable, noisy, and non-deterministic. Probabilities quantify continuous degrees of belief, and Bayes\' Rule inverts causal likelihoods into diagnostic probabilities.',
     'Bayesian Networks are Directed Acyclic Graphs (DAGs) whose CPTs compactly factor the full joint distribution. Build the AIMA networks, edit CPTs, and watch exact inference by enumeration update beliefs from evidence.',
-    'Dynamic worlds evolve over time slices t. Hidden Markov Models combine transition dynamics and sensor models to maintain updated belief states (Filtering) and decode most likely paths (Viterbi).',
+    'Dynamic worlds evolve over time slices t. Hidden Markov Models combine a transition model and a sensor model; build one, filter beliefs day by day, and decode the most likely state sequence with Viterbi.',
     'Comprehensive multi-dimensional comparison of logical theorem provers vs. static Bayesian networks vs. dynamic Hidden Markov Models across representation, complexity, and scale.',
     'Step through clean, standalone Python implementations line by line — Forward Chaining, Bayes\' Rule, Bayesian Network Enumeration, HMM Forward Filtering, and Viterbi Decoding.'
   ];
@@ -165,18 +165,25 @@
     ],
     hmm: [
       {
-        key: 'hmm_filtering', name: 'Hidden Markov Models & Forward Filtering',
-        def: 'Modeling states changing across time slices t with the First-Order Markov property. Filtering computes current belief P(Xₜ | e₁:ₜ) via recursive Predict-Update steps.',
-        notation: 'Predict: P(Xₜ | e₁:ₜ₋₁) = ∑ P(Xₜ | xₜ₋₁)P(xₜ₋₁ | e₁:ₜ₋₁) · Update: P(Xₜ | e₁:ₜ) = α P(eₜ | Xₜ)P(Xₜ | e₁:ₜ₋₁)',
-        tip: 'The Forward Algorithm computes the exact belief state online in O(|S|²) time per step.',
-        render: renderHMMFilteringStudio
+        key: 'hmm_construct', name: 'HMM Construction', labInConcept: true,
+        def: 'Unroll a Hidden Markov Model slice by slice: prior, transition model and sensor model.',
+        notation: 'P(X₀:ₜ, E₁:ₜ) = P(X₀) ∏ P(Xᵢ | Xᵢ₋₁) P(Eᵢ | Xᵢ)',
+        tip: 'Markov, sensor-Markov and stationarity assumptions keep the model to a handful of numbers.',
+        render: col => { if (window.HMMLab) window.HMMLab.renderConstruction(col); }
       },
       {
-        key: 'viterbi_decoding', name: 'Most Likely Sequence & Viterbi Decoding',
-        def: 'Finding the single overall hidden state path x*₁:ₜ that maximizes joint probability P(x₁:ₜ | e₁:ₜ) using dynamic programming across the trellis.',
-        notation: 'mₜ[j] = maxᵢ (mₜ₋₁[i] · Tᵢ,ⱼ) · P(eₜ | sⱼ) · Backtrack from argmax m_T[s]',
-        tip: 'Viterbi is to sequence decoding what dynamic programming shortest-path is to graphs.',
-        render: renderViterbiTrellisStudio
+        key: 'hmm_filtering', name: 'Filtering & Prediction', labInConcept: true,
+        def: 'The forward algorithm: predict with the transition model, update with the sensor model, normalize.',
+        notation: 'f₁:ₜ = α P(eₜ | Xₜ) Σ P(Xₜ | xₜ₋₁) f₁:ₜ₋₁(xₜ₋₁)',
+        tip: 'Step through each day; beliefs appear on the unrolled network as they are computed.',
+        render: col => { if (window.HMMLab) window.HMMLab.renderFiltering(col); }
+      },
+      {
+        key: 'viterbi_decoding', name: 'Viterbi: Most Likely Sequence', labInConcept: true,
+        def: 'Dynamic programming over the trellis to find argmax P(x₁:ₜ | e₁:ₜ).',
+        notation: 'mₜ(xₜ) = P(eₜ | xₜ) max P(xₜ | xₜ₋₁) mₜ₋₁(xₜ₋₁) · then backtrack',
+        tip: 'Keep only the best way into each state, then follow back-pointers from the best final state.',
+        render: col => { if (window.HMMLab) window.HMMLab.renderViterbi(col); }
       }
     ],
     evaluation: [
@@ -592,111 +599,6 @@
   }
 
   // --- Topic 5: Temporal Reasoning & Hidden Markov Models ---
-  function renderHMMFilteringStudio(container) {
-    const hmm = H ? H.createUmbrellaWorld() : null;
-    const obsSeq = ['Umbrella', 'Umbrella', 'NoUmbrella', 'Umbrella'];
-    let currentStep = 2; // Day 2 by default
-
-    function renderView() {
-      const history = hmm ? hmm.filter(obsSeq.slice(0, currentStep)) : [];
-      const latest = history[history.length - 1] || { belief: [0.5, 0.5], predicted: [0.5, 0.5] };
-      const rainPct = (latest.belief[0] * 100).toFixed(1);
-      const noRainPct = (latest.belief[1] * 100).toFixed(1);
-
-      container.innerHTML = `
-        <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
-          <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Umbrella World Forward Filtering</h3>
-            <span style="font-size: 0.75rem; font-weight: 600; color: #4f46e5;">Day ${currentStep} of ${obsSeq.length}</span>
-          </div>
-
-          <!-- Time Step Slider / Badges -->
-          <div style="display: flex; gap: 0.4rem; justify-content: center; margin: 0.5rem 0;">
-            <button class="hmm-day-btn" data-day="0" style="padding: 4px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; cursor: pointer; border: 1px solid ${currentStep === 0 ? '#4f46e5' : 'rgba(15,23,42,0.1)'}; background: ${currentStep === 0 ? '#6366f1' : '#fff'}; color: ${currentStep === 0 ? '#fff' : '#334155'};">Day 0 (Prior)</button>
-            ${obsSeq.map((obs, idx) => `
-              <button class="hmm-day-btn" data-day="${idx + 1}" style="padding: 4px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 600; cursor: pointer; border: 1px solid ${currentStep === idx + 1 ? '#4f46e5' : 'rgba(15,23,42,0.1)'}; background: ${currentStep === idx + 1 ? '#6366f1' : '#fff'}; color: ${currentStep === idx + 1 ? '#fff' : '#334155'};">
-                Day ${idx + 1} (${obs === 'Umbrella' ? '☂️' : '☀️'})
-              </button>
-            `).join('')}
-          </div>
-
-          <!-- Belief State Bar -->
-          <div class="glass-panel" style="padding: 0.9rem; border-radius: 10px; background: #ffffff;">
-            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.4rem;">
-              <span style="color: #0284c7;">P(Rain | evidence) = ${rainPct}%</span>
-              <span style="color: #f59e0b;">P(NoRain) = ${noRainPct}%</span>
-            </div>
-            <div style="height: 14px; background: #fef3c7; border-radius: 999px; overflow: hidden; display: flex;">
-              <div style="width: ${rainPct}%; height: 100%; background: #0284c7; transition: width 0.3s;"></div>
-              <div style="width: ${noRainPct}%; height: 100%; background: #f59e0b; transition: width 0.3s;"></div>
-            </div>
-          </div>
-
-          <!-- Filter Equations Breakdown -->
-          <div style="font-family: monospace; font-size: 0.72rem; background: rgba(15,23,42,0.03); padding: 0.6rem; border-radius: 6px; color: #334155; line-height: 1.5;">
-            <div>1. Predict: P(Rₜ|e₁:ₜ₋₁) = Tᵀ · fₜ₋₁ = &lang;${(latest.predicted[0]*100).toFixed(1)}%, ${(latest.predicted[1]*100).toFixed(1)}%&rang;</div>
-            <div>2. Update: fₜ = α · Oₜ · Predict = &lang;<strong>${rainPct}%</strong>, <strong>${noRainPct}%</strong>&rang;</div>
-          </div>
-        </div>
-      `;
-
-      container.querySelectorAll('.hmm-day-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          currentStep = parseInt(btn.dataset.day, 10);
-          renderView();
-        });
-      });
-    }
-
-    renderView();
-  }
-
-  function renderViterbiTrellisStudio(container) {
-    const hmm = H ? H.createUmbrellaWorld() : null;
-    const obsSeq = ['Umbrella', 'Umbrella', 'NoUmbrella'];
-    const vResult = hmm ? hmm.viterbi(obsSeq) : { trellis: [[0.45, 0.10], [0.315, 0.045], [0.0315, 0.108]], optimalPath: ['Rain', 'Rain', 'NoRain'] };
-
-    container.innerHTML = `
-      <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-          <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Viterbi Dynamic Programming Trellis</h3>
-          <span style="font-size: 0.75rem; color: #059669; font-weight: 700;">Path: [${vResult.optimalPath.join(' → ')}]</span>
-        </div>
-
-        <div style="overflow-x: auto; background: #ffffff; border-radius: 8px; border: 1px solid rgba(15,23,42,0.08); padding: 0.5rem;">
-          <table style="width: 100%; font-size: 0.74rem; text-align: center; border-collapse: collapse;">
-            <thead>
-              <tr style="color: #64748b; border-bottom: 1px solid rgba(15,23,42,0.1);">
-                <th style="padding: 4px;">State</th>
-                <th>Day 1 (☂️)</th>
-                <th>Day 2 (☂️)</th>
-                <th>Day 3 (☀️)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style="border-bottom: 1px solid rgba(15,23,42,0.05);">
-                <td style="font-weight: 700; color: #0284c7; padding: 6px;">Rain</td>
-                <td style="background: rgba(16,185,129,0.15); font-weight:700; color:#065f46;">0.450</td>
-                <td style="background: rgba(16,185,129,0.15); font-weight:700; color:#065f46;">0.283</td>
-                <td>0.028</td>
-              </tr>
-              <tr>
-                <td style="font-weight: 700; color: #f59e0b; padding: 6px;">NoRain</td>
-                <td>0.100</td>
-                <td>0.027</td>
-                <td style="background: rgba(16,185,129,0.15); font-weight:700; color:#065f46;">0.085</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div style="font-size: 0.74rem; color: #64748b; background: rgba(99,102,241,0.08); padding: 0.5rem; border-radius: 6px;">
-          <strong>Backtrack:</strong> Highlights maximum probability state at t=3 (NoRain) and backtracks via optimal predecessors yielding <code>[Rain, Rain, NoRain]</code>.
-        </div>
-      </div>
-    `;
-  }
-
   // --- Topic 6: Evaluation Matrix ---
   function renderEvaluationMatrix(container) {
     container.innerHTML = `

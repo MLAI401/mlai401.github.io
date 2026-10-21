@@ -1,0 +1,49 @@
+
+/* ---- Topic 05 · Temporal HMMs · "HMM Construction", "Filtering & Prediction"
+   and "Viterbi" concepts (demos/knowledge_demo/hmm_lab.js). Reuses the BN
+   lab's .kbn-* nodes, edges, CPT editor, evidence segments and step lists;
+   .khm-* adds the time-slice layout, trellis path and sequence summary. ---- */
+.khm-dag { width: 100%; max-width: 500px; max-height: 210px; display: block; margin: 0 auto; }
+.khm-row { font: 700 9px 'Outfit', sans-serif; fill: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; }
+.khm-col { font: 600 9.5px 'JetBrains Mono', monospace; fill: #94a3b8; text-anchor: middle; }
+.kbn-edge.khm-faint { stroke: #e2e8f0; stroke-width: 1.2; }
+.kbn-edge.path { stroke: #10b981; stroke-width: 3.4; }
+.kbn-node.onpath .kbn-box { fill: #ecfdf5; stroke: #10b981; stroke-width: 2.6; }
+.kbn-node.onpath .kbn-name { fill: #047857; }
+.kbn-node.onpath .kbn-bar { fill: #10b981; }
+.kbn-legend .lg.path { height: 0; border-width: 0; border-top: 3.4px solid #10b981; border-radius: 0; width: 16px; }
+
+/* CPT part selector */
+.khm-parts { display: flex; gap: 0.35rem; flex-wrap: wrap; align-items: center; margin-bottom: 0.4rem; }
+.khm-parts .kbn-restore { margin-left: auto; display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.72rem; padding: 0.25rem 0.55rem; }
+.khm-parts .kbn-restore svg { width: 13px; height: 13px; }
+
+/* Observation sequence controls */
+.khm-evi-top { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+.khm-days { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--text-primary); }
+.khm-days .klt-btn { padding: 0.1rem 0.55rem; font-size: 0.85rem; line-height: 1.2; }
+.khm-evi-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0.35rem; }
+.khm-evi-day { display: flex; flex-direction: column; align-items: center; gap: 0.2rem; font-size: 0.7rem; font-weight: 700; color: var(--text-muted); padding: 0.3rem 0.2rem; border: 1px dashed var(--border-light); border-radius: 8px; }
+
+/* Viterbi sequence summary */
+.khm-seq { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.35rem 0.75rem; align-items: center; padding: 0.55rem 0.8rem; border: 1.5px solid var(--border-light); border-radius: 10px; background: #ffffff; }
+.khm-seq-label { font-size: 0.66rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); }
+.khm-seq-items { display: flex; flex-wrap: wrap; gap: 0.3rem; }
+.khm-seq-items i { font-style: normal; font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; font-weight: 700; padding: 1px 8px; border-radius: 999px; }
+.khm-seq-items i.ev.t { background: #ecfdf5; color: #047857; }
+.khm-seq-items i.ev.f { background: #fff1f2; color: #e11d48; }
+.khm-seq-items i.st.yes { background: #10b981; color: #ffffff; }
+.khm-seq-items i.st.no { background: #64748b; color: #ffffff; }
+.khm-seq-items i.pending { background: #f5f3ff; color: #a78bfa; font-family: inherit; font-weight: 600; }
+
+/* Panels */
+.khm-na { font-size: 0.66rem; color: #cbd5e1; font-style: italic; }
+.khm-table .kbn-enum th, .khm-table .kbn-enum td { text-align: center; }
+.khm-table .kbn-enum tbody th { text-align: left; font-family: 'JetBrains Mono', monospace; color: var(--text-primary); }
+.khm-onpath { background: #ecfdf5; color: #047857; font-weight: 700; }
+.khm-q { color: #c4b5fd; }
+.khm-cmp td, .khm-cmp th { border-top: 1.5px solid var(--border-light); }
+
+@container (max-width: 460px) {
+  .khm-evi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
