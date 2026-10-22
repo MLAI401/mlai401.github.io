@@ -55,57 +55,57 @@
   const CONCEPTS = {
     progression: [
       {
-        key: 'rules_vs_learning', name: 'Rules vs. Empirical Learning',
+        key: 'rules_vs_learning', labInConcept: true, name: 'Rules vs. Empirical Learning',
         def: 'In Topics 01–05, knowledge and heuristics were hand-coded by human experts. In Machine Learning, the agent extracts rules, distributions, and decision boundaries directly from data.',
         notation: 'Handcrafted: KB ⊨ α · Learning: h ← LEARN(Data)',
         tip: 'When the world is too complex to write explicit rules for (e.g. spam filtering, vision), we let data train parameter weights.',
-        render: renderProgressionOverview
+        render: col => { if (window.EvolutionLab) window.EvolutionLab.renderRules(col); else renderProgressionOverview(col); }
       },
       {
-        key: 'three_paradigms', name: 'Four Learning Paradigms',
+        key: 'three_paradigms', labInConcept: true, name: 'Four Learning Paradigms',
         def: 'Supervised (labeled pairs ⟨x, y⟩), Neural Networks (non-linear representations), Unsupervised (unlabeled structure discovery), and Reinforcement Learning (trial, error, and scalar rewards r).',
         notation: 'Supervised: x → y · NN: Wx+b · Unsupervised: C_k · RL: s —(a)→ r, s\'',
         tip: 'Supervised = Teacher gives answers; Unsupervised = Detective finds patterns; RL = Gamer learns to maximize score.',
-        render: renderFourParadigms
+        render: col => { if (window.EvolutionLab) window.EvolutionLab.renderParadigms(col); else renderFourParadigms(col); }
       },
       {
-        key: 'static_vs_sequential', name: 'Static vs. Sequential Decisions',
+        key: 'static_vs_sequential', labInConcept: true, name: 'Static vs. Sequential Decisions',
         def: 'Supervised learning predicts independent static targets (i.i.d.). RL deals with sequential states where current actions influence future states and delayed rewards.',
         notation: 'Static: ŷ = h(x) · Sequential: a_t ~ π(s_t) ⇒ s_{t+1}, r_{t+1}',
         tip: 'A classifier tells you if a photo has a cat; an RL agent decides how to pilot a drone through the living room without hitting the cat.',
-        render: renderStaticVsSequential
+        render: col => { if (window.EvolutionLab) window.EvolutionLab.renderSequential(col); else renderStaticVsSequential(col); }
       }
     ],
     features: [
       {
-        key: 'bow_concept', name: 'Tokenization & Bag-of-Words',
+        key: 'bow_concept', name: 'Tokenization & Bag-of-Words', labInConcept: true,
         def: 'Splits raw text into word tokens and represents each document as an unordered frequency count vector over a fixed vocabulary dictionary.',
         notation: 'Vocabulary V = {w₁, …, w_|V|} · x = ⟨count(w₁, d), …, count(w_|V|, d)⟩',
         tip: 'Bag-of-Words disregards word order and grammar, but word frequency spikes provide surprisingly strong topical signals.',
-        render: renderBagOfWordsVisualizer
+        render: col => { if (window.TextFeaturesLab) window.TextFeaturesLab.render(col, 'bow'); else renderBagOfWordsVisualizer(col); }
       },
       {
-        key: 'tfidf_concept', name: 'TF-IDF Rarity Weighting',
+        key: 'tfidf_concept', name: 'TF-IDF Rarity Weighting', labInConcept: true,
         def: 'Combines local Term Frequency (TF) with global Inverse Document Frequency (IDF) to downweight ubiquitous stop words and boost rare, discriminative keywords.',
-        notation: 'TF-IDF(t, d) = TF(t, d) × log(N / DF(t)) · x_tfidf = ⟨TF-IDF(w₁, d), …⟩',
+        notation: 'TF(t, d) = count(t, d) / |d| · IDF(t) = ln(N / DF(t)) · TF-IDF(t, d) = TF(t, d) × IDF(t)',
         tip: 'High TF-IDF indicates a word is frequent in this document but rare in the general corpus (e.g., "lottery", "kinase").',
-        render: renderTFIDFStudio
+        render: col => { if (window.TextFeaturesLab) window.TextFeaturesLab.render(col, 'tfidf'); else renderTFIDFStudio(col); }
       }
     ],
     naive_bayes: [
       {
-        key: 'nb_map', name: 'Generative MAP Classification',
+        key: 'nb_map', name: 'Generative MAP Classification', labInConcept: true,
         def: 'Applies Bayes\' Rule to select the class maximizing the posterior probability P(c | x) ∝ P(c) ∏ P(xᵢ | c) under the conditional independence assumption.',
         notation: 'c* = argmax_c [ log P(c) + ∑ log P(xᵢ | c) ]',
         tip: 'The independence assumption is "naive" because words correlate, but in practice Naive Bayes is extremely fast and robust for text.',
-        render: renderNaiveBayesClassifierStudio
+        render: col => { if (window.NaiveBayesLab) window.NaiveBayesLab.render(col, 'map'); else renderNaiveBayesClassifierStudio(col); }
       },
       {
-        key: 'laplace_smoothing', name: 'Laplace (Add-1) Smoothing',
+        key: 'laplace_smoothing', name: 'Laplace (Add-1) Smoothing', labInConcept: true,
         def: 'Adds pseudo-count α = 1 to all word counts to prevent unseen test words from multiplying the entire class likelihood to zero.',
-        notation: 'P̂(w | c) = (count(w, c) + 1) / (∑ count(w\', c) + |V|)',
+        notation: 'P̂(w | c) = (count(w, c) + α) / (∑ count(w\', c) + α·|V|) · Add-1: α = 1',
         tip: 'Without Laplace smoothing, a single unseen word in an email gives P(Spam)=0 and P(Ham)=0 (the zero-probability trap).',
-        render: renderLaplaceSmoothingDemo
+        render: col => { if (window.NaiveBayesLab) window.NaiveBayesLab.render(col, 'laplace'); else renderLaplaceSmoothingDemo(col); }
       }
     ],
     evaluation: [
@@ -309,6 +309,13 @@
         `).join('')}
       </div>
 
+      ${currentC.labInConcept ? `
+      <div class="lr-lab-concept">
+        <p class="lr-lab-def">${currentC.def}</p>
+        <div class="lr-lab-notation">${currentC.notation}</div>
+        <div class="lr-lab-tip"><i data-lucide="sparkles"></i><span>${currentC.tip}</span></div>
+      </div>
+      <div class="lr-concept-lab" id="lr-concept-lab"></div>` : `
       <div class="sl-concept-card glass-panel" style="padding: 1.2rem; border-radius: 12px; background: #ffffff; border: 1px solid rgba(15,23,42,0.08); margin-bottom: 1rem;">
         <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #059669; font-weight: 700; margin-bottom: 0.4rem;">Formal Definition</div>
         <p style="font-size: 0.92rem; color: var(--text-primary); line-height: 1.55; margin-bottom: 1rem;">
@@ -324,7 +331,7 @@
           <i data-lucide="sparkles" style="color: #059669; width: 1.25rem; height: 1.25rem; flex-shrink: 0; margin-top: 2px;"></i>
           <span style="font-size: 0.84rem; color: #065f46; line-height: 1.5;">${currentC.tip}</span>
         </div>
-      </div>
+      </div>`}
     `;
 
     col.querySelectorAll('.sl-concept-chip').forEach(btn => {
