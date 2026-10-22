@@ -412,14 +412,28 @@
       netContainer.innerHTML = `
         <svg viewBox="0 0 560 380" style="width: 100%; height: 100%;">
           <defs>
-            <marker id="kl-arrow" viewBox="0 0 10 10" refX="22" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-              <path d="M 0 0 L 10 5 L 0 10 z" fill="#64748b"/>
+            <marker id="kl-arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+              <path d="M 1 1.5 L 11 6 L 1 10.5 L 3.5 6 z" fill="#475569"/>
+            </marker>
+            <marker id="kl-arrow-active" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
+              <path d="M 1 1.5 L 11 6 L 1 10.5 L 3.5 6 z" fill="#4f46e5"/>
             </marker>
           </defs>
           ${currentNet.nodes.map(n => {
             return n.parents.map(p => {
               const pNode = currentNet.getNode(p);
-              return `<line x1="${pNode.meta.x}" y1="${pNode.meta.y}" x2="${n.meta.x}" y2="${n.meta.y}" stroke="#64748b" stroke-width="2" marker-end="url(#kl-arrow)"/>`;
+              // Trim the edge so it starts/ends at the circle boundaries (r = 26)
+              // and the arrowhead tip touches the child node instead of hiding under it.
+              const R = 26, GAP = 3;
+              const dx = n.meta.x - pNode.meta.x, dy = n.meta.y - pNode.meta.y;
+              const len = Math.hypot(dx, dy) || 1;
+              const ux = dx / len, uy = dy / len;
+              const x1 = pNode.meta.x + ux * (R + 1), y1 = pNode.meta.y + uy * (R + 1);
+              const x2 = n.meta.x - ux * (R + GAP), y2 = n.meta.y - uy * (R + GAP);
+              const active = (p in currentEvidence) || (n.var in currentEvidence);
+              return `<line class="kl-bn-edge" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"
+                        stroke="${active ? '#4f46e5' : '#475569'}" stroke-width="2.2" stroke-linecap="round"
+                        marker-end="url(#${active ? 'kl-arrow-active' : 'kl-arrow'})"><title>${p} → ${n.var}</title></line>`;
             }).join('');
           }).join('')}
 
@@ -433,7 +447,7 @@
               <g class="kl-bn-node" data-var="${n.var}" style="cursor: pointer;">
                 <circle cx="${n.meta.x}" cy="${n.meta.y}" r="26" fill="${fill}" stroke="#4f46e5" stroke-width="2"/>
                 <text x="${n.meta.x}" y="${n.meta.y + 4}" fill="${isObserved ? '#fff' : '#312e81'}" font-size="11" font-weight="700" text-anchor="middle">${n.var.slice(0, 2)}</text>
-                <text x="${n.meta.x}" y="${n.meta.y + 38}" fill="#334155" font-size="10" text-anchor="middle">${n.meta.label || n.var}</text>
+                <text x="${n.meta.x}" y="${n.meta.y + 38}" fill="#334155" font-size="10" text-anchor="middle" stroke="#ffffff" stroke-width="3" paint-order="stroke">${n.meta.label || n.var}</text>
               </g>
             `;
           }).join('')}
