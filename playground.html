@@ -16,6 +16,7 @@
   
   <!-- Style Sheet -->
   <link rel="stylesheet" href="style.css?v=27">
+  <link rel="stylesheet" href="demos/knowledge_demo/hmm_playground.css?v=1">
 </head>
 <body>
   
@@ -1202,6 +1203,9 @@
           <button class="search-tab kl-subtab" data-target="kl-sampling-view">
             <i data-lucide="activity"></i> Monte Carlo Sampling Visualizer
           </button>
+          <button class="search-tab kl-subtab" data-target="kl-hmm-view">
+            <i data-lucide="clock"></i> HMM Temporal Reasoning
+          </button>
         </div>
 
         <!-- 1. Wumpus Lab Sub-view — rendered by demos/knowledge_demo/knowledge_lab.js (engine: wumpus_engine.js) -->
@@ -1259,6 +1263,11 @@
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- 5. HMM Temporal Reasoning Sub-view (AIMA Ch. 14) — rendered by demos/knowledge_demo/hmm_playground.js (engine: hmm_engine.js) -->
+        <div class="kl-subview" id="kl-hmm-view">
+          <div id="kl-hmm-pane"></div>
         </div>
 
         <!-- 4. Sampling Visualizer Sub-view -->
@@ -1630,6 +1639,8 @@
   <script src="demos/knowledge_demo/wumpus_engine.js?v=1"></script>
   <script src="demos/knowledge_demo/bayes_engine.js?v=1"></script>
   <script src="demos/knowledge_demo/knowledge_lab.js?v=5"></script>
+  <script src="demos/knowledge_demo/hmm_engine.js?v=1"></script>
+  <script src="demos/knowledge_demo/hmm_playground.js?v=1"></script>
 
   <!-- Learning & Decision Making (Topic 06): ML engine → RL engine → lab -->
   <script src="demos/learning_demo/ml_engine.js?v=1"></script>
