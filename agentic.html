@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generative &amp; Agentic AI — MLAI401 Foundational AI &amp; ML</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="An illustrated single-screen interactive lecture on Topic 07: Generative & Agentic AI. Next-token prediction, softmax temperature calibration, in-context reasoning, Retrieval-Augmented Generation (RAG), tool calling, working memory scratchpads, the ReAct loop, multi-agent systems, and AI safety alignment.">
+  <meta name="keywords" content="Generative AI, Agentic AI, Large Language Models, LLM, Next-Token Prediction, Temperature Softmax, Prompt Engineering, Few-Shot, Chain-of-Thought, RAG, Dense Embeddings, Cosine Similarity, Function Calling, ReAct Loop, Multi-Agent Collaboration, AI Ethics, Prompt Injection, AIMA">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="MLAI401 - Generative &amp; Agentic AI">
+  <meta property="og:description" content="From static neural predictors to autonomous goal-driven agents equipped with tools, memory, and multi-agent coordination.">
+  <meta property="og:type" content="website">
+
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="style.css?v=22">
+</head>
+<body class="sl-page agentic-page">
+
+  <!-- Navigation Header -->
+  <header class="navbar" id="navbar-header">
+    <div class="container nav-container">
+      <a href="index.html" class="logo" id="logo-link">
+        <span class="logo-icon">M</span>
+        MLAI401
+      </a>
+
+      <button class="menu-toggle" id="menu-toggle-btn" aria-label="Toggle Navigation Menu">
+        <i data-lucide="menu"></i>
+      </button>
+
+      <ul class="nav-links" id="nav-menu">
+        <li><a href="index.html" class="nav-link" id="nav-home">Home</a></li>
+        <li><a href="curriculum.html" class="nav-link active" id="nav-curr">Curriculum</a></li>
+        <li><a href="playground.html" class="nav-link" id="nav-play">Playground</a></li>
+        <li><a href="index.html#resources" class="nav-link" id="nav-res">Resources</a></li>
+      </ul>
+
+      <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="nav-btn" id="nav-github-btn">
+        <i data-lucide="github"></i> GitHub Profile
+      </a>
+    </div>
+  </header>
+
+  <!-- Single-screen lecture shell: fixed height, no body scroll on desktop -->
+  <main class="sl-shell agentic-shell">
+
+    <div class="sl-topbar">
+      <a href="curriculum.html" class="sl-breadcrumb"><i data-lucide="arrow-left"></i> Curriculum</a>
+      <div class="sl-title-block">
+        <span class="sl-topic-badge agentic-badge-accent"><i data-lucide="bot"></i> Topic 07</span>
+        <h1>Generative &amp; Agentic AI</h1>
+      </div>
+      <div class="agentic-topbar-actions">
+        <a href="topic07_reading.html" class="sl-reading-btn"><i data-lucide="book-open"></i> Reading Notes</a>
+        <a href="playground.html#view-agentic" class="sl-reading-btn agentic-demo-btn"><i data-lucide="play-circle"></i> Interactive Demo</a>
+      </div>
+    </div>
+
+    <!-- Topic selector bar -->
+    <div class="sl-topic-bar-wrap">
+      <div class="sl-topic-tabs" id="agentic-topic-tabs"></div>
+    </div>
+
+    <!-- Main two-column concept + illustration viewport -->
+    <div class="sl-main-grid" id="agentic-main-grid">
+
+      <div class="sl-concept-col glass-panel" id="agentic-concept-col">
+        <!-- Rendered by demos/agentic_demo/ui.js -->
+      </div>
+
+      <div class="sl-graph-col glass-panel" id="agentic-graph-col">
+        <!-- Rendered by demos/agentic_demo/ui.js -->
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+
+  <!-- Shared Generative, RAG & Agent Engines -->
+  <script src="demos/agentic_demo/genai_engine.js?v=1"></script>
+  <script src="demos/agentic_demo/rag_engine.js?v=1"></script>
+  <script src="demos/agentic_demo/agent_engine.js?v=1"></script>
+
+  <!-- Page controller — renders topic tabs, concepts and illustrations -->
+  <script src="demos/agentic_demo/ui.js?v=1"></script>
+
+  <!-- Application JS -->
+  <script src="main.js?v=3"></script>
+</body>
+</html>
