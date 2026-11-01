@@ -39,7 +39,7 @@
 
   const TOPIC_INTROS = [
     'Transitioning from hand-crafted knowledge rules and static search to learning patterns from empirical data and learning optimal sequential policies through interaction and reward feedback.',
-    'How unstructured text is transformed into numerical feature vectors for statistical classification: Tokenization, Bag-of-Words word counts, and TF-IDF rarity weighting.',
+    'How unstructured text is transformed into a shared numerical feature space for classification: a fixed vocabulary learned from training documents, aligned Bag-of-Words count vectors, and TF-IDF weights reused for new messages.',
     'Generative probabilistic classification using Bayes\' Rule and conditional independence assumptions, complete with Laplace Add-1 smoothing and log-space computation.',
     'Rigorous statistical validation of classification performance: Confusion Matrices (TP, FP, TN, FN), Accuracy Paradox, Precision, Recall, and the F1-Score harmonic mean.',
     'Biological-inspired computation: from the linear Perceptron to a shallow network that solves XOR — forward pass, backpropagation, gradient-descent updates, and how ReLU, sigmoid and tanh hidden units change training.',
@@ -79,15 +79,15 @@
     features: [
       {
         key: 'bow_concept', name: 'Tokenization & Bag-of-Words', labInConcept: true,
-        def: 'Splits raw text into word tokens and represents each document as an unordered frequency count vector over a fixed vocabulary dictionary.',
-        notation: 'Vocabulary V = {w₁, …, w_|V|} · x = ⟨count(w₁, d), …, count(w_|V|, d)⟩',
+        def: 'Builds a fixed, alphabetically indexed vocabulary from the training documents, then represents every document — training or new — as a count vector over that same vocabulary. Absent words are 0; words outside the vocabulary are ignored.',
+        notation: 'V = sorted unique training tokens {w₀, …, w_|V|−1} · x(d) = ⟨count(w₀, d), …, count(w_|V|−1, d)⟩ — the same |V| slots for every d',
         tip: 'Bag-of-Words disregards word order and grammar, but word frequency spikes provide surprisingly strong topical signals.',
         render: col => { if (window.TextFeaturesLab) window.TextFeaturesLab.render(col, 'bow'); else renderBagOfWordsVisualizer(col); }
       },
       {
         key: 'tfidf_concept', name: 'TF-IDF Rarity Weighting', labInConcept: true,
-        def: 'Combines local Term Frequency (TF) with global Inverse Document Frequency (IDF) to downweight ubiquitous stop words and boost rare, discriminative keywords.',
-        notation: 'TF(t, d) = count(t, d) / |d| · IDF(t) = ln(N / DF(t)) · TF-IDF(t, d) = TF(t, d) × IDF(t)',
+        def: 'Combines local Term Frequency (TF) with Inverse Document Frequency (IDF). IDF is learned once from the training documents and reused for every new message, downweighting ubiquitous words and boosting rare, discriminative ones.',
+        notation: 'TF(t, d) = count(t, d) / |d| (|d| = in-vocabulary tokens) · IDF(t) = ln(N / DF(t)) over N training docs · TF-IDF(t, d) = TF(t, d) × IDF(t)',
         tip: 'High TF-IDF indicates a word is frequent in this document but rare in the general corpus (e.g., "lottery", "kinase").',
         render: col => { if (window.TextFeaturesLab) window.TextFeaturesLab.render(col, 'tfidf'); else renderTFIDFStudio(col); }
       }

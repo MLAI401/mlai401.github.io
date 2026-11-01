@@ -14,7 +14,16 @@
  *   Illustration column: verdict + posterior, evidence-highlighted message,
  *     log-score race, word evidence table, training summary (MAP) or the
  *     α = 0 vs α comparison and zero-trap detector (Laplace), or the
- *     6-step pipeline in Step-by-Step mode.
+ *     6-step pipeline in Step-by-Step mode:
+ *       Training   1 labelled data · 2 priors · 3 full vocabulary + per-class
+ *                  counts · 4 smoothed probability table for every word in V
+ *       Prediction 5 test-message count vector x (alphabetical V order) +
+ *                  lookup · 6 log P(c) + Σ x_w log P̂(w|c), posterior, argmax
+ *
+ * Preprocessing (identical for training examples and the test message):
+ *   English: [A-Za-z0-9_]+ runs, lowercased, tokens of length 1 dropped
+ *            (single letters such as "a", "I" and single digits).
+ *   Burmese: pre-segmented; split on spaces/punctuation; all tokens kept.
  *
  * Formulas (match topic06_reading.html §1.2 / Exercise 6.2):
  *   P(c)      = N_c / N
@@ -125,16 +134,17 @@
   const LANG_LABEL = { en: 'English', my: 'မြန်မာ' };
 
   const STEPS = [
-    { name: 'Training Data' }, { name: 'Priors P(c)' }, { name: 'Word Counts' },
-    { name: 'Likelihoods P(w|c)' }, { name: 'Log Scores' }, { name: 'MAP Decision' }
+    { name: 'Training Data', phase: 'train' }, { name: 'Priors P(c)', phase: 'train' },
+    { name: 'Vocabulary & Counts', phase: 'train' }, { name: 'Probability Table', phase: 'train' },
+    { name: 'Test Features & Lookup', phase: 'pred' }, { name: 'Scores & Prediction', phase: 'pred' }
   ];
   const STEP_CAPTIONS = [
     'Naive Bayes is supervised: it learns from emails that already carry a label.',
     'The prior is how common each class is before reading a single word: P(c) = N_c / N.',
-    'Count every word in each class (the Bag-of-Words from the previous concept, summed per class).',
-    'Turn counts into smoothed probabilities: P̂(w|c) = (count + α) / (total + α|V|).',
-    'Multiply prior × likelihoods — done as a SUM of logs to avoid tiny numbers underflowing to 0.',
-    'Pick the class with the higher score (MAP). Normalising the scores gives P(c | message).'
+    'Training only: apply the preprocessing rules to every training example, build the vocabulary V and count each word per class.',
+    'Training only: turn every count into a smoothed probability, using each class\'s own denominator.',
+    'Prediction: turn the test message into a count vector in the fixed vocabulary order and look up the probabilities of its active words. Unknown words are ignored.',
+    'Prediction: score each class with log P(c) + Σ count × log P̂(w|c), normalise to posteriors and pick the larger.'
   ];
 
   // ===========================================================================
@@ -187,11 +197,17 @@
     const cls = CL().map(c => c.k);
     const m = { cls, alpha, N: examples.length, n: {}, prior: {}, counts: {}, total: {}, vocab: new Set() };
     cls.forEach(c => { m.n[c] = 0; m.counts[c] = {}; m.total[c] = 0; });
+    m.dropped = {};
     examples.forEach(e => {
       if (!m.counts[e.y]) return;
       m.n[e.y]++;
-      tok(e.t).forEach(w => { m.counts[e.y][w] = (m.counts[e.y][w] || 0) + 1; m.total[e.y]++; m.vocab.add(w); });
+      scan(e.t).forEach(p => {
+        if (!p.kept) { m.dropped[p.word] = (m.dropped[p.word] || 0) + 1; return; }
+        const w = p.word;
+        m.counts[e.y][w] = (m.counts[e.y][w] || 0) + 1; m.total[e.y]++; m.vocab.add(w);
+      });
     });
+    m.vocabList = [...m.vocab].sort((a, b) => a.localeCompare(b));   // fixed order = feature slots
     cls.forEach(c => { m.prior[c] = m.N ? m.n[c] / m.N : 0; });
     m.V = m.vocab.size;
     m.cnt = (w, c) => m.counts[c][w] || 0;
@@ -625,7 +641,7 @@
     const maxC = Math.max(1, ...m.cls.flatMap(c => top(c).map(x => x[1])));
     return `<div class="nb-priors">${m.cls.map(c => `
         <div class="nb-prior"><div class="nb-prior-h"><span class="nb-lbl ${c}">${lbl(c)}</span><span>P(${lbl(c)}) = ${m.n[c]}/${m.N} = <b>${m.N ? (m.n[c] / m.N).toFixed(2) : '—'}</b></span></div>
-          <div class="tfp-sub">${m.total[c]} word tokens</div>
+          <div class="tfp-sub">${m.total[c]} token occurrences</div>
           ${top(c).map(([w, n]) => `<div class="evo-wbar"><span class="evo-wbar-l" lang="${state.lang}">${esc(w)}</span><span class="evo-wbar-t"><span class="nb-bg-${c}" style="width:${n / maxC * 100}%"></span></span><span class="evo-wbar-v">${n}</span></div>`).join('')}
         </div>`).join('')}</div>
       <div class="tfp-mono">|V| = ${m.V} distinct training words · N = ${m.N} examples</div>`;
@@ -673,11 +689,146 @@
       <div class="tfp-sub">${A.m.cls.map(c => `${lbl(c)}: ${R.killer[c] ? `<b class="nb-zero">0</b> (because of “${esc(R.killer[c])}”)` : `score ${fl(R.score[c])}`}`).join(' · ')}</div>`;
   }
 
+  // ---- Step-by-step helpers (training vs prediction) ----
+  const f3 = x => (x === -Infinity ? '−∞' : x === Infinity ? '+∞' : x.toFixed(3).replace('-', '−'));
+  function prepRules() {
+    return state.lang === 'my'
+      ? `<li>Text is <b>pre-segmented</b>: each space marks a word boundary.</li>
+         <li>Punctuation (။ ၊ . , ! ? …) is removed.</li>
+         <li><b>Every</b> remaining token is kept, including single-character words such as “မ” — Burmese has many meaningful one-character words.</li>
+         <li>No stop-word removal, no stemming.</li>`
+      : `<li>Split into runs of letters/digits; punctuation and apostrophes split words (“don't” → “don” + “t”).</li>
+         <li>Lower-case everything (“Free” and “free” are the same word).</li>
+         <li><b>Single-character tokens are excluded</b> — single letters such as “a” and “I”, and single digits.</li>
+         <li>No stop-word removal (“the”, “to” stay), no stemming.</li>`;
+  }
+  function phaseBanner(ph) {
+    return ph === 'train'
+      ? '<div class="nb-phase-banner train"><span class="nb-phase train">Training</span><span>Built from the labelled training examples only — the test message is <b>not</b> used in this step.</span></div>'
+      : '<div class="nb-phase-banner pred"><span class="nb-phase pred">Prediction</span><span>The training tables (Steps 1–4) are now <b>fixed</b>. Only the test message changes what you see here.</span></div>';
+  }
+  function droppedList(dict) {
+    const e = Object.entries(dict);
+    return e.length ? e.map(([w, n]) => `<span class="tfp-chip drop">${esc(w)}${n > 1 ? ` ×${n}` : ''}</span>`).join(' ') : '<span class="tfp-sub">none</span>';
+  }
+  // Test message → count vector over the fixed training vocabulary.
+  function testVector(A) {
+    const m = A.m, x = {}, unk = {}, dropped = {};
+    A.pieces.forEach(p => {
+      if (!p.kept) { dropped[p.word] = (dropped[p.word] || 0) + 1; return; }
+      if (m.vocab.has(p.word)) x[p.word] = (x[p.word] || 0) + 1;
+      else unk[p.word] = (unk[p.word] || 0) + 1;
+    });
+    const idx = {}; m.vocabList.forEach((w, i) => { idx[w] = i; });
+    const active = m.vocabList.filter(w => x[w]);
+    const unknown = Object.entries(unk).map(([w, n]) => ({ w, n }));
+    // grouped score: log P(c) + Σ_w x_w · log P̂(w|c)
+    const score = {}, terms = {};
+    m.cls.forEach(c => {
+      const lp0 = m.prior[c] > 0 ? Math.log(m.prior[c]) : -Infinity;
+      terms[c] = active.map(w => { const p = m.lik(w, c); const lp = p > 0 ? Math.log(p) : -Infinity; return { w, n: x[w], p, lp, t: x[w] * lp }; });
+      score[c] = terms[c].reduce((s, t) => s + t.t, lp0);
+      terms[c].lp0 = lp0;
+    });
+    return { x, idx, active, unknown, dropped, score, terms, nTok: A.tokens.length };
+  }
+
+  function stepVocab(A) {
+    const m = A.m, [c1, c2] = m.cls;
+    const rows = m.vocabList.map((w, i) => {
+      const a = m.cnt(w, c1), b = m.cnt(w, c2);
+      return `<tr><td class="nb-idx">${i}</td><td class="t" lang="${state.lang}">${esc(w)}</td><td class="${a ? '' : 'nb-z0'}">${a}</td><td class="${b ? '' : 'nb-z0'}">${b}</td><td>${a + b}</td></tr>`;
+    }).join('');
+    return phaseBanner('train') + `
+      <div class="nb-rules"><div class="tfp-lbl">Preprocessing rules (${LANG_LABEL[state.lang]}) — applied identically to training and test text</div><ul>${prepRules()}</ul>
+        <div class="tfp-sub">Removed from the training examples by these rules: ${droppedList(m.dropped)}</div></div>
+      <div class="tfp-table-wrap nb-vtab"><table class="tfp-table nb-table"><thead><tr><th>#</th><th class="t">vocabulary word w</th><th>training count in ${lbl(c1)}</th><th>training count in ${lbl(c2)}</th><th>both</th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="5" class="nb-skip">No training words.</td></tr>'}</tbody>
+        <tfoot><tr class="nb-totrow"><td></td><td class="t">Total token occurrences across the entire training vocabulary</td><td>${m.total[c1]}</td><td>${m.total[c2]}</td><td>${m.total[c1] + m.total[c2]}</td></tr></tfoot></table></div>
+      <div class="tfp-mono">|V| = <b>${m.V}</b> distinct words (one row each, alphabetical — this order is fixed and reused in Step 5)<br>T<sub>${lbl(c1)}</sub> = Σ<sub>w∈V</sub> count(w, ${lbl(c1)}) = <b>${m.total[c1]}</b> · T<sub>${lbl(c2)}</sub> = Σ<sub>w∈V</sub> count(w, ${lbl(c2)}) = <b>${m.total[c2]}</b></div>
+      <p class="tfp-p">Grey zeros: the word never occurred in that class during training. Those cells are where the zero-probability trap would strike without smoothing.</p>`;
+  }
+
+  function stepProbTable(A) {
+    const m = A.m, [c1, c2] = m.cls, al = m.alpha, aS = al.toFixed(1);
+    const den = c => m.total[c] + al * m.V;
+    const rows = m.vocabList.map((w, i) => {
+      const p1 = m.lik(w, c1), p2 = m.lik(w, c2);
+      return `<tr><td class="nb-idx">${i}</td><td class="t" lang="${state.lang}">${esc(w)}</td>
+        <td>${m.cnt(w, c1)}</td><td class="${p1 === 0 ? 'zero' : ''}">(${m.cnt(w, c1)} + ${aS}) / ${fmtDen(den(c1))} = <b>${f4(p1)}</b></td>
+        <td>${m.cnt(w, c2)}</td><td class="${p2 === 0 ? 'zero' : ''}">(${m.cnt(w, c2)} + ${aS}) / ${fmtDen(den(c2))} = <b>${f4(p2)}</b></td></tr>`;
+    }).join('');
+    const sum = c => m.vocabList.reduce((s, w) => s + m.lik(w, c), 0);
+    return phaseBanner('train') + `
+      <div class="tfp-calc">${m.cls.map(c => `<div class="tfp-calc-line"><span class="tfp-calc-k">P̂(w|${lbl(c)})</span><span>= (count(w, ${lbl(c)}) + α) / (T<sub>${lbl(c)}</sub> + α·|V|) = (count(w, ${lbl(c)}) + ${aS}) / (${m.total[c]} + ${aS}×${m.V}) = (count + ${aS}) / <b>${fmtDen(den(c))}</b></span></div>`).join('')}</div>
+      <div class="tfp-hint">Each class has its <b>own denominator</b>: its total token occurrences T<sub>c</sub> from Step 3, plus α for every one of the |V| = ${m.V} vocabulary words.</div>
+      <div class="tfp-table-wrap nb-vtab"><table class="tfp-table nb-table"><thead><tr><th>#</th><th class="t">word w</th><th>count|${lbl(c1)}</th><th>P̂(w|${lbl(c1)})</th><th>count|${lbl(c2)}</th><th>P̂(w|${lbl(c2)})</th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="6" class="nb-skip">No training words.</td></tr>'}</tbody>
+        <tfoot><tr class="nb-totrow"><td></td><td class="t">Σ over all of V</td><td>${m.total[c1]}</td><td><b>${f4(sum(c1))}</b></td><td>${m.total[c2]}</td><td><b>${f4(sum(c2))}</b></td></tr></tfoot></table></div>
+      <p class="tfp-p">${al === 0 ? '<b>α = 0</b>: every red cell is a word with probability 0 in that class.' : `Each column sums to 1: P̂(·|c) is a probability distribution over the vocabulary. With α = ${aS}, words never seen in a class still get a small probability.`} This table is the trained model — prediction only looks things up in it.</p>`;
+  }
+  function fmtDen(d) { return Number.isInteger(d) ? String(d) : d.toFixed(1); }
+
+  function stepTestVector(A, X) {
+    const m = A.m, [c1, c2] = m.cls;
+    const chips = A.pieces.map(p => {
+      if (!p.kept) return `<span class="tfp-chip drop" title="removed by preprocessing">${esc(p.raw)}</span>`;
+      if (!m.vocab.has(p.word)) return `<span class="tfp-chip nb-unk" title="not in the training vocabulary — ignored">${esc(p.word)}</span>`;
+      return `<span class="tfp-chip nb-act">${esc(p.word)}</span>`;
+    }).join(' ');
+    const vec = m.vocabList.length ? `<div class="tfp-vec compact nb-xvec">${m.vocabList.map((w, i) => {
+      const n = X.x[w] || 0;
+      return `<div class="tfp-vcell ${n ? 'nb-on' : 'nb-off'}" ${n ? `data-w="${esc(w)}"` : ''} title="slot ${i}: ${esc(w)}"><span class="tfp-vval">${n}</span><span class="tfp-vidx">${i}</span><span class="tfp-vword" lang="${state.lang}">${esc(w)}</span></div>`;
+    }).join('')}</div>` : '<span class="tfp-empty">Empty vocabulary.</span>';
+    const look = X.active.length ? `<div class="tfp-table-wrap"><table class="tfp-table nb-table nb-look"><thead><tr><th>slot</th><th class="t">active word</th><th class="nb-th-test">count in test message x<sub>w</sub></th><th>P̂(w|${lbl(c1)})</th><th>P̂(w|${lbl(c2)})</th></tr></thead><tbody>
+        ${X.active.map(w => `<tr data-w="${esc(w)}"><td class="nb-idx">${X.idx[w]}</td><td class="t" lang="${state.lang}">${esc(w)}</td><td class="nb-td-test">${X.x[w]}</td><td class="${m.lik(w, c1) === 0 ? 'zero' : ''}">${f4(m.lik(w, c1))}</td><td class="${m.lik(w, c2) === 0 ? 'zero' : ''}">${f4(m.lik(w, c2))}</td></tr>`).join('')}
+      </tbody></table></div>` : '<div class="tfp-warn">None of the message\'s words is in the training vocabulary — the score will be the prior alone.</div>';
+    return phaseBanner('pred') + `
+      <div class="tfp-lbl">1 · Preprocess the test message (same rules as Step 3)</div>
+      <div class="tfp-chips nb-tokchips" lang="${state.lang}">${chips || '<span class="tfp-empty">Type a message…</span>'}</div>
+      <div class="evo-legend"><span><i class="nb-key act"></i>in vocabulary → active</span><span><i class="nb-key unk"></i>not in vocabulary → ignored</span><span><i class="nb-key drop"></i>removed by preprocessing</span></div>
+      <div class="tfp-lbl">2 · Test-message count vector x (|V| = ${m.V} slots, Step 3 order)</div>
+      ${vec}
+      <div class="tfp-hint">x<sub>w</sub> = how many times w occurs <b>in this test message</b>. ${X.active.length} slot${X.active.length === 1 ? '' : 's'} active, ${m.V - X.active.length} zero.</div>
+      <div class="tfp-lbl">3 · Look up the active words in the Step 4 probability table</div>
+      ${look}
+      <div class="nb-unkbox"><b>Ignored (unknown words):</b> ${X.unknown.length ? X.unknown.map(u => `<span class="tfp-chip nb-unk">${esc(u.w)}${u.n > 1 ? ` ×${u.n}` : ''}</span>`).join(' ') + ' — not in V, so they have no slot in x and no probability; they add nothing to either score.' : '<span class="tfp-sub">none</span>'}</div>
+      <p class="tfp-p">Do not confuse the two kinds of count: <b>x<sub>w</sub></b> (orange) counts the test message; the training counts behind P̂ were fixed in Step 3 and are not changed by the message.</p>`;
+  }
+
+  function stepScores(A, X) {
+    const m = A.m, [c1, c2] = m.cls, R = A.R;
+    const rows = X.active.map((w, i) => {
+      const a = X.terms[c1][i], b = X.terms[c2][i];
+      return `<tr data-w="${esc(w)}"><td class="t" lang="${state.lang}">${esc(w)}</td><td class="nb-td-test">${a.n}</td><td>${f3(a.lp)}</td><td><b>${f3(a.t)}</b></td><td>${f3(b.lp)}</td><td><b>${f3(b.t)}</b></td></tr>`;
+    }).join('');
+    const tbl = `<div class="tfp-table-wrap"><table class="tfp-table nb-table"><thead><tr><th class="t">term</th><th class="nb-th-test">x<sub>w</sub></th><th>log P̂(w|${lbl(c1)})</th><th>x<sub>w</sub> × log</th><th>log P̂(w|${lbl(c2)})</th><th>x<sub>w</sub> × log</th></tr></thead><tbody>
+        <tr><td class="t">prior log P(c)</td><td></td><td></td><td><b>${f3(X.terms[c1].lp0)}</b></td><td></td><td><b>${f3(X.terms[c2].lp0)}</b></td></tr>
+        ${rows}</tbody>
+        <tfoot><tr class="nb-totrow"><td class="t">score(c)</td><td></td><td></td><td><b>${f3(X.score[c1])}</b></td><td></td><td><b>${f3(X.score[c2])}</b></td></tr></tfoot></table></div>`;
+    const expr = c => `${lbl(c)}: log(${m.N ? (m.n[c] / m.N).toFixed(2) : '0'}) ${X.terms[c].map(t => `+ ${t.n}×(${f3(t.lp)})`).join(' ')} = <b>${f3(X.score[c])}</b>`;
+    let post;
+    if (R.win) {
+      const s1 = X.score[c1], s2 = X.score[c2], mx = Math.max(s1, s2);
+      post = `<div class="tfp-calc">
+        ${m.cls.map(c => `<div class="tfp-calc-line ${c === R.win ? 'total' : ''}"><span class="tfp-calc-k">P(${lbl(c)}|x)</span><span>= e<sup>${f3(X.score[c])}</sup> / (e<sup>${f3(s1)}</sup> + e<sup>${f3(s2)}</sup>) = e<sup>${f3(X.score[c] - mx)}</sup> / (e<sup>${f3(s1 - mx)}</sup> + e<sup>${f3(s2 - mx)}</sup>) = <b>${pc(R.post[c])}</b></span></div>`).join('')}
+      </div><div class="tfp-hint">Subtracting the larger score first (here ${f3(mx)}) gives the same ratio but avoids e<sup>−large</sup> underflowing to 0. The two posteriors sum to 100%.</div>`;
+    } else post = '<div class="tfp-warn">Both scores are −∞ (a zero probability or zero prior), so the posteriors cannot be normalised — use α &gt; 0.</div>';
+    return phaseBanner('pred') + `
+      <div class="tfp-mono">score(c) = log P(c) + Σ<sub>w∈V</sub> count(w, message) × log P̂(w | c)<br><span class="tfp-sub">only active words contribute — every other slot has count 0 · unknown words are not in V</span></div>
+      ${tbl}
+      <div class="tfp-mono">${m.cls.map(expr).join('<br>')}</div>
+      <div class="tfp-lbl">Normalised posterior probabilities</div>
+      ${post}
+      ${verdictCard(A, R, 'Predicted class (MAP: argmax score)')}`;
+  }
+
   // ---- Step-by-step ----
   function stepsView(A) {
     const k = state.step, m = A.m, [c1, c2] = m.cls, R = A.R;
-    const sums = [`N = ${m.N}`, m.cls.map(c => (m.N ? (m.n[c] / m.N).toFixed(2) : '—')).join(' / '), `|V| = ${m.V}`, `α = ${m.alpha.toFixed(1)}`, m.cls.map(c => fl(R.score[c])).join(' / '), R.win ? lbl(R.win) : '?'];
-    const pipe = `<div class="tfp-pipe">${STEPS.map((s, i) => `<button class="tfp-pipe-step ${i < k ? 'done' : ''} ${i === k ? 'cur' : ''}" data-step="${i}"><span class="tfp-pipe-n">${i + 1}</span><span class="tfp-pipe-name">${s.name}</span><span class="tfp-pipe-sum">${i <= k ? sums[i] : ''}</span></button>${i < STEPS.length - 1 ? '<span class="tfp-pipe-arrow">→</span>' : ''}`).join('')}</div>`;
+    const X = testVector(A);
+    const sums = [`N = ${m.N}`, m.cls.map(c => (m.N ? (m.n[c] / m.N).toFixed(2) : '—')).join(' / '), `|V| = ${m.V}`, `α = ${m.alpha.toFixed(1)}`, `${X.active.length} active · ${X.unknown.length} ignored`, R.win ? lbl(R.win) : '?'];
+    const pipe = `<div class="tfp-pipe nb-pipe">${STEPS.map((s, i) => `<button class="tfp-pipe-step ${i < k ? 'done' : ''} ${i === k ? 'cur' : ''}" data-step="${i}"><span class="nb-phase ${s.phase}">${s.phase === 'train' ? 'Training' : 'Prediction'}</span><span class="tfp-pipe-n">${i + 1}</span><span class="tfp-pipe-name">${s.name}</span><span class="tfp-pipe-sum">${i <= k ? sums[i] : ''}</span></button>${i < STEPS.length - 1 ? `<span class="tfp-pipe-arrow ${i === 3 ? 'nb-phase-gap' : ''}">${i === 3 ? '┃' : '→'}</span>` : ''}`).join('')}</div>`;
     let body = '';
     const set = trainSet();
     switch (k) {
@@ -690,23 +841,10 @@
           <div class="evo-meter"><span class="nb-bg-${c}" style="width:${m.N ? m.n[c] / m.N * 100 : 0}%"></span></div><div class="tfp-sub">log P(${lbl(c)}) = ${m.n[c] ? fl(Math.log(m.n[c] / m.N)) : '−∞'}</div></div>`).join('')}</div>
           <p class="tfp-p">Before reading the message, the model's belief is just the class frequency. Add or relabel training examples to move it.</p>`;
         break;
-      case 2:
-        body = `<div class="tfp-table-wrap"><table class="tfp-table nb-table"><thead><tr><th>message word</th><th>count|${lbl(c1)}</th><th>count|${lbl(c2)}</th></tr></thead><tbody>
-          ${A.ev.map(e => `<tr class="${e.known ? '' : 'unk'}" data-w="${esc(e.w)}"><td class="t">${esc(e.w)}</td><td class="${e.known && !e.n1 ? 'zero' : ''}">${e.known ? e.n1 : '—'}</td><td class="${e.known && !e.n2 ? 'zero' : ''}">${e.known ? e.n2 : '—'}</td></tr>`).join('')}
-          <tr class="sel"><td class="t">total words Σ count(w′, c)</td><td>${m.total[c1]}</td><td>${m.total[c2]}</td></tr></tbody></table></div>
-          <p class="tfp-p">|V| = <b>${m.V}</b> distinct words appear in training. ${A.R.unknown.length ? `${A.R.unknown.length} message word${A.R.unknown.length > 1 ? 's' : ''} (—) never appeared, so ${A.R.unknown.length > 1 ? 'they are' : 'it is'} skipped. ` : ''}Red zeros are where the zero-probability trap can strike.</p>`;
-        break;
-      case 3:
-        body = evidenceTable(A) + `<div class="tfp-mono">P̂(w|c) = (count(w,c) + ${m.alpha.toFixed(1)}) / (Σcount(·,c) + ${m.alpha.toFixed(1)}×${m.V})</div>
-          <p class="tfp-p">The log ratio shows each word's vote: positive favours ${lbl(c1)}, negative favours ${lbl(c2)}. ${m.alpha === 0 ? '<b>α = 0</b>: zero counts become zero probabilities.' : 'Smoothing keeps every probability above 0.'}</p>`;
-        break;
-      case 4:
-        body = raceChart(A, R) + `<div class="tfp-mono">score(c) = log P(c) + Σ log P̂(xᵢ|c)<br>${m.cls.map(c => `${lbl(c)}: ${fl(R.run[c][0])} ${R.terms[c].map(t => `${t.lp === -Infinity ? '− ∞' : '− ' + Math.abs(t.lp).toFixed(2)}`).join(' ')} = <b>${fl(R.score[c])}</b>`).join('<br>')}</div>
-          <p class="tfp-p">Multiplying ${R.known.length + 1} probabilities gives tiny numbers (here ${m.cls.map(c => `${lbl(c)} ≈ ${sci(Math.exp(R.score[c]))}`).join(', ')}); long emails would underflow to 0, so we add logs instead.</p>`;
-        break;
-      case 5:
-        body = verdictCard(A, R, 'MAP decision') + `<p class="tfp-p">${R.win ? `c* = argmax = <b>${lbl(R.win)}</b>. Normalising: P(${lbl(c1)}|x) = e^${fl(R.score[c1])} / (e^${fl(R.score[c1])} + e^${fl(R.score[c2])}) = <b>${pc(R.post[c1])}</b>.` : 'No class has a positive probability — smoothing (α > 0) is needed.'} The model is “naive” because it treats every word as independent given the class.</p>`;
-        break;
+      case 2: body = stepVocab(A); break;
+      case 3: body = stepProbTable(A); break;
+      case 4: body = stepTestVector(A, X); break;
+      case 5: body = stepScores(A, X); break;
     }
     const nav = `<div class="tfp-row end"><button class="tfp-btn" data-go="-1" ${k === 0 ? 'disabled' : ''}>← Prev</button>${k < STEPS.length - 1 ? '<button class="tfp-btn primary" data-go="1">Next Step →</button>' : '<button class="tfp-btn primary" data-go="done">✓ Finish — free play</button>'}</div>`;
     return pipe + card(`Step ${k + 1} · ${STEPS[k].name}`, '', body + nav, 'tfp-stepcard');
