@@ -7,7 +7,7 @@
  *     1. Text Features: Bag-of-Words & TF-IDF
  *     2. Naive Bayes Classification
  *     3. Model Evaluation & Performance Metrics
- *     4. Neural Networks & Gradient Optimization
+ *     4. Neural Networks & Gradient Optimization (Shallow NN lab: shallow_nn_lab.js)
  *     5. Unsupervised Learning: K-Means Clustering
  *     6. Sequential Decisions & MDPs
  *     7. Model-Based Planning: Value Iteration
@@ -42,7 +42,7 @@
     'How unstructured text is transformed into numerical feature vectors for statistical classification: Tokenization, Bag-of-Words word counts, and TF-IDF rarity weighting.',
     'Generative probabilistic classification using Bayes\' Rule and conditional independence assumptions, complete with Laplace Add-1 smoothing and log-space computation.',
     'Rigorous statistical validation of classification performance: Confusion Matrices (TP, FP, TN, FN), Accuracy Paradox, Precision, Recall, and the F1-Score harmonic mean.',
-    'Biological-inspired computation: from the linear Perceptron to Multi-Layer Networks with non-linear activations (ReLU, Sigmoid), Loss functions, and Gradient Descent optimization.',
+    'Biological-inspired computation: from the linear Perceptron to a shallow network that solves XOR — forward pass, backpropagation, gradient-descent updates, and how ReLU, sigmoid and tanh hidden units change training.',
     'Discovering latent groupings in unlabeled spatial data: K-Means clustering, Voronoi cell assignments, centroid recalculation, and the Elbow Method for choosing K.',
     'Sequential decision-making under uncertainty: the MDP tuple ⟨S, A, P, R, γ⟩, discounted returns, state-value functions V(s), and action-value functions Q(s,a).',
     'Model-based dynamic programming: solving known MDPs with Value Iteration (Bellman Optimality contraction) and greedy policy extraction.',
@@ -129,22 +129,43 @@
         key: 'perceptron_model', name: 'The Perceptron & Linear Boundaries',
         def: 'The foundational computing unit that computes a weighted sum of inputs and applies a threshold activation: h(x) = step(w^T x + b). Fails on XOR.',
         notation: 'z = w^T x + b · h(x) = step(z) · XOR: (0,0)→0, (1,1)→0, (0,1)→1, (1,0)→1',
-        tip: 'A single perceptron can only learn linear boundaries. Minsky & Papert (1969) proved it cannot solve XOR.',
+        tip: 'A single perceptron can only learn linear boundaries. Minsky & Papert (1969) proved it cannot solve XOR — the shallow network lab in the next chips fixes this with one hidden layer.',
         render: renderPerceptronXORDemo
       },
       {
-        key: 'mlp_activations', name: 'Multi-Layer Perceptrons & Activations',
-        def: 'Networks with hidden layers and non-linear activations (ReLU, Sigmoid) that learn hierarchical representations and solve non-linear problems.',
-        notation: 'h = ReLU(W₁ x + b₁) · ŷ = σ(W₂ h + b₂) · ReLU(z) = max(0, z)',
-        tip: 'Without non-linear activations, any deep multi-layer network mathematically collapses into a single linear matrix.',
-        render: renderMLPForwardPassStudio
+        key: 'nn_forward', name: 'Forward Pass & Activations', labInConcept: true,
+        def: 'A shallow network for XOR: two inputs, one hidden layer of H units with activation g (ReLU, sigmoid or tanh), and one sigmoid output that gives P(y = 1 | x). Biases on every unit; binary cross-entropy loss.',
+        notation: 'z = W1 x + b1 · h = g(z) · z_o = W2·h + b2 · ŷ = σ(z_o) · L = −[y log ŷ + (1−y) log(1−ŷ)]',
+        tip: 'The output stays sigmoid for every hidden activation, so all comparisons use the same probability model and the same loss.',
+        render: col => { if (window.ShallowNNLab) window.ShallowNNLab.render(col, 'forward'); else renderMLPForwardPassStudio(col); }
       },
       {
-        key: 'gradient_descent', name: 'Loss Functions & Gradient Descent',
-        def: 'Quantifies prediction error using Cross-Entropy Loss and iteratively updates weights in the opposite direction of the loss gradient: w ← w - α ∇L.',
-        notation: 'L(w) = -[y log ŷ + (1-y) log(1-ŷ)] · w^{(t+1)} = w^{(t)} - α ∇L',
-        tip: 'Think of a hiker in thick fog feeling the slope underfoot and taking small downhill steps toward the valley bottom.',
-        render: renderGradientDescentBowl
+        key: 'nn_backward', name: 'Backpropagation & Gradient Check', labInConcept: true,
+        def: 'Backpropagation applies the chain rule from the loss back to every weight and bias. Each hidden error signal is the output error, sent back through W2 and scaled by the activation derivative g′(z).',
+        notation: 'δ_o = ŷ − y · ∂L/∂W2[j] = δ_o h_j · δ_j = δ_o W2[j] g′(z_j) · ∂L/∂W1[j,k] = δ_j x_k · ∂L/∂b1[j] = δ_j',
+        tip: 'A finite-difference check, [L(θ+ε) − L(θ−ε)] / 2ε, confirms each analytical gradient. Training uses ReLU′(0) = 0; the check skips ReLU units sitting exactly on the kink.',
+        render: col => { if (window.ShallowNNLab) window.ShallowNNLab.render(col, 'backward'); else renderMLPForwardPassStudio(col); }
+      },
+      {
+        key: 'nn_update', name: 'Gradient-Descent Update', labInConcept: true,
+        def: 'Gradient descent moves every parameter a small step against its gradient. By default the gradient is the average of the four individual-example gradients (full batch).',
+        notation: 'new value = old value − η × gradient · θ⁽ᵗ⁺¹⁾ = θ⁽ᵗ⁾ − η · ḡ · ḡ = ¼ Σᵢ ∂Lᵢ/∂θ',
+        tip: 'Think of a hiker in thick fog feeling the slope underfoot: η is the stride length. Too small is slow; too large overshoots the valley.',
+        render: col => { if (window.ShallowNNLab) window.ShallowNNLab.render(col, 'update'); else renderGradientDescentBowl(col); }
+      },
+      {
+        key: 'nn_train', name: 'Training on XOR', labInConcept: true,
+        def: 'Repeating forward pass → backpropagation → update bends the decision boundary until all four XOR points are on the correct side.',
+        notation: 'repeat: ŷ = f(x; θ) → ḡ = ∇θ L̄ → θ ← θ − η ḡ   until L̄ is small',
+        tip: 'A loss stuck near ln 2 ≈ 0.693 means the network predicts about 0.5 everywhere — check for inactive or saturated hidden units.',
+        render: col => { if (window.ShallowNNLab) window.ShallowNNLab.render(col, 'train'); else renderGradientDescentBowl(col); }
+      },
+      {
+        key: 'nn_compare', name: 'Comparing Activations', labInConcept: true,
+        def: 'ReLU, sigmoid and tanh trained from identical initial weights, data, learning rate and number of updates — only the hidden activation g differs.',
+        notation: 'σ′(z) ≤ 0.25 · tanh′(z) = 1 − tanh²(z) ≤ 1 · ReLU′(z) ∈ {0, 1}',
+        tip: 'Saturation and inactive units shrink or zero the gradient, but which activation trains fastest depends on the seed, width and η. No activation always wins.',
+        render: col => { if (window.ShallowNNLab) window.ShallowNNLab.render(col, 'compare'); else renderMLPForwardPassStudio(col); }
       }
     ],
     kmeans: [
