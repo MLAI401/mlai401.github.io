@@ -10,7 +10,11 @@
  *
  *   Concept chips (each is a "mode" of ONE shared state, so every view shows
  *   the same parameters θ⁽ᵗ⁾ at the same training step t):
- *     • 'forward'  — x → z → h → z_o → ŷ → L for the selected example
+ *     • 'forward'  — x → z → h → z_o → ŷ → L for the selected example,
+ *                    revealed progressively (Step 0 Ready … Step 6 Loss).
+ *                    The trace is tied to (example, activation, H, seed,
+ *                    parameter version); any change returns it to Step 0.
+ *                    Forward stepping never modifies parameters.
  *     • 'backward' — g′(z), error signals δ, per-example vs averaged
  *                    gradients, finite-difference gradient check
  *     • 'update'   — new value = old value − η × gradient for every parameter
@@ -284,8 +288,23 @@
   // ===========================================================================
   const DEFAULTS = { act: 'relu', H: 2, seed: 7, lrIdx: LRS.indexOf(1), batchMode: 'full', sel: 1, speed: 5 };
   const state = Object.assign({}, DEFAULTS, {
-    p: null, t: 0, hist: [], gnHist: [], last: null, running: false, cmp: null, cmpBudget: 1000, sweep: null, lrSweep: null
+    p: null, t: 0, hist: [], gnHist: [], last: null, running: false, cmp: null, cmpBudget: 1000, sweep: null, lrSweep: null,
+    pv: 0,                       // parameter version: +1 whenever any weight or bias changes
+    fwd: 0, fwdKey: null, fwdNote: ''   // forward-pass trace stage (0…6), separate from training updates t
   });
+  const FWD = ['Ready', 'Parameters', 'Hidden weighted sums', 'Hidden activations', 'Output weighted sum', 'Prediction', 'Loss'];
+  const FWD_LAST = FWD.length - 1;
+  const traceKey = () => [state.sel, state.act, state.H, state.seed, state.pv];
+  // Return the trace to Step 0 whenever its inputs changed, so no stale values are ever shown.
+  function syncTrace() {
+    const k = traceKey(), prev = state.fwdKey;
+    state.fwdKey = k;
+    if (!prev || prev.join() === k.join()) return;
+    const why = prev[0] !== k[0] ? 'the selected example changed' : prev[1] !== k[1] ? 'the activation changed'
+      : prev[2] !== k[2] ? 'the hidden width changed' : prev[3] !== k[3] ? 'the seed changed' : 'the parameters changed (reset or training update)';
+    if (state.fwd > 0) state.fwdNote = `Trace reset to Step 0 because ${why}.`;
+    state.fwd = 0;
+  }
   let mode = 'forward', ctrlHost = null, vizHost = null, raf = 0, lastPaint = 0;
 
   const lr = () => LRS[state.lrIdx];
@@ -295,6 +314,7 @@
   function reset() {
     stop();
     state.p = initParams(state.seed, state.H);
+    state.pv++;
     state.t = 0; state.last = null;
     const a = analyze(state.p, state.act, [0, 1, 2, 3]);
     state.hist = [a.meanLoss]; state.gnHist = [];
@@ -307,6 +327,7 @@
       const list = paramList(state.H);
       const before = cloneP(state.p);
       state.p = applyUpdate(state.p, a.avg, lr());
+      state.pv++;
       state.gnHist.push(gradNorms(a.avg));
       if (k === n - 1) {
         state.last = {
@@ -349,10 +370,12 @@
     const yH = Array.from({ length: H }, (_, j) => Ht / 2 + (j - (H - 1) / 2) * rowH);
     const yO = Ht / 2;
     const r = H <= 5 ? 19 : 15;
+    const K = opt.k === undefined ? FWD_LAST : opt.k;      // forward stage: what may be shown
     const vals = opt.edge === 'g' ? a.avg : p;
     const mx = Math.max(1e-9, ...vals.W.flat().map(Math.abs), ...vals.v.map(Math.abs));
     const showLbl = H <= 4;
     const edge = (x1, y1, x2, y2, w, t) => {
+      if (K < 1) return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#94a3b8" stroke-opacity="0.5" stroke-width="1.4"/>`;   // neutral: weights not revealed yet
       const wd = 0.8 + 4.2 * Math.min(1, Math.abs(w) / mx);
       const col = w > 0 ? '#2563eb' : w < 0 ? '#e11d48' : '#94a3b8';
       const lx = x1 + (x2 - x1) * t, ly = y1 + (y2 - y1) * t;
@@ -372,27 +395,28 @@
     // hidden nodes
     for (let j = 0; j < H; j++) {
       const hv = fw.h[j];
-      const inten = state.act === 'relu' ? Math.min(1, hv / 2) : state.act === 'sigmoid' ? hv : Math.abs(hv);
-      const flag = diag[j].dead ? 'dead' : diag[j].saturated ? 'sat' : '';
-      const top = opt.edge === 'g' ? `δ${sub(j + 1)}=${fmt(bw.dz[j], 3)}` : `b=${fmt(p.b[j], 2)}`;
+      const inten = K < 3 ? 0 : state.act === 'relu' ? Math.min(1, hv / 2) : state.act === 'sigmoid' ? hv : Math.abs(hv);
+      const flag = K < FWD_LAST ? '' : diag[j].dead ? 'dead' : diag[j].saturated ? 'sat' : '';
+      const top = opt.edge === 'g' ? `δ${sub(j + 1)}=${fmt(bw.dz[j], 3)}` : K >= 1 ? `b=${fmt(p.b[j], 2)}` : '';
       s += `<circle cx="${xh}" cy="${yH[j]}" r="${r}" class="snn-node hid ${flag}" style="--i:${inten.toFixed(3)}"/>` +
-        `<text x="${xh}" y="${yH[j] + 4}" class="snn-nv">${fmt(hv, 2)}</text>` +
+        `<text x="${xh}" y="${yH[j] + 4}" class="snn-nv">${K >= 3 ? fmt(hv, 2) : '—'}</text>` +
         `<text x="${xh}" y="${yH[j] - r - 4}" class="snn-nb">${top}</text>` +
-        `<text x="${xh + r + 4}" y="${yH[j] + r + 2}" class="snn-nl">h${sub(j + 1)}${flag === 'dead' ? ' · inactive' : flag === 'sat' ? ' · saturated' : ''}</text>`;
+        `<text x="${xh + r + 4}" y="${yH[j] + r + 2}" class="snn-nl">h${sub(j + 1)}${K >= 2 && opt.edge !== 'g' ? ` · z=${fmt(fw.z[j], 2)}` : ''}${flag === 'dead' ? ' · inactive' : flag === 'sat' ? ' · saturated' : ''}</text>`;
     }
     // output node
-    const ot = opt.edge === 'g' ? `δo=${fmt(bw.dOut, 3)}` : `b2=${fmt(p.c, 2)}`;
-    s += `<circle cx="${xo}" cy="${yO}" r="${r + 3}" class="snn-node out" style="--i:${fw.yhat.toFixed(3)}"/>` +
-      `<text x="${xo}" y="${yO + 4}" class="snn-nv">${fmt(fw.yhat, 2)}</text>` +
+    const ot = opt.edge === 'g' ? `δo=${fmt(bw.dOut, 3)}` : K >= 1 ? `b2=${fmt(p.c, 2)}` : '';
+    s += `<circle cx="${xo}" cy="${yO}" r="${r + 3}" class="snn-node out" style="--i:${K >= 5 ? fw.yhat.toFixed(3) : 0}"/>` +
+      `<text x="${xo}" y="${yO + 4}" class="snn-nv">${K >= 5 ? fmt(fw.yhat, 2) : '—'}</text>` +
       `<text x="${xo}" y="${yO - r - 8}" class="snn-nb">${ot}</text>` +
-      `<text x="${xo}" y="${yO + r + 17}" class="snn-nl" text-anchor="middle">ŷ = σ(z_o)</text>`;
+      `<text x="${xo}" y="${yO + r + 17}" class="snn-nl" text-anchor="middle">ŷ = σ(z_o)${K >= 4 && opt.edge !== 'g' ? ` · z_o=${fmt(fw.zo, 2)}` : ''}</text>` +
+      `<text x="${xo}" y="${yO + r + 31}" class="snn-nl" text-anchor="middle">target y = ${fw.y}</text>`;
     s += '</svg>';
     return s;
   }
   function sub(n) { return String(n).split('').map(c => '₀₁₂₃₄₅₆₇₈₉'[+c]).join(''); }
 
   // Activation (or derivative) curve with each hidden unit's z for the selected example.
-  function actPlot(act, which, fw, allFws) {
+  function actPlot(act, which, fw, allFws, showSel = true) {
     const A = ACT[act], f = which === 'd' ? A.d : A.f;
     const W = 300, Hh = 150, pad = 26, zMin = -6, zMax = 6;
     const yMin = which === 'd' ? 0 : act === 'tanh' ? -1.1 : act === 'sigmoid' ? -0.05 : -0.3;
@@ -418,7 +442,7 @@
         s += `<circle cx="${sx(zc)}" cy="${sy(Math.max(yMin, Math.min(yMax, f(z))))}" r="2.6" class="snn-ghost"/>`;
       });
     });
-    fw.z.forEach((z, j) => {
+    if (showSel) fw.z.forEach((z, j) => {
       const zc = Math.max(zMin, Math.min(zMax, z));
       const y = Math.max(yMin, Math.min(yMax, f(z)));
       s += `<circle cx="${sx(zc)}" cy="${sy(y)}" r="5" class="snn-mark"/><text x="${sx(zc) + 7}" y="${sy(y) - 6}" class="snn-mlbl">h${sub(j + 1)}${z !== zc ? (z > 0 ? '→' : '←') : ''}</text>`;
@@ -553,14 +577,15 @@
   // Controls (concept column)
   // ===========================================================================
   const HINTS = {
-    forward: 'Pick an example under <b>Selected example</b> and follow x → z → h → z<sub>o</sub> → ŷ → L. Then switch the hidden activation: the weights stay identical (same seed), only g changes — so every difference you see comes from g.',
+    forward: 'Press <b>Start</b>, then <b>Next</b>, to reveal the forward pass one stage at a time: parameters → z → h → z<sub>o</sub> → ŷ → L. Changing the example, activation, width, seed or parameters returns the trace to Step 0. Forward stepping never changes any weight.',
     backward: 'The label y enters only through δ<sub>o</sub> = ŷ − y. Every hidden signal δ<sub>j</sub> is multiplied by g′(z<sub>j</sub>): where g′ is small (saturated sigmoid/tanh) or 0 (inactive ReLU), the gradients into that unit shrink or vanish. The check at the bottom confirms each gradient numerically.',
-    update: 'Each row is one parameter: new = old − η × gradient. Press <b>Step</b> — the “new” column becomes the current parameters and t advances. Compare η = 0.1 with η = 5 on the predicted loss change.',
+    update: 'Each row is one parameter: new = old − η × gradient. Press <b>Step Update</b> — the “new” column becomes the current parameters and the training-update count t advances. Compare η = 0.1 with η = 5 on the predicted loss change.',
     train: 'Press <b>Train</b> and watch the black 0.5-contour bend around the XOR corners. The dashed lines are where each hidden unit switches (z<sub>j</sub> = 0). Try seed 3 and seed 5 with each activation, and several η values.',
     compare: 'All three runs share the same seed, width, initial weights, data, η and number of updates — only g differs. Use the sweeps: rankings change with the seed and the learning rate, so look for <i>why</i> a run stalls rather than for a single winner.'
   };
 
   function buildControls() {
+    syncTrace();
     const a = analyze(state.p, state.act, batch());
     ctrlHost.innerHTML = `
       <div class="tfp snn-ctrl">
@@ -584,9 +609,9 @@
           <div class="snn-field"><span class="tfp-lbl">Examples per update</span>
             <div class="tfp-seg"><button class="${state.batchMode === 'full' ? 'active' : ''}" data-act="batch" data-k="full">All 4 (averaged)</button><button class="${state.batchMode === 'single' ? 'active' : ''}" data-act="batch" data-k="single">One example (cycles)</button></div></div>
           <div class="tfp-row">
-            <button class="tfp-btn" data-act="reset" title="Re-initialise from the seed"><i data-lucide="rotate-ccw"></i>Reset</button>
-            <button class="tfp-btn" data-act="step" ${state.running ? 'disabled' : ''}><i data-lucide="step-forward"></i>Step</button>
-            <button class="tfp-btn" data-act="step100" ${state.running ? 'disabled' : ''}>+100</button>
+            <button class="tfp-btn" data-act="reset" title="Re-initialise the weights from the seed"><i data-lucide="rotate-ccw"></i>Reset weights</button>
+            <button class="tfp-btn" data-act="step" ${state.running ? 'disabled' : ''} title="One gradient-descent update of all parameters"><i data-lucide="step-forward"></i>Step Update</button>
+            <button class="tfp-btn" data-act="step100" ${state.running ? 'disabled' : ''}>+100 updates</button>
             <button class="tfp-btn ${state.running ? 'on' : 'primary'}" data-act="run"><i data-lucide="${state.running ? 'pause' : 'play'}"></i>${state.running ? 'Pause' : 'Train'}</button>
             <label class="tfp-sel-wrap">speed <select class="tfp-select" id="snn-speed">${[1, 5, 25, 100].map(v => `<option value="${v}" ${state.speed === v ? 'selected' : ''}>${v}/frame</option>`).join('')}</select></label>
           </div>
@@ -619,15 +644,18 @@
     icons();
   }
 
+  // In the forward walkthrough, predictions stay hidden until Step 6 (Loss).
+  const summaryHidden = () => mode === 'forward' && state.fwd < FWD_LAST;
   function xButtons(a) {
+    const hide = summaryHidden();
     return [0, 1, 2, 3].map(i => `<button class="snn-xb ${state.sel === i ? 'active' : ''}" data-act="sel" data-k="${i}">
       <span class="snn-xb-x">x = ${XLBL[i]}</span><span class="snn-xb-y">y = ${Y[i]}</span>
-      <span class="snn-xb-p ${((a.fws[i].yhat >= 0.5 ? 1 : 0) === Y[i]) ? 'ok' : 'bad'}">ŷ ${fmt(a.fws[i].yhat, 3)}</span></button>`).join('');
+      ${hide ? '<span class="snn-xb-p">ŷ —</span>' : `<span class="snn-xb-p ${((a.fws[i].yhat >= 0.5 ? 1 : 0) === Y[i]) ? 'ok' : 'bad'}">ŷ ${fmt(a.fws[i].yhat, 3)}</span>`}</button>`).join('');
   }
 
   function updateStats(a) {
     const st = ctrlHost && ctrlHost.querySelector('#snn-stats');
-    if (st) st.textContent = `t = ${state.t} · L̄ = ${fmt(a.meanLoss)} · ${a.acc}/4`;
+    if (st) st.textContent = `Training updates t = ${state.t} · L̄ = ${summaryHidden() ? '—' : fmt(a.meanLoss)} · accuracy ${summaryHidden() ? '—' : a.acc + '/4'}`;
     const xs = ctrlHost && ctrlHost.querySelector('#snn-xs');
     if (xs) xs.innerHTML = xButtons(a);
   }
@@ -656,7 +684,7 @@
   // ===========================================================================
   function head(title, sub) {
     return `<div class="tfp-viz-head"><h3>${title}</h3><div class="tfp-stat-chips">
-      <span class="snn-chip-t">step t = ${state.t}</span><span>g = ${ACT[state.act].name}</span><span>H = ${state.H}</span><span>η = ${fmtLr(lr())}</span></div></div>
+      <span class="snn-chip-t" title="Number of gradient-descent updates applied so far">training updates t = ${state.t}</span><span>g = ${ACT[state.act].name}</span><span>H = ${state.H}</span><span>η = ${fmtLr(lr())}</span></div></div>
       ${sub ? `<div class="tfp-hint">${sub}</div>` : ''}`;
   }
 
@@ -668,29 +696,57 @@
   }
 
   function viewForward(a) {
-    const fw = a.fws[state.sel], A = ACT[state.act], p = state.p;
+    const k = state.fwd, fw = a.fws[state.sel], A = ACT[state.act], p = state.p, H = state.H;
+    const D = '<b class="snn-pend">—</b>';                     // unreached value
+    const at = st => (k >= st ? 'done' : '') + (k === st ? ' cur' : '');
+    const gName = state.act === 'relu' ? 'max(0, z)' : state.act === 'sigmoid' ? 'σ(z) = 1/(1+e<sup>−z</sup>)' : 'tanh(z)';
+    const gOf = z => (state.act === 'relu' ? `max(0, ${fmt(z)})` : `${state.act === 'sigmoid' ? 'σ' : 'tanh'}(${fmt(z)})`);
+    // [stage, key, symbolic formula, substitution when reached]
     const lines = [];
-    fw.z.forEach((z, j) => {
-      lines.push(['z' + sub(j + 1), `W1[${j + 1},1]·x₁ + W1[${j + 1},2]·x₂ + b1[${j + 1}] = ${par(p.W[j][0])}·${fw.x[0]} + ${par(p.W[j][1])}·${fw.x[1]} + ${par(p.b[j])} = <b>${fmt(z)}</b>`]);
-    });
-    fw.h.forEach((h, j) => {
-      lines.push(['h' + sub(j + 1), `g(z${sub(j + 1)}) = ${state.act === 'relu' ? 'max(0, ' + fmt(fw.z[j]) + ')' : A.name.toLowerCase() + '(' + fmt(fw.z[j]) + ')'} = <b>${fmt(h)}</b>`]);
-    });
-    lines.push(['z_o', `${fw.h.map((h, j) => `W2[${j + 1}]·h${sub(j + 1)}`).join(' + ')} + b2 = ${fw.h.map((h, j) => `${par(p.v[j])}·${par(h)}`).join(' + ')} + ${par(p.c)} = <b>${fmt(fw.zo)}</b>`]);
-    lines.push(['ŷ', `σ(z_o) = 1/(1+e<sup>−z_o</sup>) = <b>${fmt(fw.yhat)}</b>`]);
-    lines.push(['L', `−[y log ŷ + (1−y) log(1−ŷ)] = −${fw.y ? 'log ' + fmt(fw.yhat) : 'log(1 − ' + fmt(fw.yhat) + ')'} = <b>${fmt(fw.loss)}</b>`]);
+    for (let j = 0; j < H; j++) lines.push([2, 'z' + sub(j + 1), `W1[${j + 1},1]·x₁ + W1[${j + 1},2]·x₂ + b1[${j + 1}]`,
+      () => `${par(p.W[j][0])}·${fw.x[0]} + ${par(p.W[j][1])}·${fw.x[1]} + ${par(p.b[j])} = <b>${fmt(fw.z[j])}</b>`]);
+    for (let j = 0; j < H; j++) lines.push([3, 'h' + sub(j + 1), `g(z${sub(j + 1)})`, () => `${gOf(fw.z[j])} = <b>${fmt(fw.h[j])}</b>`]);
+    lines.push([4, 'z_o', `${fw.h.map((h, j) => `W2[${j + 1}]·h${sub(j + 1)}`).join(' + ')} + b2`,
+      () => `${fw.h.map((h, j) => `${par(p.v[j])}·${par(h)}`).join(' + ')} + ${par(p.c)} = <b>${fmt(fw.zo)}</b>`]);
+    lines.push([5, 'ŷ', 'σ(z_o) = 1/(1+e<sup>−z_o</sup>)', () => `σ(${fmt(fw.zo)}) = <b>${fmt(fw.yhat)}</b>`]);
+    lines.push([6, 'L', '−[y log ŷ + (1−y) log(1−ŷ)]',
+      () => `−${fw.y ? `log ${fmt(fw.yhat)}` : `log(1 − ${fmt(fw.yhat)})`} = <b>${fmt(fw.loss)}</b>  <span class="tfp-sub">(y = ${fw.y})</span>`]);
+    const stepper = `<div class="snn-fwd">
+        <div class="snn-fwd-pipe">${FWD.map((n, i) => `<span class="snn-fwd-st ${i < k ? 'done' : ''} ${i === k ? 'cur' : ''}"><b>${i}</b>${n}</span>`).join('')}</div>
+        <div class="tfp-row snn-fwd-ctl">
+          <button class="tfp-btn primary" data-act="fwd-start" ${k === 0 ? '' : 'disabled'}><i data-lucide="play"></i>Start</button>
+          <button class="tfp-btn" data-act="fwd-prev" ${k > 0 ? '' : 'disabled'}><i data-lucide="chevron-left"></i>Previous</button>
+          <button class="tfp-btn" data-act="fwd-next" ${k > 0 && k < FWD_LAST ? '' : 'disabled'}>Next<i data-lucide="chevron-right"></i></button>
+          <button class="tfp-btn ghost" data-act="fwd-reset" ${k > 0 ? '' : 'disabled'}><i data-lucide="rotate-ccw"></i>Reset Forward Pass</button>
+          <span class="tfp-stats">Step ${k} / ${FWD_LAST} · ${FWD[k]}</span>
+        </div>
+        ${state.fwdNote ? `<div class="tfp-warn">${state.fwdNote}</div>` : ''}
+      </div>`;
+    const ready = `<div class="snn-ready">
+        <span><i>x</i> = ${XLBL[state.sel]}</span><span>target <i>y</i> = ${fw.y}</span><span>network 2 → ${H} → 1</span>
+        <span>hidden <i>g</i> = ${A.name}</span><span>output σ · loss BCE</span><span>weights: ${state.t === 0 ? `initial (seed ${state.seed})` : `after ${state.t} training update${state.t === 1 ? '' : 's'}`}</span></div>`;
+    const params = `<div class="tfp-table-wrap"><table class="tfp-table snn-ptab"><thead><tr><th>hidden unit j</th><th>W1[j,1]</th><th>W1[j,2]</th><th>b1[j]</th><th>W2[j]</th></tr></thead><tbody>
+        ${p.W.map((w, j) => `<tr><td class="t">${j + 1}</td><td>${k >= 1 ? fmt(w[0]) : '—'}</td><td>${k >= 1 ? fmt(w[1]) : '—'}</td><td>${k >= 1 ? fmt(p.b[j]) : '—'}</td><td>${k >= 1 ? fmt(p.v[j]) : '—'}</td></tr>`).join('')}
+        <tr class="snn-tot"><td class="t" colspan="4">output bias b2</td><td>${k >= 1 ? fmt(p.c) : '—'}</td></tr></tbody></table></div>
+        <div class="tfp-hint">${state.t === 0 ? `Initialized from seed ${state.seed}: W1, W2 ~ N(0,1), b1 ~ N(0, 0.5²), b2 = 0.` : `Current values after ${state.t} training update${state.t === 1 ? '' : 's'}.`}</div>`;
+    const calc = `<div class="tfp-calc snn-calc snn-fwdcalc">${lines.map(([st, key, sym, val]) => `<div class="tfp-calc-line ${at(st)} ${key === 'L' ? 'total' : ''}"><span class="tfp-calc-k">${key}</span><span>${sym} = ${k >= st ? val() : D}</span></div>`).join('')}</div>
+        <div class="tfp-hint snn-note">Values use full precision internally and are rounded to 4 decimals for display.${k >= 6 ? ' L is computed stably from the logit: max(z_o,0) − z_o·y + log(1+e<sup>−|z_o|</sup>).' : ''}</div>`;
+    const summary = k >= FWD_LAST
+      ? `<div class="snn-two">
+          <div class="tfp-card"><div class="tfp-card-head"><h4>Hidden units on all four inputs</h4></div>${unitTable(a)}</div>
+          <div class="tfp-card"><div class="tfp-card-head"><h4>Predictions for all four XOR inputs</h4><span class="tfp-card-sub">${a.acc}/4 correct</span></div>${predTable(a)}</div></div>`
+      : `<div class="tfp-card snn-locked"><i data-lucide="lock"></i> The prediction summary for all four inputs is revealed at Step ${FWD_LAST} (Loss).</div>`;
     return `<div class="tfp-viz snn-viz">
-      ${head('Forward pass', `Selected example x = ${XLBL[state.sel]}, target y = ${fw.y}. Edge colour = weight sign (blue +, red −), width = |w|; node values are activations for this example.`)}
-      <div class="tfp-card">${netSVG(a, { edge: 'w' })}</div>
-      <div class="tfp-card"><div class="tfp-card-head"><h4>Calculations for x = ${XLBL[state.sel]}</h4><span class="tfp-card-sub">parameters θ⁽${supNum(state.t)}⁾</span></div>
-        <div class="tfp-calc snn-calc">${lines.map(l => `<div class="tfp-calc-line ${l[0] === 'L' ? 'total' : ''}"><span class="tfp-calc-k">${l[0]}</span><span>${l[1]}</span></div>`).join('')}</div>
-        <div class="tfp-hint snn-note">Computed stably from the logit: L = max(z_o,0) − z_o·y + log(1+e<sup>−|z_o|</sup>).</div></div>
-      <div class="snn-two">
-        <div class="tfp-card"><div class="tfp-card-head"><h4>g(z) = ${A.fTex}</h4></div>${actPlot(state.act, 'f', fw, a.fws)}
-          <div class="tfp-hint">Large dots: this example; small dots: the other three inputs.</div></div>
-        <div class="tfp-card"><div class="tfp-card-head"><h4>Hidden units on all four inputs</h4></div>${unitTable(a)}</div>
-      </div>
-      <div class="tfp-card"><div class="tfp-card-head"><h4>Predictions for all four XOR inputs</h4><span class="tfp-card-sub">${a.acc}/4 correct</span></div>${predTable(a)}</div>
+      ${head('Forward pass')}
+      ${stepper}
+      ${ready}
+      <div class="tfp-card">${netSVG(a, { edge: 'w', k })}
+        <div class="tfp-hint">${k < 1 ? 'Structure only — weights are not revealed yet, so every edge is drawn the same.' : 'Edge colour = weight sign (blue +, red −), width = |w|.'}</div></div>
+      <div class="tfp-card ${at(1)}"><div class="tfp-card-head"><h4>Step 1 · Parameters</h4><span class="tfp-card-sub">θ = (W1, b1, W2, b2)</span></div>${params}</div>
+      <div class="tfp-card"><div class="tfp-card-head"><h4>Steps 2–6 · Calculations for x = ${XLBL[state.sel]}</h4><span class="tfp-card-sub">z = W1x + b1 · h = g(z) · z_o = W2h + b2 · ŷ = σ(z_o) · L</span></div>${calc}</div>
+      <div class="tfp-card"><div class="tfp-card-head"><h4>g(z) = ${gName}</h4><span class="tfp-card-sub">${k >= 3 ? 'dots: this example’s hidden units' : 'markers appear at Step 3'}</span></div>${actPlot(state.act, 'f', fw, k >= FWD_LAST ? a.fws : [], k >= 3)}
+        ${k >= FWD_LAST ? '<div class="tfp-hint">Large dots: this example; small dots: the other three inputs.</div>' : ''}</div>
+      ${summary}
     </div>`;
   }
   function supNum(n) { return String(n).split('').map(c => '⁰¹²³⁴⁵⁶⁷⁸⁹'[+c]).join(''); }
@@ -766,7 +822,7 @@
         <div class="tfp-table-wrap"><table class="tfp-table"><thead><tr><th>parameter</th><th>old</th><th>gradient</th><th>new = old − η × gradient</th></tr></thead><tbody>
         ${L.rows.map(r => `<tr><td class="t">${r.lbl}</td><td>${fmt(r.old)}</td><td>${fmt(r.g)}</td><td>${fmt(r.old)} − ${fmtLr(L.lr)} × ${par(r.g)} = <b>${fmt(r.nw)}</b></td></tr>`).join('')}</tbody></table></div></details>` : '';
     return `<div class="tfp-viz snn-viz">
-      ${head('Gradient-descent update', `θ⁽${supNum(state.t + 1)}⁾ = θ⁽${supNum(state.t)}⁾ − η · ${full ? 'ḡ (average of the four individual gradients)' : `∂L/∂θ on x = ${XLBL[state.sel]} (one example)`}. Press <b>Step</b> to apply exactly this table.`)}
+      ${head('Gradient-descent update', `θ⁽${supNum(state.t + 1)}⁾ = θ⁽${supNum(state.t)}⁾ − η · ${full ? 'ḡ (average of the four individual gradients)' : `∂L/∂θ on x = ${XLBL[state.sel]} (one example)`}. Press <b>Step Update</b> to apply exactly this table.`)}
       <div class="snn-kpis">
         <div class="snn-kpi"><span>${full ? 'mean loss' : 'loss on ' + XLBL[state.sel]} now</span><b>${fmt(a.batchLoss)}</b></div>
         <div class="snn-kpi"><span>after this update</span><b>${fmt(aNext.batchLoss)}</b></div>
@@ -776,7 +832,7 @@
       ${dL > 0 ? '<div class="tfp-warn">This step would <b>increase</b> the loss: η is too large for the local curvature here (overshoot). Try a smaller η.</div>' : ''}
       <div class="tfp-card"><div class="tfp-card-head"><h4>Update t = ${state.t} → ${state.t + 1}</h4><span class="tfp-card-sub">new value = old value − learning rate × gradient</span></div>
         <div class="tfp-table-wrap"><table class="tfp-table snn-utab"><thead><tr><th>parameter</th><th>old θ⁽${supNum(state.t)}⁾</th><th>gradient${full ? ' ḡ' : ''}</th><th>new = old − η × gradient</th><th>Δ</th></tr></thead><tbody>${rows}</tbody></table></div>
-        <div class="tfp-row end"><button class="tfp-btn primary" data-act="vstep" ${state.running ? 'disabled' : ''}><i data-lucide="step-forward"></i>Apply this update (Step)</button></div></div>
+        <div class="tfp-row end"><button class="tfp-btn primary" data-act="vstep" ${state.running ? 'disabled' : ''}><i data-lucide="step-forward"></i>Apply this update (Step Update)</button></div></div>
       ${lastHtml}
     </div>`;
   }
@@ -788,7 +844,7 @@
     return `<div class="tfp-viz snn-viz">
       ${head('Training on XOR')}
       <div class="snn-kpis">
-        <div class="snn-kpi"><span>step t</span><b>${state.t}</b></div>
+        <div class="snn-kpi"><span>training updates t</span><b>${state.t}</b></div>
         <div class="snn-kpi"><span>mean loss L̄</span><b>${fmt(a.meanLoss)}</b></div>
         <div class="snn-kpi ${a.acc === 4 ? 'good' : ''}"><span>accuracy</span><b>${a.acc}/4</b></div>
         <div class="snn-kpi"><span>first t with L̄ &lt; 0.1</span><b>${tHit >= 0 ? tHit : '—'}</b></div>
@@ -909,6 +965,11 @@
     const k = b.dataset.k;
     switch (b.dataset.act) {
       case 'vstep': doStep(1); buildControls(); break;
+      // Forward-pass stepping: changes only the displayed stage, never the parameters.
+      case 'fwd-start': state.fwd = 1; state.fwdNote = ''; break;
+      case 'fwd-next': state.fwd = Math.min(FWD_LAST, state.fwd + 1); state.fwdNote = ''; break;
+      case 'fwd-prev': state.fwd = Math.max(0, state.fwd - 1); state.fwdNote = ''; break;
+      case 'fwd-reset': state.fwd = 0; state.fwdNote = ''; break;
       case 'sweep': b.disabled = true; b.textContent = 'Running…'; setTimeout(() => { runSeedSweep(); update(); }, 20); return;
       case 'lrsweep': b.disabled = true; b.textContent = 'Running…'; setTimeout(() => { runLrSweep(); update(); }, 20); return;
       case 'load': state.act = k; reset(); buildControls(); setMode('train'); return;
@@ -925,6 +986,7 @@
 
   function update() {
     if (!vizHost) return;
+    syncTrace();
     const a = analyze(state.p, state.act, batch());
     const st = vizHost.scrollTop;
     vizHost.innerHTML = mode === 'forward' ? viewForward(a) : mode === 'backward' ? viewBackward(a) : mode === 'update' ? viewUpdate(a) : mode === 'compare' ? viewCompare() : viewTrain(a);
@@ -966,7 +1028,7 @@
 
   window.ShallowNNLab = {
     render,
-    _state: state,
+    _state: state, _FWD: FWD,
     _engine: { X, Y, ACT, sigmoid, bceLogit, initParams, forward, backward, analyze, applyUpdate, gradCheck, simulate, paramList, gget, unitDiag }
   };
 })();

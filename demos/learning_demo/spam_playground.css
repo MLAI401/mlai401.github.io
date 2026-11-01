@@ -1,0 +1,161 @@
+/* ==========================================================================
+   AI Playground · Spam Detection (demos/learning_demo/spam_playground.js)
+   Workspace (left) + playground-controls glass panel (right), like K-Means.
+   ========================================================================== */
+#view-spam { --sp: #f59e0b; --sp-d: #b45309; --hm: #0ea5e9; --hm-d: #0369a1; --unk: #94a3b8; }
+.spam-grid { align-items: start; }
+.spam-ws { display: flex; flex-direction: column; gap: 0.9rem; min-width: 0; padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-light); background: #ffffff; box-shadow: var(--shadow-lg); }
+.spam-head { display: flex; flex-wrap: wrap; gap: 0.4rem 0.9rem; align-items: center; font-size: 0.8rem; color: var(--text-secondary); padding: 0.45rem 0.75rem; border-radius: var(--radius-sm); background: rgba(248, 250, 252, 0.9); border: 1px solid var(--border-light); }
+.spam-stale { flex-basis: 100%; color: #9a3412; font-weight: 600; }
+.spam-card { border: 1px solid var(--border-light); border-radius: 12px; padding: 0.75rem 0.9rem; background: #fff; min-width: 0; }
+.spam-card-h { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem; }
+.spam-card-h h4 { margin: 0; font: 700 0.92rem 'Outfit', sans-serif; color: var(--text-primary); display: flex; align-items: center; gap: 0.4rem; }
+.spam-card-h h4 svg { width: 16px; height: 16px; color: var(--accent); }
+.spam-sub { font-size: 0.72rem; color: var(--text-muted); font-weight: 500; }
+.spam-two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.8rem; }
+.spam-empty { font-size: 0.85rem; color: var(--text-muted); padding: 0.6rem 0.2rem; }
+.spam-warn { font-size: 0.78rem; color: #9a3412; background: rgba(245, 158, 11, 0.12); border-radius: 8px; padding: 0.4rem 0.6rem; margin-top: 0.4rem; }
+.spam-mono { font: 0.74rem/1.55 'JetBrains Mono', monospace; color: #334155; background: rgba(15, 23, 42, 0.04); border-radius: 6px; padding: 0.4rem 0.6rem; margin-top: 0.45rem; }
+.spam-mini-h { font: 700 0.7rem 'Outfit', sans-serif; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); margin: 0.2rem 0 0.35rem; }
+
+/* prediction */
+#spam-test { width: 100%; box-sizing: border-box; resize: vertical; font: 0.95rem/1.5 'Plus Jakarta Sans', sans-serif; padding: 0.55rem 0.75rem; border-radius: 10px; border: 1px solid rgba(15, 23, 42, 0.15); background: #f8fafc; color: var(--text-primary); }
+#spam-test:focus { outline: none; border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px var(--primary-glow); }
+.spam-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.5rem 0 0.7rem; }
+.spam-chip { font: 600 0.74rem 'Outfit', sans-serif; padding: 0.28rem 0.65rem; border-radius: 999px; border: 1px solid var(--border-light); background: rgba(15, 23, 42, 0.03); color: var(--text-secondary); cursor: pointer; }
+.spam-chip:hover { border-color: var(--primary); color: var(--text-primary); }
+.spam-verdict { display: grid; grid-template-columns: auto 1fr auto; gap: 0.8rem; align-items: center; }
+.spam-pbar { position: relative; height: 14px; border-radius: 7px; background: rgba(14, 165, 233, 0.18); overflow: visible; }
+.spam-pbar .fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 7px; background: var(--sp); transition: width 0.25s ease; }
+.spam-pbar .thr { position: absolute; top: -5px; bottom: -5px; width: 2px; background: #0f172a; }
+.spam-pv { font-size: 0.78rem; color: var(--text-muted); white-space: nowrap; }
+.spam-pv b { font: 800 1.15rem 'JetBrains Mono', monospace; color: var(--text-primary); }
+.spam-lbl { display: inline-block; font: 700 0.66rem 'Outfit', sans-serif; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.22rem 0.55rem; border-radius: 999px; border: 1px solid transparent; cursor: pointer; min-width: 3.4rem; text-align: center; }
+.spam-lbl.spam { background: rgba(245, 158, 11, 0.16); color: var(--sp-d); border-color: rgba(245, 158, 11, 0.45); }
+.spam-lbl.ham { background: rgba(14, 165, 233, 0.13); color: var(--hm-d); border-color: rgba(14, 165, 233, 0.4); }
+.spam-lbl.big { font-size: 1rem; padding: 0.35rem 0.9rem; cursor: default; }
+.spam-lbl.sm { font-size: 0.58rem; min-width: 0; padding: 0.1rem 0.4rem; cursor: default; }
+.spam-msg { margin-top: 0.65rem; font-size: 0.95rem; line-height: 1.9; padding: 0.4rem 0.65rem; border-radius: 8px; background: #f8fafc; word-break: break-word; }
+.spam-w { border-radius: 4px; padding: 0.05rem 0.12rem; font-weight: 600; }
+.spam-w.sp { background: rgba(245, 158, 11, var(--a)); color: #78350f; }
+.spam-w.hm { background: rgba(14, 165, 233, var(--a)); color: #0c4a6e; }
+.spam-w.unk { color: var(--unk); font-weight: 400; border-bottom: 1.5px dashed #cbd5e1; border-radius: 0; }
+.spam-w.drop { color: #cbd5e1; font-weight: 400; text-decoration: line-through; }
+.spam-legend { display: flex; flex-wrap: wrap; gap: 0.9rem; font-size: 0.7rem; color: var(--text-muted); margin-top: 0.3rem; }
+.spam-legend .k { display: inline-block; width: 11px; height: 9px; border-radius: 3px; margin-right: 0.3rem; vertical-align: middle; }
+.spam-legend .k.sp { background: var(--sp); } .spam-legend .k.hm { background: var(--hm); } .spam-legend .k.unk { border: 1px dashed var(--unk); }
+.spam-feats { margin-top: 0.55rem; }
+.spam-cb { display: grid; grid-template-columns: 8.5rem 1fr 3.4rem; gap: 0.5rem; align-items: center; font: 0.75rem 'JetBrains Mono', monospace; padding: 0.06rem 0; }
+.spam-cb-w { text-align: right; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #334155; font-weight: 600; }
+.spam-cb-t { position: relative; height: 12px; background: rgba(15, 23, 42, 0.04); border-radius: 3px; }
+.spam-cb-t .mid { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: #94a3b8; }
+.spam-cb-t .bar { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+.spam-cb-t .bar.sp, .spam-lrb .sp { background: var(--sp); } .spam-cb-t .bar.hm, .spam-lrb .hm { background: var(--hm); }
+.spam-cb-v { font-weight: 700; color: var(--text-primary); }
+.spam-cb.total { border-top: 1px solid var(--border-light); margin-top: 0.2rem; padding-top: 0.25rem; }
+.spam-cb.total .spam-cb-w { color: #0f172a; }
+.spam-unk { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.45rem; }
+.spam-unk span { display: inline-block; border: 1px dashed var(--unk); border-radius: 5px; padding: 0 0.35rem; margin: 0 0.1rem; font-family: 'JetBrains Mono', monospace; }
+
+/* workspace tabs */
+.spam-tabs { display: inline-flex; align-self: flex-start; padding: 3px; gap: 2px; border-radius: 12px; background: rgba(15, 23, 42, 0.05); flex-wrap: wrap; }
+.spam-tabs button { display: inline-flex; align-items: center; gap: 0.35rem; border: none; background: none; padding: 0.42rem 0.9rem; border-radius: 9px; font: 600 0.8rem 'Outfit', sans-serif; color: var(--text-secondary); cursor: pointer; }
+.spam-tabs button svg { width: 15px; height: 15px; }
+.spam-tabs button.active { background: #fff; color: var(--primary); box-shadow: var(--shadow-sm); }
+#spam-panel { display: flex; flex-direction: column; gap: 0.8rem; min-width: 0; }
+
+/* data rows */
+.spam-scroll { max-height: 20rem; overflow: auto; display: flex; flex-direction: column; gap: 0.25rem; }
+.spam-scroll.tall { max-height: 26rem; display: block; }
+.spam-row { display: flex; align-items: center; gap: 0.4rem; }
+.spam-row.add { margin-top: 0.5rem; flex-wrap: wrap; }
+.spam-in { flex: 1; min-width: 8rem; font: 0.82rem 'Plus Jakarta Sans', sans-serif; padding: 0.32rem 0.55rem; border-radius: 7px; border: 1px solid rgba(15, 23, 42, 0.12); background: #f8fafc; color: var(--text-primary); }
+.spam-in:focus { outline: none; border-color: var(--primary); background: #fff; }
+.spam-ico { width: 1.7rem; height: 1.7rem; display: grid; place-items: center; border-radius: 6px; border: 1px solid transparent; background: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; flex-shrink: 0; }
+.spam-ico svg { width: 14px; height: 14px; }
+.spam-ico:hover { background: rgba(15, 23, 42, 0.06); color: var(--text-primary); }
+.spam-ico.x:hover { background: rgba(244, 63, 94, 0.1); color: #e11d48; }
+.spam-btn { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.32rem 0.7rem; border-radius: 8px; border: 1px solid rgba(15, 23, 42, 0.14); background: #fff; color: var(--text-secondary); font: 600 0.76rem 'Outfit', sans-serif; cursor: pointer; }
+.spam-btn svg { width: 14px; height: 14px; }
+.spam-btn:hover { border-color: var(--primary); color: var(--text-primary); }
+.spam-tools { display: inline-flex; gap: 0.4rem; align-items: center; }
+.spam-tools select, .spam-controls select, .spam-controls input[type="number"] { font: 600 0.78rem 'Outfit', sans-serif; padding: 0.3rem 0.45rem; border-radius: 7px; border: 1px solid rgba(15, 23, 42, 0.15); background: #fff; color: var(--text-primary); }
+
+/* tables */
+.spam-table { width: 100%; border-collapse: collapse; font: 0.74rem 'JetBrains Mono', monospace; color: #334155; }
+.spam-table th { position: sticky; top: 0; background: #f1f5f9; color: #475569; font-weight: 700; padding: 0.3rem 0.4rem; text-align: right; z-index: 1; }
+.spam-table td { padding: 0.25rem 0.4rem; text-align: right; border-top: 1px solid rgba(15, 23, 42, 0.05); white-space: nowrap; }
+.spam-table th:first-child, .spam-table td.t { text-align: left; }
+.spam-table td.msg { white-space: normal; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.78rem; min-width: 10rem; }
+.spam-table tr.on td { background: rgba(245, 158, 11, 0.09); font-weight: 700; }
+.spam-table tr.cur td { background: rgba(79, 70, 229, 0.06); }
+.spam-table tr.dis td { box-shadow: inset 0 0 0 9999px rgba(244, 63, 94, 0.05); }
+.spam-table td.ok::after { content: ' ✓'; color: #047857; font-weight: 700; }
+.spam-table td.bad::after { content: ' ✗'; color: #be123c; font-weight: 700; }
+.spam-table td.lr { display: flex; align-items: center; justify-content: flex-end; gap: 0.35rem; }
+.spam-lrb { position: relative; width: 3.6rem; height: 8px; background: rgba(15, 23, 42, 0.05); border-radius: 3px; }
+.spam-lrb span { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+
+/* NB priors */
+.spam-prior { display: grid; grid-template-columns: 4rem 1fr auto; gap: 0.5rem; align-items: center; font: 0.76rem 'JetBrains Mono', monospace; margin-bottom: 0.3rem; }
+.spam-pt { height: 12px; border-radius: 4px; background: rgba(15, 23, 42, 0.05); overflow: hidden; }
+.spam-pt span { display: block; height: 100%; }
+.spam-pt .spam { background: var(--sp); } .spam-pt .ham { background: var(--hm); }
+
+/* NN */
+.spam-chart, .spam-net { width: 100%; height: auto; display: block; }
+.spam-chart text, .spam-net text { font: 9.5px 'JetBrains Mono', monospace; fill: #64748b; }
+.spam-chart .g { stroke: rgba(15, 23, 42, 0.07); } .spam-chart .ref { stroke: #94a3b8; stroke-dasharray: 3 3; }
+.spam-net .in { fill: #ecfeff; stroke: #0891b2; stroke-width: 1.5; }
+.spam-net .hd { fill: rgba(139, 92, 246, calc(0.08 + 0.6 * var(--i))); stroke: #7c3aed; stroke-width: 1.5; }
+.spam-net .out { fill: rgba(245, 158, 11, calc(0.1 + 0.7 * var(--i))); stroke: #b45309; stroke-width: 2; }
+.spam-net .lb { fill: #334155; font-weight: 600; }
+.spam-net .ov { fill: #0f172a; font-weight: 800; font-size: 10px; }
+
+/* evaluation */
+.spam-evalcard { border-color: rgba(79, 70, 229, 0.35); background: rgba(79, 70, 229, 0.025); }
+.spam-traincard { border-style: dashed; }
+.spam-traincard h4 { color: var(--text-secondary) !important; }
+.spam-cm { display: flex; flex-direction: column; gap: 0.35rem; }
+.spam-cmt { border-collapse: collapse; font: 0.75rem 'JetBrains Mono', monospace; }
+.spam-cmt th { font: 600 0.68rem 'Outfit', sans-serif; color: var(--text-muted); padding: 0.25rem 0.5rem; text-align: center; }
+.spam-cmt td { padding: 0.45rem 0.7rem; text-align: center; font-weight: 700; border: 1px solid #fff; }
+.spam-cmt td.good { background: rgba(16, 185, 129, 0.14); color: #065f46; }
+.spam-cmt td.badc { background: rgba(244, 63, 94, 0.1); color: #9f1239; }
+.spam-metrics { display: flex; gap: 0.8rem; flex-wrap: wrap; font-size: 0.78rem; color: var(--text-secondary); }
+.spam-metrics b { font-family: 'JetBrains Mono', monospace; color: var(--text-primary); }
+.spam-edit { margin-top: 0.6rem; font-size: 0.8rem; }
+.spam-edit summary { cursor: pointer; font-weight: 600; color: var(--text-secondary); margin-bottom: 0.4rem; }
+
+/* controls panel */
+.spam-controls { gap: 1.25rem; justify-content: flex-start; padding: 1.6rem; }
+.spam-controls .controls-group { gap: 0.6rem; }
+.spam-seg { display: grid; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
+.spam-seg button { display: flex; flex-direction: column; align-items: center; gap: 0.1rem; padding: 0.6rem 0.4rem; border-radius: 10px; border: 1px solid var(--border-light); background: rgba(15, 23, 42, 0.03); font: 700 0.88rem 'Outfit', sans-serif; color: var(--text-secondary); cursor: pointer; }
+.spam-seg button small { font: 500 0.66rem 'Plus Jakarta Sans', sans-serif; color: var(--text-muted); }
+.spam-seg button.active { background: var(--gradient-main); color: #fff; border-color: transparent; }
+.spam-seg button.active small { color: rgba(255, 255, 255, 0.85); }
+.spam-status { font: 700 0.62rem 'Outfit', sans-serif; text-transform: uppercase; letter-spacing: 0.04em; padding: 0.15rem 0.5rem; border-radius: 999px; background: rgba(15, 23, 42, 0.06); color: #475569; }
+.spam-status.trained { background: rgba(16, 185, 129, 0.14); color: #047857; }
+.spam-status.stale { background: rgba(245, 158, 11, 0.18); color: #9a3412; }
+.spam-status.init { background: rgba(79, 70, 229, 0.12); color: #4338ca; }
+.spam-ctl-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; }
+.spam-ctl-row label { display: flex; flex-direction: column; gap: 0.3rem; font: 700 0.72rem 'Outfit', sans-serif; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-secondary); }
+.spam-ctl-row label b { color: var(--accent); }
+.spam-ctl-row input[type="number"] { width: 100%; box-sizing: border-box; }
+.spam-controls .btn-group { grid-template-columns: 1fr 1fr; }
+.spam-note, .spam-nnnote { font-size: 0.76rem; color: #065f46; background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 0.4rem 0.6rem; }
+.spam-nnnote { color: #3730a3; background: rgba(79, 70, 229, 0.06); border-color: rgba(79, 70, 229, 0.2); }
+.spam-controls .playground-stats { font-size: 0.84rem; gap: 0.5rem; }
+.spam-controls .pg-stat-val small { font-weight: 500; color: var(--text-muted); }
+.spam-explain-tog { font-size: 0.78rem; color: var(--text-secondary); display: flex; gap: 0.4rem; align-items: center; cursor: pointer; }
+.spam-x { display: none; font-size: 0.74rem; color: var(--text-muted); line-height: 1.45; border-left: 2px solid rgba(79, 70, 229, 0.3); padding-left: 0.5rem; margin-top: 0.3rem; }
+#view-spam.spam-explain-on .spam-x { display: block; }
+
+@media (max-width: 1200px) { .spam-two { grid-template-columns: 1fr; } }
+@media (max-width: 640px) {
+  .spam-verdict { grid-template-columns: 1fr; }
+  .spam-cb { grid-template-columns: 6rem 1fr 3rem; }
+  .spam-ctl-row { grid-template-columns: 1fr; }
+}
+.spam-sym { text-transform: none; font-style: italic; }

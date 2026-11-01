@@ -6,7 +6,7 @@
   <title>AI Playground - MLAI401 Foundational AI & ML</title>
   
   <!-- SEO Meta Tags -->
-  <meta name="description" content="Interactive AI and ML visualizer labs covering K-Means clustering, maze abstraction, 8-puzzle state-space exploration, graph search algorithms (BFS, DFS, UCS, IDS), and intelligent agent architectures (Two-Room Vacuum Robot).">
+  <meta name="description" content="Interactive AI and ML visualizer labs covering K-Means clustering, spam detection (Naive Bayes vs. a shallow neural network), maze abstraction, 8-puzzle state-space exploration, graph search algorithms (BFS, DFS, UCS, IDS), and intelligent agent architectures (Two-Room Vacuum Robot).">
   <meta name="keywords" content="AI Playground, Machine Learning Visualizer, K-Means Canvas, Maze Abstraction, 8-Puzzle, Graph Search, Vacuum Robot Agent, AIMA">
   
   <!-- Open Graph -->
@@ -15,8 +15,9 @@
   <meta property="og:type" content="website">
   
   <!-- Style Sheet -->
-  <link rel="stylesheet" href="style.css?v=27">
+  <link rel="stylesheet" href="style.css?v=28">
   <link rel="stylesheet" href="demos/knowledge_demo/hmm_playground.css?v=1">
+  <link rel="stylesheet" href="demos/learning_demo/spam_playground.css?v=2">
 </head>
 <body>
   
@@ -88,6 +89,9 @@
           <button class="playground-tab" data-target="view-kmeans" title="Topic 06 · Learning">
             <i data-lucide="bar-chart-2"></i> K-Means Clustering
           </button>
+          <button class="playground-tab" data-target="view-spam" title="Topic 06 · Learning">
+            <i data-lucide="mail-warning"></i> Spam Detection
+          </button>
         </div>
       </div>
       
@@ -150,6 +154,9 @@
           </div>
         </div>
       </div>
+
+      <!-- Topic 06 · Spam Detection (Naive Bayes vs Shallow Neural Network) — rendered by demos/learning_demo/spam_playground.js -->
+      <div class="playground-view" id="view-spam"></div>
 
       <!-- Tab 2: Maze Abstraction View -->
       <div class="playground-view" id="view-maze">
@@ -1646,6 +1653,8 @@
   <script src="demos/learning_demo/ml_engine.js?v=1"></script>
   <script src="demos/learning_demo/rl_engine.js?v=1"></script>
   <script src="demos/learning_demo/learning_lab.js?v=1"></script>
+  <!-- Spam Detection playground: shared features, Naive Bayes & shallow neural network -->
+  <script src="demos/learning_demo/spam_playground.js?v=1"></script>
 
   <script src="demos/vaccum_demo/environment.js?v=2"></script>
   <script src="demos/vaccum_demo/agents.js?v=2"></script>
