@@ -174,14 +174,14 @@
         def: 'Alternating between two steps: (1) Assignment: Assign each point to the nearest centroid; (2) Update: Move centroids to the mean of assigned points.',
         notation: 'Assign: c_i = argmin_k ||x_i - μ_k||² · Update: μ_k = (1/|C_k|) ∑ x_i',
         tip: 'K-Means monotonically decreases Within-Cluster Sum of Squares (WCSS) and is guaranteed to converge in finite steps.',
-        render: renderKMeansInteractive
+        render: col => { if (window.KMeansLab) window.KMeansLab.render(col); else renderKMeansInteractive(col); }
       },
       {
         key: 'elbow_method', name: 'Voronoi Tessellation & The Elbow Method',
         def: 'Centroids define convex Voronoi polygon boundaries. The Elbow Method plots WCSS vs K to find the point of diminishing returns.',
         notation: 'WCSS = ∑_{k=1}^K ∑_{x ∈ C_k} ||x - μ_k||² · Optimal K at the "elbow" bend',
         tip: 'Increasing K always lowers WCSS (at K=N, WCSS is 0), so we look for the sharp bend where extra clusters add little value.',
-        render: renderElbowMethodCurve
+        render: col => { if (window.VoronoiElbowLab) window.VoronoiElbowLab.render(col); else renderElbowMethodCurve(col); }
       }
     ],
     mdp: [

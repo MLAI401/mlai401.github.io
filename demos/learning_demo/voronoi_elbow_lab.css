@@ -1,0 +1,69 @@
+/* ===== Voronoi Tessellation & Elbow Method (Topic 5 · Unsupervised Learning) ===== */
+.vel-viz { container-type: inline-size; }
+.vel-sec { display: flex; flex-direction: column; gap: 0.6rem; padding: 0.8rem; border-radius: 14px; background: rgba(79, 70, 229, 0.035); border: 1px solid rgba(79, 70, 229, 0.12); }
+.vel-sec-head { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+.vel-sec-head h4 { margin: 0; font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text-primary); }
+.vel-num { display: inline-flex; align-items: center; justify-content: center; width: 1.4rem; height: 1.4rem; border-radius: 50%; background: #4f46e5; color: #fff; font: 700 0.75rem 'JetBrains Mono', monospace; }
+.vel-k { display: flex; align-items: center; gap: 0.3rem; margin-left: auto; font: 700 0.8rem 'JetBrains Mono', monospace; color: var(--text-secondary); }
+.vel-k .tfp-btn[data-k] { min-width: 2rem; justify-content: center; }
+.vel-msg { background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.3); }
+.vel-msg .tfp-msg-tag { background: #10b981; }
+.vel-msg.e { background: rgba(79, 70, 229, 0.06); border-color: rgba(79, 70, 229, 0.25); }
+.vel-msg.e .tfp-msg-tag { background: #4f46e5; }
+.vel-two { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 0.7rem; align-items: start; }
+.vel-two.e { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+@container (max-width: 600px) { .vel-two, .vel-two.e { grid-template-columns: 1fr; } }
+.vel-side { display: flex; flex-direction: column; gap: 0.7rem; }
+.vel-plotcard { padding: 0.45rem; }
+.vel-plot, .vel-mini, .vel-echart { width: 100%; height: auto; display: block; user-select: none; touch-action: none; }
+.vel-mini { max-width: 300px; margin: 0 auto; }
+.vel-bg { fill: #fff; stroke: #cbd5e1; }
+.vel-grid { stroke: #e2e8f0; stroke-dasharray: 3 3; }
+.vel-tick { font: 500 10px 'JetBrains Mono', monospace; fill: #94a3b8; }
+.vel-tick.on { fill: #4f46e5; font-weight: 800; }
+.vel-ax { font: 600 11px 'Outfit', sans-serif; fill: #64748b; }
+.vel-edge { stroke: #334155; stroke-width: 1.8; stroke-linejoin: round; }
+.vel-edge.thin { stroke-width: 1.1; stroke-opacity: 0.6; }
+.vel-pt { cursor: pointer; }
+.vel-selring { fill: none; stroke: #0f172a; stroke-width: 1.8; stroke-dasharray: 3 2; }
+.vel-dist { stroke-width: 1.3; stroke-dasharray: 2 3; stroke-opacity: 0.9; }
+.vel-dist.min { stroke-width: 2.6; stroke-dasharray: none; }
+.vel-mem { stroke-width: 1; stroke-opacity: 0.45; }
+.vel-handle { cursor: grab; }
+.vel-handle.drag { cursor: grabbing; }
+.vel-handle.drag path { filter: drop-shadow(0 2px 4px rgba(15, 23, 42, 0.35)); }
+.vel-ctxt { font: 800 11px 'JetBrains Mono', monospace; fill: #fff; text-anchor: middle; pointer-events: none; }
+.vel-sw { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 0.35rem; vertical-align: -1px; flex-shrink: 0; }
+.vel-dlist { display: flex; flex-direction: column; gap: 0.25rem; }
+.vel-drow { display: grid; grid-template-columns: auto 4.2rem 1fr 2.8rem; align-items: center; gap: 0.35rem; font: 500 0.75rem 'JetBrains Mono', monospace; color: #334155; padding: 0.22rem 0.35rem; border-radius: 6px; }
+.vel-drow b { text-align: right; }
+.vel-drow.min { background: rgba(22, 163, 74, 0.1); color: #166534; }
+.vel-dbar { height: 7px; background: rgba(15, 23, 42, 0.06); border-radius: 4px; overflow: hidden; }
+.vel-dbar i { display: block; height: 100%; border-radius: 4px; opacity: 0.8; }
+.vel-table { width: 100%; border-collapse: collapse; font: 500 0.76rem 'JetBrains Mono', monospace; text-align: center; }
+.vel-table th { font: 700 0.68rem 'Outfit', sans-serif; color: var(--text-muted); padding: 0.2rem; border-bottom: 1px solid var(--border-light); }
+.vel-table td { padding: 0.25rem; border-bottom: 1px solid rgba(15, 23, 42, 0.05); }
+.vel-table td:first-child { text-align: left; font-weight: 700; }
+.vel-chord { stroke: #94a3b8; stroke-width: 1.3; stroke-dasharray: 5 4; }
+.vel-gapline { stroke: #f59e0b; stroke-width: 1.6; stroke-dasharray: 2 2; }
+.vel-elbowring { fill: rgba(245, 158, 11, 0.15); stroke: #f59e0b; stroke-width: 2.2; }
+.vel-elbowlbl { font: 700 11px 'Outfit', sans-serif; fill: #b45309; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
+.vel-kdot { fill: #fff; stroke: #4f46e5; stroke-width: 2.2; cursor: pointer; }
+.vel-kdot:hover { fill: #e0e7ff; }
+.vel-kdot.on { fill: #4f46e5; }
+.vel-explain { font-size: 0.8rem; line-height: 1.55; color: #334155; }
+.vel-explain p { margin: 0.35rem 0; font-size: 0.8rem; line-height: 1.55; }
+.vel-kstat { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.vel-kstat span { font: 600 0.72rem 'JetBrains Mono', monospace; padding: 0.15rem 0.55rem; border-radius: 999px; background: rgba(79, 70, 229, 0.08); color: #3730a3; }
+.vel-caveat { color: var(--text-muted); font-size: 0.76rem !important; }
+.vel-bars { margin-top: 0.5rem; border-top: 1px solid var(--border-light); padding-top: 0.5rem; }
+.vel-bhead { font: 700 0.76rem 'Outfit', sans-serif; color: var(--text-secondary); margin-bottom: 0.3rem; }
+.vel-bhead span { font-weight: 500; color: var(--text-muted); }
+.vel-brow { display: grid; grid-template-columns: 2.6rem 1fr 3.6rem; align-items: center; gap: 0.5rem; font: 600 0.72rem 'JetBrains Mono', monospace; color: var(--text-secondary); padding: 0.12rem 0.3rem; border-radius: 6px; cursor: pointer; }
+.vel-brow:hover { background: rgba(79, 70, 229, 0.05); }
+.vel-brow.on { background: rgba(79, 70, 229, 0.1); }
+.vel-brow b { text-align: right; }
+.vel-bbar { height: 10px; background: rgba(15, 23, 42, 0.05); border-radius: 4px; overflow: hidden; }
+.vel-bbar i { display: block; height: 100%; border-radius: 4px; background: #a5b4fc; }
+.vel-brow.elb .vel-bbar i { background: #f59e0b; }
+.vel-brow.elb span::after { content: ' ◆'; color: #f59e0b; }
