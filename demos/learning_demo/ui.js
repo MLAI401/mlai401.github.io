@@ -6,7 +6,7 @@
  *     0. Evolution: Knowledge & Logic → Learning & Decisions
  *     1. Text Features: Bag-of-Words & TF-IDF
  *     2. Naive Bayes Classification
- *     3. Model Evaluation & Performance Metrics
+ *     3. Model Evaluation & Performance Metrics (interactive lab: evaluation_lab.js)
  *     4. Neural Networks & Gradient Optimization (Shallow NN lab: shallow_nn_lab.js)
  *     5. Unsupervised Learning: K-Means Clustering
  *     6. Sequential Decisions & MDPs
@@ -114,14 +114,14 @@
         def: 'A 2×2 contingency table of True Positives (TP), False Positives (FP), True Negatives (TN), and False Negatives (FN).',
         notation: 'Accuracy = (TP+TN)/N · Precision = TP/(TP+FP) · Recall = TP/(TP+FN)',
         tip: 'FP = False Alarm (good email marked spam); FN = Missed Detection (spam in your inbox).',
-        render: renderConfusionMatrixStudio
+        render: col => { if (window.EvaluationLab) window.EvaluationLab.render(col, 'matrix'); else renderConfusionMatrixStudio(col); }
       },
       {
         key: 'f1_tradeoff', name: 'Precision-Recall Trade-off & F1-Score',
         def: 'F1-Score is the harmonic mean of Precision and Recall. Adjusting the classification threshold trades off false alarms against missed detections.',
         notation: 'F₁ = 2 × (Precision × Recall) / (Precision + Recall) = 2TP / (2TP + FP + FN)',
         tip: 'The harmonic mean heavily penalizes severe imbalances (if Precision is 1.0 but Recall is 0.0, F1 is 0.0).',
-        render: renderF1TradeoffStudio
+        render: col => { if (window.EvaluationLab) window.EvaluationLab.render(col, 'pr'); else renderF1TradeoffStudio(col); }
       }
     ],
     neural_nets: [
