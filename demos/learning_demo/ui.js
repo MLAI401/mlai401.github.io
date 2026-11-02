@@ -130,7 +130,7 @@
         def: 'The foundational computing unit that computes a weighted sum of inputs and applies a threshold activation: h(x) = step(w^T x + b). Fails on XOR.',
         notation: 'z = w^T x + b · h(x) = step(z) · XOR: (0,0)→0, (1,1)→0, (0,1)→1, (1,0)→1',
         tip: 'A single perceptron can only learn linear boundaries. Minsky & Papert (1969) proved it cannot solve XOR — the shallow network lab in the next chips fixes this with one hidden layer.',
-        render: renderPerceptronXORDemo
+        render: col => { if (window.PerceptronLab) window.PerceptronLab.render(col); else renderPerceptronXORDemo(col); }
       },
       {
         key: 'nn_forward', name: 'Forward Pass & Activations', labInConcept: true,

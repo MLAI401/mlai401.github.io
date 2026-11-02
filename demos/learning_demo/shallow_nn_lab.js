@@ -384,7 +384,7 @@
     };
     let s = `<svg viewBox="0 0 ${Wd} ${Ht}" class="snn-net" role="img" aria-label="Network diagram">`;
     for (let j = 0; j < H; j++) for (let k = 0; k < 2; k++) s += edge(xi + r, yIn[k], xh - r, yH[j], vals.W[j][k], k === 0 ? 0.3 : 0.3);
-    for (let j = 0; j < H; j++) s += edge(xh + r, yH[j], xo - r, yO, vals.v[j], 0.55);
+    for (let j = 0; j < H; j++) s += edge(xh + r, yH[j], xo - r, yO, vals.v[j], 0.68);
     const diag = unitDiag(p, state.act, a.fws);
     // input nodes
     for (let k = 0; k < 2; k++) {
@@ -397,21 +397,32 @@
       const hv = fw.h[j];
       const inten = K < 3 ? 0 : state.act === 'relu' ? Math.min(1, hv / 2) : state.act === 'sigmoid' ? hv : Math.abs(hv);
       const flag = K < FWD_LAST ? '' : diag[j].dead ? 'dead' : diag[j].saturated ? 'sat' : '';
-      const top = opt.edge === 'g' ? `δ${sub(j + 1)}=${fmt(bw.dz[j], 3)}` : K >= 1 ? `b=${fmt(p.b[j], 2)}` : '';
+      const z = opt.edge !== 'g' && K === 2;                // Step 2: node holds the weighted sum z
+      const nodeTxt = z ? fmt(fw.z[j], 2) : K >= 3 ? fmt(hv, 2) : '—';
+      const lbl = opt.edge === 'g' ? `h${sub(j + 1)}` : K === 2 ? `z${sub(j + 1)}` : K >= 3 ? `h${sub(j + 1)} = g(z${sub(j + 1)})` : `h${sub(j + 1)}`;
       s += `<circle cx="${xh}" cy="${yH[j]}" r="${r}" class="snn-node hid ${flag}" style="--i:${inten.toFixed(3)}"/>` +
-        `<text x="${xh}" y="${yH[j] + 4}" class="snn-nv">${K >= 3 ? fmt(hv, 2) : '—'}</text>` +
-        `<text x="${xh}" y="${yH[j] - r - 4}" class="snn-nb">${top}</text>` +
-        `<text x="${xh + r + 4}" y="${yH[j] + r + 2}" class="snn-nl">h${sub(j + 1)}${K >= 2 && opt.edge !== 'g' ? ` · z=${fmt(fw.z[j], 2)}` : ''}${flag === 'dead' ? ' · inactive' : flag === 'sat' ? ' · saturated' : ''}</text>`;
+        `<text x="${xh}" y="${yH[j] + 4}" class="snn-nv">${nodeTxt}</text>` +
+        (opt.edge === 'g' ? `<text x="${xh}" y="${yH[j] - r - 4}" class="snn-nb">δ${sub(j + 1)}=${fmt(bw.dz[j], 3)}</text>` : K >= 1 ? biasArrow(xh, yH[j], r, `b=${fmt(p.b[j], 2)}`) : '') +
+        `<text x="${xh + r + 4}" y="${yH[j] + r + 2}" class="snn-nl">${lbl}${flag === 'dead' ? ' · inactive' : flag === 'sat' ? ' · saturated' : ''}</text>`;
     }
     // output node
-    const ot = opt.edge === 'g' ? `δo=${fmt(bw.dOut, 3)}` : K >= 1 ? `b2=${fmt(p.c, 2)}` : '';
+    const showZo = opt.edge !== 'g' && K === 4;              // Step 4: node holds z_o; Step 5+: node holds ŷ
+    const oTxt = showZo ? fmt(fw.zo, 2) : K >= 5 ? fmt(fw.yhat, 2) : '—';
+    const oLbl = showZo ? 'z_o' : 'ŷ = σ(z_o)';
     s += `<circle cx="${xo}" cy="${yO}" r="${r + 3}" class="snn-node out" style="--i:${K >= 5 ? fw.yhat.toFixed(3) : 0}"/>` +
-      `<text x="${xo}" y="${yO + 4}" class="snn-nv">${K >= 5 ? fmt(fw.yhat, 2) : '—'}</text>` +
-      `<text x="${xo}" y="${yO - r - 8}" class="snn-nb">${ot}</text>` +
-      `<text x="${xo}" y="${yO + r + 17}" class="snn-nl" text-anchor="middle">ŷ = σ(z_o)${K >= 4 && opt.edge !== 'g' ? ` · z_o=${fmt(fw.zo, 2)}` : ''}</text>` +
+      `<text x="${xo}" y="${yO + 4}" class="snn-nv">${oTxt}</text>` +
+      (opt.edge === 'g' ? `<text x="${xo}" y="${yO - r - 8}" class="snn-nb">δo=${fmt(bw.dOut, 3)}</text>` : K >= 1 ? biasArrow(xo, yO, r + 3, `b2=${fmt(p.c, 2)}`) : '') +
+      `<text x="${xo}" y="${yO + r + 17}" class="snn-nl" text-anchor="middle">${oLbl}</text>` +
       `<text x="${xo}" y="${yO + r + 31}" class="snn-nl" text-anchor="middle">target y = ${fw.y}</text>`;
     s += '</svg>';
     return s;
+  }
+  // Short arrow pointing down into a node, labelled with its bias.
+  function biasArrow(cx, cy, r, txt) {
+    const y2 = cy - r - 1, y1 = y2 - 12;
+    return `<line x1="${cx}" y1="${y1}" x2="${cx}" y2="${y2 - 4}" class="snn-barr"/>` +
+      `<path d="M${cx - 3.5} ${y2 - 5} L${cx + 3.5} ${y2 - 5} L${cx} ${y2} Z" class="snn-barr-h"/>` +
+      `<text x="${cx + 5}" y="${y1 + 4}" class="snn-nb snn-bl">${txt}</text>`;
   }
   function sub(n) { return String(n).split('').map(c => '₀₁₂₃₄₅₆₇₈₉'[+c]).join(''); }
 

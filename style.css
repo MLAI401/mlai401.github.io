@@ -8372,6 +8372,9 @@ text.csp-hyper-label { paint-order: normal; }
 .snn-nv { font: 700 11px 'JetBrains Mono', monospace; fill: #0f172a; text-anchor: middle; }
 .snn-nb { font: 600 9.5px 'JetBrains Mono', monospace; fill: #475569; text-anchor: middle; }
 .snn-nl { font: 600 10.5px 'Outfit', sans-serif; fill: #64748b; }
+.snn-barr { stroke: #7c3aed; stroke-width: 1.6; }
+.snn-barr-h { fill: #7c3aed; }
+.snn-bl { text-anchor: start; fill: #7c3aed; }
 .snn-elbl { font: 700 9.5px 'JetBrains Mono', monospace; text-anchor: middle; paint-order: stroke; stroke: #fff; stroke-width: 3px; }
 
 /* plots */
