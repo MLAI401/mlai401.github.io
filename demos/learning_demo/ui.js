@@ -190,14 +190,14 @@
         def: 'Formal framework for sequential decisions: State space S, Action space A, Transition dynamics P(s\' | s, a), Reward function R(s, a, s\'), and Discount factor γ.',
         notation: 'Return G_t = ∑_{k=0}^∞ γ^k R_{t+k+1} · Discount γ ∈ [0, 1)',
         tip: 'The Markov property asserts that future state transitions depend only on current state s and action a, not past history.',
-        render: renderGridWorldEnv
+        render: col => { if (window.MDPLab) window.MDPLab.render(col, 'tuple'); else renderGridWorldEnv(col); }
       },
       {
         key: 'value_functions', name: 'State-Value V(s) & Action-Value Q(s, a)',
         def: 'V^π(s) is expected return starting in state s under policy π. Q^π(s, a) is expected return taking action a in state s then following π.',
         notation: 'V^π(s) = 𝔼_π[G_t | S_t = s] · Q^π(s, a) = 𝔼_π[G_t | S_t = s, A_t = a]',
         tip: 'V(s) measures state goodness; Q(s, a) measures action goodness to guide greedy decision-making.',
-        render: renderValueAndQOverlay
+        render: col => { if (window.MDPLab) window.MDPLab.render(col, 'values'); else renderValueAndQOverlay(col); }
       }
     ],
     value_iteration: [
@@ -206,14 +206,14 @@
         def: 'The optimal state value V*(s) equals the maximum expected return across all available actions: immediate expected reward plus discounted future value.',
         notation: 'V*(s) = max_{a ∈ A} ∑_{s\'} P(s\' | s, a) [ R(s, a, s\') + γ V*(s\') ]',
         tip: 'Recursive consistency: the optimal value of today equals the best immediate reward plus the discounted optimal value of tomorrow.',
-        render: renderBellmanBackupDiagram
+        render: col => { if (window.RLLab) window.RLLab.render(col, 'bellman'); else renderBellmanBackupDiagram(col); }
       },
       {
         key: 'vi_algorithm', name: 'Value Iteration & Policy Extraction',
         def: 'Turns Bellman Optimality into an iterative contraction mapping update V_{k+1}(s) until convergence; extracts optimal policy π*(s) by 1-step lookahead.',
         notation: 'V_{k+1}(s) ← max_a ∑ P(s\' | s, a) [ R + γ V_k(s\') ] · π*(s) = argmax_a [ … ]',
         tip: 'Values diffuse outward from reward states across the grid until reaching steady-state equilibrium.',
-        render: renderValueIterationHeatmap
+        render: col => { if (window.RLLab) window.RLLab.render(col, 'vi'); else renderValueIterationHeatmap(col); }
       }
     ],
     q_learning: [
@@ -222,14 +222,14 @@
         def: 'Model-free bootstrapping: updates value estimates using the immediate reward and next-state estimate without waiting for episode termination.',
         notation: 'TD Target = r + γ max_{a\'} Q(s\', a\') · TD Error δ = TD Target - Q(s, a)',
         tip: 'TD error measures the "surprise" between expectation and immediate experienced outcome.',
-        render: renderTDErrorVisualizer
+        render: col => { if (window.RLLab) window.RLLab.render(col, 'td'); else renderTDErrorVisualizer(col); }
       },
       {
         key: 'q_learning_rule', name: 'Tabular Q-Learning & ε-Greedy',
         def: 'Off-policy TD control update rule: Q(s,a) ← Q(s,a) + α [ r + γ max_{a\'} Q(s\', a\') - Q(s, a) ]. Balances exploration vs. exploitation via ε.',
         notation: 'Q(s, a) ← Q(s, a) + α [ r + γ max_{a\'} Q(s\', a\') - Q(s, a) ]',
         tip: 'Q-Learning is off-policy because it updates toward the greedy optimal action regardless of which exploratory action was actually taken.',
-        render: renderQLearningSimulator
+        render: col => { if (window.RLLab) window.RLLab.render(col, 'qlearn'); else renderQLearningSimulator(col); }
       }
     ],
     comparison: [

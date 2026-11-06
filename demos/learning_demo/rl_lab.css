@@ -1,0 +1,109 @@
+/* ===== RL labs on the shared Grid World (Topic 07 Value Iteration · Topic 08 TD / Q-learning) =====
+   Builds on mdp_lab.css (mdl-* classes); only the extra pieces live here. */
+.rll-viz > .mdl-settings { margin-top: -0.25rem; }
+
+/* Bellman */
+.rll-tree { width: 100%; height: auto; display: block; }
+.rll-edge { stroke: #cbd5e1; stroke-width: 2; }
+.rll-edge.thin { stroke-width: 1.3; }
+.rll-edge.best { stroke: #f59e0b; stroke-width: 3; }
+.rll-edge.thin.best { stroke-width: 2; }
+.rll-edge.sel { stroke: var(--c-a); stroke-dasharray: 5 3; }
+.rll-ep { font: 700 9px 'JetBrains Mono', monospace; fill: #b45309; text-anchor: middle; }
+.rll-leaf { fill: #fff; stroke: #cbd5e1; }
+.rll-leaf.goal { fill: #dcfce7; stroke: #10b981; } .rll-leaf.pit { fill: #ffe4e6; stroke: #f43f5e; }
+.rll-leaf-t { font: 600 8.5px 'JetBrains Mono', monospace; fill: #64748b; text-anchor: middle; }
+.rll-leaf-v { font: 800 9.5px 'JetBrains Mono', monospace; fill: #0f172a; text-anchor: middle; }
+.rll-anode { cursor: pointer; }
+.rll-act { fill: #fff; stroke: #94a3b8; stroke-width: 2; transition: all 0.2s; }
+.rll-anode:hover .rll-act { stroke: var(--c-a); }
+.rll-act.best { fill: #fef3c7; stroke: #f59e0b; stroke-width: 3; }
+.rll-act.sel { stroke: var(--c-a); stroke-width: 3.5; }
+.rll-act-t { font: 800 15px 'Outfit', sans-serif; fill: #334155; text-anchor: middle; pointer-events: none; }
+.rll-qv { font: 700 10.5px 'JetBrains Mono', monospace; fill: #475569; text-anchor: middle; }
+.rll-qv.best { fill: #b45309; font-weight: 800; }
+.rll-max { fill: #0f172a; }
+.rll-max-t { font: 800 9px 'Outfit', sans-serif; fill: #fff; text-anchor: middle; }
+.rll-root-v { font: 800 12px 'JetBrains Mono', monospace; fill: #047857; }
+.mdl-cl.bestl { background: rgba(245, 158, 11, 0.13); color: #78350f; }
+.mdl-cl.rll-click { cursor: pointer; }
+.mdl-cl.rll-click:hover { box-shadow: inset 3px 0 0 var(--c-a); }
+.rll-sub { margin-top: 0.55rem; display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.78rem; color: var(--text-primary); }
+
+/* Value iteration */
+.rll-iter { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 0.45rem; }
+.rll-iter span { font: 700 0.8rem 'Outfit', sans-serif; color: var(--text-secondary); }
+.rll-iter b { font: 800 1.7rem 'JetBrains Mono', monospace; color: #4f46e5; }
+.rll-dv { font: 700 10px 'JetBrains Mono', monospace; fill: #0e7490; text-anchor: end; }
+.rll-changed { fill: none; stroke: #06b6d4; stroke-width: 2; pointer-events: none; animation: rllPulse 0.9s ease; }
+@keyframes rllPulse { from { stroke-width: 6; stroke-opacity: 1; } to { stroke-width: 2; stroke-opacity: 0.6; } }
+.rll-kv { display: grid; grid-template-columns: auto auto auto auto auto auto; gap: 0.3rem 0.5rem; align-items: baseline; justify-content: start; font: 600 0.78rem 'JetBrains Mono', monospace; color: var(--text-secondary); }
+.rll-kv b { font: 800 1.05rem 'JetBrains Mono', monospace; color: var(--text-primary); margin-right: 0.6rem; }
+.rll-kv b.pos { color: #047857; }
+.mdl-legend i.rll-lg-ch { width: 13px; height: 10px; border: 2px solid #06b6d4; border-radius: 3px; }
+.mdl-legend i.rll-lg-sel { width: 14px; height: 10px; border: 2.5px dashed var(--c-a); border-radius: 2px; }
+.mdl-legend i.rll-lg-trail { width: 18px; border-top: 2px dashed #334155; }
+.mdl-legend i.lg-bestw { width: 14px; height: 10px; border: 2.5px solid #f59e0b; border-radius: 2px; }
+
+/* stats */
+.rll-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem; margin-top: 0.55rem; }
+.rll-stats > div { display: flex; flex-direction: column; padding: 0.3rem 0.45rem; border-radius: 8px; background: rgba(15, 23, 42, 0.035); }
+.rll-stats > div.wide { grid-column: 1 / -1; }
+.rll-stats > div.ok { background: rgba(16, 185, 129, 0.12); }
+.rll-stats span { font: 600 0.64rem 'Outfit', sans-serif; color: var(--text-muted); }
+.rll-stats b { font: 800 0.86rem 'JetBrains Mono', monospace; color: var(--text-primary); }
+.rll-stats > div.ok b { color: #047857; }
+
+/* charts */
+.rll-chart { width: 100%; height: auto; display: block; }
+.rll-grid { stroke: #e2e8f0; stroke-dasharray: 3 3; }
+.rll-zero { stroke: #94a3b8; }
+.rll-tick { font: 500 9px 'JetBrains Mono', monospace; fill: #94a3b8; }
+.rll-tick.theta { fill: #be123c; font-weight: 700; }
+.rll-hl { stroke: #f43f5e; stroke-dasharray: 5 4; stroke-width: 1.4; }
+.rll-line { fill: none; stroke-width: 2.2; stroke-linejoin: round; }
+.rll-line.c1 { stroke: #4f46e5; } .rll-line.c2 { stroke: #10b981; } .rll-line.dash { stroke-dasharray: 5 3; }
+.rll-dot.c1 { fill: #4f46e5; } .rll-dot.c2 { fill: #10b981; } .rll-dot.c3 { fill: rgba(100, 116, 139, 0.45); }
+.rll-key { display: flex; flex-wrap: wrap; gap: 0.2rem 0.8rem; justify-content: center; font-size: 0.68rem; color: var(--text-muted); margin-top: 0.2rem; }
+.rll-key span { display: inline-flex; align-items: center; gap: 0.3rem; }
+.rll-key i { display: inline-block; width: 16px; border-top: 2.5px solid; }
+.rll-key i.c1 { border-color: #4f46e5; } .rll-key i.c2 { border-color: #10b981; border-top-style: dashed; }
+.rll-key i.c3 { width: 7px; height: 7px; border: none; border-radius: 50%; background: #94a3b8; }
+.rll-key i.th { border-color: #f43f5e; border-top-style: dashed; }
+
+/* learner grid */
+.rll-trail { fill: none; stroke: #334155; stroke-width: 2; stroke-dasharray: 4 4; stroke-opacity: 0.55; pointer-events: none; }
+.rll-tr { stroke: var(--c-a); stroke-width: 3; stroke-linecap: round; pointer-events: none; opacity: 0.6; }
+.rll-miss { font: 800 10px 'Outfit', sans-serif; fill: #e11d48; text-anchor: end; }
+
+/* TD number line + δ bars */
+.rll-nl { width: 100%; height: auto; display: block; margin-bottom: 0.35rem; }
+.rll-axis { stroke: #94a3b8; stroke-width: 1.5; }
+.rll-dl { stroke: #d97706; stroke-width: 2; stroke-dasharray: 5 4; }
+.rll-dlt { font: 800 11px 'JetBrains Mono', monospace; fill: #b45309; text-anchor: middle; }
+.rll-step { stroke: var(--c-a); stroke-width: 4; }
+.rll-pt.old { fill: #fff; stroke: #334155; stroke-width: 2.5; }
+.rll-pt.tgt { fill: #f59e0b; stroke: #92400e; stroke-width: 1.5; }
+.rll-pt.nw { fill: var(--c-a); stroke: #fff; stroke-width: 2; }
+.rll-ptl { font: 700 10.5px 'JetBrains Mono', monospace; fill: #334155; }
+.rll-ptl.tgt { fill: #b45309; } .rll-ptl.nw { fill: #6d28d9; }
+.rll-db.pos { fill: #10b981; } .rll-db.neg { fill: #f43f5e; }
+.rll-db.last { stroke: #0f172a; stroke-width: 1.2; }
+.rll-explore { color: #b45309; } .rll-exploit { color: #047857; }
+@container (max-width: 600px) { .rll-kv { grid-template-columns: auto auto; } }
+
+.mdl-legend span.t, .rll-key span.t { display: inline; }
+/* Bellman candidate ranking */
+.rll-rk { display: grid; grid-template-columns: 1.6rem 1fr 3.8rem; gap: 0.45rem; align-items: center; padding: 0.3rem 0.4rem; border-radius: 8px; cursor: pointer; border: 1px solid transparent; }
+.rll-rk:hover { background: rgba(124, 58, 237, 0.05); }
+.rll-rk.best { background: rgba(245, 158, 11, 0.12); }
+.rll-rk.sel { border-color: var(--c-a); }
+.rll-rk .g { font: 800 1.1rem 'Outfit', sans-serif; color: #334155; text-align: center; }
+.rll-rk b { font: 800 0.82rem 'JetBrains Mono', monospace; text-align: right; color: var(--text-primary); }
+.rll-rk.best b { color: #b45309; }
+.rll-rk-t { position: relative; height: 12px; border-radius: 4px; background: rgba(15, 23, 42, 0.05); }
+.rll-rk-t i { position: absolute; top: 0; bottom: 0; border-radius: 3px; background: #10b981; }
+.rll-rk-t i.neg { background: #f43f5e; }
+.rll-rk.best .rll-rk-t i { background: #f59e0b; }
+.rll-rk-t em { position: absolute; top: -2px; bottom: -2px; border-left: 1px solid #64748b; }
+.rll-rk-max { margin-top: 0.4rem; padding: 0.35rem 0.5rem; border-radius: 8px; background: rgba(16, 185, 129, 0.12); font: 600 0.76rem 'JetBrains Mono', monospace; color: #065f46; }
