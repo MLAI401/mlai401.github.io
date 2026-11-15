@@ -5613,6 +5613,31 @@ body.sl-page::after {
   box-shadow: none !important;
 }
 
+/* Topic 01 / 02 lecture top bar: Reading Notes + Interactive Demo
+   (same layout as Topic 03 and .csp-topbar-actions on Topic 04). */
+.lecture-topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-left: auto;
+}
+.lecture-topbar-actions .sl-reading-btn { margin-left: 0; }
+.pf-demo-btn {
+  background: rgba(124, 58, 237, 0.1) !important;
+  border: 1px solid rgba(124, 58, 237, 0.25);
+  color: var(--accent-purple) !important;
+  box-shadow: none !important;
+}
+.sl-demo-btn {
+  background: var(--color-green-100, rgba(63, 143, 47, 0.1)) !important;
+  border: 1px solid rgba(63, 143, 47, 0.28);
+  color: var(--color-green-700, #3f8f2f) !important;
+  box-shadow: none !important;
+}
+@media (max-width: 900px) {
+  .lecture-topbar-actions { margin-left: 0; }
+}
+
 /* ---- Concept column ---- */
 .csp-concept { display: flex; flex-direction: column; gap: 0.85rem; }
 .csp-page .sl-concept-col { padding: 1.4rem 1.9rem; }
