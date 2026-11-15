@@ -119,14 +119,14 @@
       if (cur && cur.k === "final") R.goals.forEach(function (_, i) { doneSet[i] = 1; });
       const curGoal = cur ? cur.g : 0;
       const nodes = [["Thought", "reason"], ["Action", "call a tool"], ["Observation", "read result"], ["Answer", "goal met?"]];
-      const cyc = '<svg class="ag-svg ag-cycle" viewBox="0 0 300 200" role="img" aria-label="ReAct cycle"><defs><marker id="rca" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#7c3aed"/></marker></defs>' +
+      const cyc = '<svg class="ag-svg ag-cycle" viewBox="0 0 300 200" role="img" aria-label="ReAct cycle"><defs><marker id="rca" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#2461c0"/></marker></defs>' +
         [[150, 30], [245, 100], [150, 170], [55, 100]].map(function (p, i) {
-          const on = i === ph, col = ["#b45309", "#6d28d9", "#047857", "#1e1b4b"][i];
-          return '<rect x="' + (p[0] - 46) + '" y="' + (p[1] - 18) + '" width="92" height="36" rx="18" fill="' + (on ? col : "#fff") + '" stroke="' + col + '" stroke-width="2"/><text x="' + p[0] + '" y="' + (p[1] + 1) + '" text-anchor="middle" font-size="12" font-weight="800" fill="' + (on ? "#fff" : col) + '">' + nodes[i][0] + '</text><text x="' + p[0] + '" y="' + (p[1] + 13) + '" text-anchor="middle" font-size="8.5" fill="' + (on ? "#fff" : "#6b7280") + '">' + nodes[i][1] + "</text>";
+          const on = i === ph, col = ["#b9770e", "#1b4f9c", "#3f8f2f", "#0e2f5c"][i];
+          return '<rect x="' + (p[0] - 46) + '" y="' + (p[1] - 18) + '" width="92" height="36" rx="18" fill="' + (on ? col : "#fff") + '" stroke="' + col + '" stroke-width="2"/><text x="' + p[0] + '" y="' + (p[1] + 1) + '" text-anchor="middle" font-size="12" font-weight="800" fill="' + (on ? "#fff" : col) + '">' + nodes[i][0] + '</text><text x="' + p[0] + '" y="' + (p[1] + 13) + '" text-anchor="middle" font-size="8.5" fill="' + (on ? "#fff" : "#55606f") + '">' + nodes[i][1] + "</text>";
         }).join("") +
-        '<path d="M196 36 Q236 48 240 80" fill="none" stroke="#7c3aed" stroke-width="2" marker-end="url(#rca)"/><path d="M240 120 Q232 154 198 166" fill="none" stroke="#7c3aed" stroke-width="2" marker-end="url(#rca)"/>' +
-        '<path d="M150 150 Q140 100 150 52" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#rca)"/><text x="160" y="104" font-size="10" fill="#6d28d9" font-weight="700">replan</text>' +
-        '<path d="M104 166 Q64 156 58 122" fill="none" stroke="#b9c0d0" stroke-width="2" marker-end="url(#rca)"/></svg>';
+        '<path d="M196 36 Q236 48 240 80" fill="none" stroke="#2461c0" stroke-width="2" marker-end="url(#rca)"/><path d="M240 120 Q232 154 198 166" fill="none" stroke="#2461c0" stroke-width="2" marker-end="url(#rca)"/>' +
+        '<path d="M150 150 Q140 100 150 52" fill="none" stroke="#2461c0" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#rca)"/><text x="160" y="104" font-size="10" fill="#1b4f9c" font-weight="700">replan</text>' +
+        '<path d="M104 166 Q64 156 58 122" fill="none" stroke="#c3cdda" stroke-width="2" marker-end="url(#rca)"/></svg>';
       let predictBox = "";
       if (S.predict && next && next.k === "action") {
         const p = S.picks[S.sc + st.idx];
@@ -241,11 +241,11 @@
       function paint() {
         const done = S.order.length === TASKS.length;
         const pos = { fetch: [60, 70], avg: [220, 30], plot: [220, 110], save: [380, 70] };
-        let svg = '<svg class="ag-svg" viewBox="0 0 450 140" role="img" aria-label="Subtask dependency graph"><defs><marker id="dga" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#7c3aed"/></marker></defs>';
-        TASKS.forEach(function (t) { t.needs.forEach(function (n) { svg += '<line x1="' + (pos[n][0] + 55) + '" y1="' + pos[n][1] + '" x2="' + (pos[t.id][0] - 57) + '" y2="' + pos[t.id][1] + '" stroke="#7c3aed" stroke-width="2" marker-end="url(#dga)"/>'; }); });
+        let svg = '<svg class="ag-svg" viewBox="0 0 450 140" role="img" aria-label="Subtask dependency graph"><defs><marker id="dga" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#2461c0"/></marker></defs>';
+        TASKS.forEach(function (t) { t.needs.forEach(function (n) { svg += '<line x1="' + (pos[n][0] + 55) + '" y1="' + pos[n][1] + '" x2="' + (pos[t.id][0] - 57) + '" y2="' + pos[t.id][1] + '" stroke="#2461c0" stroke-width="2" marker-end="url(#dga)"/>'; }); });
         TASKS.forEach(function (t) {
           const k = S.order.indexOf(t.id);
-          svg += '<rect x="' + (pos[t.id][0] - 55) + '" y="' + (pos[t.id][1] - 16) + '" width="110" height="32" rx="6" fill="' + (k >= 0 ? "#e9f7ee" : "#fff") + '" stroke="' + (k >= 0 ? "#2e8b47" : "#cbd2e0") + '" stroke-width="2"/><text x="' + pos[t.id][0] + '" y="' + (pos[t.id][1] + 4) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#1e1b4b">' + (k >= 0 ? (k + 1) + ". " : "") + esc(t.txt) + "</text>";
+          svg += '<rect x="' + (pos[t.id][0] - 55) + '" y="' + (pos[t.id][1] - 16) + '" width="110" height="32" rx="6" fill="' + (k >= 0 ? "#e9f7ee" : "#fff") + '" stroke="' + (k >= 0 ? "#2e8b47" : "#c3cdda") + '" stroke-width="2"/><text x="' + pos[t.id][0] + '" y="' + (pos[t.id][1] + 4) + '" text-anchor="middle" font-size="10" font-weight="700" fill="#0e2f5c">' + (k >= 0 ? (k + 1) + ". " : "") + esc(t.txt) + "</text>";
         });
         svg += "</svg>";
         el.innerHTML = '<div class="ag-ops">' + TASKS.map(function (t) {
@@ -286,15 +286,15 @@
         const xs = L1.map(function (_, k) { return 70 + k * 125; });
         if (i >= 1) L1.forEach(function (n, k) {
           const pruned = i >= 3 && n.ev === "impossible";
-          svg += '<line x1="' + rx + '" y1="44" x2="' + xs[k] + '" y2="104" stroke="' + (pruned ? "#f3b4c0" : "#b9c0d0") + '" stroke-width="2"' + (pruned ? ' stroke-dasharray="5 4"' : "") + "/>";
+          svg += '<line x1="' + rx + '" y1="44" x2="' + xs[k] + '" y2="104" stroke="' + (pruned ? "#f2b8b0" : "#c3cdda") + '" stroke-width="2"' + (pruned ? ' stroke-dasharray="5 4"' : "") + "/>";
           if (i >= 4 && n.kid) svg += '<line x1="' + xs[k] + '" y1="136" x2="' + xs[k] + '" y2="190" stroke="#2e8b47" stroke-width="3"/>';
         });
-        svg += '<g class="ag-tnode is-open"><rect x="' + (rx - 60) + '" y="12" width="120" height="32" rx="8"/><text x="' + rx + '" y="33" text-anchor="middle" font-size="12" font-weight="800" fill="#1e1b4b">{2, 3, 4}</text></g>';
+        svg += '<g class="ag-tnode is-open"><rect x="' + (rx - 60) + '" y="12" width="120" height="32" rx="8"/><text x="' + rx + '" y="33" text-anchor="middle" font-size="12" font-weight="800" fill="#0e2f5c">{2, 3, 4}</text></g>';
         if (i >= 1) L1.forEach(function (n, k) {
           const cls = i >= 2 ? (n.ev === "sure" ? "is-good" : n.ev === "impossible" ? "is-bad" : "is-open") : "";
-          svg += '<g class="ag-tnode ' + cls + '" tabindex="0" data-tot="' + k + '"><rect x="' + (xs[k] - 58) + '" y="104" width="116" height="32" rx="8"' + (S.sel === k ? ' style="stroke-width:4"' : "") + '/><text x="' + xs[k] + '" y="124" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1e1b4b">' + esc(n.txt) + "</text></g>";
-          if (i >= 2) svg += '<text x="' + xs[k] + '" y="152" text-anchor="middle" font-size="10" font-weight="800" fill="' + (n.ev === "sure" ? "#2e8b47" : n.ev === "impossible" ? "#be123c" : "#b45309") + '">' + n.ev + (i >= 3 && n.ev === "impossible" ? " ✂" : i >= 3 && n.ev === "maybe" ? " (not expanded, b = 2)" : "") + "</text>";
-          if (i >= 4 && n.kid) svg += '<g class="ag-tnode is-goal"><rect x="' + (xs[k] - 52) + '" y="190" width="104" height="32" rx="8"/><text x="' + xs[k] + '" y="210" text-anchor="middle" font-size="11" font-weight="800" fill="#14532d">' + esc(n.kid) + "</text></g>";
+          svg += '<g class="ag-tnode ' + cls + '" tabindex="0" data-tot="' + k + '"><rect x="' + (xs[k] - 58) + '" y="104" width="116" height="32" rx="8"' + (S.sel === k ? ' style="stroke-width:4"' : "") + '/><text x="' + xs[k] + '" y="124" text-anchor="middle" font-size="10.5" font-weight="700" fill="#0e2f5c">' + esc(n.txt) + "</text></g>";
+          if (i >= 2) svg += '<text x="' + xs[k] + '" y="152" text-anchor="middle" font-size="10" font-weight="800" fill="' + (n.ev === "sure" ? "#2e8b47" : n.ev === "impossible" ? "#c0392b" : "#b9770e") + '">' + n.ev + (i >= 3 && n.ev === "impossible" ? " ✂" : i >= 3 && n.ev === "maybe" ? " (not expanded, b = 2)" : "") + "</text>";
+          if (i >= 4 && n.kid) svg += '<g class="ag-tnode is-goal"><rect x="' + (xs[k] - 52) + '" y="190" width="104" height="32" rx="8"/><text x="' + xs[k] + '" y="210" text-anchor="middle" font-size="11" font-weight="800" fill="#2a6a1f">' + esc(n.kid) + "</text></g>";
         });
         svg += "</svg>";
         const sel = S.sel !== null ? L1[S.sel] : null;
@@ -336,7 +336,7 @@
         const i = st.idx, m = i > 0 ? MA_MSGS[i - 1] : null;
         let code = null; MA_MSGS.slice(0, i).forEach(function (x) { if (x.code) code = x.code; });
         const fixed = code && code.indexOf("b == 0") >= 0;
-        let svg = '<svg class="ag-svg" viewBox="0 0 460 215" role="img" aria-label="Manager, Developer and Critic agents"><defs><marker id="maa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#6d28d9"/></marker></defs>';
+        let svg = '<svg class="ag-svg" viewBox="0 0 460 215" role="img" aria-label="Manager, Developer and Critic agents"><defs><marker id="maa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#1b4f9c"/></marker></defs>';
         [["Manager", "Developer"], ["Developer", "Critic"], ["Critic", "Manager"]].forEach(function (e) {
           const a = POS[e[0]], b = POS[e[1]];
           const on = m && ((m.from === e[0] && m.to === e[1]) || (m.from === e[1] && m.to === e[0]));
@@ -348,7 +348,7 @@
         });
         Object.keys(POS).forEach(function (n) {
           const p = POS[n], on = m && m.from === n;
-          svg += '<rect class="ag-agent' + (on ? " is-active" : "") + '" x="' + (p[0] - 55) + '" y="' + (p[1] - 24) + '" width="110" height="48" rx="10"/><text x="' + p[0] + '" y="' + (p[1] - 2) + '" text-anchor="middle" font-size="13" font-weight="800" fill="#1e1b4b">' + n + '</text><text x="' + p[0] + '" y="' + (p[1] + 14) + '" text-anchor="middle" font-size="9.5" fill="#6b7280">' + { Manager: "decomposes, delegates", Developer: "writes code", Critic: "tests, reviews" }[n] + "</text>";
+          svg += '<rect class="ag-agent' + (on ? " is-active" : "") + '" x="' + (p[0] - 55) + '" y="' + (p[1] - 24) + '" width="110" height="48" rx="10"/><text x="' + p[0] + '" y="' + (p[1] - 2) + '" text-anchor="middle" font-size="13" font-weight="800" fill="#0e2f5c">' + n + '</text><text x="' + p[0] + '" y="' + (p[1] + 14) + '" text-anchor="middle" font-size="9.5" fill="#55606f">' + { Manager: "decomposes, delegates", Developer: "writes code", Critic: "tests, reviews" }[n] + "</text>";
         });
         svg += "</svg>";
         const tests = code ? [["safe_divide(10, 2)", "5.0", true], ["safe_divide(10, 0)", fixed ? "None" : "ZeroDivisionError", fixed]] : [];

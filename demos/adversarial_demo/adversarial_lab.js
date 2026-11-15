@@ -417,19 +417,19 @@
           ctx.lineTo(childPos.x, childPos.y - 16);
 
           if (isPruned) {
-            ctx.strokeStyle = 'rgba(239, 68, 68, 0.35)';
+            ctx.strokeStyle = 'rgba(192, 57, 43, 0.35)';
             ctx.setLineDash([4, 4]);
             ctx.lineWidth = 1.5;
           } else if (isBest) {
-            ctx.strokeStyle = '#10b981'; // Emerald Green
+            ctx.strokeStyle = '#2e8b47'; // Emerald Green
             ctx.lineWidth = 3.5;
-            ctx.shadowColor = 'rgba(16, 185, 129, 0.4)';
+            ctx.shadowColor = 'rgba(46, 139, 71, 0.4)';
             ctx.shadowBlur = 8;
           } else if (isVisited) {
-            ctx.strokeStyle = '#4f46e5'; // Indigo
+            ctx.strokeStyle = '#1b4f9c'; // Indigo
             ctx.lineWidth = 2;
           } else {
-            ctx.strokeStyle = '#cbd5e1';
+            ctx.strokeStyle = '#c3cdda';
             ctx.lineWidth = 1.5;
           }
           ctx.stroke();
@@ -442,8 +442,8 @@
             const edgeText = child.prob !== 1.0 ? `p=${child.prob}` : child.action;
 
             ctx.save();
-            ctx.fillStyle = isPruned ? '#94a3b8' : '#475569';
-            ctx.font = '600 11px Outfit, sans-serif';
+            ctx.fillStyle = isPruned ? '#8a94a3' : '#55606f';
+            ctx.font = '600 11px system-ui, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(edgeText, mx + 12, my);
@@ -462,7 +462,7 @@
 
     drawScissorBadge(ctx, x, y) {
       ctx.save();
-      ctx.fillStyle = '#ef4444';
+      ctx.fillStyle = '#c0392b';
       ctx.beginPath();
       ctx.arc(x, y, 9, 0, Math.PI * 2);
       ctx.fill();
@@ -490,7 +490,7 @@
         if (isActive) {
           ctx.beginPath();
           ctx.arc(x, y, radius + 7, 0, Math.PI * 2);
-          ctx.fillStyle = 'rgba(79, 70, 229, 0.25)';
+          ctx.fillStyle = 'rgba(27, 79, 156, 0.25)';
           ctx.fill();
         }
 
@@ -510,8 +510,8 @@
         }
 
         // Label inside or above node
-        ctx.fillStyle = isPruned ? '#94a3b8' : '#ffffff';
-        ctx.font = 'bold 11px Outfit, sans-serif';
+        ctx.fillStyle = isPruned ? '#8a94a3' : '#ffffff';
+        ctx.font = 'bold 11px system-ui, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
@@ -520,8 +520,8 @@
         ctx.fillText(valText, x, y);
 
         // Node ID / Type label tag above node
-        ctx.font = '600 10px Outfit, sans-serif';
-        ctx.fillStyle = isPruned ? '#94a3b8' : '#334155';
+        ctx.font = '600 10px system-ui, sans-serif';
+        ctx.fillStyle = isPruned ? '#8a94a3' : '#2c3644';
         ctx.fillText(node.label, x, y - radius - 5);
 
         // Alpha-Beta bounds badge below node (if applicable)
@@ -545,16 +545,16 @@
           ctx.fill();
           ctx.lineWidth = 1;
           ctx.setLineDash([]);
-          ctx.strokeStyle = 'rgba(79, 70, 229, 0.35)';
+          ctx.strokeStyle = 'rgba(27, 79, 156, 0.35)';
           ctx.stroke();
-          ctx.fillStyle = '#4f46e5';
+          ctx.fillStyle = '#1b4f9c';
           ctx.fillText(badgeText, x, badgeY);
         }
 
         // MCTS visit count below node
         if (this.currentAlg === 'MCTS' && node.visits > 0) {
-          ctx.fillStyle = '#059669';
-          ctx.font = 'bold 9px Outfit, sans-serif';
+          ctx.fillStyle = '#2e8b47';
+          ctx.font = 'bold 9px system-ui, sans-serif';
           ctx.fillText(`N=${node.visits} (${node.wins}w)`, x, y + radius + 11);
         }
 
@@ -571,16 +571,16 @@
       ctx.closePath();
 
       if (isPruned) {
-        ctx.fillStyle = '#e2e8f0';
-        ctx.strokeStyle = '#cbd5e1';
+        ctx.fillStyle = '#dbe2ec';
+        ctx.strokeStyle = '#c3cdda';
       } else if (isUp) {
         // MAX: Green
-        ctx.fillStyle = isActive ? '#059669' : '#10b981';
-        ctx.strokeStyle = '#047857';
+        ctx.fillStyle = isActive ? '#2e8b47' : '#2e8b47';
+        ctx.strokeStyle = '#2a7a3f';
       } else {
         // MIN: Red/Amber
-        ctx.fillStyle = isActive ? '#dc2626' : '#ef4444';
-        ctx.strokeStyle = '#b91c1c';
+        ctx.fillStyle = isActive ? '#c0392b' : '#c0392b';
+        ctx.strokeStyle = '#a93226';
       }
       ctx.lineWidth = isActive ? 2.5 : 1.5;
       ctx.fill();
@@ -591,11 +591,11 @@
       ctx.beginPath();
       ctx.arc(x, y, r, 0, Math.PI * 2);
       if (isPruned) {
-        ctx.fillStyle = '#e2e8f0';
-        ctx.strokeStyle = '#cbd5e1';
+        ctx.fillStyle = '#dbe2ec';
+        ctx.strokeStyle = '#c3cdda';
       } else {
-        ctx.fillStyle = isActive ? '#2563eb' : '#3b82f6';
-        ctx.strokeStyle = '#1d4ed8';
+        ctx.fillStyle = isActive ? '#2461c0' : '#2461c0';
+        ctx.strokeStyle = '#1b4f9c';
       }
       ctx.lineWidth = isActive ? 2.5 : 1.5;
       ctx.fill();
@@ -606,11 +606,11 @@
       ctx.beginPath();
       ctx.roundRect(x - r, y - r, r * 2, r * 2, 4);
       if (isPruned) {
-        ctx.fillStyle = '#e2e8f0';
-        ctx.strokeStyle = '#cbd5e1';
+        ctx.fillStyle = '#dbe2ec';
+        ctx.strokeStyle = '#c3cdda';
       } else {
-        ctx.fillStyle = isActive ? '#d97706' : '#f59e0b';
-        ctx.strokeStyle = '#b45309';
+        ctx.fillStyle = isActive ? '#b9770e' : '#d4911a';
+        ctx.strokeStyle = '#b9770e';
       }
       ctx.lineWidth = isActive ? 2.5 : 1.5;
       ctx.fill();

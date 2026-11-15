@@ -460,13 +460,13 @@
   // LAB 2 — Four Learning Paradigms
   // ===========================================================================
   const PARADIGMS = [
-    { key: 'sup', name: 'Supervised', icon: 'graduation-cap', color: '#059669', gets: 'labelled pairs ⟨x, y⟩', goal: 'learn h(x) ≈ y — a decision boundary',
+    { key: 'sup', name: 'Supervised', icon: 'graduation-cap', color: '#2e8b47', gets: 'labelled pairs ⟨x, y⟩', goal: 'learn h(x) ≈ y — a decision boundary',
       how: 'Click the plot to add a labelled point. A linear classifier (logistic regression) re-fits instantly.' },
-    { key: 'nn', name: 'Neural Network', icon: 'network', color: '#6366f1', gets: 'labelled pairs ⟨x, y⟩', goal: 'learn non-linear features h(x) = σ(W₂·tanh(W₁x + b₁) + b₂)',
+    { key: 'nn', name: 'Neural Network', icon: 'network', color: '#2461c0', gets: 'labelled pairs ⟨x, y⟩', goal: 'learn non-linear features h(x) = σ(W₂·tanh(W₁x + b₁) + b₂)',
       how: 'Same labelled data, but a hidden layer lets the boundary bend. Try the Ring or XOR dataset.' },
-    { key: 'unsup', name: 'Unsupervised', icon: 'scan-search', color: '#d97706', gets: 'inputs only ⟨x⟩ — no labels', goal: 'discover structure: K groups C₁…C_K',
+    { key: 'unsup', name: 'Unsupervised', icon: 'scan-search', color: '#b9770e', gets: 'inputs only ⟨x⟩ — no labels', goal: 'discover structure: K groups C₁…C_K',
       how: 'The same points with labels hidden. K-Means groups them by distance alone.' },
-    { key: 'rl', name: 'Reinforcement', icon: 'gamepad-2', color: '#0284c7', gets: 'transitions ⟨s, a, r, s′⟩ — no dataset at all', goal: 'learn a policy π(s) that maximises reward',
+    { key: 'rl', name: 'Reinforcement', icon: 'gamepad-2', color: '#2461c0', gets: 'transitions ⟨s, a, r, s′⟩ — no dataset at all', goal: 'learn a policy π(s) that maximises reward',
       how: 'The agent explores a grid by trial and error. Reward is +20 at the goal, −10 in a pit, −1 per step.' }
   ];
   const DATASETS = [{ key: 'blobs', name: 'Two blobs' }, { key: 'ring', name: 'Ring' }, { key: 'xor', name: 'XOR' }];
@@ -761,8 +761,8 @@
 
   // Plot geometry
   const PX = v => 10 + v * 300, PY = v => 10 + (1 - v) * 300;
-  const CA = '#06b6d4', CB = '#f59e0b';
-  const KC = ['#8b5cf6', '#10b981', '#f43f5e', '#3b82f6'];
+  const CA = '#3a78d4', CB = '#d4911a';
+  const KC = ['#7c3aed', '#2e8b47', '#c0392b', '#2461c0'];
 
   function heatmap(prob) {
     const n = 26, sz = 300 / n;
@@ -786,7 +786,7 @@
       if ((a <= 0 && b > 0) || (a > 0 && b <= 0)) { const t = a / (a - b); pts.push([x1 + t * (x2 - x1), y1 + t * (y2 - y1)]); }
     });
     if (pts.length < 2) return '';
-    return `<line x1="${PX(pts[0][0])}" y1="${PY(pts[0][1])}" x2="${PX(pts[1][0])}" y2="${PY(pts[1][1])}" stroke="#0f172a" stroke-width="2" stroke-dasharray="6 4"/>`;
+    return `<line x1="${PX(pts[0][0])}" y1="${PY(pts[0][1])}" x2="${PX(pts[1][0])}" y2="${PY(pts[1][1])}" stroke="#16202e" stroke-width="2" stroke-dasharray="6 4"/>`;
   }
 
   function pdPlot() {
@@ -798,7 +798,7 @@
       let fill, stroke = '#fff';
       if (s.p === 'unsup') {
         const a = s.km.assign[i];
-        fill = a >= 0 ? KC[a] : '#94a3b8';
+        fill = a >= 0 ? KC[a] : '#8a94a3';
         if (s.showTruth) stroke = p.c === 'A' ? CA : CB;
         pts += `<circle cx="${PX(p.x)}" cy="${PY(p.y)}" r="5.5" fill="${fill}" stroke="${stroke}" stroke-width="${s.showTruth ? 2.5 : 1.5}"/>`;
       } else {
@@ -812,7 +812,7 @@
       extra += `<g transform="translate(${PX(c.x)},${PY(c.y)})"><circle r="11" fill="#fff" stroke="${KC[i]}" stroke-width="2.5"/><path d="M-5,-5L5,5M5,-5L-5,5" stroke="${KC[i]}" stroke-width="2.5"/></g>`;
     });
     return `<svg class="evo-plot" viewBox="0 0 320 320" role="img" aria-label="2D data plot">
-      <rect x="10" y="10" width="300" height="300" fill="#f8fafc" stroke="#e2e8f0"/>${bg}${extra}${pts}
+      <rect x="10" y="10" width="300" height="300" fill="#f7f9fc" stroke="#dbe2ec"/>${bg}${extra}${pts}
       ${!s.points.length ? '<text x="160" y="165" text-anchor="middle" class="evo-svg-hint">click to add points</text>' : ''}
       <text x="312" y="318" text-anchor="end" class="evo-svg-ax">x₁ →</text><text x="4" y="8" class="evo-svg-ax">x₂</text></svg>`;
   }
@@ -827,11 +827,11 @@
       const isGoal = x === GW.goal[0] && y === GW.goal[1], isPit = GW.pits.includes(k), isStart = x === GW.start[0] && y === GW.start[1];
       const Qs = ag.Q[k];
       const v = Qs ? Math.max(...Qs) : 0;
-      let fill = '#f8fafc';
-      if (isGoal) fill = '#bbf7d0'; else if (isPit) fill = '#fecdd3';
-      else if (Qs && v > 0) fill = `rgba(16,185,129,${(0.08 + 0.45 * v / maxQ).toFixed(2)})`;
-      else if (Qs && v < 0) fill = `rgba(244,63,94,${Math.min(0.35, 0.05 + -v / 30).toFixed(2)})`;
-      cells += `<rect x="${x * cs + 1}" y="${y * cs + 1}" width="${cs - 2}" height="${cs - 2}" rx="6" fill="${fill}" stroke="#e2e8f0"/>`;
+      let fill = '#f7f9fc';
+      if (isGoal) fill = '#bfe5c9'; else if (isPit) fill = '#f5c6c0';
+      else if (Qs && v > 0) fill = `rgba(46, 139, 71,${(0.08 + 0.45 * v / maxQ).toFixed(2)})`;
+      else if (Qs && v < 0) fill = `rgba(192, 57, 43,${Math.min(0.35, 0.05 + -v / 30).toFixed(2)})`;
+      cells += `<rect x="${x * cs + 1}" y="${y * cs + 1}" width="${cs - 2}" height="${cs - 2}" rx="6" fill="${fill}" stroke="#dbe2ec"/>`;
       if (isGoal) cells += `<text x="${x * cs + cs / 2}" y="${y * cs + cs / 2 + 5}" class="evo-g-lbl">+20</text>`;
       else if (isPit) cells += `<text x="${x * cs + cs / 2}" y="${y * cs + cs / 2 + 5}" class="evo-g-lbl pit">−10</text>`;
       else if (Qs && Qs.some(q => q !== 0)) {
@@ -840,9 +840,9 @@
       }
       if (isStart) cells += `<text x="${x * cs + 6}" y="${y * cs + 14}" class="evo-g-s">S</text>`;
     }
-    const path = ag.lastPath.length ? `<polyline points="${ag.lastPath.map(([x, y]) => `${x * cs + cs / 2},${y * cs + cs / 2}`).join(' ')}" fill="none" stroke="#0284c7" stroke-width="3" stroke-opacity="0.6" stroke-linejoin="round"/>` : '';
+    const path = ag.lastPath.length ? `<polyline points="${ag.lastPath.map(([x, y]) => `${x * cs + cs / 2},${y * cs + cs / 2}`).join(' ')}" fill="none" stroke="#2461c0" stroke-width="3" stroke-opacity="0.6" stroke-linejoin="round"/>` : '';
     const last = ag.lastPath.length ? ag.lastPath[ag.lastPath.length - 1] : GW.start;
-    const agent = `<circle cx="${last[0] * cs + cs / 2}" cy="${last[1] * cs + cs / 2}" r="9" fill="#0284c7" stroke="#fff" stroke-width="2"/>`;
+    const agent = `<circle cx="${last[0] * cs + cs / 2}" cy="${last[1] * cs + cs / 2}" r="9" fill="#2461c0" stroke="#fff" stroke-width="2"/>`;
     return `<svg class="evo-grid" viewBox="-2 -2 ${W + 4} ${H + 4}">${cells}${path}${agent}</svg>`;
   }
 
@@ -851,9 +851,9 @@
     const w = 300, h = 70, lo = Math.min(-15, ...vals), hi = Math.max(12, ...vals);
     const X = i => 4 + (vals.length === 1 ? 0 : i * (w - 8) / (vals.length - 1)), Y = v => h - 6 - (v - lo) / (hi - lo) * (h - 12);
     return `<svg class="evo-spark" viewBox="0 0 ${w} ${h}">
-      <line x1="0" x2="${w}" y1="${Y(0)}" y2="${Y(0)}" stroke="#e2e8f0"/><line x1="0" x2="${w}" y1="${Y(11)}" y2="${Y(11)}" stroke="#10b981" stroke-dasharray="4 3"/>
+      <line x1="0" x2="${w}" y1="${Y(0)}" y2="${Y(0)}" stroke="#dbe2ec"/><line x1="0" x2="${w}" y1="${Y(11)}" y2="${Y(11)}" stroke="#2e8b47" stroke-dasharray="4 3"/>
       <text x="${w - 2}" y="${Y(11) - 3}" text-anchor="end" class="evo-svg-ax">optimal 11</text>
-      <polyline points="${vals.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')}" fill="none" stroke="#0284c7" stroke-width="2"/></svg>`;
+      <polyline points="${vals.map((v, i) => `${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ')}" fill="none" stroke="#2461c0" stroke-width="2"/></svg>`;
   }
 
   function pdRenderViz() {
@@ -871,7 +871,7 @@
         ? `<div class="evo-legend">${s.km.cent.map((c, i) => `<span><i style="background:${KC[i]}"></i>cluster ${i + 1}</span>`).join('')}<span><i class="x"></i>centroid μ</span>${s.showTruth ? '<span>ring colour = hidden label</span>' : ''}</div>`
         : `<div class="evo-legend"><span><i style="background:${CA}"></i>class A</span><span><i class="sq" style="background:${CB}"></i>class B</span><span>shading = model's prediction</span>${s.p === 'sup' ? '<span><i class="dash"></i>boundary</span>' : ''}</div>`;
       main = card(`${P.name} view`, s.p === 'unsup' ? 'labels hidden' : s.p === 'nn' ? 'non-linear boundary' : 'linear boundary', `<div class="evo-plot-wrap">${pdPlot()}</div>${legend}`);
-      const rows = s.points.slice(0, 5).map(p => `<tr><td>${p.x.toFixed(2)}</td><td>${p.y.toFixed(2)}</td><td>${s.p === 'unsup' ? '<span class="evo-hidden">?</span>' : `<b style="color:${p.c === 'A' ? '#0e7490' : '#b45309'}">${p.c}</b>`}</td></tr>`).join('');
+      const rows = s.points.slice(0, 5).map(p => `<tr><td>${p.x.toFixed(2)}</td><td>${p.y.toFixed(2)}</td><td>${s.p === 'unsup' ? '<span class="evo-hidden">?</span>' : `<b style="color:${p.c === 'A' ? '#1b4f9c' : '#b9770e'}">${p.c}</b>`}</td></tr>`).join('');
       data = `<table class="tfp-table evo-data"><thead><tr><th>x₁</th><th>x₂</th><th>y</th></tr></thead><tbody>${rows}</tbody></table><div class="tfp-more">… ${Math.max(0, s.points.length - 5)} more rows</div>`;
     }
     PD.viz.innerHTML = `<div class="evo-viz" data-lab="paradigms">
@@ -1148,16 +1148,16 @@
     let cells = '';
     for (let i = 0; i < CORR.n; i++) {
       const term = i === CORR.coin || i === CORR.treasure;
-      const fill = i === CORR.coin ? '#fef3c7' : i === CORR.treasure ? '#bbf7d0' : '#f8fafc';
-      cells += `<rect x="${i * cw + 2}" y="22" width="${cw - 4}" height="56" rx="8" fill="${fill}" stroke="${s.traj.some(t => t.s2 === i) || i === CORR.start ? '#94a3b8' : '#e2e8f0'}"/>`;
+      const fill = i === CORR.coin ? '#fdf3e2' : i === CORR.treasure ? '#bfe5c9' : '#f7f9fc';
+      cells += `<rect x="${i * cw + 2}" y="22" width="${cw - 4}" height="56" rx="8" fill="${fill}" stroke="${s.traj.some(t => t.s2 === i) || i === CORR.start ? '#8a94a3' : '#dbe2ec'}"/>`;
       cells += `<text x="${i * cw + cw / 2}" y="16" class="evo-svg-ax" text-anchor="middle">s${i}</text>`;
       if (i === CORR.coin) cells += `<text x="${i * cw + cw / 2}" y="56" class="evo-c-r coin">+2</text><text x="${i * cw + cw / 2}" y="72" class="evo-c-sub">coin</text>`;
       else if (i === CORR.treasure) cells += `<text x="${i * cw + cw / 2}" y="56" class="evo-c-r gold">+10</text><text x="${i * cw + cw / 2}" y="72" class="evo-c-sub">treasure</text>`;
       else cells += `<text x="${i * cw + cw / 2}" y="72" class="evo-c-sub">−1 step</text>`;
       if (!term) cells += `<text x="${i * cw + cw / 2}" y="98" class="evo-c-pol">${pol[i] > 0 ? '→' : '←'}</text><text x="${i * cw + cw / 2}" y="112" class="evo-c-v">V=${f2(V[i])}</text>`;
     }
-    const trail = s.traj.length ? `<polyline points="${[s.traj[0].s].concat(s.traj.map(t => t.s2)).map((p, k) => `${p * cw + cw / 2},${44 - Math.min(k, 6)}`).join(' ')}" fill="none" stroke="#0284c7" stroke-width="2.5" stroke-opacity="0.45"/>` : '';
-    const agent = `<g transform="translate(${s.pos * cw + cw / 2},44)"><circle r="12" fill="#0284c7" stroke="#fff" stroke-width="2.5"/><circle cx="-4" cy="-2" r="2" fill="#fff"/><circle cx="4" cy="-2" r="2" fill="#fff"/></g>`;
+    const trail = s.traj.length ? `<polyline points="${[s.traj[0].s].concat(s.traj.map(t => t.s2)).map((p, k) => `${p * cw + cw / 2},${44 - Math.min(k, 6)}`).join(' ')}" fill="none" stroke="#2461c0" stroke-width="2.5" stroke-opacity="0.45"/>` : '';
+    const agent = `<g transform="translate(${s.pos * cw + cw / 2},44)"><circle r="12" fill="#2461c0" stroke="#fff" stroke-width="2.5"/><circle cx="-4" cy="-2" r="2" fill="#fff"/><circle cx="4" cy="-2" r="2" fill="#fff"/></g>`;
     const corridor = `<div class="evo-plot-wrap"><svg class="evo-corr" viewBox="0 0 ${W} 118">${cells}${trail}${agent}</svg></div>
       <div class="evo-legend"><span>arrow = optimal action at γ = ${s.gamma.toFixed(2)}</span><span>V = value of the state</span></div>`;
 
@@ -1171,17 +1171,17 @@
     const X = g => 30 + g * (cwid - 40), Y = v => 10 + (gmax - Math.max(gmin, Math.min(gmax, v))) / (gmax - gmin) * (ch - 30);
     const line = dir => Array.from({ length: 51 }, (_, i) => i / 50).map(g => `${X(g).toFixed(1)},${Y(pathReturn(dir, g)).toFixed(1)}`).join(' ');
     const chart = `<svg class="evo-gchart" viewBox="0 0 ${cwid} ${ch}">
-      <line x1="30" x2="${cwid - 10}" y1="${Y(0)}" y2="${Y(0)}" stroke="#e2e8f0"/>
+      <line x1="30" x2="${cwid - 10}" y1="${Y(0)}" y2="${Y(0)}" stroke="#dbe2ec"/>
       ${[-2, 0, 2, 4, 6].map(v => `<text x="26" y="${Y(v) + 3}" text-anchor="end" class="evo-svg-ax">${v}</text>`).join('')}
       ${[0, 0.5, 1].map(g => `<text x="${X(g)}" y="${ch - 4}" text-anchor="middle" class="evo-svg-ax">${g}</text>`).join('')}
       <text x="${cwid - 10}" y="${ch - 4}" text-anchor="end" class="evo-svg-ax">γ</text>
-      <polyline points="${line(-1)}" fill="none" stroke="#f59e0b" stroke-width="2.5"/>
-      <polyline points="${line(1)}" fill="none" stroke="#10b981" stroke-width="2.5"/>
-      ${cx ? `<line x1="${X(cx)}" x2="${X(cx)}" y1="10" y2="${ch - 20}" stroke="#94a3b8" stroke-dasharray="3 3"/>` : ''}
-      <line x1="${X(s.gamma)}" x2="${X(s.gamma)}" y1="10" y2="${ch - 20}" stroke="#0284c7" stroke-width="2"/>
-      <circle cx="${X(s.gamma)}" cy="${Y(gl)}" r="4" fill="#f59e0b"/><circle cx="${X(s.gamma)}" cy="${Y(gr)}" r="4" fill="#10b981"/>
+      <polyline points="${line(-1)}" fill="none" stroke="#d4911a" stroke-width="2.5"/>
+      <polyline points="${line(1)}" fill="none" stroke="#2e8b47" stroke-width="2.5"/>
+      ${cx ? `<line x1="${X(cx)}" x2="${X(cx)}" y1="10" y2="${ch - 20}" stroke="#8a94a3" stroke-dasharray="3 3"/>` : ''}
+      <line x1="${X(s.gamma)}" x2="${X(s.gamma)}" y1="10" y2="${ch - 20}" stroke="#2461c0" stroke-width="2"/>
+      <circle cx="${X(s.gamma)}" cy="${Y(gl)}" r="4" fill="#d4911a"/><circle cx="${X(s.gamma)}" cy="${Y(gr)}" r="4" fill="#2e8b47"/>
     </svg>
-    <div class="evo-legend"><span><i style="background:#f59e0b"></i>coin path (left): ${f2(gl)}</span><span><i style="background:#10b981"></i>treasure path (right): ${f2(gr)}</span>${cx ? `<span>paths swap at γ ≈ ${f2(cx)}</span>` : ''}</div>`;
+    <div class="evo-legend"><span><i style="background:#d4911a"></i>coin path (left): ${f2(gl)}</span><span><i style="background:#2e8b47"></i>treasure path (right): ${f2(gr)}</span>${cx ? `<span>paths swap at γ ≈ ${f2(cx)}</span>` : ''}</div>`;
 
     SQ.viz.innerHTML = `<div class="evo-viz" data-lab="sequential">
       <div class="tfp-viz-head"><h3>Static Prediction vs. Sequential Decisions</h3>

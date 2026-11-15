@@ -129,7 +129,7 @@
       // Circle
       ctx.beginPath();
       ctx.arc(cx, cy, r, 0, 2 * Math.PI);
-      ctx.strokeStyle = "rgba(139, 92, 246, 0.25)";
+      ctx.strokeStyle = "rgba(124, 58, 237, 0.25)";
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 4]);
       ctx.stroke();
@@ -141,7 +141,7 @@
       ctx.lineTo(cx + r + 15, cy);
       ctx.moveTo(cx, cy - r - 15);
       ctx.lineTo(cx, cy + r + 15);
-      ctx.strokeStyle = "rgba(148, 163, 184, 0.2)";
+      ctx.strokeStyle = "rgba(138, 148, 163, 0.2)";
       ctx.lineWidth = 1;
       ctx.stroke();
 
@@ -153,14 +153,14 @@
 
         ctx.beginPath();
         ctx.arc(px, py, isHit ? 7.5 : 4.5, 0, 2 * Math.PI);
-        ctx.fillStyle = isHit ? "#06b6d4" : "#8b5cf6";
+        ctx.fillStyle = isHit ? "#3a78d4" : "#7c3aed";
         ctx.fill();
         ctx.strokeStyle = "#ffffff";
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
         ctx.font = isHit ? "bold 11px Inter, sans-serif" : "10px Inter, sans-serif";
-        ctx.fillStyle = isHit ? "#06b6d4" : "#94a3b8";
+        ctx.fillStyle = isHit ? "#3a78d4" : "#8a94a3";
         ctx.fillText(rec.id, px + 8, py - 4);
       });
 
@@ -172,13 +172,13 @@
         ctx.beginPath();
         ctx.moveTo(cx, cy);
         ctx.lineTo(qx, qy);
-        ctx.strokeStyle = "#f43f5e";
+        ctx.strokeStyle = "#c0392b";
         ctx.lineWidth = 2.5;
         ctx.stroke();
 
         ctx.beginPath();
         ctx.arc(qx, qy, 6, 0, 2 * Math.PI);
-        ctx.fillStyle = "#f43f5e";
+        ctx.fillStyle = "#c0392b";
         ctx.fill();
         ctx.fillStyle = "#ffffff";
         ctx.font = "bold 11px Inter, sans-serif";

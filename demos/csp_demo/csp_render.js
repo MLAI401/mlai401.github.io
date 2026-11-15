@@ -12,7 +12,7 @@
   const E = window.CSPEngine;
   const AUS = E.AUSTRALIA;
   const HEX = E.COLOR_HEX;
-  const ACCENT = '#0d9488';
+  const ACCENT = '#3f8f2f';
 
   /** Polygon path for an Australian region. */
   function regionPath(v, W, H) {
@@ -35,7 +35,7 @@
     s += `<rect x="0" y="0" width="${o.W}" height="${o.H}" rx="12" class="csp-sea"></rect>`;
     for (const v of AUS.variables) {
       const tinted = !a[v] && o.tint && o.tint[v];
-      const fill = a[v] ? HEX[a[v]] : tinted ? HEX[o.tint[v]] : '#f1f5f9';
+      const fill = a[v] ? HEX[a[v]] : tinted ? HEX[o.tint[v]] : '#f1f4f9';
       const cls = ['csp-region'];
       if (o.clickable) cls.push('clickable');
       if (o.highlight.includes(v)) cls.push('hl');
@@ -52,7 +52,7 @@
     if (o.arc) {
       const [x1, y1] = E.projectAus(...AUS.labels[o.arc[0]], o.W, o.H);
       const [x2, y2] = E.projectAus(...AUS.labels[o.arc[1]], o.W, o.H);
-      s += `<defs><marker id="csp-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#0f172a"></path></marker></defs>`;
+      s += `<defs><marker id="csp-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#16202e"></path></marker></defs>`;
       // Keep the arrow clear of each region's label block (name + domain dots):
       // clip the line to an ellipse around the block instead of a fixed offset.
       const cy = o.domains ? 2 : 0;
@@ -87,8 +87,8 @@
         o.colors.forEach((c, i) => {
           const cx = x + (i - (n - 1) / 2) * 10;
           const on = vals.includes(c);
-          s += `<circle cx="${cx}" cy="${y + 7}" r="3.8" fill="${on ? HEX[c] : '#ffffff'}" stroke="${on ? 'rgba(15,23,42,0.35)' : '#cbd5e1'}" stroke-width="1"></circle>`;
-          if (!on) s += `<line x1="${cx - 3.5}" y1="${y + 10.5}" x2="${cx + 3.5}" y2="${y + 3.5}" stroke="#94a3b8" stroke-width="1"></line>`;
+          s += `<circle cx="${cx}" cy="${y + 7}" r="3.8" fill="${on ? HEX[c] : '#ffffff'}" stroke="${on ? 'rgba(16, 32, 64,0.35)' : '#c3cdda'}" stroke-width="1"></circle>`;
+          if (!on) s += `<line x1="${cx - 3.5}" y1="${y + 10.5}" x2="${cx + 3.5}" y2="${y + 3.5}" stroke="#8a94a3" stroke-width="1"></line>`;
         });
         if (!vals.length) s += `<text x="${x}" y="${y + 22}" class="csp-wipe-label">∅ empty</text>`;
       }

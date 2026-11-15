@@ -350,16 +350,16 @@
           tableContainer.innerHTML = `
             <table style="width: 100%; font-size: 0.75rem; text-align: center; border-collapse: collapse; font-family: monospace;">
               <thead>
-                <tr style="color: #64748b; border-bottom: 1px solid rgba(15,23,42,0.1);">
+                <tr style="color: #55606f; border-bottom: 1px solid rgba(16, 32, 64,0.1);">
                   ${ttRes.symbols.map(s => `<th style="padding: 4px;">${s}</th>`).join('')}
-                  <th style="color: #0284c7;">Output</th>
+                  <th style="color: #2461c0;">Output</th>
                 </tr>
               </thead>
               <tbody>
                 ${ttRes.rows.map(r => `
-                  <tr style="border-bottom: 1px solid rgba(15,23,42,0.05);">
+                  <tr style="border-bottom: 1px solid rgba(16, 32, 64,0.05);">
                     ${ttRes.symbols.map(s => `<td>${r.model[s] ? 'T' : 'F'}</td>`).join('')}
-                    <td style="font-weight: 700; color: ${r.alphaVal ? '#10b981' : '#f43f5e'};">${r.alphaVal ? 'T' : 'F'}</td>
+                    <td style="font-weight: 700; color: ${r.alphaVal ? '#2e8b47' : '#c0392b'};">${r.alphaVal ? 'T' : 'F'}</td>
                   </tr>
                 `).join('')}
               </tbody>
@@ -371,14 +371,14 @@
         const cnfRes = L.toCNF(formula);
         if (cnfContainer) {
           cnfContainer.innerHTML = cnfRes.steps.map(s => `
-            <div style="margin-bottom: 6px; padding: 6px 8px; background: rgba(15,23,42,0.04); border-radius: 6px; font-size: 0.75rem;">
-              <span style="color: #64748b;">${s.title}:</span>
+            <div style="margin-bottom: 6px; padding: 6px 8px; background: rgba(16, 32, 64,0.04); border-radius: 6px; font-size: 0.75rem;">
+              <span style="color: #55606f;">${s.title}:</span>
               <div style="font-family: monospace; color: var(--text-primary); margin-top: 2px;">${s.expr}</div>
             </div>
           `).join('');
         }
       } catch (err) {
-        if (tableContainer) tableContainer.innerHTML = `<div style="color: #f43f5e; font-size: 0.8rem;">Syntax Error: ${err.message}</div>`;
+        if (tableContainer) tableContainer.innerHTML = `<div style="color: #c0392b; font-size: 0.8rem;">Syntax Error: ${err.message}</div>`;
       }
     });
 
@@ -413,10 +413,10 @@
         <svg viewBox="0 0 560 380" style="width: 100%; height: 100%;">
           <defs>
             <marker id="kl-arrow" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
-              <path d="M 1 1.5 L 11 6 L 1 10.5 L 3.5 6 z" fill="#475569"/>
+              <path d="M 1 1.5 L 11 6 L 1 10.5 L 3.5 6 z" fill="#55606f"/>
             </marker>
             <marker id="kl-arrow-active" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto">
-              <path d="M 1 1.5 L 11 6 L 1 10.5 L 3.5 6 z" fill="#4f46e5"/>
+              <path d="M 1 1.5 L 11 6 L 1 10.5 L 3.5 6 z" fill="#1b4f9c"/>
             </marker>
           </defs>
           ${currentNet.nodes.map(n => {
@@ -432,7 +432,7 @@
               const x2 = n.meta.x - ux * (R + GAP), y2 = n.meta.y - uy * (R + GAP);
               const active = (p in currentEvidence) || (n.var in currentEvidence);
               return `<line class="kl-bn-edge" x1="${x1.toFixed(1)}" y1="${y1.toFixed(1)}" x2="${x2.toFixed(1)}" y2="${y2.toFixed(1)}"
-                        stroke="${active ? '#4f46e5' : '#475569'}" stroke-width="2.2" stroke-linecap="round"
+                        stroke="${active ? '#1b4f9c' : '#55606f'}" stroke-width="2.2" stroke-linecap="round"
                         marker-end="url(#${active ? 'kl-arrow-active' : 'kl-arrow'})"><title>${p} → ${n.var}</title></line>`;
             }).join('');
           }).join('')}
@@ -440,14 +440,14 @@
           ${currentNet.nodes.map(n => {
             const isObserved = n.var in currentEvidence;
             const obsVal = currentEvidence[n.var];
-            let fill = '#eef2ff';
-            if (isObserved) fill = obsVal ? '#10b981' : '#f43f5e';
+            let fill = '#e8f0fc';
+            if (isObserved) fill = obsVal ? '#2e8b47' : '#c0392b';
 
             return `
               <g class="kl-bn-node" data-var="${n.var}" style="cursor: pointer;">
-                <circle cx="${n.meta.x}" cy="${n.meta.y}" r="26" fill="${fill}" stroke="#4f46e5" stroke-width="2"/>
-                <text x="${n.meta.x}" y="${n.meta.y + 4}" fill="${isObserved ? '#fff' : '#312e81'}" font-size="11" font-weight="700" text-anchor="middle">${n.var.slice(0, 2)}</text>
-                <text x="${n.meta.x}" y="${n.meta.y + 38}" fill="#334155" font-size="10" text-anchor="middle" stroke="#ffffff" stroke-width="3" paint-order="stroke">${n.meta.label || n.var}</text>
+                <circle cx="${n.meta.x}" cy="${n.meta.y}" r="26" fill="${fill}" stroke="#1b4f9c" stroke-width="2"/>
+                <text x="${n.meta.x}" y="${n.meta.y + 4}" fill="${isObserved ? '#fff' : '#0e2f5c'}" font-size="11" font-weight="700" text-anchor="middle">${n.var.slice(0, 2)}</text>
+                <text x="${n.meta.x}" y="${n.meta.y + 38}" fill="#2c3644" font-size="10" text-anchor="middle" stroke="#ffffff" stroke-width="3" paint-order="stroke">${n.meta.label || n.var}</text>
               </g>
             `;
           }).join('')}
@@ -486,10 +486,10 @@
           <div style="margin-bottom: 8px;">
             <div style="display: flex; justify-content: space-between; font-size: 0.78rem; margin-bottom: 2px;">
               <span style="color: var(--text-primary); font-weight: 600;">${v} ${isObs ? `(Observed: ${currentEvidence[v] ? 'T' : 'F'})` : ''}</span>
-              <strong style="color: #4f46e5;">${(pTrue * 100).toFixed(1)}%</strong>
+              <strong style="color: #1b4f9c;">${(pTrue * 100).toFixed(1)}%</strong>
             </div>
-            <div style="height: 8px; border-radius: 4px; background: rgba(15,23,42,0.06); overflow: hidden;">
-              <div style="height: 100%; width: ${pTrue * 100}%; background: ${isObs ? (currentEvidence[v] ? '#10b981' : '#f43f5e') : 'linear-gradient(90deg, #6366f1, #0284c7)'}; transition: width 0.2s;"></div>
+            <div style="height: 8px; border-radius: 4px; background: rgba(16, 32, 64,0.06); overflow: hidden;">
+              <div style="height: 100%; width: ${pTrue * 100}%; background: ${isObs ? (currentEvidence[v] ? '#2e8b47' : '#c0392b') : 'linear-gradient(90deg, #2461c0, #2461c0)'}; transition: width 0.2s;"></div>
             </div>
           </div>
         `;
@@ -528,7 +528,7 @@
       if (outputRej) {
         outputRej.innerHTML = `
           <div style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">${(rejRes.distribution.true * 100).toFixed(1)}%</div>
-          <div style="font-size: 0.75rem; color: #64748b; margin-top: 4px;">
+          <div style="font-size: 0.75rem; color: #55606f; margin-top: 4px;">
             Accepted ${rejRes.accepted} / ${N} samples (${(rejRes.acceptanceRate * 100).toFixed(2)}% efficiency)
           </div>
         `;
@@ -536,8 +536,8 @@
 
       if (outputLW) {
         outputLW.innerHTML = `
-          <div style="font-size: 1.25rem; font-weight: 800; color: #10b981;">${(lwRes.distribution.true * 100).toFixed(1)}%</div>
-          <div style="font-size: 0.75rem; color: #047857; margin-top: 4px;">
+          <div style="font-size: 1.25rem; font-weight: 800; color: #2e8b47;">${(lwRes.distribution.true * 100).toFixed(1)}%</div>
+          <div style="font-size: 0.75rem; color: #2a7a3f; margin-top: 4px;">
             Utilized all ${N} samples (100% sample efficiency)
           </div>
         `;

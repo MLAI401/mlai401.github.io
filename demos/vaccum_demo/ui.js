@@ -631,7 +631,7 @@ class VacuumDemoUI {
         vy: -0.01 - Math.random() * 0.02,
         size: 3 + Math.random() * 4,
         alpha: 1,
-        color: '#f59e0b'
+        color: '#d4911a'
       });
     }
   }
@@ -796,7 +796,7 @@ class VacuumDemoUI {
     ctx.fillRect(midX - 4, roomY, 8, roomH);
     // Doorway cut
     ctx.clearRect(midX - 5, roomY + roomH * 0.35, 10, roomH * 0.5);
-    ctx.strokeStyle = 'rgba(99, 102, 241, 0.3)';
+    ctx.strokeStyle = 'rgba(36, 97, 192, 0.3)';
     ctx.strokeRect(midX - 5, roomY + roomH * 0.35, 10, roomH * 0.5);
     ctx.restore();
 
@@ -824,7 +824,7 @@ class VacuumDemoUI {
     const bgGradient = ctx.createLinearGradient(x, y, x, y + height);
     if (isDirty) {
       bgGradient.addColorStop(0, 'rgba(30, 41, 59, 0.85)');
-      bgGradient.addColorStop(1, 'rgba(15, 23, 42, 0.95)');
+      bgGradient.addColorStop(1, 'rgba(16, 32, 64, 0.95)');
     } else {
       bgGradient.addColorStop(0, 'rgba(30, 58, 70, 0.75)');
       bgGradient.addColorStop(1, 'rgba(15, 30, 45, 0.9)');
@@ -836,7 +836,7 @@ class VacuumDemoUI {
     ctx.fill();
 
     // Border
-    ctx.strokeStyle = hasRobot ? 'rgba(99, 102, 241, 0.6)' : 'rgba(255, 255, 255, 0.1)';
+    ctx.strokeStyle = hasRobot ? 'rgba(36, 97, 192, 0.6)' : 'rgba(255, 255, 255, 0.1)';
     ctx.lineWidth = hasRobot ? 2 : 1;
     ctx.stroke();
 
@@ -858,8 +858,8 @@ class VacuumDemoUI {
     }
 
     // Room Header Label
-    ctx.fillStyle = '#f8fafc';
-    ctx.font = 'bold 15px Outfit, sans-serif';
+    ctx.fillStyle = '#f7f9fc';
+    ctx.font = 'bold 15px system-ui, sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText(label, x + 16, y + 26);
 
@@ -869,15 +869,15 @@ class VacuumDemoUI {
     const badgeW = 72;
     const badgeH = 24;
 
-    ctx.fillStyle = isDirty ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)';
+    ctx.fillStyle = isDirty ? 'rgba(192, 57, 43, 0.2)' : 'rgba(46, 139, 71, 0.2)';
     ctx.beginPath();
     ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 12);
     ctx.fill();
-    ctx.strokeStyle = isDirty ? 'rgba(239, 68, 68, 0.5)' : 'rgba(16, 185, 129, 0.5)';
+    ctx.strokeStyle = isDirty ? 'rgba(192, 57, 43, 0.5)' : 'rgba(46, 139, 71, 0.5)';
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    ctx.fillStyle = isDirty ? '#fca5a5' : '#6ee7b7';
+    ctx.fillStyle = isDirty ? '#f2b8b0' : '#9fd3a9';
     ctx.font = 'bold 11px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(status.toUpperCase(), badgeX + badgeW / 2, badgeY + 16);
@@ -889,7 +889,7 @@ class VacuumDemoUI {
     if (status !== 'Dirty') {
       // Draw subtle clean sparkles
       ctx.save();
-      ctx.fillStyle = 'rgba(34, 211, 238, 0.3)';
+      ctx.fillStyle = 'rgba(111, 155, 224, 0.3)';
       const cx = x + width * 0.5;
       const cy = y + height * 0.4;
       this.drawStar(ctx, cx - 40, cy, 5, 2, 4);
@@ -922,7 +922,7 @@ class VacuumDemoUI {
       for (let i = 0; i < 4; i++) {
         ctx.beginPath();
         ctx.arc(px + (i * 6 - 9), py + ((i % 2) * 6 - 3), 2, 0, 2 * Math.PI);
-        ctx.fillStyle = 'rgba(217, 119, 6, 0.7)';
+        ctx.fillStyle = 'rgba(185, 119, 14, 0.7)';
         ctx.fill();
       }
     });
@@ -959,7 +959,7 @@ class VacuumDemoUI {
     this.particles.forEach(p => {
       ctx.beginPath();
       ctx.arc(p.x * this.canvas.getBoundingClientRect().width, p.y * this.canvas.getBoundingClientRect().height, p.size, 0, 2 * Math.PI);
-      ctx.fillStyle = `rgba(245, 158, 11, ${p.alpha})`;
+      ctx.fillStyle = `rgba(212, 145, 26, ${p.alpha})`;
       ctx.fill();
     });
     ctx.restore();
@@ -976,13 +976,13 @@ class VacuumDemoUI {
       ctx.rotate(vortexAngle);
       ctx.beginPath();
       ctx.arc(0, 0, 48, 0, 1.5 * Math.PI);
-      ctx.strokeStyle = 'rgba(34, 211, 238, 0.7)';
+      ctx.strokeStyle = 'rgba(111, 155, 224, 0.7)';
       ctx.lineWidth = 3;
       ctx.stroke();
 
       ctx.beginPath();
       ctx.arc(0, 0, 36, 0, 1.2 * Math.PI);
-      ctx.strokeStyle = 'rgba(99, 102, 241, 0.8)';
+      ctx.strokeStyle = 'rgba(36, 97, 192, 0.8)';
       ctx.lineWidth = 2.5;
       ctx.stroke();
       ctx.restore();
@@ -997,14 +997,14 @@ class VacuumDemoUI {
     // Robot Chassis (Circular Body)
     const bodyRadius = 28;
     const bodyGradient = ctx.createRadialGradient(x - 6, y - 8, 4, x, y, bodyRadius);
-    bodyGradient.addColorStop(0, '#6366f1');
-    bodyGradient.addColorStop(0.7, '#4338ca');
-    bodyGradient.addColorStop(1, '#312e81');
+    bodyGradient.addColorStop(0, '#2461c0');
+    bodyGradient.addColorStop(0.7, '#0e2f5c');
+    bodyGradient.addColorStop(1, '#0e2f5c');
 
     ctx.beginPath();
     ctx.arc(x, y, bodyRadius, 0, 2 * Math.PI);
     ctx.fillStyle = bodyGradient;
-    ctx.shadowColor = '#6366f1';
+    ctx.shadowColor = '#2461c0';
     ctx.shadowBlur = 16;
     ctx.fill();
     ctx.shadowBlur = 0;
@@ -1017,14 +1017,14 @@ class VacuumDemoUI {
     // Front Bumper Arc
     ctx.beginPath();
     ctx.arc(x, y, bodyRadius - 3, Math.PI * 0.2, Math.PI * 0.8);
-    ctx.strokeStyle = 'rgba(34, 211, 238, 0.9)';
+    ctx.strokeStyle = 'rgba(111, 155, 224, 0.9)';
     ctx.lineWidth = 3;
     ctx.stroke();
 
     // Robot Center Sensor Dome / Button
     ctx.beginPath();
     ctx.arc(x, y - 2, 10, 0, 2 * Math.PI);
-    ctx.fillStyle = '#0f172a';
+    ctx.fillStyle = '#16202e';
     ctx.fill();
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
     ctx.lineWidth = 1;
@@ -1033,8 +1033,8 @@ class VacuumDemoUI {
     // Power / Status LED Eye
     ctx.beginPath();
     ctx.arc(x, y - 2, 4, 0, 2 * Math.PI);
-    ctx.fillStyle = this.suctionAnimationActive ? '#22d3ee' : '#10b981';
-    ctx.shadowColor = this.suctionAnimationActive ? '#22d3ee' : '#10b981';
+    ctx.fillStyle = this.suctionAnimationActive ? '#6f9be0' : '#2e8b47';
+    ctx.shadowColor = this.suctionAnimationActive ? '#6f9be0' : '#2e8b47';
     ctx.shadowBlur = 8;
     ctx.fill();
     ctx.shadowBlur = 0;
@@ -1052,17 +1052,17 @@ class VacuumDemoUI {
     const hudX = x - hudW / 2;
     const hudY = y - 46;
 
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.9)';
+    ctx.fillStyle = 'rgba(16, 32, 64, 0.9)';
     ctx.beginPath();
     ctx.roundRect(hudX, hudY, hudW, hudH, 8);
     ctx.fill();
 
-    ctx.strokeStyle = 'rgba(99, 102, 241, 0.7)';
+    ctx.strokeStyle = 'rgba(36, 97, 192, 0.7)';
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    ctx.fillStyle = '#e2e8f0';
-    ctx.font = 'bold 11px Outfit, sans-serif';
+    ctx.fillStyle = '#dbe2ec';
+    ctx.font = 'bold 11px system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText(`Percept: (${percept.location}, ${percept.status})`, x, hudY + 17);
 
@@ -1075,19 +1075,19 @@ class VacuumDemoUI {
     const state = this.env.getState();
     const bannerH = 26;
     
-    ctx.fillStyle = 'rgba(15, 23, 42, 0.6)';
+    ctx.fillStyle = 'rgba(16, 32, 64, 0.6)';
     ctx.fillRect(0, 0, w, bannerH);
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
     ctx.strokeRect(0, 0, w, bannerH);
 
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '11px Outfit, sans-serif';
+    ctx.fillStyle = '#8a94a3';
+    ctx.font = '11px system-ui, sans-serif';
     ctx.textAlign = 'left';
     ctx.fillText(`Full Environment State: State = ${state.toString()}`, 16, 17);
 
     ctx.textAlign = 'right';
     const isComplete = this.env.isTaskComplete();
-    ctx.fillStyle = isComplete ? '#34d399' : '#f87171';
+    ctx.fillStyle = isComplete ? '#5cae3c' : '#e07468';
     ctx.fillText(`Task Complete: ${isComplete ? 'YES (A=Clean ∧ B=Clean)' : 'NO'}`, w - 16, 17);
 
     ctx.restore();

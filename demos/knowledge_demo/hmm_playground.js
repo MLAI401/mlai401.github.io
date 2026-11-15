@@ -28,7 +28,7 @@
   const vec = v => '⟨' + v.map(f3).join(', ') + '⟩';
   const norm = v => { const s = v.reduce((a, b) => a + b, 0); return s > 0 ? v.map(x => x / s) : v.map(() => 1 / v.length); };
   const MAX_T = 12, MAX_K = 8;
-  const STATE_COLORS = ['#4f46e5', '#0891b2', '#db2777', '#d97706'];
+  const STATE_COLORS = ['#1b4f9c', '#2461c0', '#7c3aed', '#b9770e'];
 
   // ---------------------------------------------------------------------------
   // Models
@@ -221,7 +221,7 @@
         const dx = x2 - x1, dy = y2 - y1, L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L;
         const a = { x: x1 + ux * (R + 1), y: y1 + uy * (R + 1) }, b = { x: x2 - ux * (R + 3), y: y2 - uy * (R + 3) };
         return `<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}"
-          stroke="${opts.color || '#475569'}" stroke-width="${opts.w || 2}" stroke-linecap="round"
+          stroke="${opts.color || '#55606f'}" stroke-width="${opts.w || 2}" stroke-linecap="round"
           ${opts.dash ? 'stroke-dasharray="5 4"' : ''} marker-end="url(#hp-arr${opts.marker || ''})"><title>${opts.title || ''}</title></line>`;
       };
 
@@ -229,12 +229,12 @@
       for (let t = 0; t < cols; t++) {
         const future = t > Tn;
         const x = cx(t);
-        if (t > 0) edges += arrow(cx(t - 1), YX, x, YX, { dash: future, title: `${m.xVar}${sb(t - 1)} → ${m.xVar}${sb(t)}  (transition model)`, color: st.sel === t ? '#4f46e5' : undefined, marker: st.sel === t ? '-on' : '' });
-        if (t > 0 && !future) edges += arrow(x, YX, x, YE, { title: `${m.xVar}${sb(t)} → ${m.eVar}${sb(t)}  (sensor model)`, color: st.sel === t ? '#4f46e5' : undefined, marker: st.sel === t ? '-on' : '' });
+        if (t > 0) edges += arrow(cx(t - 1), YX, x, YX, { dash: future, title: `${m.xVar}${sb(t - 1)} → ${m.xVar}${sb(t)}  (transition model)`, color: st.sel === t ? '#1b4f9c' : undefined, marker: st.sel === t ? '-on' : '' });
+        if (t > 0 && !future) edges += arrow(x, YX, x, YE, { title: `${m.xVar}${sb(t)} → ${m.eVar}${sb(t)}  (sensor model)`, color: st.sel === t ? '#1b4f9c' : undefined, marker: st.sel === t ? '-on' : '' });
 
         // hidden-state node
         const d = sliceDist(r, t);
-        let label = '?', sub = '', fill = '#eef2ff', txt = '#312e81';
+        let label = '?', sub = '', fill = '#e8f0fc', txt = '#0e2f5c';
         if (st.task === 'viterbi' && t >= 1) {
           const s = r.vit.path[t];
           label = m.stShort[s]; sub = 'path';
@@ -243,23 +243,23 @@
           if (two) {
             label = fx(d[0]); sub = `P(${m.stShort[0]})`;
             const a = d[0];
-            fill = `rgba(79,70,229,${(0.08 + 0.82 * a).toFixed(3)})`; txt = a > 0.55 ? '#fff' : '#312e81';
+            fill = `rgba(27, 79, 156,${(0.08 + 0.82 * a).toFixed(3)})`; txt = a > 0.55 ? '#fff' : '#0e2f5c';
           } else {
             let am = 0; d.forEach((v, i) => { if (v > d[am]) am = i; });
             label = m.stShort[am]; sub = fx(d[am]);
             fill = STATE_COLORS[am]; txt = '#fff';
           }
         } else if (t === 0) { label = 'prior'; }
-        const selRing = st.sel === t ? `<circle cx="${x}" cy="${YX}" r="${R + 6}" fill="none" stroke="#4f46e5" stroke-width="2" stroke-dasharray="3 3"/>` : '';
+        const selRing = st.sel === t ? `<circle cx="${x}" cy="${YX}" r="${R + 6}" fill="none" stroke="#1b4f9c" stroke-width="2" stroke-dasharray="3 3"/>` : '';
         const truth = st.showTruth && st.truth[st.mi] && t <= Tn
-          ? `<text x="${x}" y="${YX - R - 12}" font-size="10" text-anchor="middle" fill="#b45309" font-weight="700">true: ${m.stShort[st.truth[st.mi].xs[t]]}</text>` : '';
+          ? `<text x="${x}" y="${YX - R - 12}" font-size="10" text-anchor="middle" fill="#b9770e" font-weight="700">true: ${m.stShort[st.truth[st.mi].xs[t]]}</text>` : '';
         nodes += `
           <g class="hp-node" data-t="${t}" style="cursor:pointer">
             ${selRing}
-            <circle cx="${x}" cy="${YX}" r="${R}" fill="${fill}" stroke="#4f46e5" stroke-width="2" ${future ? 'stroke-dasharray="4 3"' : ''}/>
+            <circle cx="${x}" cy="${YX}" r="${R}" fill="${fill}" stroke="#1b4f9c" stroke-width="2" ${future ? 'stroke-dasharray="4 3"' : ''}/>
             <text x="${x}" y="${YX + 1}" font-size="11" font-weight="800" text-anchor="middle" fill="${txt}">${label}</text>
             <text x="${x}" y="${YX + 12}" font-size="7.5" text-anchor="middle" fill="${txt}" opacity="0.85">${sub}</text>
-            <text x="${x}" y="${YX + R + 15}" font-size="11" font-weight="700" text-anchor="middle" fill="#334155" stroke="#fff" stroke-width="3" paint-order="stroke">${m.xVar}${sb(t)}</text>
+            <text x="${x}" y="${YX + R + 15}" font-size="11" font-weight="700" text-anchor="middle" fill="#2c3644" stroke="#fff" stroke-width="3" paint-order="stroke">${m.xVar}${sb(t)}</text>
             ${truth}
           </g>`;
 
@@ -269,9 +269,9 @@
           nodes += `
             <g class="hp-ev" data-t="${t}" style="cursor:pointer">
               <title>Click to change e${sb(t)}</title>
-              <rect x="${x - R}" y="${YE - R}" width="${2 * R}" height="${2 * R}" rx="10" fill="${e === 0 ? '#334155' : '#cbd5e1'}" stroke="#334155" stroke-width="2"/>
-              <text x="${x}" y="${YE + 4}" font-size="${m.obShort[e].length > 2 ? 10 : 12}" font-weight="800" text-anchor="middle" fill="${e === 0 ? '#fff' : '#0f172a'}">${m.obShort[e]}</text>
-              <text x="${x}" y="${YE + R + 15}" font-size="11" font-weight="700" text-anchor="middle" fill="#334155">${m.eVar}${sb(t)}</text>
+              <rect x="${x - R}" y="${YE - R}" width="${2 * R}" height="${2 * R}" rx="10" fill="${e === 0 ? '#2c3644' : '#c3cdda'}" stroke="#2c3644" stroke-width="2"/>
+              <text x="${x}" y="${YE + 4}" font-size="${m.obShort[e].length > 2 ? 10 : 12}" font-weight="800" text-anchor="middle" fill="${e === 0 ? '#fff' : '#16202e'}">${m.obShort[e]}</text>
+              <text x="${x}" y="${YE + R + 15}" font-size="11" font-weight="700" text-anchor="middle" fill="#2c3644">${m.eVar}${sb(t)}</text>
             </g>`;
         }
       }
@@ -279,19 +279,19 @@
       if (Tn < MAX_T && st.task !== 'predict') {
         const x = cx(Tn + 1);
         nodes += `<g class="hp-add" style="cursor:pointer"><title>Add a time step</title>
-          <rect x="${x - R}" y="${YE - R}" width="${2 * R}" height="${2 * R}" rx="10" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 3"/>
-          <text x="${x}" y="${YE + 6}" font-size="18" text-anchor="middle" fill="#94a3b8">+</text></g>`;
+          <rect x="${x - R}" y="${YE - R}" width="${2 * R}" height="${2 * R}" rx="10" fill="none" stroke="#8a94a3" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <text x="${x}" y="${YE + 6}" font-size="18" text-anchor="middle" fill="#8a94a3">+</text></g>`;
       }
       const W2 = st.task !== 'predict' && Tn < MAX_T ? Math.max(W, X0 * 2 + (Tn + 1) * DX) : W;
 
       return `
         <svg class="hp-dbn" viewBox="0 0 ${W2} 262" style="width:100%; max-width:${Math.round(W2 * 1.1)}px; min-width:${Math.min(W2, 640)}px; height:auto; display:block">
           <defs>
-            <marker id="hp-arr" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto"><path d="M1 1.5 L11 6 L1 10.5 L3.5 6 z" fill="#475569"/></marker>
-            <marker id="hp-arr-on" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto"><path d="M1 1.5 L11 6 L1 10.5 L3.5 6 z" fill="#4f46e5"/></marker>
+            <marker id="hp-arr" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto"><path d="M1 1.5 L11 6 L1 10.5 L3.5 6 z" fill="#55606f"/></marker>
+            <marker id="hp-arr-on" viewBox="0 0 12 12" refX="11" refY="6" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto"><path d="M1 1.5 L11 6 L1 10.5 L3.5 6 z" fill="#1b4f9c"/></marker>
           </defs>
-          <text x="8" y="${YX + 4}" font-size="9" fill="#64748b" transform="rotate(-90 8 ${YX})" text-anchor="middle">hidden</text>
-          <text x="8" y="${YE + 4}" font-size="9" fill="#64748b" transform="rotate(-90 8 ${YE})" text-anchor="middle">evidence</text>
+          <text x="8" y="${YX + 4}" font-size="9" fill="#55606f" transform="rotate(-90 8 ${YX})" text-anchor="middle">hidden</text>
+          <text x="8" y="${YE + 4}" font-size="9" fill="#55606f" transform="rotate(-90 8 ${YE})" text-anchor="middle">evidence</text>
           ${edges}${nodes}
         </svg>`;
     }
@@ -320,8 +320,8 @@
           const a = shade[s];
           cells += `<g class="hp-cell" data-t="${t}" style="cursor:pointer">
             <rect x="${LW + i * CW + PADX}" y="${TH + s * RH + 3}" width="${CW - 2 * PADX}" height="${RH - 6}" rx="6"
-              fill="${onPath ? STATE_COLORS[s] : `rgba(79,70,229,${(0.04 + 0.6 * a).toFixed(3)})`}"
-              stroke="${isTrue ? '#d97706' : (st.sel === t ? '#4f46e5' : 'rgba(15,23,42,0.08)')}" stroke-width="${isTrue || st.sel === t ? 2 : 1}"
+              fill="${onPath ? STATE_COLORS[s] : `rgba(27, 79, 156,${(0.04 + 0.6 * a).toFixed(3)})`}"
+              stroke="${isTrue ? '#b9770e' : (st.sel === t ? '#1b4f9c' : 'rgba(16, 32, 64,0.08)')}" stroke-width="${isTrue || st.sel === t ? 2 : 1}"
               ${future ? 'stroke-dasharray="4 3"' : ''} ${isTrue ? 'stroke-dasharray="3 2"' : ''}/>
             <text x="${cxs(i)}" y="${cy(s) + 4}" font-size="10.5" font-weight="700" text-anchor="middle" fill="${onPath || a > 0.6 ? '#fff' : '#1e1b4b'}">${fx(vals[s])}</text>
             ${st.task === 'smooth' && t <= Tn ? `<title>filtered ${fx(r.fw.f[t][s])} → smoothed ${fx(vals[s])}</title>` : ''}
@@ -331,21 +331,21 @@
             const p = r.vit.bp[t][s];
             const bold = onPath && r.vit.path[t - 1] === p;
             const x1 = cxs(i - 1) + CW / 2 - PADX + 1, x2 = cxs(i) - CW / 2 + PADX - 2;
-            links += `<line x1="${x1}" y1="${cy(p)}" x2="${x2}" y2="${cy(s)}" stroke="${bold ? '#0f172a' : '#94a3b8'}" stroke-width="${bold ? 2.4 : 1.1}" marker-end="url(#hp-g${bold ? 'b' : ''})" ${bold ? '' : 'opacity="0.8"'}/>`;
+            links += `<line x1="${x1}" y1="${cy(p)}" x2="${x2}" y2="${cy(s)}" stroke="${bold ? '#16202e' : '#8a94a3'}" stroke-width="${bold ? 2.4 : 1.1}" marker-end="url(#hp-g${bold ? 'b' : ''})" ${bold ? '' : 'opacity="0.8"'}/>`;
           }
         }
         const head = t === 0 ? 't = 0' : (future ? `+${t - Tn}` : `t = ${t}`);
-        cells += `<text x="${cxs(i)}" y="15" font-size="10" font-weight="700" text-anchor="middle" fill="${future ? '#94a3b8' : '#475569'}">${head}</text>`;
+        cells += `<text x="${cxs(i)}" y="15" font-size="10" font-weight="700" text-anchor="middle" fill="${future ? '#8a94a3' : '#55606f'}">${head}</text>`;
       });
       let rowLabels = '';
       for (let s = 0; s < n; s++) {
-        rowLabels += `<circle cx="10" cy="${cy(s)}" r="4.5" fill="${STATE_COLORS[s]}"/><text x="20" y="${cy(s) + 4}" font-size="11" fill="#334155" font-weight="600">${m.states[s]}</text>`;
+        rowLabels += `<circle cx="10" cy="${cy(s)}" r="4.5" fill="${STATE_COLORS[s]}"/><text x="20" y="${cy(s) + 4}" font-size="11" fill="#2c3644" font-weight="600">${m.states[s]}</text>`;
       }
       return `
         <svg viewBox="0 0 ${W} ${H}" style="width:100%; max-width:${W}px; min-width:${Math.min(W, 640)}px; height:auto; display:block">
           <defs>
-            <marker id="hp-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 1 L10 5 L0 9 z" fill="#94a3b8"/></marker>
-            <marker id="hp-gb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 1 L10 5 L0 9 z" fill="#0f172a"/></marker>
+            <marker id="hp-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 1 L10 5 L0 9 z" fill="#8a94a3"/></marker>
+            <marker id="hp-gb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path d="M0 1 L10 5 L0 9 z" fill="#16202e"/></marker>
           </defs>
           ${rowLabels}${links}${cells}
         </svg>`;

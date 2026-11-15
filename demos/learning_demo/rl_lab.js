@@ -463,7 +463,7 @@
       }
       if (L2.s2 !== L2.s) h += `<line x1="${cx(L2.s)}" y1="${cy(L2.s)}" x2="${(cx(L2.s2) * 0.72 + cx(L2.s) * 0.28).toFixed(1)}" y2="${(cy(L2.s2) * 0.72 + cy(L2.s) * 0.28).toFixed(1)}" class="rll-tr" marker-end="url(#mdl-ah-pd)"/>`;
     }
-    h += `<g id="rll-agent" class="mdl-agent" style="transform:translate(${x0(LQ.agent) + 24}px, ${y0(LQ.agent) + 74}px) scale(0.6);color:#2563eb">${K.agentSVG()}</g>`;
+    h += `<g id="rll-agent" class="mdl-agent" style="transform:translate(${x0(LQ.agent) + 24}px, ${y0(LQ.agent) + 74}px) scale(0.6);color:#2461c0">${K.agentSVG()}</g>`;
     return h + '</svg>';
   }
 
@@ -479,7 +479,7 @@
       s += `<text x="${(X(L2.old) + X(L2.target)) / 2}" y="${ay - 40}" class="rll-dlt">δ = target − old = ${fs(L2.delta, 3)}</text>`;
       s += `<line x1="${X(L2.old)}" x2="${X(L2.nw)}" y1="${ay}" y2="${ay}" class="rll-step" marker-end="url(#rll-ahv)"/>`;
     }
-    s += `<defs><marker id="rll-ahg" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#d97706"/></marker><marker id="rll-ahv" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#7c3aed"/></marker></defs>`;
+    s += `<defs><marker id="rll-ahg" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="10" markerHeight="10" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#b9770e"/></marker><marker id="rll-ahv" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#7c3aed"/></marker></defs>`;
     s += `<circle cx="${X(L2.old)}" cy="${ay}" r="6" class="rll-pt old"/><text x="${X(L2.old)}" y="${ay + 30}" class="rll-ptl" text-anchor="middle">old Q ${f(L2.old, 3)}</text>`;
     s += `<rect x="${X(L2.target) - 6}" y="${ay - 6}" width="12" height="12" transform="rotate(45 ${X(L2.target)} ${ay})" class="rll-pt tgt"/><text x="${X(L2.target) + (L2.target < L2.old ? -12 : 12)}" y="${ay + 4}" class="rll-ptl tgt" text-anchor="${L2.target < L2.old ? 'end' : 'start'}">target ${f(L2.target, 3)}</text>`;
     const close = Math.abs(X(L2.nw) - X(L2.old)) < 70;
@@ -514,7 +514,7 @@
         </div>
       </div>
       <div class="tfp-card"><div class="tfp-card-head"><h4><span>The TD update for the last transition</span></h4><span class="tfp-card-sub">Q(s,a) ← Q(s,a) + α [ r + γ max<sub>a′</sub> Q(s′,a′) − Q(s,a) ]</span></div><div id="rll-td"></div></div>
-      <div class="tfp-card"><div class="tfp-card-head"><h4><span>TD error δ over the last 60 updates</span></h4><span class="tfp-card-sub"><span style="color:#059669">▮</span> better than expected · <span style="color:#e11d48">▮</span> worse</span></div><div id="rll-db"></div></div>
+      <div class="tfp-card"><div class="tfp-card-head"><h4><span>TD error δ over the last 60 updates</span></h4><span class="tfp-card-sub"><span style="color:#2e8b47">▮</span> better than expected · <span style="color:#c0392b">▮</span> worse</span></div><div id="rll-db"></div></div>
     </div>`;
     updTD();
   }
@@ -607,7 +607,7 @@
     root.querySelectorAll('[data-qv]').forEach(b => b.classList.toggle('on', b.dataset.qv === LQ.qView));
     $('rll-grid').innerHTML = learnerSVG({ showUpdate: true, trail: true, allowPol: true, cmpStar: true });
     $('rll-leg').innerHTML = LQ.qView === 'pol'
-      ? '<span><i class="lg-v"></i><span class="t">max<sub>a</sub> Q(s,a)</span></span><span><i class="lg-pi"></i>greedy action</span><span><b style="color:#e11d48">≠π*</b> differs from optimal</span><span><i class="rll-lg-trail"></i>this episode</span>'
+      ? '<span><i class="lg-v"></i><span class="t">max<sub>a</sub> Q(s,a)</span></span><span><i class="lg-pi"></i>greedy action</span><span><b style="color:#c0392b">≠π*</b> differs from optimal</span><span><i class="rll-lg-trail"></i>this episode</span>'
       : '<span><i class="lg-v"></i>Q(s,a) wedges</span><span><i class="rll-lg-sel"></i>just updated</span><span><i class="lg-bestw"></i>bootstrap Q(s′,·)</span><span><i class="rll-lg-trail"></i>this episode</span>';
     $('rll-algo-sub').innerHTML = LQ.algo === 'q' ? 'target uses max<sub>a′</sub> Q(s′,a′)' : 'target uses Q(s′,a′) of the action actually taken next';
     const pm = policyMatch(), E = LQ.eps, last10 = E.slice(-10);

@@ -134,7 +134,7 @@
       const X = k => 6 + k / Math.max(1, vals.length - 1) * (W - 12);
       const Y = v => H - 10 - v / mx * (H - 22);
       const pts = vals.map((v, k) => `${X(k).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
-      return `<svg viewBox="0 0 ${W} ${H}" class="csp-chart-svg"><polyline points="${pts}" class="csp-chart-line"></polyline><line x1="${X(i)}" x2="${X(i)}" y1="6" y2="${H - 6}" stroke="#f59e0b" stroke-width="1.5"></line><text x="8" y="12" class="csp-axis-t">${label}</text></svg>`;
+      return `<svg viewBox="0 0 ${W} ${H}" class="csp-chart-svg"><polyline points="${pts}" class="csp-chart-line"></polyline><line x1="${X(i)}" x2="${X(i)}" y1="6" y2="${H - 6}" stroke="#d4911a" stroke-width="1.5"></line><text x="8" y="12" class="csp-axis-t">${label}</text></svg>`;
     }
 
     // =======================================================================
@@ -561,7 +561,7 @@
       const X = k => 6 + k / Math.max(1, vals.length - 1) * (W - 12);
       const Y = v => H - 10 - v / mx * (H - 22);
       const pts = vals.map((v, k) => `${X(k).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
-      const chart = `<svg viewBox="0 0 ${W} ${H}" class="csp-chart-svg"><polyline points="${pts}" class="csp-chart-line"></polyline><line x1="${X(i)}" x2="${X(i)}" y1="6" y2="${H - 6}" stroke="#f59e0b" stroke-width="1.5"></line><text x="8" y="12" class="csp-axis-t">attacking pairs vs. step</text></svg>`;
+      const chart = `<svg viewBox="0 0 ${W} ${H}" class="csp-chart-svg"><polyline points="${pts}" class="csp-chart-line"></polyline><line x1="${X(i)}" x2="${X(i)}" y1="6" y2="${H - 6}" stroke="#d4911a" stroke-width="1.5"></line><text x="8" y="12" class="csp-axis-t">attacking pairs vs. step</text></svg>`;
       const pill = s.kind === 'move' && s.from === s.to ? ['neutral', 'NO MOVE'] : (kindPill[s.kind] || ['neutral', s.kind]);
       pane.innerHTML = `
         <div class="playground-grid csp-lab-grid">
@@ -725,7 +725,7 @@
           <div class="csp-lab-stage">
             <div class="csp-lab-stage-head"><span class="csp-ill-title">Sudoku as a CSP — ${n * n} variables, ${n === 9 ? 27 : 12} Alldiff constraints</span><span class="csp-pill info">${fixed} / ${n * n} cells fixed</span></div>
             <div class="csp-sud-wrap"><div class="csp-sudoku csp-sudoku-${n}">${cells}</div>
-              <div class="csp-sud-legend"><span><i class="given"></i> given</span><span><i class="cur"></i> fixed by propagation</span><span><i style="background:rgba(139,92,246,0.25)"></i> assigned by search</span></div></div>
+              <div class="csp-sud-legend"><span><i class="given"></i> given</span><span><i class="cur"></i> fixed by propagation</span><span><i style="background:rgba(124, 58, 237,0.25)"></i> assigned by search</span></div></div>
             <div class="csp-lab-msg">${tr ? tr.steps[Math.min(st.step, tr.steps.length - 1)].msg.replace(/r(\d)c(\d)/g, (m, a, b) => `(${+a + 1},${+b + 1})`) : st.msg}</div>
           </div>
           <div class="playground-controls glass-panel csp-lab-controls">
@@ -808,7 +808,7 @@
         const given = p.puzzle[idx] !== '.' && p.puzzle[idx] !== '0';
         const bad = !given && csp.nConflicts(v, a[v], a) > 0;
         const cur = v === s.var;
-        return `<div class="csp-sud-cell ${given ? 'given' : ''} ${cur ? 'guess' : ''} ${this.sudBorder(idx, n)}" style="${bad ? 'color:var(--danger);font-weight:700;' : ''}${cur ? 'outline:2px solid #f59e0b;outline-offset:-2px;' : ''}"><span class="csp-sud-val">${a[v]}</span></div>`;
+        return `<div class="csp-sud-cell ${given ? 'given' : ''} ${cur ? 'guess' : ''} ${this.sudBorder(idx, n)}" style="${bad ? 'color:var(--danger);font-weight:700;' : ''}${cur ? 'outline:2px solid #d4911a;outline-offset:-2px;' : ''}"><span class="csp-sud-val">${a[v]}</span></div>`;
       }).join('');
       const pill = this.lsPill(s);
       const conflictedCells = csp.variables.filter(v => csp.nConflicts(v, a[v], a) > 0).length;
@@ -821,7 +821,7 @@
           <div class="csp-lab-stage">
             <div class="csp-lab-stage-head"><span class="csp-ill-title">Sudoku — min-conflicts on a complete grid (red = clashes with a row, column or box)</span><span class="csp-pill ${pill[0]}">${pill[1]}</span></div>
             <div class="csp-sud-wrap"><div class="csp-sudoku csp-sudoku-${n}">${cells}</div>
-              <div class="csp-sud-legend"><span><i class="given"></i> given (fixed)</span><span><i style="background:rgba(139,92,246,0.25)"></i> cell picked this step</span><span style="color:var(--danger);font-weight:700">7</span> in conflict</div></div>
+              <div class="csp-sud-legend"><span><i class="given"></i> given (fixed)</span><span><i style="background:rgba(124, 58, 237,0.25)"></i> cell picked this step</span><span style="color:var(--danger);font-weight:700">7</span> in conflict</div></div>
             <div class="csp-lab-msg">${fix(s.msg)}</div>
           </div>
           <div class="playground-controls glass-panel csp-lab-controls">

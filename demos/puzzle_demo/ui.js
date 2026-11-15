@@ -7,9 +7,9 @@
  *   2  Actions & RESULT
  */
 const PZ = {
-  indigo: '#4f46e5', indigoSoft: '#e0e7ff', green: '#10b981', greenDark: '#047857',
-  red: '#ef4444', redDark: '#b91c1c', amber: '#f59e0b', amberDark: '#b45309',
-  ink: '#0f172a', slate: '#475569', muted: '#64748b', faint: '#94a3b8', line: '#e2e8f0', bg: '#f8fafc'
+  indigo: '#1b4f9c', indigoSoft: '#e8f0fc', green: '#2e8b47', greenDark: '#2a7a3f',
+  red: '#c0392b', redDark: '#a93226', amber: '#d4911a', amberDark: '#b9770e',
+  ink: '#16202e', slate: '#55606f', muted: '#55606f', faint: '#8a94a3', line: '#dbe2ec', bg: '#f7f9fc'
 };
 const fmt = n => n.toLocaleString('en-US');
 
@@ -199,7 +199,7 @@ class PuzzleDemoUI {
     if (this.puzManualLog) {
       const row = document.createElement('div');
       row.className = 'log-entry';
-      row.innerHTML = `RESULT(${state.toString()}, <span style="color:#38bdf8;">${action}</span>) = <strong>${next.toString()}</strong>`;
+      row.innerHTML = `RESULT(${state.toString()}, <span style="color:#6f9be0;">${action}</span>) = <strong>${next.toString()}</strong>`;
       this.puzManualLog.appendChild(row);
       this.puzManualLog.scrollTop = this.puzManualLog.scrollHeight;
     }
@@ -348,7 +348,7 @@ class PuzzleDemoUI {
     }
   }
 
-  text(str, x, y, { size = 12, weight = 'normal', color = PZ.ink, align = 'left', base = 'alphabetic', family = 'Outfit, sans-serif' } = {}) {
+  text(str, x, y, { size = 12, weight = 'normal', color = PZ.ink, align = 'left', base = 'alphabetic', family = 'system-ui, sans-serif' } = {}) {
     const ctx = this.ctx;
     ctx.font = `${weight} ${size}px ${family}`;
     ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = base;
@@ -357,7 +357,7 @@ class PuzzleDemoUI {
 
   pill(str, x, y, color, { size = 11, align = 'left' } = {}) {
     const ctx = this.ctx;
-    ctx.font = `bold ${size}px Outfit, sans-serif`;
+    ctx.font = `bold ${size}px system-ui, sans-serif`;
     const tw = ctx.measureText(str).width, pw = tw + 16, ph = size + 9;
     const px = align === 'center' ? x - pw / 2 : align === 'right' ? x - pw : x;
     ctx.fillStyle = color; ctx.beginPath(); this.roundRect(px, y, pw, ph, ph / 2); ctx.fill();
@@ -370,10 +370,10 @@ class PuzzleDemoUI {
     const ctx = this.ctx;
     ctx.save();
     ctx.fillStyle = '#ffffff';
-    ctx.shadowColor = 'rgba(15, 23, 42, 0.05)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
+    ctx.shadowColor = 'rgba(16, 32, 64, 0.05)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 4;
     ctx.beginPath(); this.roundRect(px, py, size, size, Math.max(6, size * 0.06)); ctx.fill();
     ctx.shadowBlur = 0; ctx.shadowOffsetY = 0;
-    ctx.strokeStyle = 'rgba(15, 23, 42, 0.06)'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.strokeStyle = 'rgba(16, 32, 64, 0.06)'; ctx.lineWidth = 1.5; ctx.stroke();
     if (label) this.text(label, px + size / 2, py - 12, { size: 12, weight: 'bold', color: PZ.slate, align: 'center' });
 
     const pad = size * 0.04, tileSize = (size - pad * 2) / 3;
@@ -383,7 +383,7 @@ class PuzzleDemoUI {
       const ts = tileSize - pad * 0.5, r = Math.max(3, ts * 0.1);
       ctx.beginPath(); this.roundRect(x, y, ts, ts, r);
       if (v === 0) {
-        ctx.fillStyle = '#f1f5f9'; ctx.fill();
+        ctx.fillStyle = '#f1f4f9'; ctx.fill();
         if (opts.ghostIndex === i) { ctx.setLineDash([4, 3]); ctx.strokeStyle = PZ.amber; ctx.lineWidth = 1.5; ctx.stroke(); ctx.setLineDash([]); }
       } else {
         const hl = opts.highlightTile === v;
@@ -393,7 +393,7 @@ class PuzzleDemoUI {
       }
     }
     if (reachabilityStatus !== null) {
-      ctx.fillStyle = reachabilityStatus ? 'rgba(16,185,129,0.92)' : 'rgba(239,68,68,0.92)';
+      ctx.fillStyle = reachabilityStatus ? 'rgba(46, 139, 71,0.92)' : 'rgba(192, 57, 43,0.92)';
       ctx.beginPath(); ctx.arc(px + size - 14, py + 14, 12, 0, 2 * Math.PI); ctx.fill();
       this.text(reachabilityStatus ? '✓' : '✗', px + size - 14, py + 15, { size: 11, weight: 'bold', color: '#fff', align: 'center', base: 'middle', family: 'sans-serif' });
     }
@@ -405,7 +405,7 @@ class PuzzleDemoUI {
     this.text('INTERNAL MEMORY ARRAY REPRESENTATION', px + size / 2, py - 12, { size: 9, weight: 'bold', color: PZ.muted, align: 'center', family: 'monospace' });
     for (let i = 0; i < 9; i++) {
       const bx = px + i * boxW;
-      ctx.fillStyle = tiles[i] === 0 ? '#cbd5e1' : PZ.indigo;
+      ctx.fillStyle = tiles[i] === 0 ? '#c3cdda' : PZ.indigo;
       ctx.beginPath(); this.roundRect(bx + gap, py, boxW - gap * 2, 28, 4); ctx.fill();
       this.text(tiles[i] === 0 ? '_' : String(tiles[i]), bx + boxW / 2, py + 14, { size: 12, weight: 'bold', color: '#fff', align: 'center', base: 'middle' });
       this.text(String(i), bx + boxW / 2, py + 40, { size: 9, color: PZ.faint, align: 'center', base: 'middle', family: 'monospace' });
@@ -426,15 +426,15 @@ class PuzzleDemoUI {
       const x = bx + pad + (i % 3) * ts, y = by + pad + Math.floor(i / 3) * ts, s = ts - pad * 0.5, v = tiles[i];
       ctx.beginPath(); this.roundRect(x, y, s, s, 6);
       if (v !== null) {
-        ctx.fillStyle = v === 0 ? '#e2e8f0' : PZ.indigo; ctx.fill();
+        ctx.fillStyle = v === 0 ? '#dbe2ec' : PZ.indigo; ctx.fill();
         this.text(v === 0 ? '_' : String(v), x + s / 2, y + s / 2 + 1, { size: Math.round(ts * 0.36), weight: 'bold', color: v === 0 ? PZ.muted : '#fff', align: 'center', base: 'middle' });
       } else if (i === k) {
-        ctx.fillStyle = 'rgba(245,158,11,0.12)'; ctx.fill(); ctx.setLineDash([5, 4]); ctx.strokeStyle = PZ.amber; ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = 'rgba(212, 145, 26,0.12)'; ctx.fill(); ctx.setLineDash([5, 4]); ctx.strokeStyle = PZ.amber; ctx.lineWidth = 2; ctx.stroke(); ctx.setLineDash([]);
         this.text(String(9 - i), x + s / 2, y + s / 2 - 5, { size: Math.round(ts * 0.3), weight: 'bold', color: PZ.amberDark, align: 'center', base: 'middle' });
         this.text('choices', x + s / 2, y + s / 2 + ts * 0.2, { size: Math.max(9, Math.round(ts * 0.11)), color: PZ.amberDark, align: 'center', base: 'middle' });
       } else {
         ctx.fillStyle = PZ.bg; ctx.fill();
-        this.text('?', x + s / 2, y + s / 2 + 1, { size: Math.round(ts * 0.28), color: '#cbd5e1', align: 'center', base: 'middle' });
+        this.text('?', x + s / 2, y + s / 2 + 1, { size: Math.round(ts * 0.28), color: '#c3cdda', align: 'center', base: 'middle' });
       }
       this.text(`idx ${i}`, x + 5, y + s - 5, { size: 9, weight: 'bold', color: v !== null && v !== 0 ? 'rgba(255,255,255,0.5)' : PZ.faint, base: 'bottom', family: 'monospace' });
     }
@@ -443,10 +443,10 @@ class PuzzleDemoUI {
     this.text('TUPLE IN MEMORY', bx + size / 2, ay - 10, { size: 9, weight: 'bold', color: PZ.muted, align: 'center', family: 'monospace' });
     for (let i = 0; i < 9; i++) {
       const v = tiles[i], x = bx + i * bw;
-      ctx.fillStyle = v === null ? PZ.bg : v === 0 ? '#cbd5e1' : PZ.indigo;
+      ctx.fillStyle = v === null ? PZ.bg : v === 0 ? '#c3cdda' : PZ.indigo;
       ctx.beginPath(); this.roundRect(x + 2, ay, bw - 4, 26, 4); ctx.fill();
       if (v === null) { ctx.strokeStyle = i === k ? PZ.amber : PZ.line; ctx.lineWidth = 1.2; ctx.stroke(); }
-      this.text(v === null ? '?' : v === 0 ? '0' : String(v), x + bw / 2, ay + 14, { size: 12, weight: 'bold', color: v === null ? '#cbd5e1' : '#fff', align: 'center', base: 'middle' });
+      this.text(v === null ? '?' : v === 0 ? '0' : String(v), x + bw / 2, ay + 14, { size: 12, weight: 'bold', color: v === null ? '#c3cdda' : '#fff', align: 'center', base: 'middle' });
       this.text(String(i), x + bw / 2, ay + 37, { size: 9, color: PZ.faint, align: 'center', base: 'middle', family: 'monospace' });
     }
 
@@ -455,12 +455,12 @@ class PuzzleDemoUI {
     let y = by + 4;
     this.text('Choices for each square', rx, y, { size: 12, weight: 'bold', color: PZ.slate }); y += 32;
     const fs = Math.max(14, Math.min(24, rw / 14));
-    ctx.font = `bold ${fs}px Outfit, sans-serif`;
+    ctx.font = `bold ${fs}px system-ui, sans-serif`;
     let x = rx, prod = 1;
     for (let i = 0; i < 9; i++) {
       const str = String(9 - i) + (i < 8 ? ' ×' : '');
-      this.text(str, x, y, { size: fs, weight: 'bold', color: i < k ? PZ.indigo : i === k ? PZ.amberDark : '#cbd5e1' });
-      ctx.font = `bold ${fs}px Outfit, sans-serif`;
+      this.text(str, x, y, { size: fs, weight: 'bold', color: i < k ? PZ.indigo : i === k ? PZ.amberDark : '#c3cdda' });
+      ctx.font = `bold ${fs}px system-ui, sans-serif`;
       x += ctx.measureText(str + ' ').width;
       if (i < k) prod *= 9 - i;
     }
@@ -526,13 +526,13 @@ class PuzzleDemoUI {
 
   nodeLook(status) {
     switch (status) {
-      case 'current': return { fill: '#fffbeb', tileFill: '#fde68a', text: PZ.amberDark, border: PZ.amber, lw: 2.5, glow: 'rgba(245,158,11,0.6)' };
-      case 'frontier': return { fill: '#ffffff', tileFill: PZ.indigoSoft, text: '#3730a3', border: PZ.indigo, lw: 1.6 };
-      case 'expanded': return { fill: '#f0f9ff', tileFill: '#bae6fd', text: '#075985', border: '#0891b2', lw: 1.3 };
-      case 'goal': return { fill: '#ecfdf5', tileFill: '#a7f3d0', text: PZ.greenDark, border: PZ.green, lw: 2.5, glow: 'rgba(16,185,129,0.55)' };
-      case 'leaf': return { fill: '#f8fafc', tileFill: '#e2e8f0', text: PZ.slate, border: PZ.slate, lw: 1.5 };
-      case 'unseen': return { fill: '#ffffff', tileFill: '#f1f5f9', text: '#94a3b8', border: '#cbd5e1', lw: 1, alpha: 0.75 };
-      default: return { fill: '#f8fafc', tileFill: '#e2e8f0', text: PZ.faint, border: '#cbd5e1', lw: 1, dash: [3, 2], alpha: 0.6 }; // dup
+      case 'current': return { fill: '#fdf3e2', tileFill: '#f6dca8', text: PZ.amberDark, border: PZ.amber, lw: 2.5, glow: 'rgba(212, 145, 26,0.6)' };
+      case 'frontier': return { fill: '#ffffff', tileFill: PZ.indigoSoft, text: '#0e2f5c', border: PZ.indigo, lw: 1.6 };
+      case 'expanded': return { fill: '#eef4fd', tileFill: '#c9daf5', text: '#0e2f5c', border: '#2461c0', lw: 1.3 };
+      case 'goal': return { fill: '#e9f7ee', tileFill: '#bfe5c9', text: PZ.greenDark, border: PZ.green, lw: 2.5, glow: 'rgba(46, 139, 71,0.55)' };
+      case 'leaf': return { fill: '#f7f9fc', tileFill: '#dbe2ec', text: PZ.slate, border: PZ.slate, lw: 1.5 };
+      case 'unseen': return { fill: '#ffffff', tileFill: '#f1f4f9', text: '#8a94a3', border: '#c3cdda', lw: 1, alpha: 0.75 };
+      default: return { fill: '#f7f9fc', tileFill: '#dbe2ec', text: PZ.faint, border: '#c3cdda', lw: 1, dash: [3, 2], alpha: 0.6 }; // dup
     }
   }
 
@@ -550,7 +550,7 @@ class PuzzleDemoUI {
     legend.forEach(([k, label]) => {
       this.drawMiniBoard([0, 0, 0, 0, 0, 0, 0, 0, 0], lx, 10, 14, this.nodeLook(k));
       this.text(label, lx + 18, 21, { size: 11, color: PZ.slate });
-      ctx.font = 'normal 11px Outfit, sans-serif'; lx += 30 + ctx.measureText(label).width;
+      ctx.font = 'normal 11px system-ui, sans-serif'; lx += 30 + ctx.measureText(label).width;
     });
     if (step.limit !== null && step.limit !== undefined) this.text(`Depth limit = ${step.limit}`, right, 21, { size: 12, weight: 'bold', color: PZ.amberDark, align: 'right' });
 
@@ -580,7 +580,7 @@ class PuzzleDemoUI {
       ctx.beginPath(); ctx.moveTo(X(n.parent), Y(n.parent) + s / 2); ctx.lineTo(X(n.id), Y(n.id) - s / 2);
       const unseenE = status[n.id] === 'unseen';
       ctx.setLineDash(unseenE ? [4, 4] : []);
-      ctx.strokeStyle = sol ? PZ.green : fresh ? PZ.amber : unseenE ? 'rgba(148,163,184,0.5)' : status[n.id] === 'dup' ? 'rgba(148,163,184,0.45)' : 'rgba(79,70,229,0.35)';
+      ctx.strokeStyle = sol ? PZ.green : fresh ? PZ.amber : unseenE ? 'rgba(138, 148, 163,0.5)' : status[n.id] === 'dup' ? 'rgba(138, 148, 163,0.45)' : 'rgba(27, 79, 156,0.35)';
       ctx.lineWidth = sol ? 3.5 : fresh ? 2.5 : 1.3; ctx.stroke(); ctx.setLineDash([]);
       if (s >= 16) {
         const mx = (X(n.parent) + X(n.id)) / 2, my = (Y(n.parent) + s / 2 + Y(n.id) - s / 2) / 2;
@@ -603,7 +603,7 @@ class PuzzleDemoUI {
         this.text(lab, X(id), Y(id) + s / 2 + 11, { size: 9.5, weight: 'bold', color: status[id] === 'dup' || status[id] === 'unseen' ? PZ.faint : PZ.slate, align: 'center', family: 'sans-serif' });
       }
     });
-    if (id0Root(nodes)) this.text('s₀', X(0) - s / 2 - 6, Y(0) + 4, { size: 11, weight: 'bold', color: '#0891b2', align: 'right' });
+    if (id0Root(nodes)) this.text('s₀', X(0) - s / 2 - 6, Y(0) + 4, { size: 11, weight: 'bold', color: '#2461c0', align: 'right' });
 
     // Top band: frontier strip, selected node, goal state
     const fy = bandY, fx = 12, fw = w - 24;
@@ -647,7 +647,7 @@ class PuzzleDemoUI {
     ctx.strokeStyle = PZ.line; ctx.beginPath(); ctx.moveTo(gx - 10, fy + 10); ctx.lineTo(gx - 10, fy + FH - 10); ctx.stroke();
     this.text('GOAL STATE', gx, fy + 16, { size: 10, weight: 'bold', color: PZ.greenDark, family: 'monospace' });
     const found = step.solution !== null && step.solution !== undefined;
-    this.drawMiniBoard(PuzzleSearchTrace.GOAL, gx, fy + 26, 62, { fill: '#ecfdf5', tileFill: '#a7f3d0', text: PZ.greenDark, border: PZ.green, lw: found ? 2.5 : 1.6, glow: found ? 'rgba(16,185,129,0.55)' : null });
+    this.drawMiniBoard(PuzzleSearchTrace.GOAL, gx, fy + 26, 62, { fill: '#e9f7ee', tileFill: '#bfe5c9', text: PZ.greenDark, border: PZ.green, lw: found ? 2.5 : 1.6, glow: found ? 'rgba(46, 139, 71,0.55)' : null });
     this.text(found ? 'reached ✓' : 'target', gx + 31, fy + 104, { size: 10, weight: 'bold', color: found ? PZ.greenDark : PZ.muted, align: 'center' });
 
     function id0Root(ns) { return ns.length > 0; }

@@ -324,7 +324,7 @@
 
       <div class="sl-concept-chips" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.2rem;">
         ${concepts.map((c, idx) => `
-          <button class="sl-concept-chip ${idx === cIdx ? 'active' : ''}" data-cidx="${idx}" style="padding: 0.4rem 0.8rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: 1px solid ${idx === cIdx ? '#10b981' : 'rgba(15,23,42,0.1)'}; background: ${idx === cIdx ? 'rgba(16,185,129,0.15)' : 'rgba(15,23,42,0.05)'}; color: ${idx === cIdx ? '#047857' : '#64748b'}; transition: all 0.2s;">
+          <button class="sl-concept-chip ${idx === cIdx ? 'active' : ''}" data-cidx="${idx}" style="padding: 0.4rem 0.8rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: 1px solid ${idx === cIdx ? '#2e8b47' : 'rgba(16, 32, 64,0.1)'}; background: ${idx === cIdx ? 'rgba(46, 139, 71,0.15)' : 'rgba(16, 32, 64,0.05)'}; color: ${idx === cIdx ? '#2a7a3f' : '#55606f'}; transition: all 0.2s;">
             ${c.name}
           </button>
         `).join('')}
@@ -337,20 +337,20 @@
         <div class="lr-lab-tip"><i data-lucide="sparkles"></i><span>${currentC.tip}</span></div>
       </div>
       <div class="lr-concept-lab" id="lr-concept-lab"></div>` : `
-      <div class="sl-concept-card glass-panel" style="padding: 1.2rem; border-radius: 12px; background: #ffffff; border: 1px solid rgba(15,23,42,0.08); margin-bottom: 1rem;">
-        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #059669; font-weight: 700; margin-bottom: 0.4rem;">Formal Definition</div>
+      <div class="sl-concept-card glass-panel" style="padding: 1.2rem; border-radius: 12px; background: #ffffff; border: 1px solid rgba(16, 32, 64,0.08); margin-bottom: 1rem;">
+        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #2e8b47; font-weight: 700; margin-bottom: 0.4rem;">Formal Definition</div>
         <p style="font-size: 0.92rem; color: var(--text-primary); line-height: 1.55; margin-bottom: 1rem;">
           ${currentC.def}
         </p>
 
-        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #0284c7; font-weight: 700; margin-bottom: 0.4rem;">Mathematical Notation</div>
-        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; padding: 0.75rem 1rem; background: rgba(15,23,42,0.06); border-radius: 8px; border-left: 3px solid #0284c7; color: #334155; margin-bottom: 1rem; word-break: break-word;">
+        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #2461c0; font-weight: 700; margin-bottom: 0.4rem;">Mathematical Notation</div>
+        <div style="font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace; font-size: 0.85rem; padding: 0.75rem 1rem; background: rgba(16, 32, 64,0.06); border-radius: 8px; border-left: 3px solid #2461c0; color: #2c3644; margin-bottom: 1rem; word-break: break-word;">
           ${currentC.notation}
         </div>
 
-        <div class="teaching-tip" style="display: flex; gap: 0.75rem; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); padding: 0.85rem 1rem; border-radius: 8px;">
-          <i data-lucide="sparkles" style="color: #059669; width: 1.25rem; height: 1.25rem; flex-shrink: 0; margin-top: 2px;"></i>
-          <span style="font-size: 0.84rem; color: #065f46; line-height: 1.5;">${currentC.tip}</span>
+        <div class="teaching-tip" style="display: flex; gap: 0.75rem; background: rgba(46, 139, 71,0.08); border: 1px solid rgba(46, 139, 71,0.25); padding: 0.85rem 1rem; border-radius: 8px;">
+          <i data-lucide="sparkles" style="color: #2e8b47; width: 1.25rem; height: 1.25rem; flex-shrink: 0; margin-top: 2px;"></i>
+          <span style="font-size: 0.84rem; color: #1f5e30; line-height: 1.5;">${currentC.tip}</span>
         </div>
       </div>`}
     `;
@@ -384,15 +384,15 @@
           Rules vs. Data-Driven Empirical Learning
         </h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; flex: 1;">
-          <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(244,63,94,0.08); border-left: 4px solid #f43f5e;">
-            <div style="font-weight: 700; color: #9f1239; font-size: 0.8rem; margin-bottom: 0.3rem;">Handcrafted Rules (Topics 1-5)</div>
-            <p style="font-size: 0.76rem; color: #881337; line-height: 1.4;">
+          <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(192, 57, 43,0.08); border-left: 4px solid #c0392b;">
+            <div style="font-weight: 700; color: #922b21; font-size: 0.8rem; margin-bottom: 0.3rem;">Handcrafted Rules (Topics 1-5)</div>
+            <p style="font-size: 0.76rem; color: #7b241c; line-height: 1.4;">
               Requires human experts to enumerate all possibilities. Brittle, expensive to maintain, and fails in complex perceptual domains.
             </p>
           </div>
-          <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(16,185,129,0.1); border-left: 4px solid #10b981;">
-            <div style="font-weight: 700; color: #065f46; font-size: 0.8rem; margin-bottom: 0.3rem;">Machine Learning (Topic 6)</div>
-            <p style="font-size: 0.76rem; color: #047857; line-height: 1.4;">
+          <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(46, 139, 71,0.1); border-left: 4px solid #2e8b47;">
+            <div style="font-weight: 700; color: #1f5e30; font-size: 0.8rem; margin-bottom: 0.3rem;">Machine Learning (Topic 6)</div>
+            <p style="font-size: 0.76rem; color: #2a7a3f; line-height: 1.4;">
               Algorithms automatically extract statistical patterns, feature weights, and decision policies directly from empirical datasets.
             </p>
           </div>
@@ -407,20 +407,20 @@
         <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-primary);">The Four Learning Paradigms</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
           <div class="glass-panel" style="padding: 0.6rem; border-radius: 6px; background: #ffffff;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: #059669;">1. Supervised Learning</div>
-            <div style="font-size: 0.7rem; color: #64748b;">Pairs ⟨x, y⟩ with teacher feedback</div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: #2e8b47;">1. Supervised Learning</div>
+            <div style="font-size: 0.7rem; color: #55606f;">Pairs ⟨x, y⟩ with teacher feedback</div>
           </div>
           <div class="glass-panel" style="padding: 0.6rem; border-radius: 6px; background: #ffffff;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: #6366f1;">2. Neural Networks</div>
-            <div style="font-size: 0.7rem; color: #64748b;">Non-linear representation learning</div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: #2461c0;">2. Neural Networks</div>
+            <div style="font-size: 0.7rem; color: #55606f;">Non-linear representation learning</div>
           </div>
           <div class="glass-panel" style="padding: 0.6rem; border-radius: 6px; background: #ffffff;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: #d97706;">3. Unsupervised (K-Means)</div>
-            <div style="font-size: 0.7rem; color: #64748b;">Clusters unlabeled data points</div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: #b9770e;">3. Unsupervised (K-Means)</div>
+            <div style="font-size: 0.7rem; color: #55606f;">Clusters unlabeled data points</div>
           </div>
           <div class="glass-panel" style="padding: 0.6rem; border-radius: 6px; background: #ffffff;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: #0284c7;">4. Reinforcement Learning</div>
-            <div style="font-size: 0.7rem; color: #64748b;">Sequential actions & reward feedback</div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: #2461c0;">4. Reinforcement Learning</div>
+            <div style="font-size: 0.7rem; color: #55606f;">Sequential actions & reward feedback</div>
           </div>
         </div>
       </div>
@@ -435,13 +435,13 @@
         </h3>
         <div style="display: flex; gap: 1rem; width: 100%; max-width: 480px;">
           <div class="glass-panel" style="flex: 1; padding: 0.8rem; border-radius: 8px; background: #ffffff; text-align: center;">
-            <div style="font-weight: 700; color: #059669; font-size: 0.8rem;">Classifier (Static)</div>
-            <div style="font-size: 0.72rem; color: #64748b; margin-top: 0.3rem;">Email Text → [Spam / Ham]</div>
+            <div style="font-weight: 700; color: #2e8b47; font-size: 0.8rem;">Classifier (Static)</div>
+            <div style="font-size: 0.72rem; color: #55606f; margin-top: 0.3rem;">Email Text → [Spam / Ham]</div>
           </div>
-          <div style="font-size: 1.2rem; color: #94a3b8; display: flex; align-items: center;">⇄</div>
+          <div style="font-size: 1.2rem; color: #8a94a3; display: flex; align-items: center;">⇄</div>
           <div class="glass-panel" style="flex: 1; padding: 0.8rem; border-radius: 8px; background: #ffffff; text-align: center;">
-            <div style="font-weight: 700; color: #0284c7; font-size: 0.8rem;">RL Agent (Sequential)</div>
-            <div style="font-size: 0.72rem; color: #64748b; margin-top: 0.3rem;">State → Action → Reward → State'</div>
+            <div style="font-weight: 700; color: #2461c0; font-size: 0.8rem;">RL Agent (Sequential)</div>
+            <div style="font-size: 0.72rem; color: #55606f; margin-top: 0.3rem;">State → Action → Reward → State'</div>
           </div>
         </div>
       </div>
@@ -458,17 +458,17 @@
     container.innerHTML = `
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Bag-of-Words Word Frequency Spikes</h3>
-        <div style="font-size: 0.74rem; background: rgba(15,23,42,0.04); padding: 0.5rem; border-radius: 6px; color: #334155; margin-bottom: 0.5rem;">
+        <div style="font-size: 0.74rem; background: rgba(16, 32, 64,0.04); padding: 0.5rem; border-radius: 6px; color: #2c3644; margin-bottom: 0.5rem;">
           <strong>Sample Email:</strong> "${sampleDoc}"
         </div>
         <div style="flex: 1; display: flex; flex-direction: column; gap: 0.4rem; justify-content: center;">
           ${Object.entries(counts).map(([word, c]) => `
             <div style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem;">
-              <span style="width: 60px; font-weight: 600; color: #334155; text-align: right;">${word}</span>
-              <div style="flex: 1; height: 12px; background: rgba(15,23,42,0.06); border-radius: 4px; overflow: hidden;">
-                <div style="width: ${c * 35}%; height: 100%; background: #06b6d4;"></div>
+              <span style="width: 60px; font-weight: 600; color: #2c3644; text-align: right;">${word}</span>
+              <div style="flex: 1; height: 12px; background: rgba(16, 32, 64,0.06); border-radius: 4px; overflow: hidden;">
+                <div style="width: ${c * 35}%; height: 100%; background: #3a78d4;"></div>
               </div>
-              <span style="font-weight: 700; color: #0891b2; width: 20px;">${c}</span>
+              <span style="font-weight: 700; color: #2461c0; width: 20px;">${c}</span>
             </div>
           `).join('')}
         </div>
@@ -481,16 +481,16 @@
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-around;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">TF-IDF Importance Weighting</h3>
         <table style="width: 100%; font-size: 0.75rem; text-align: center; border-collapse: collapse; background: #ffffff; border-radius: 8px; overflow: hidden;">
-          <thead style="background: rgba(6,182,212,0.1); color: #0891b2;">
+          <thead style="background: rgba(36, 97, 192,0.1); color: #2461c0;">
             <tr><th style="padding: 5px;">Term</th><th>TF (Local)</th><th>IDF (Global)</th><th>TF-IDF Score</th></tr>
           </thead>
           <tbody>
-            <tr style="border-bottom: 1px solid rgba(15,23,42,0.05);"><td style="padding: 4px; font-weight:600;">the</td><td>0.15</td><td style="color:#f43f5e;">0.05 (Common)</td><td><strong>0.007</strong></td></tr>
-            <tr style="border-bottom: 1px solid rgba(15,23,42,0.05);"><td style="padding: 4px; font-weight:600;">meeting</td><td>0.08</td><td>1.45 (Medium)</td><td><strong>0.116</strong></td></tr>
-            <tr><td style="padding: 4px; font-weight:600;">lottery</td><td>0.20</td><td style="color:#10b981;">3.20 (Rare!)</td><td style="color:#059669; font-weight:800;">0.640</td></tr>
+            <tr style="border-bottom: 1px solid rgba(16, 32, 64,0.05);"><td style="padding: 4px; font-weight:600;">the</td><td>0.15</td><td style="color:#c0392b;">0.05 (Common)</td><td><strong>0.007</strong></td></tr>
+            <tr style="border-bottom: 1px solid rgba(16, 32, 64,0.05);"><td style="padding: 4px; font-weight:600;">meeting</td><td>0.08</td><td>1.45 (Medium)</td><td><strong>0.116</strong></td></tr>
+            <tr><td style="padding: 4px; font-weight:600;">lottery</td><td>0.20</td><td style="color:#2e8b47;">3.20 (Rare!)</td><td style="color:#2e8b47; font-weight:800;">0.640</td></tr>
           </tbody>
         </table>
-        <div style="font-size: 0.72rem; color: #64748b;">
+        <div style="font-size: 0.72rem; color: #55606f;">
           TF-IDF suppresses common filler words and magnifies rare topic markers.
         </div>
       </div>
@@ -511,20 +511,20 @@
     container.innerHTML = `
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Naive Bayes Posterior Probability</h3>
-        <div style="font-size: 0.74rem; background: rgba(15,23,42,0.04); padding: 0.5rem; border-radius: 6px; color: #334155;">
+        <div style="font-size: 0.74rem; background: rgba(16, 32, 64,0.04); padding: 0.5rem; border-radius: 6px; color: #2c3644;">
           <strong>Classifying:</strong> "${testDoc}"
         </div>
         <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: #ffffff;">
           <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 700; margin-bottom: 0.3rem;">
-            <span style="color: #f43f5e;">P(Spam | text) = ${(res.probabilities.Spam * 100).toFixed(1)}%</span>
-            <span style="color: #059669;">P(Ham | text) = ${(res.probabilities.Ham * 100).toFixed(1)}%</span>
+            <span style="color: #c0392b;">P(Spam | text) = ${(res.probabilities.Spam * 100).toFixed(1)}%</span>
+            <span style="color: #2e8b47;">P(Ham | text) = ${(res.probabilities.Ham * 100).toFixed(1)}%</span>
           </div>
-          <div style="height: 14px; background: rgba(15,23,42,0.08); border-radius: 999px; overflow: hidden; display: flex;">
-            <div style="width: ${(res.probabilities.Spam * 100)}%; height: 100%; background: #f43f5e;"></div>
-            <div style="width: ${(res.probabilities.Ham * 100)}%; height: 100%; background: #059669;"></div>
+          <div style="height: 14px; background: rgba(16, 32, 64,0.08); border-radius: 999px; overflow: hidden; display: flex;">
+            <div style="width: ${(res.probabilities.Spam * 100)}%; height: 100%; background: #c0392b;"></div>
+            <div style="width: ${(res.probabilities.Ham * 100)}%; height: 100%; background: #2e8b47;"></div>
           </div>
         </div>
-        <div style="font-size: 0.72rem; color: #047857; font-weight: 700; background: #ecfdf5; padding: 0.4rem; border-radius: 4px; text-align: center;">
+        <div style="font-size: 0.72rem; color: #2a7a3f; font-weight: 700; background: #e9f7ee; padding: 0.4rem; border-radius: 4px; text-align: center;">
           Decision: Class = ${res.predictedClass} (MAP Decision Rule)
         </div>
       </div>
@@ -535,15 +535,15 @@
     container.innerHTML = `
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-around;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Laplace Smoothing (Zero-Probability Defense)</h3>
-        <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(244,63,94,0.08); border-left: 4px solid #f43f5e;">
-          <div style="font-size: 0.78rem; font-weight: 700; color: #9f1239;">Without Smoothing (α = 0)</div>
-          <div style="font-family: monospace; font-size: 0.74rem; color: #881337; margin-top: 2px;">
+        <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(192, 57, 43,0.08); border-left: 4px solid #c0392b;">
+          <div style="font-size: 0.78rem; font-weight: 700; color: #922b21;">Without Smoothing (α = 0)</div>
+          <div style="font-family: monospace; font-size: 0.74rem; color: #7b241c; margin-top: 2px;">
             P("new_word" | Spam) = 0 / 100 = 0.0 &rarr; ∏ P(w | c) = <strong>0.0!</strong> (Fails)
           </div>
         </div>
-        <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(16,185,129,0.1); border-left: 4px solid #10b981;">
-          <div style="font-size: 0.78rem; font-weight: 700; color: #065f46;">With Laplace Add-1 (α = 1)</div>
-          <div style="font-family: monospace; font-size: 0.74rem; color: #047857; margin-top: 2px;">
+        <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(46, 139, 71,0.1); border-left: 4px solid #2e8b47;">
+          <div style="font-size: 0.78rem; font-weight: 700; color: #1f5e30;">With Laplace Add-1 (α = 1)</div>
+          <div style="font-family: monospace; font-size: 0.74rem; color: #2a7a3f; margin-top: 2px;">
             P("new_word" | Spam) = (0 + 1) / (100 + |V|) &gt; 0.0 &rarr; Stable!
           </div>
         </div>
@@ -564,28 +564,28 @@
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Confusion Matrix (2×2 Contingency Table)</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; text-align: center; font-size: 0.75rem;">
-          <div style="padding: 6px; background: #ecfdf5; border: 1px solid #10b981; border-radius: 4px;">
-            <div style="color: #059669; font-weight: 700;">TP = ${tp}</div>
-            <div style="font-size: 0.68rem; color: #047857;">True Positive</div>
+          <div style="padding: 6px; background: #e9f7ee; border: 1px solid #2e8b47; border-radius: 4px;">
+            <div style="color: #2e8b47; font-weight: 700;">TP = ${tp}</div>
+            <div style="font-size: 0.68rem; color: #2a7a3f;">True Positive</div>
           </div>
-          <div style="padding: 6px; background: #fff1f2; border: 1px solid #f43f5e; border-radius: 4px;">
-            <div style="color: #e11d48; font-weight: 700;">FN = ${fn}</div>
-            <div style="font-size: 0.68rem; color: #9f1239;">False Negative</div>
+          <div style="padding: 6px; background: #fdecea; border: 1px solid #c0392b; border-radius: 4px;">
+            <div style="color: #c0392b; font-weight: 700;">FN = ${fn}</div>
+            <div style="font-size: 0.68rem; color: #922b21;">False Negative</div>
           </div>
-          <div style="padding: 6px; background: #fff1f2; border: 1px solid #f43f5e; border-radius: 4px;">
-            <div style="color: #e11d48; font-weight: 700;">FP = ${fp}</div>
-            <div style="font-size: 0.68rem; color: #9f1239;">False Positive</div>
+          <div style="padding: 6px; background: #fdecea; border: 1px solid #c0392b; border-radius: 4px;">
+            <div style="color: #c0392b; font-weight: 700;">FP = ${fp}</div>
+            <div style="font-size: 0.68rem; color: #922b21;">False Positive</div>
           </div>
-          <div style="padding: 6px; background: #ecfdf5; border: 1px solid #10b981; border-radius: 4px;">
-            <div style="color: #059669; font-weight: 700;">TN = ${tn}</div>
-            <div style="font-size: 0.68rem; color: #047857;">True Negative</div>
+          <div style="padding: 6px; background: #e9f7ee; border: 1px solid #2e8b47; border-radius: 4px;">
+            <div style="color: #2e8b47; font-weight: 700;">TN = ${tn}</div>
+            <div style="font-size: 0.68rem; color: #2a7a3f;">True Negative</div>
           </div>
         </div>
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; font-size: 0.72rem; text-align: center; margin-top: 0.4rem;">
-          <div style="background: rgba(15,23,42,0.04); padding: 4px; border-radius: 4px;">Acc: <strong>${acc}%</strong></div>
-          <div style="background: rgba(15,23,42,0.04); padding: 4px; border-radius: 4px;">Prec: <strong>${prec}%</strong></div>
-          <div style="background: rgba(15,23,42,0.04); padding: 4px; border-radius: 4px;">Rec: <strong>${rec}%</strong></div>
-          <div style="background: rgba(16,185,129,0.15); padding: 4px; border-radius: 4px; color: #047857;">F1: <strong>${f1}%</strong></div>
+          <div style="background: rgba(16, 32, 64,0.04); padding: 4px; border-radius: 4px;">Acc: <strong>${acc}%</strong></div>
+          <div style="background: rgba(16, 32, 64,0.04); padding: 4px; border-radius: 4px;">Prec: <strong>${prec}%</strong></div>
+          <div style="background: rgba(16, 32, 64,0.04); padding: 4px; border-radius: 4px;">Rec: <strong>${rec}%</strong></div>
+          <div style="background: rgba(46, 139, 71,0.15); padding: 4px; border-radius: 4px; color: #2a7a3f;">F1: <strong>${f1}%</strong></div>
         </div>
       </div>
     `;
@@ -596,11 +596,11 @@
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-around;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Precision vs. Recall Trade-off</h3>
         <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: #ffffff;">
-          <div style="font-size: 0.76rem; color: #64748b; line-height: 1.4;">
+          <div style="font-size: 0.76rem; color: #55606f; line-height: 1.4;">
             Higher classification threshold &rarr; Higher <strong>Precision</strong> (fewer false alarms) but lower <strong>Recall</strong>.
           </div>
         </div>
-        <div style="font-size: 0.72rem; color: #059669; font-weight: 700; background: #ecfdf5; padding: 0.5rem; border-radius: 6px; text-align: center;">
+        <div style="font-size: 0.72rem; color: #2e8b47; font-weight: 700; background: #e9f7ee; padding: 0.5rem; border-radius: 6px; text-align: center;">
           F1-Score balances Precision & Recall via harmonic mean: 2(P·R)/(P+R).
         </div>
       </div>
@@ -613,13 +613,13 @@
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-around;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Perceptron & The XOR Limit</h3>
         <div style="display: flex; gap: 0.5rem; justify-content: center;">
-          <div style="width: 140px; height: 110px; background: #ffffff; border: 1px solid rgba(15,23,42,0.1); border-radius: 6px; position: relative;">
-            <span style="position: absolute; top: 4px; left: 6px; font-size: 0.65rem; color: #64748b;">AND (Linearly Separable)</span>
-            <div style="width: 100%; height: 2px; background: #10b981; position: absolute; top: 50%; transform: rotate(-35deg);"></div>
+          <div style="width: 140px; height: 110px; background: #ffffff; border: 1px solid rgba(16, 32, 64,0.1); border-radius: 6px; position: relative;">
+            <span style="position: absolute; top: 4px; left: 6px; font-size: 0.65rem; color: #55606f;">AND (Linearly Separable)</span>
+            <div style="width: 100%; height: 2px; background: #2e8b47; position: absolute; top: 50%; transform: rotate(-35deg);"></div>
           </div>
-          <div style="width: 140px; height: 110px; background: #ffffff; border: 1px solid #f43f5e; border-radius: 6px; position: relative;">
-            <span style="position: absolute; top: 4px; left: 6px; font-size: 0.65rem; color: #e11d48; font-weight: 700;">XOR (Non-Separable!)</span>
-            <div style="font-size: 0.68rem; color: #f43f5e; text-align: center; margin-top: 40px;">No single straight line can separate XOR!</div>
+          <div style="width: 140px; height: 110px; background: #ffffff; border: 1px solid #c0392b; border-radius: 6px; position: relative;">
+            <span style="position: absolute; top: 4px; left: 6px; font-size: 0.65rem; color: #c0392b; font-weight: 700;">XOR (Non-Separable!)</span>
+            <div style="font-size: 0.68rem; color: #c0392b; text-align: center; margin-top: 40px;">No single straight line can separate XOR!</div>
           </div>
         </div>
       </div>
@@ -632,20 +632,20 @@
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Multi-Layer Perceptron (2-Layer Forward Pass)</h3>
         <div style="display: flex; justify-content: space-around; align-items: center; flex: 1;">
           <div style="text-align: center;">
-            <div style="font-size: 0.7rem; color: #64748b;">Inputs</div>
-            <div style="width: 24px; height: 24px; border-radius: 50%; background: #06b6d4; margin: 4px auto;"></div>
-            <div style="width: 24px; height: 24px; border-radius: 50%; background: #06b6d4; margin: 4px auto;"></div>
+            <div style="font-size: 0.7rem; color: #55606f;">Inputs</div>
+            <div style="width: 24px; height: 24px; border-radius: 50%; background: #3a78d4; margin: 4px auto;"></div>
+            <div style="width: 24px; height: 24px; border-radius: 50%; background: #3a78d4; margin: 4px auto;"></div>
           </div>
-          <div style="color: #94a3b8;">&rarr; W₁ &rarr;</div>
+          <div style="color: #8a94a3;">&rarr; W₁ &rarr;</div>
           <div style="text-align: center;">
-            <div style="font-size: 0.7rem; color: #8b5cf6;">Hidden (ReLU)</div>
-            <div style="width: 28px; height: 28px; border-radius: 50%; background: #8b5cf6; margin: 4px auto;"></div>
-            <div style="width: 28px; height: 28px; border-radius: 50%; background: #8b5cf6; margin: 4px auto;"></div>
+            <div style="font-size: 0.7rem; color: #7c3aed;">Hidden (ReLU)</div>
+            <div style="width: 28px; height: 28px; border-radius: 50%; background: #7c3aed; margin: 4px auto;"></div>
+            <div style="width: 28px; height: 28px; border-radius: 50%; background: #7c3aed; margin: 4px auto;"></div>
           </div>
-          <div style="color: #94a3b8;">&rarr; W₂ &rarr;</div>
+          <div style="color: #8a94a3;">&rarr; W₂ &rarr;</div>
           <div style="text-align: center;">
-            <div style="font-size: 0.7rem; color: #10b981;">Output (σ)</div>
-            <div style="width: 30px; height: 30px; border-radius: 50%; background: #10b981; margin: 4px auto;"></div>
+            <div style="font-size: 0.7rem; color: #2e8b47;">Output (σ)</div>
+            <div style="width: 30px; height: 30px; border-radius: 50%; background: #2e8b47; margin: 4px auto;"></div>
           </div>
         </div>
       </div>
@@ -656,8 +656,8 @@
     container.innerHTML = `
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-around;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Loss Surface & Gradient Descent</h3>
-        <div style="width: 100%; height: 100px; border-radius: 8px; background: linear-gradient(135deg, #312e81, #6366f1, #06b6d4); display: flex; align-items: center; justify-content: center; position: relative;">
-          <div style="width: 16px; height: 16px; border-radius: 50%; background: #f59e0b; border: 2px solid #ffffff; position: absolute; top: 20px; left: 30px;"></div>
+        <div style="width: 100%; height: 100px; border-radius: 8px; background: linear-gradient(135deg, #0e2f5c, #2461c0, #3a78d4); display: flex; align-items: center; justify-content: center; position: relative;">
+          <div style="width: 16px; height: 16px; border-radius: 50%; background: #d4911a; border: 2px solid #ffffff; position: absolute; top: 20px; left: 30px;"></div>
           <div style="font-size: 0.75rem; color: #ffffff; font-weight: 700;">w ← w - α ∇L (Step downhill)</div>
         </div>
       </div>
@@ -670,14 +670,14 @@
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">K-Means 2-Step Iterative Cycle</h3>
         <div style="display: flex; gap: 0.5rem; flex: 1; align-items: center;">
-          <div class="glass-panel" style="flex: 1; padding: 0.6rem; border-radius: 6px; background: rgba(6,182,212,0.1); text-align: center;">
-            <div style="font-weight: 700; color: #0891b2; font-size: 0.75rem;">1. Assignment Step</div>
-            <div style="font-size: 0.68rem; color: #334155; margin-top: 2px;">Assign points to closest centroid μ_k</div>
+          <div class="glass-panel" style="flex: 1; padding: 0.6rem; border-radius: 6px; background: rgba(36, 97, 192,0.1); text-align: center;">
+            <div style="font-weight: 700; color: #2461c0; font-size: 0.75rem;">1. Assignment Step</div>
+            <div style="font-size: 0.68rem; color: #2c3644; margin-top: 2px;">Assign points to closest centroid μ_k</div>
           </div>
-          <div style="color: #94a3b8;">&rarr;</div>
-          <div class="glass-panel" style="flex: 1; padding: 0.6rem; border-radius: 6px; background: rgba(245,158,11,0.1); text-align: center;">
-            <div style="font-weight: 700; color: #d97706; font-size: 0.75rem;">2. Update Step</div>
-            <div style="font-size: 0.68rem; color: #334155; margin-top: 2px;">Move centroids to cluster mean</div>
+          <div style="color: #8a94a3;">&rarr;</div>
+          <div class="glass-panel" style="flex: 1; padding: 0.6rem; border-radius: 6px; background: rgba(212, 145, 26,0.1); text-align: center;">
+            <div style="font-weight: 700; color: #b9770e; font-size: 0.75rem;">2. Update Step</div>
+            <div style="font-size: 0.68rem; color: #2c3644; margin-top: 2px;">Move centroids to cluster mean</div>
           </div>
         </div>
       </div>
@@ -688,11 +688,11 @@
     container.innerHTML = `
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-around;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">The Elbow Method for Selecting K</h3>
-        <div style="background: #ffffff; padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(15,23,42,0.08); font-size: 0.72rem;">
+        <div style="background: #ffffff; padding: 0.6rem; border-radius: 8px; border: 1px solid rgba(16, 32, 64,0.08); font-size: 0.72rem;">
           <div style="display: flex; justify-content: space-between; font-weight: 600;">
             <span>K=1: WCSS = 520</span>
             <span>K=2: WCSS = 210</span>
-            <span style="color: #059669; font-weight: 800;">K=3: WCSS = 75 (Elbow!)</span>
+            <span style="color: #2e8b47; font-weight: 800;">K=3: WCSS = 75 (Elbow!)</span>
             <span>K=4: WCSS = 62</span>
           </div>
         </div>
@@ -705,18 +705,18 @@
     container.innerHTML = `
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.4rem;">4×3 Grid World MDP</h3>
-        <div style="flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: rgba(15,23,42,0.05); padding: 4px; border-radius: 6px; font-size: 0.72rem; text-align: center;">
+        <div style="flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: rgba(16, 32, 64,0.05); padding: 4px; border-radius: 6px; font-size: 0.72rem; text-align: center;">
           <div style="background:#fff; border-radius:4px; padding:6px;">(1,3)</div>
           <div style="background:#fff; border-radius:4px; padding:6px;">(2,3)</div>
           <div style="background:#fff; border-radius:4px; padding:6px;">(3,3)</div>
-          <div style="background:#ecfdf5; color:#059669; font-weight:700; border-radius:4px; padding:6px;">+1.0 Goal</div>
+          <div style="background:#e9f7ee; color:#2e8b47; font-weight:700; border-radius:4px; padding:6px;">+1.0 Goal</div>
 
           <div style="background:#fff; border-radius:4px; padding:6px;">(1,2)</div>
-          <div style="background:#334155; color:#fff; border-radius:4px; padding:6px;">WALL</div>
+          <div style="background:#2c3644; color:#fff; border-radius:4px; padding:6px;">WALL</div>
           <div style="background:#fff; border-radius:4px; padding:6px;">(3,2)</div>
-          <div style="background:#fff1f2; color:#e11d48; font-weight:700; border-radius:4px; padding:6px;">-1.0 Pit</div>
+          <div style="background:#fdecea; color:#c0392b; font-weight:700; border-radius:4px; padding:6px;">-1.0 Pit</div>
 
-          <div style="background:#eff6ff; color:#2563eb; font-weight:700; border-radius:4px; padding:6px;">Start (1,1)</div>
+          <div style="background:#e8f0fc; color:#2461c0; font-weight:700; border-radius:4px; padding:6px;">Start (1,1)</div>
           <div style="background:#fff; border-radius:4px; padding:6px;">(2,1)</div>
           <div style="background:#fff; border-radius:4px; padding:6px;">(3,1)</div>
           <div style="background:#fff; border-radius:4px; padding:6px;">(4,1)</div>
@@ -729,7 +729,7 @@
     container.innerHTML = `
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-around;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">V(s) vs. Q(s, a)</h3>
-        <div style="font-size: 0.75rem; color: #64748b; line-height: 1.4;">
+        <div style="font-size: 0.75rem; color: #55606f; line-height: 1.4;">
           <strong>V(s):</strong> Evaluates the long-term goodness of state s.<br>
           <strong>Q(s, a):</strong> Evaluates the long-term goodness of taking action a in state s.
         </div>
@@ -741,7 +741,7 @@
     container.innerHTML = `
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Bellman Optimality Backup</h3>
-        <div style="font-family: monospace; font-size: 0.75rem; background: #ffffff; padding: 0.6rem; border-radius: 6px; border: 1px solid rgba(15,23,42,0.1); color: #334155;">
+        <div style="font-family: monospace; font-size: 0.75rem; background: #ffffff; padding: 0.6rem; border-radius: 6px; border: 1px solid rgba(16, 32, 64,0.1); color: #2c3644;">
           V*(s) = max_a ∑ P(s' | s, a) [ R(s, a, s') + γ V*(s') ]
         </div>
       </div>
@@ -752,7 +752,7 @@
     container.innerHTML = `
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Value Iteration Equilibrium Values</h3>
-        <div style="font-size: 0.72rem; color: #047857; font-weight: 600; text-align: center;">
+        <div style="font-size: 0.72rem; color: #2a7a3f; font-weight: 600; text-align: center;">
           Values diffuse outward from +1.0 goal (γ = 0.99, R = -0.04)
         </div>
       </div>
@@ -763,7 +763,7 @@
     container.innerHTML = `
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-around;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Temporal Difference (TD) Error</h3>
-        <div style="font-family: monospace; font-size: 0.74rem; background: #ffffff; padding: 0.6rem; border-radius: 6px; border-left: 3px solid #0284c7;">
+        <div style="font-family: monospace; font-size: 0.74rem; background: #ffffff; padding: 0.6rem; border-radius: 6px; border-left: 3px solid #2461c0;">
           δ = [ r + γ max_{a'} Q(s', a') ] - Q(s, a)
         </div>
       </div>
@@ -774,7 +774,7 @@
     container.innerHTML = `
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Tabular Q-Learning Updates</h3>
-        <div style="font-family: monospace; font-size: 0.74rem; background: #ecfdf5; padding: 0.6rem; border-radius: 6px; color: #047857;">
+        <div style="font-family: monospace; font-size: 0.74rem; background: #e9f7ee; padding: 0.6rem; border-radius: 6px; color: #2a7a3f;">
           Q(s, a) ← Q(s, a) + α [ r + γ max Q(s', a') - Q(s, a) ]
         </div>
       </div>
@@ -791,7 +791,7 @@
         <div style="flex: 1; overflow-x: auto; background: #ffffff; border-radius: 8px;">
           <table style="width: 100%; font-size: 0.74rem; text-align: left; border-collapse: collapse;">
             <thead>
-              <tr style="color: #64748b; border-bottom: 1px solid rgba(15,23,42,0.1);">
+              <tr style="color: #55606f; border-bottom: 1px solid rgba(16, 32, 64,0.1);">
                 <th style="padding: 4px;">System</th>
                 <th>Paradigm</th>
                 <th>Optimization</th>
@@ -799,10 +799,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr style="border-bottom: 1px solid rgba(15,23,42,0.05);"><td style="padding: 4px; font-weight: 700;">Naive Bayes</td><td>Supervised</td><td>MLE + Laplace</td><td style="color:#059669; font-weight:700;">O(N · d) Linear</td></tr>
-              <tr style="border-bottom: 1px solid rgba(15,23,42,0.05);"><td style="padding: 4px; font-weight: 700;">Neural Net</td><td>Supervised</td><td>Gradient Descent</td><td>O(N · Epochs · |W|)</td></tr>
-              <tr style="border-bottom: 1px solid rgba(15,23,42,0.05);"><td style="padding: 4px; font-weight: 700;">K-Means</td><td>Unsupervised</td><td>Lloyd's Algorithm</td><td>O(N · K · d · iters)</td></tr>
-              <tr style="border-bottom: 1px solid rgba(15,23,42,0.05);"><td style="padding: 4px; font-weight: 700;">Value Iteration</td><td>Model-Based RL</td><td>Bellman Dynamic Prog</td><td>O(|A| · |S|²)</td></tr>
+              <tr style="border-bottom: 1px solid rgba(16, 32, 64,0.05);"><td style="padding: 4px; font-weight: 700;">Naive Bayes</td><td>Supervised</td><td>MLE + Laplace</td><td style="color:#2e8b47; font-weight:700;">O(N · d) Linear</td></tr>
+              <tr style="border-bottom: 1px solid rgba(16, 32, 64,0.05);"><td style="padding: 4px; font-weight: 700;">Neural Net</td><td>Supervised</td><td>Gradient Descent</td><td>O(N · Epochs · |W|)</td></tr>
+              <tr style="border-bottom: 1px solid rgba(16, 32, 64,0.05);"><td style="padding: 4px; font-weight: 700;">K-Means</td><td>Unsupervised</td><td>Lloyd's Algorithm</td><td>O(N · K · d · iters)</td></tr>
+              <tr style="border-bottom: 1px solid rgba(16, 32, 64,0.05);"><td style="padding: 4px; font-weight: 700;">Value Iteration</td><td>Model-Based RL</td><td>Bellman Dynamic Prog</td><td>O(|A| · |S|²)</td></tr>
               <tr><td style="padding: 4px; font-weight: 700;">Q-Learning</td><td>Model-Free RL</td><td>TD Bootstrapping</td><td>O(1) per step</td></tr>
             </tbody>
           </table>
@@ -829,19 +829,19 @@
         <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column;">
           <div style="display: flex; gap: 0.35rem; overflow-x: auto; margin-bottom: 0.6rem;">
             ${presets.map(p => `
-              <button class="trace-preset-btn ${p.id === selectedPreset ? 'active' : ''}" data-pid="${p.id}" style="padding: 0.3rem 0.55rem; border-radius: 6px; font-size: 0.72rem; font-weight: 600; cursor: pointer; border: 1px solid ${p.id === selectedPreset ? '#10b981' : 'rgba(15,23,42,0.1)'}; background: ${p.id === selectedPreset ? 'rgba(16,185,129,0.2)' : 'rgba(15,23,42,0.05)'}; color: ${p.id === selectedPreset ? '#047857' : '#64748b'};">
+              <button class="trace-preset-btn ${p.id === selectedPreset ? 'active' : ''}" data-pid="${p.id}" style="padding: 0.3rem 0.55rem; border-radius: 6px; font-size: 0.72rem; font-weight: 600; cursor: pointer; border: 1px solid ${p.id === selectedPreset ? '#2e8b47' : 'rgba(16, 32, 64,0.1)'}; background: ${p.id === selectedPreset ? 'rgba(46, 139, 71,0.2)' : 'rgba(16, 32, 64,0.05)'}; color: ${p.id === selectedPreset ? '#2a7a3f' : '#55606f'};">
                 ${p.name}
               </button>
             `).join('')}
           </div>
 
           <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; overflow: hidden;">
-            <div class="glass-panel" style="padding: 0.7rem; border-radius: 8px; background: #f8fafc; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #334155; line-height: 1.5; overflow-x: auto;">
-              <div style="color: #64748b; margin-bottom: 0.3rem;"># Python Reference Source</div>
+            <div class="glass-panel" style="padding: 0.7rem; border-radius: 8px; background: #f7f9fc; overflow-y: auto; font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace; font-size: 0.7rem; color: #2c3644; line-height: 1.5; overflow-x: auto;">
+              <div style="color: #55606f; margin-bottom: 0.3rem;"># Python Reference Source</div>
               <div style="white-space: pre;">${getCodeSnippet(selectedPreset).trim()}</div>
             </div>
-            <div class="glass-panel" style="padding: 0.7rem; border-radius: 8px; background: rgba(15,23,42,0.03); overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; color: #047857; line-height: 1.5;">
-              <div style="color: #0284c7; font-weight: 700; margin-bottom: 0.3rem;">Runtime Variable Watch</div>
+            <div class="glass-panel" style="padding: 0.7rem; border-radius: 8px; background: rgba(16, 32, 64,0.03); overflow-y: auto; font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace; font-size: 0.7rem; color: #2a7a3f; line-height: 1.5;">
+              <div style="color: #2461c0; font-weight: 700; margin-bottom: 0.3rem;">Runtime Variable Watch</div>
               <div style="white-space: pre-wrap;">${getRuntimeState(selectedPreset).trim()}</div>
             </div>
           </div>

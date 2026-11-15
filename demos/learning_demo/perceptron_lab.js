@@ -38,8 +38,8 @@
   const r1 = (v) => (Math.abs(v) < 0.005 ? 0 : Math.round(v * 100) / 100);
   const fmt = (v, d = 2) => { const s = r1(v).toFixed(d).replace(/\.?0+$/, ''); return (s === '-0' ? '0' : s).replace('-', '−'); };
   const par = (v) => (v < 0 ? `(${fmt(v)})` : fmt(v));
-  const sgnCol = (v) => (v > 0 ? '#2563eb' : v < 0 ? '#e11d48' : '#94a3b8');
-  const GOOD = '#16a34a', BAD = '#dc2626';
+  const sgnCol = (v) => (v > 0 ? '#2461c0' : v < 0 ? '#c0392b' : '#8a94a3');
+  const GOOD = '#2e8b47', BAD = '#c0392b';
 
   // ---------------------------------------------------------------- perceptron diagram
   function diagramSVG(ev) {
@@ -53,7 +53,7 @@
         `<text x="${lx}" y="${ly - 6}" class="pcp-elbl" fill="${c}">${lbl} = ${fmt(w)}</text>`;
     };
     let s = `<svg viewBox="0 0 ${W} ${H}" class="pcp-diag" role="img" aria-label="Perceptron diagram">`;
-    s += `<defs><marker id="pcp-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#64748b"/></marker></defs>`;
+    s += `<defs><marker id="pcp-ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#55606f"/></marker></defs>`;
     s += edge(yin[0], state.w1, 'w₁') + edge(yin[1], state.w2, 'w₂');
     // inputs
     [0, 1].forEach(k => {
@@ -70,14 +70,14 @@
       `<text x="${sx}" y="${sy - 6}" class="pcp-sig">Σ</text>` +
       `<text x="${sx}" y="${sy + 13}" class="pcp-nv sm">z=${fmt(r.z)}</text>`;
     // step box
-    s += `<line x1="${sx + 30}" y1="${sy}" x2="${stx - 34}" y2="${sy}" stroke="#64748b" stroke-width="1.6" marker-end="url(#pcp-ah)"/>` +
+    s += `<line x1="${sx + 30}" y1="${sy}" x2="${stx - 34}" y2="${sy}" stroke="#55606f" stroke-width="1.6" marker-end="url(#pcp-ah)"/>` +
       `<rect x="${stx - 32}" y="${sy - 24}" width="64" height="48" rx="8" class="pcp-step"/>` +
-      `<path d="M${stx - 22} ${sy + 12} H${stx} V${sy - 12} H${stx + 22}" fill="none" stroke="#0f172a" stroke-width="2"/>` +
+      `<path d="M${stx - 22} ${sy + 12} H${stx} V${sy - 12} H${stx + 22}" fill="none" stroke="#16202e" stroke-width="2"/>` +
       `<text x="${stx}" y="${sy + 40}" class="pcp-nl" text-anchor="middle">step(z)</text>`;
     // output
     const oc = r.ok ? GOOD : BAD;
-    s += `<line x1="${stx + 32}" y1="${sy}" x2="${ox - 30}" y2="${sy}" stroke="#64748b" stroke-width="1.6" marker-end="url(#pcp-ah)"/>` +
-      `<circle cx="${ox}" cy="${sy}" r="27" class="pcp-node out" style="stroke:${oc};fill:${r.ok ? '#f0fdf4' : '#fef2f2'}"/>` +
+    s += `<line x1="${stx + 32}" y1="${sy}" x2="${ox - 30}" y2="${sy}" stroke="#55606f" stroke-width="1.6" marker-end="url(#pcp-ah)"/>` +
+      `<circle cx="${ox}" cy="${sy}" r="27" class="pcp-node out" style="stroke:${oc};fill:${r.ok ? '#e9f7ee' : '#fdecea'}"/>` +
       `<text x="${ox}" y="${sy + 6}" class="pcp-nv big" fill="${oc}">${r.yh}</text>` +
       `<text x="${ox}" y="${sy - 36}" class="pcp-nl" text-anchor="middle">ŷ</text>` +
       `<text x="${ox}" y="${sy + 46}" class="pcp-nl" text-anchor="middle" fill="${oc}">target y = ${r.y} ${r.ok ? '✓' : '✗'}</text>`;
@@ -133,12 +133,12 @@
       }
       const n = Math.hypot(state.w1, state.w2);
       const e = [m[0] + 0.22 * state.w1 / n, m[1] + 0.22 * state.w2 / n];
-      s += `<line x1="${X(m[0])}" y1="${Y(m[1])}" x2="${X(e[0])}" y2="${Y(e[1])}" stroke="#0f172a" stroke-width="1.6" marker-end="url(#pcp-ah2)"/>`;
+      s += `<line x1="${X(m[0])}" y1="${Y(m[1])}" x2="${X(e[0])}" y2="${Y(e[1])}" stroke="#16202e" stroke-width="1.6" marker-end="url(#pcp-ah2)"/>`;
       s += `<text x="${X(e[0]) + (state.w1 >= 0 ? 4 : -4)}" y="${Y(e[1]) - 4}" class="pcp-nlbl" text-anchor="${state.w1 >= 0 ? 'start' : 'end'}">ŷ = 1 side</text>`;
     } else {
       s += `<text x="${X(0.5)}" y="${Y(1.38)}" class="pcp-nlbl" text-anchor="middle">w₁ = w₂ = 0: no boundary — every point gets ŷ = ${step(state.b)}</text>`;
     }
-    s += `<defs><marker id="pcp-ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#0f172a"/></marker></defs>`;
+    s += `<defs><marker id="pcp-ah2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#16202e"/></marker></defs>`;
     // points
     ev.rows.forEach((r, i) => {
       const cx = X(r.x[0]), cy = Y(r.x[1]), c = r.ok ? GOOD : BAD, sel = i === state.sel;
@@ -187,7 +187,7 @@
     const r = state.search;
     if (!r || r.target !== state.target) return `<div class="tfp-hint">Tries every combination of w₁, w₂, b ∈ {−2, −1.8, …, 2} on ${TARGETS[state.target].name}.</div>`;
     const T = TARGETS[r.target].name, mx = Math.max(...r.hist);
-    return `<div class="pcp-hist">${r.hist.map((c, k) => `<div class="pcp-hrow"><span>${k}/4</span><div class="pcp-hbar"><i style="width:${(c / mx * 100).toFixed(1)}%;background:${k === 4 ? GOOD : k === r.best ? '#f59e0b' : '#94a3b8'}"></i></div><b>${c.toLocaleString()}</b></div>`).join('')}</div>
+    return `<div class="pcp-hist">${r.hist.map((c, k) => `<div class="pcp-hrow"><span>${k}/4</span><div class="pcp-hbar"><i style="width:${(c / mx * 100).toFixed(1)}%;background:${k === 4 ? GOOD : k === r.best ? '#d4911a' : '#8a94a3'}"></i></div><b>${c.toLocaleString()}</b></div>`).join('')}</div>
       <div class="pcp-verdict ${r.perfect ? 'ok' : 'bad'}">${r.n.toLocaleString()} lines tested on ${T}: best accuracy <b>${r.best}/4</b>; lines reaching 4/4: <b>${r.perfect.toLocaleString()}</b>.</div>`;
   }
 
@@ -212,7 +212,7 @@
           <div class="pcp-legend"><span><i class="c"></i>target y = 1</span><span><i class="s"></i>target y = 0</span><span><i class="g"></i>correct</span><span><i class="r"></i>wrong</span><span><i class="sh"></i>ŷ = 1 region</span></div></div>
         <div class="pcp-side">
           <div class="tfp-card"><div class="tfp-card-head"><h4>Parameters</h4><span class="tfp-card-sub">ŷ = 1 if z ≥ 0</span></div>
-            ${slider('w1', 'w₁', '#2563eb')}${slider('w2', 'w₂', '#2563eb')}${slider('b', 'b', '#7c3aed')}
+            ${slider('w1', 'w₁', '#2461c0')}${slider('w2', 'w₂', '#2461c0')}${slider('b', 'b', '#7c3aed')}
             <div class="tfp-row" style="margin-top:0.45rem">
               <button class="tfp-btn" data-act="reset"><i data-lucide="rotate-ccw"></i>Reset</button>
               <button class="tfp-btn" data-act="rand"><i data-lucide="shuffle"></i>Random</button>

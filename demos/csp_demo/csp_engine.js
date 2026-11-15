@@ -136,7 +136,7 @@
     return [x, y];
   }
 
-  const COLOR_HEX = { red: '#ef4444', green: '#22c55e', blue: '#3b82f6', yellow: '#eab308' };
+  const COLOR_HEX = { red: '#c0392b', green: '#2e8b47', blue: '#2461c0', yellow: '#d4911a' };
   const COLOR_LIST = ['red', 'green', 'blue', 'yellow'];
 
   function makeMapCSP(mapDef, nColors) {
@@ -715,9 +715,9 @@
       Nyein: { unavailable: [10, 11], prefers: [0, 1, 4, 5, 8, 9], prefLabel: 'mornings', unavailLabel: 'Wed afternoon' }
     },
     cohorts: {
-      Y1: { label: 'Year 1 CS', color: '#4f46e5' },
-      Y2: { label: 'Year 2 CS', color: '#0d9488' },
-      Y3: { label: 'Year 3 AI', color: '#db2777' }
+      Y1: { label: 'Year 1 CS', color: '#1b4f9c' },
+      Y2: { label: 'Year 2 CS', color: '#3f8f2f' },
+      Y3: { label: 'Year 3 AI', color: '#7c3aed' }
     },
     courses: [
       { id: 'CS101', name: 'Intro to Programming', enroll: 110, type: 'lecture', instr: 'Chen', cohort: 'Y1' },

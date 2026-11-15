@@ -19,7 +19,7 @@
     [4.0, 2.8], [5.2, 1.4], [5.8, 2.6], [4.6, 1.6], [5.0, 3.3], [6.3, 1.9]
   ];
   const START = [[2, 3], [8, 3], [5, 8.5], [5, 5.5]];
-  const COLORS = ['#2563eb', '#f59e0b', '#10b981', '#db2777', '#7c3aed', '#0891b2', '#ea580c', '#65a30d'];
+  const COLORS = ['#2461c0', '#d4911a', '#2e8b47', '#7c3aed', '#7c3aed', '#2461c0', '#ea580c', '#65a30d'];
   const SOFT = COLORS.map(c => c + '1f');
   const MU = k => `μ${'₁₂₃₄₅₆₇₈'[k]}`;
   const LO = 0, HI = 10, KMAX = 8;
@@ -140,7 +140,7 @@
     return s;
   }
   const polyPath = (poly, F) => 'M' + poly.map(p => F.X(p[0]).toFixed(1) + ' ' + F.Y(p[1]).toFixed(1)).join(' L') + ' Z';
-  const diamond = (cx, cy, r, col, lbl, cls = '') => `<g class="${cls}"><path d="M${cx} ${cy - r} L${cx + r} ${cy} L${cx} ${cy + r} L${cx - r} ${cy} Z" fill="${col}" stroke="#0f172a" stroke-width="1.6"/>${lbl ? `<text x="${cx}" y="${cy + 4}" class="vel-ctxt">${lbl}</text>` : ''}</g>`;
+  const diamond = (cx, cy, r, col, lbl, cls = '') => `<g class="${cls}"><path d="M${cx} ${cy - r} L${cx + r} ${cy} L${cx} ${cy + r} L${cx - r} ${cy} Z" fill="${col}" stroke="#16202e" stroke-width="1.6"/>${lbl ? `<text x="${cx}" y="${cy + 4}" class="vel-ctxt">${lbl}</text>` : ''}</g>`;
 
   // ---------------------------------------------------------------- 1 · Voronoi
   const VS = 420, VPAD = 34;
@@ -190,7 +190,7 @@
     const e = res[elbow - 1], ex = sx(elbow), ey = sy(e.w);
     const cy = sy(res[0].w + (res[n - 1].w - res[0].w) * (elbow - 1) / (n - 1));
     s += `<line x1="${ex}" y1="${ey}" x2="${ex}" y2="${cy}" class="vel-gapline"/>`;
-    s += `<polyline points="${res.map(r => sx(r.K).toFixed(1) + ',' + sy(r.w).toFixed(1)).join(' ')}" fill="none" stroke="#4f46e5" stroke-width="2.4"/>`;
+    s += `<polyline points="${res.map(r => sx(r.K).toFixed(1) + ',' + sy(r.w).toFixed(1)).join(' ')}" fill="none" stroke="#1b4f9c" stroke-width="2.4"/>`;
     s += `<circle cx="${ex}" cy="${ey}" r="13" class="vel-elbowring"/><text x="${ex + 16}" y="${ey - 10}" class="vel-elbowlbl">elbow · K = ${elbow}</text>`;
     res.forEach(r => {
       const on = r.K === st.eK;

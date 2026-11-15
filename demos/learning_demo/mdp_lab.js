@@ -167,8 +167,8 @@
   function defs() {
     const mk = (id, c) => `<marker id="${id}" viewBox="0 0 10 10" refX="7.5" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="${c}"/></marker>`;
     return `<defs>
-      <pattern id="mdl-hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="10" height="10" fill="#334155"/><line x1="0" y1="0" x2="0" y2="10" stroke="#475569" stroke-width="4"/></pattern>
-      ${mk('mdl-ah-p', '#d97706')}${mk('mdl-ah-pd', '#b45309')}${mk('mdl-ah-best', '#f59e0b')}${mk('mdl-ah-pi', '#334155')}
+      <pattern id="mdl-hatch" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="10" height="10" fill="#2c3644"/><line x1="0" y1="0" x2="0" y2="10" stroke="#55606f" stroke-width="4"/></pattern>
+      ${mk('mdl-ah-p', '#b9770e')}${mk('mdl-ah-pd', '#b9770e')}${mk('mdl-ah-best', '#d4911a')}${mk('mdl-ah-pi', '#2c3644')}
     </defs>`;
   }
 
@@ -182,12 +182,12 @@
       return h;
     }
     if (s === GOAL) {
-      h += `<g class="mdl-noptr"><line x1="${c1 - 12}" y1="${c2 - 30}" x2="${c1 - 12}" y2="${c2 + 2}" stroke="#047857" stroke-width="3" stroke-linecap="round"/>
-        <path d="M${c1 - 11} ${c2 - 30} L${c1 + 14} ${c2 - 22} L${c1 - 11} ${c2 - 14} Z" fill="#10b981"/>
+      h += `<g class="mdl-noptr"><line x1="${c1 - 12}" y1="${c2 - 30}" x2="${c1 - 12}" y2="${c2 + 2}" stroke="#2a7a3f" stroke-width="3" stroke-linecap="round"/>
+        <path d="M${c1 - 11} ${c2 - 30} L${c1 + 14} ${c2 - 22} L${c1 - 11} ${c2 - 14} Z" fill="#2e8b47"/>
         <text x="${c1}" y="${c2 + 24}" class="mdl-term-t pos">+1</text>
         ${opts.termNote ? `<text x="${c1}" y="${c2 + 40}" class="mdl-term-n">terminal · V = 0</text>` : `<text x="${c1}" y="${c2 + 40}" class="mdl-term-n">GOAL</text>`}</g>`;
     } else if (s === PIT) {
-      h += `<g class="mdl-noptr"><ellipse cx="${c1}" cy="${c2 - 16}" rx="22" ry="9" fill="#9f1239" opacity="0.85"/>
+      h += `<g class="mdl-noptr"><ellipse cx="${c1}" cy="${c2 - 16}" rx="22" ry="9" fill="#922b21" opacity="0.85"/>
         <ellipse cx="${c1}" cy="${c2 - 18}" rx="15" ry="5" fill="#4c0519"/>
         <text x="${c1}" y="${c2 + 24}" class="mdl-term-t neg">−1</text>
         ${opts.termNote ? `<text x="${c1}" y="${c2 + 40}" class="mdl-term-n">terminal · V = 0</text>` : `<text x="${c1}" y="${c2 + 40}" class="mdl-term-n">PIT</text>`}</g>`;
@@ -201,7 +201,7 @@
     if (isWall(s)) return '';
     return `<rect x="${x0(s) + 2}" y="${y0(s) + 2}" width="${CELL - 4}" height="${CELL - 4}" rx="8" fill="${fill}" class="mdl-cell" data-cell="${s}"/>`;
   }
-  const termFill = s => (s === GOAL ? '#dcfce7' : s === PIT ? '#ffe4e6' : '#ffffff');
+  const termFill = s => (s === GOAL ? '#e9f7ee' : s === PIT ? '#fdecea' : '#ffffff');
 
   function agentSVG() {
     return `<circle r="21" fill="currentColor" stroke="#fff" stroke-width="3"/>
@@ -390,7 +390,7 @@
     $('mdl-over').innerHTML = t1Overlay();
     const ag = $('mdl-agent');
     ag.style.transform = `translate(${cx(S.agent)}px, ${cy(S.agent)}px)`;
-    ag.style.color = S.agent === GOAL ? '#059669' : S.agent === PIT ? '#e11d48' : '#2563eb';
+    ag.style.color = S.agent === GOAL ? '#2e8b47' : S.agent === PIT ? '#c0392b' : '#2461c0';
     $('mdl-chips').innerHTML = chipsHTML();
     const [k, tag, txt] = t1Message();
     const m = $('mdl-msg'); m.className = `tfp-msg mdl-msg ${k}`; m.innerHTML = `<span class="tfp-msg-tag">${tag}</span><span>${txt}</span>`;
@@ -503,9 +503,9 @@
 
   // ================================================================== TAB 2 — V(s) & Q(s,a)
   function vColor(v, m) {
-    if (Math.abs(v) < 1e-9) return '#f8fafc';
+    if (Math.abs(v) < 1e-9) return '#f7f9fc';
     const a = Math.min(1, Math.abs(v) / m);
-    return v > 0 ? `rgba(16,185,129,${(0.07 + 0.6 * a).toFixed(3)})` : `rgba(244,63,94,${(0.07 + 0.55 * a).toFixed(3)})`;
+    return v > 0 ? `rgba(46, 139, 71,${(0.07 + 0.6 * a).toFixed(3)})` : `rgba(192, 57, 43,${(0.07 + 0.55 * a).toFixed(3)})`;
   }
 
   function wedgePts(s, ai) {

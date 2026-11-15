@@ -375,7 +375,7 @@ class SearchDemoUI {
         badgeEl.className = 'search-solution-badge danger';
         badgeEl.textContent = 'No Path';
       }
-      containerEl.innerHTML = `<span class="path-placeholder" style="color:#ef4444;">No solution path exists from ${this.startNode} to ${this.goalNode}.</span>`;
+      containerEl.innerHTML = `<span class="path-placeholder" style="color:#c0392b;">No solution path exists from ${this.startNode} to ${this.goalNode}.</span>`;
       if (costEl) costEl.textContent = '∞';
       if (lenEl) lenEl.textContent = '0 hops';
       if (expEl) expEl.textContent = `${step.expanded.length} nodes`;
@@ -430,7 +430,7 @@ class SearchDemoUI {
       if (['START', 'SELECT', 'GOAL_FOUND', 'ITERATION_START'].includes(step.action)) {
         const row = document.createElement('tr');
         if (i === this.currentStepIdx) {
-          row.style.background = 'rgba(79, 70, 229, 0.05)';
+          row.style.background = 'rgba(27, 79, 156, 0.05)';
           row.style.fontWeight = 'bold';
         }
 
@@ -584,7 +584,7 @@ class SearchDemoUI {
       const row = document.createElement('tr');
       row.id = `search-comp-row-${res.key.toLowerCase()}`;
       if (isCurrent) {
-        row.style.background = 'rgba(79, 70, 229, 0.06)';
+        row.style.background = 'rgba(27, 79, 156, 0.06)';
         row.style.fontWeight = '600';
       }
 
@@ -671,7 +671,7 @@ class SearchDemoUI {
       const algKey = btn.getAttribute('data-alg');
       const isCurrent = this.currentAlg === algKey;
       if (isCurrent) {
-        row.style.background = 'rgba(79, 70, 229, 0.06)';
+        row.style.background = 'rgba(27, 79, 156, 0.06)';
         row.style.fontWeight = '600';
         btn.classList.add('active');
         btn.textContent = 'Active';
@@ -749,17 +749,17 @@ class SearchDemoUI {
         ctx.lineTo(tx, ty);
         
         if (isSolEdge) {
-          ctx.strokeStyle = '#10b981'; // Neon Emerald Green for final path
+          ctx.strokeStyle = '#2e8b47'; // Neon Emerald Green for final path
           ctx.lineWidth = 5.5;
-          ctx.shadowColor = '#10b981';
+          ctx.shadowColor = '#2e8b47';
           ctx.shadowBlur = 8;
         } else if (isActiveGen) {
-          ctx.strokeStyle = '#f59e0b'; // Amber for successor generation
+          ctx.strokeStyle = '#d4911a'; // Amber for successor generation
           ctx.lineWidth = 4.5;
-          ctx.shadowColor = '#f59e0b';
+          ctx.shadowColor = '#d4911a';
           ctx.shadowBlur = 6;
         } else {
-          ctx.strokeStyle = 'rgba(15, 23, 42, 0.22)';
+          ctx.strokeStyle = 'rgba(16, 32, 64, 0.22)';
           ctx.lineWidth = 2.5;
           ctx.shadowBlur = 0;
         }
@@ -774,11 +774,11 @@ class SearchDemoUI {
         ctx.beginPath();
         ctx.arc(mx, my - 2, 10, 0, 2 * Math.PI);
         ctx.fill();
-        ctx.strokeStyle = isSolEdge ? '#10b981' : (isActiveGen ? '#f59e0b' : 'rgba(15, 23, 42, 0.22)');
+        ctx.strokeStyle = isSolEdge ? '#2e8b47' : (isActiveGen ? '#d4911a' : 'rgba(16, 32, 64, 0.22)');
         ctx.lineWidth = 1.6;
         ctx.stroke();
 
-        ctx.fillStyle = isSolEdge ? '#047857' : '#334155';
+        ctx.fillStyle = isSolEdge ? '#2a7a3f' : '#2c3644';
         ctx.font = 'bold 11px monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -824,8 +824,8 @@ class SearchDemoUI {
       
       // Determine coloring based on search status
       let fillColor = '#ffffff';
-      let borderStroke = 'rgba(15, 23, 42, 0.2)';
-      let textFill = '#0f172a';
+      let borderStroke = 'rgba(16, 32, 64, 0.2)';
+      let textFill = '#16202e';
       let lineWidth = 2.5;
       
       const isStart = nodeId === this.startNode;
@@ -834,24 +834,24 @@ class SearchDemoUI {
       const isSuccessor = nodeId === step.successorNode;
 
       if (pathNodes.has(nodeId)) {
-        fillColor = '#10b981'; // solution node
-        borderStroke = '#10b981';
+        fillColor = '#2e8b47'; // solution node
+        borderStroke = '#2e8b47';
         textFill = '#ffffff';
       } else if (isCurrent) {
-        fillColor = '#4f46e5'; // currently selected node (active)
-        borderStroke = '#4f46e5';
+        fillColor = '#1b4f9c'; // currently selected node (active)
+        borderStroke = '#1b4f9c';
         textFill = '#ffffff';
-        ctx.shadowColor = '#4f46e5';
+        ctx.shadowColor = '#1b4f9c';
         ctx.shadowBlur = 10;
       } else if (isSuccessor) {
-        fillColor = '#fef3c7'; // child node being evaluated
-        borderStroke = '#f59e0b';
-        textFill = '#d97706';
-        ctx.shadowColor = '#f59e0b';
+        fillColor = '#fdf3e2'; // child node being evaluated
+        borderStroke = '#d4911a';
+        textFill = '#b9770e';
+        ctx.shadowColor = '#d4911a';
         ctx.shadowBlur = 8;
       } else if (expandedSet.has(nodeId)) {
-        fillColor = '#1e293b'; // already expanded
-        borderStroke = '#1e293b';
+        fillColor = '#16202e'; // already expanded
+        borderStroke = '#16202e';
         textFill = '#ffffff';
       } else if (frontierNodes.has(nodeId)) {
         if (this.currentAlg === 'BIBF' && backwardReachedSet.has(nodeId) && !step.frontier.some(it => it.node === nodeId && it.dir === 'F')) {
@@ -859,19 +859,19 @@ class SearchDemoUI {
           borderStroke = '#7c3aed';
           textFill = '#6d28d9';
         } else {
-          fillColor = '#e0e7ff'; // waiting in frontier
-          borderStroke = '#4f46e5';
-          textFill = '#3730a3';
+          fillColor = '#e8f0fc'; // waiting in frontier
+          borderStroke = '#1b4f9c';
+          textFill = '#0e2f5c';
         }
       } else if (reachedSet.has(nodeId)) {
         if (this.currentAlg === 'BIBF' && backwardReachedSet.has(nodeId)) {
-          fillColor = '#f5f3ff'; // reached only from the BACKWARD search
+          fillColor = '#f1e9fd'; // reached only from the BACKWARD search
           borderStroke = '#7c3aed';
           textFill = '#6d28d9';
         } else {
-          fillColor = '#e0f2fe'; // reached but not in frontier (processed or subset)
-          borderStroke = '#0284c7';
-          textFill = '#0369a1';
+          fillColor = '#e8f0fc'; // reached but not in frontier (processed or subset)
+          borderStroke = '#2461c0';
+          textFill = '#1b4f9c';
         }
       }
 
@@ -883,11 +883,11 @@ class SearchDemoUI {
 
       // Start/Goal custom outlines
       if (isStart) {
-        ctx.strokeStyle = '#06b6d4'; // Cyan outline for start
+        ctx.strokeStyle = '#3a78d4'; // Cyan outline for start
         ctx.lineWidth = 4.5;
         ctx.stroke();
       } else if (isGoal) {
-        ctx.strokeStyle = '#e11d48'; // Red outline for goal
+        ctx.strokeStyle = '#c0392b'; // Red outline for goal
         ctx.lineWidth = 4.5;
         ctx.stroke();
       } else {
@@ -899,20 +899,20 @@ class SearchDemoUI {
 
       // Draw node letter ID
       ctx.fillStyle = textFill;
-      ctx.font = 'bold 16px Outfit, sans-serif';
+      ctx.font = 'bold 16px system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(nodeId, nx, ny);
 
       // Draw Start/Goal indicator labels above the node
       if (isStart) {
-        ctx.fillStyle = '#0891b2';
+        ctx.fillStyle = '#2461c0';
         ctx.font = 'bold 11px monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText("START", nx, ny - radius - 8);
       } else if (isGoal) {
-        ctx.fillStyle = '#e11d48';
+        ctx.fillStyle = '#c0392b';
         ctx.font = 'bold 11px monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -928,22 +928,22 @@ class SearchDemoUI {
         if (reachedSet.has(nodeId)) {
           const gCost = step.reached[nodeId] ?? 0;
           const fCost = gCost + hCost;
-          ctx.fillStyle = '#1e293b';
+          ctx.fillStyle = '#16202e';
           ctx.font = 'bold 11px monospace';
           ctx.fillText(`h:${hCost} | f:${fCost}`, nx, ny + radius + 13);
         } else {
-          ctx.fillStyle = '#64748b';
+          ctx.fillStyle = '#55606f';
           ctx.font = 'bold 11px monospace';
           ctx.fillText(`h:${hCost} | f:—`, nx, ny + radius + 13);
         }
       } else if (this.currentAlg === 'GREEDY') {
         const hCost = getHeuristic(nodeId, this.goalNode);
         if (reachedSet.has(nodeId) || frontierNodes.has(nodeId)) {
-          ctx.fillStyle = '#1e293b';
+          ctx.fillStyle = '#16202e';
           ctx.font = 'bold 11px monospace';
           ctx.fillText(`h:${hCost} | f:${hCost}`, nx, ny + radius + 13);
         } else {
-          ctx.fillStyle = '#64748b';
+          ctx.fillStyle = '#55606f';
           ctx.font = 'bold 11px monospace';
           ctx.fillText(`h:${hCost} | f:—`, nx, ny + radius + 13);
         }
@@ -951,27 +951,27 @@ class SearchDemoUI {
         const hCost = getHeuristic(nodeId, this.goalNode);
         const frontierItem = step.frontier.find(it => it.node === nodeId);
         if (frontierItem) {
-          ctx.fillStyle = '#1e293b';
+          ctx.fillStyle = '#16202e';
           ctx.font = 'bold 11px monospace';
           ctx.fillText(`h:${hCost} | f:${frontierItem.f}`, nx, ny + radius + 13);
         } else if (reachedSet.has(nodeId)) {
           const gCost = step.reached[nodeId] ?? 0;
           const fCost = gCost + hCost;
-          ctx.fillStyle = '#1e293b';
+          ctx.fillStyle = '#16202e';
           ctx.font = 'bold 11px monospace';
           ctx.fillText(`h:${hCost} | f:${fCost}`, nx, ny + radius + 13);
         } else {
-          ctx.fillStyle = '#64748b';
+          ctx.fillStyle = '#55606f';
           ctx.font = 'bold 11px monospace';
           ctx.fillText(`h:${hCost} | f:—`, nx, ny + radius + 13);
         }
       } else if ((this.currentAlg === 'UCS' || this.currentAlg === 'BIBF') && reachedSet.has(nodeId)) {
-        ctx.fillStyle = '#475569';
+        ctx.fillStyle = '#55606f';
         ctx.font = 'bold 11px monospace';
         const cost = step.reached[nodeId] ?? '∞';
         ctx.fillText(`g:${cost}`, nx, ny + radius + 13);
       } else if (this.currentAlg === 'IDS' && nodeId === step.currentNode) {
-        ctx.fillStyle = '#475569';
+        ctx.fillStyle = '#55606f';
         ctx.font = 'bold 11px monospace';
         ctx.fillText(`d:${step.depth}`, nx, ny + radius + 13);
       }
@@ -988,8 +988,8 @@ class SearchDemoUI {
     ctx.save();
 
     // Draw container bounding box
-    ctx.fillStyle = '#f8fafc';
-    ctx.strokeStyle = 'rgba(15, 23, 42, 0.08)';
+    ctx.fillStyle = '#f7f9fc';
+    ctx.strokeStyle = 'rgba(16, 32, 64, 0.08)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.rect(10, startY, w - 20, h - startY - 10);
@@ -997,7 +997,7 @@ class SearchDemoUI {
     ctx.stroke();
 
     // Label
-    ctx.fillStyle = '#475569';
+    ctx.fillStyle = '#55606f';
     ctx.font = 'bold 11px monospace';
     ctx.textAlign = 'left';
     
@@ -1015,7 +1015,7 @@ class SearchDemoUI {
 
     const len = step.frontier.length;
     if (len === 0) {
-      ctx.fillStyle = '#64748b';
+      ctx.fillStyle = '#55606f';
       ctx.font = 'italic 12px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText("Frontier is currently empty.", w / 2, startY + (h - startY) / 2);
@@ -1037,17 +1037,17 @@ class SearchDemoUI {
         const cy = stackStartY - i * (cellH + 2);
 
         // Draw block
-        ctx.fillStyle = i === 0 ? '#4f46e5' : '#e0e7ff';
+        ctx.fillStyle = i === 0 ? '#1b4f9c' : '#e8f0fc';
         ctx.beginPath();
         this.roundRect(stackStartX, cy, cellW, cellH, 4);
         ctx.fill();
-        ctx.strokeStyle = i === 0 ? '#4f46e5' : '#818cf8';
+        ctx.strokeStyle = i === 0 ? '#1b4f9c' : '#6f9be0';
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
         // Node ID
-        ctx.fillStyle = i === 0 ? '#ffffff' : '#3730a3';
-        ctx.font = 'bold 13px Outfit, sans-serif';
+        ctx.fillStyle = i === 0 ? '#ffffff' : '#0e2f5c';
+        ctx.font = 'bold 13px system-ui, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         
@@ -1057,7 +1057,7 @@ class SearchDemoUI {
 
         // Top pointer indicator
         if (i === 0) {
-          ctx.fillStyle = '#4f46e5';
+          ctx.fillStyle = '#1b4f9c';
           ctx.font = 'bold 10px monospace';
           ctx.textAlign = 'right';
           ctx.fillText("TOP (Pop Next) ➔", stackStartX - 8, cy + cellH / 2);
@@ -1065,7 +1065,7 @@ class SearchDemoUI {
       }
 
       if (len > maxDraw) {
-        ctx.fillStyle = '#64748b';
+        ctx.fillStyle = '#55606f';
         ctx.font = 'bold 14px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText("...", stackStartX + cellW / 2, stackStartY - maxDraw * (cellH + 2) + 8);
@@ -1096,17 +1096,17 @@ class SearchDemoUI {
         const isNext = this.currentAlg === 'BIBF' ? (`${item.node}${item.dir}` === bibfNextKey) : (i === 0);
 
         // Highlight the item selected next
-        ctx.fillStyle = isNext ? (isBackward ? '#7c3aed' : '#4f46e5') : (isBackward ? '#f3e8ff' : '#e0e7ff');
+        ctx.fillStyle = isNext ? (isBackward ? '#7c3aed' : '#1b4f9c') : (isBackward ? '#f3e8ff' : '#e8f0fc');
         ctx.beginPath();
         this.roundRect(cx, cy, cellW, cellH, 4);
         ctx.fill();
-        ctx.strokeStyle = isNext ? (isBackward ? '#7c3aed' : '#4f46e5') : (isBackward ? '#c4b5fd' : '#818cf8');
+        ctx.strokeStyle = isNext ? (isBackward ? '#7c3aed' : '#1b4f9c') : (isBackward ? '#c9b0f7' : '#6f9be0');
         ctx.lineWidth = 1.5;
         ctx.stroke();
 
         // Node ID and cost / f / h
-        ctx.fillStyle = isNext ? '#ffffff' : (isBackward ? '#6d28d9' : '#3730a3');
-        ctx.font = 'bold 12px Outfit, sans-serif';
+        ctx.fillStyle = isNext ? '#ffffff' : (isBackward ? '#6d28d9' : '#0e2f5c');
+        ctx.font = 'bold 12px system-ui, sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
@@ -1120,7 +1120,7 @@ class SearchDemoUI {
 
         // FRONT / lowest cost indicators
         if (isNext) {
-          ctx.fillStyle = isBackward ? '#7c3aed' : '#4f46e5';
+          ctx.fillStyle = isBackward ? '#7c3aed' : '#1b4f9c';
           ctx.font = 'bold 10px monospace';
           ctx.textAlign = 'center';
           let indicatorText = "FRONT (Pop)";
@@ -1135,7 +1135,7 @@ class SearchDemoUI {
 
         // BACK indicator (skip for BIBF -- two interleaved queues make "back" ambiguous)
         if (i === len - 1 && len > 1 && this.currentAlg !== 'BIBF') {
-          ctx.fillStyle = '#64748b';
+          ctx.fillStyle = '#55606f';
           ctx.font = 'bold 10px monospace';
           ctx.textAlign = 'center';
           ctx.fillText("BACK (Push)", cx + cellW / 2, cy + cellH + 11);

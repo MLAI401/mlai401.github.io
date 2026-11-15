@@ -18,8 +18,8 @@
     [7.0, 8.5], [8.2, 7.6], [7.6, 6.9], [8.6, 8.6],
     [4.2, 2.6], [5.6, 1.6], [5.2, 3.1], [4.6, 1.4], [6.2, 2.6]
   ];
-  const COLORS = ['#2563eb', '#f59e0b', '#10b981', '#db2777'];
-  const SOFT = ['rgba(37,99,235,0.10)', 'rgba(245,158,11,0.12)', 'rgba(16,185,129,0.12)', 'rgba(219,39,119,0.10)'];
+  const COLORS = ['#2461c0', '#d4911a', '#2e8b47', '#7c3aed'];
+  const SOFT = ['rgba(36, 97, 192,0.10)', 'rgba(212, 145, 26,0.12)', 'rgba(46, 139, 71,0.12)', 'rgba(124, 58, 237,0.10)'];
   const NAMES = ['μ₁', 'μ₂', 'μ₃', 'μ₄'];
   const LO = 0, HI = 10;
 
@@ -152,7 +152,7 @@
   function plotSVG() {
     const C = curCents(), placed = C.length === state.K;
     let s = `<svg viewBox="0 0 ${S} ${S}" class="kml-plot ${state.phase === 'place' ? 'placing' : ''}" id="kml-svg" role="img" aria-label="K-Means scatter plot">`;
-    s += `<defs><marker id="kml-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#334155"/></marker></defs>`;
+    s += `<defs><marker id="kml-ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 Z" fill="#2c3644"/></marker></defs>`;
     s += `<rect x="${X(LO)}" y="${Y(HI)}" width="${INNER}" height="${INNER}" class="kml-bg"/>`;
     // nearest-centroid regions (Voronoi cells), coarse grid
     if (state.regions && placed && !state.anim) {
@@ -183,7 +183,7 @@
     state.pts.forEach((p, i) => {
       const k = state.assign ? state.assign[i] : -1, sel = state.sel === i;
       if (sel) s += `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="12" class="kml-selring"/>`;
-      s += `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="6.5" fill="${k < 0 ? '#94a3b8' : COLORS[k]}" stroke="#fff" stroke-width="1.6" class="kml-pt" data-i="${i}"/>`;
+      s += `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="6.5" fill="${k < 0 ? '#8a94a3' : COLORS[k]}" stroke="#fff" stroke-width="1.6" class="kml-pt" data-i="${i}"/>`;
     });
     // distance lines from the selected point
     if (state.sel !== null && placed) {
@@ -193,7 +193,7 @@
     // centroids
     C.forEach((c, k) => {
       const cx = X(c[0]), cy = Y(c[1]);
-      s += `<g class="kml-cent"><path d="M${cx} ${cy - 13} L${cx + 13} ${cy} L${cx} ${cy + 13} L${cx - 13} ${cy} Z" fill="${COLORS[k]}" stroke="#0f172a" stroke-width="1.6"/>` +
+      s += `<g class="kml-cent"><path d="M${cx} ${cy - 13} L${cx + 13} ${cy} L${cx} ${cy + 13} L${cx - 13} ${cy} Z" fill="${COLORS[k]}" stroke="#16202e" stroke-width="1.6"/>` +
         `<text x="${cx}" y="${cy + 4}" class="kml-ctxt">${k + 1}</text></g>`;
     });
     // movement arrows just after an Update
@@ -218,8 +218,8 @@
     const sx = i => pl + i / n * (w - pl - pr), sy = v => pt + (1 - v / mx) * (h - pt - pb);
     let s = `<svg viewBox="0 0 ${w} ${h}" class="kml-wc">`;
     s += `<line x1="${pl}" y1="${sy(0)}" x2="${w - pr}" y2="${sy(0)}" class="kml-grid"/><text x="${pl - 4}" y="${sy(mx / 1.08) + 3}" class="kml-tick" text-anchor="end">${f1(mx / 1.08)}</text><text x="${pl - 4}" y="${sy(0) + 3}" class="kml-tick" text-anchor="end">0</text>`;
-    s += `<polyline points="${W.map((o, i) => sx(i).toFixed(1) + ',' + sy(o.v).toFixed(1)).join(' ')}" fill="none" stroke="#4f46e5" stroke-width="2"/>`;
-    W.forEach((o, i) => { s += `<circle cx="${sx(i)}" cy="${sy(o.v)}" r="3" fill="${o.lbl[0] === 'A' ? '#0ea5e9' : '#f59e0b'}"><title>${o.lbl}: ${f2(o.v)}</title></circle>`; });
+    s += `<polyline points="${W.map((o, i) => sx(i).toFixed(1) + ',' + sy(o.v).toFixed(1)).join(' ')}" fill="none" stroke="#1b4f9c" stroke-width="2"/>`;
+    W.forEach((o, i) => { s += `<circle cx="${sx(i)}" cy="${sy(o.v)}" r="3" fill="${o.lbl[0] === 'A' ? '#3a78d4' : '#d4911a'}"><title>${o.lbl}: ${f2(o.v)}</title></circle>`; });
     if (W.length <= 14) W.forEach((o, i) => { s += `<text x="${sx(i)}" y="${h - 4}" class="kml-tick" text-anchor="middle">${o.lbl}</text>`; });
     return s + '</svg>';
   }
@@ -293,7 +293,7 @@
               <button class="tfp-btn" data-act="rand"><i data-lucide="dice-5"></i>Random centroids</button>
               <button class="tfp-btn ghost" data-act="data"><i data-lucide="shuffle"></i>New points</button>
             </div></div>
-          <div class="tfp-card"><div class="tfp-card-head"><h4>WCSS</h4><span class="tfp-card-sub">Σ ‖x − μ<sub>c(x)</sub>‖² · <span style="color:#0ea5e9">●</span> after Assign <span style="color:#f59e0b">●</span> after Update</span></div><div id="kml-wcss"></div></div>
+          <div class="tfp-card"><div class="tfp-card-head"><h4>WCSS</h4><span class="tfp-card-sub">Σ ‖x − μ<sub>c(x)</sub>‖² · <span style="color:#3a78d4">●</span> after Assign <span style="color:#d4911a">●</span> after Update</span></div><div id="kml-wcss"></div></div>
         </div>
       </div>
       <div class="kml-two b">

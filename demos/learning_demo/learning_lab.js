@@ -39,12 +39,12 @@
     const convergedVal = document.getElementById('converged-val');
 
     const CLUSTER_COLORS = [
-      { bg: 'rgba(59, 130, 246, 0.25)', pt: '#3b82f6', border: '#60a5fa' },
-      { bg: 'rgba(16, 185, 129, 0.25)', pt: '#10b981', border: '#34d399' },
-      { bg: 'rgba(245, 158, 11, 0.25)', pt: '#f59e0b', border: '#fbbf24' },
-      { bg: 'rgba(239, 68, 68, 0.25)', pt: '#ef4444', border: '#f87171' },
-      { bg: 'rgba(139, 92, 246, 0.25)', pt: '#8b5cf6', border: '#a78bfa' },
-      { bg: 'rgba(236, 72, 153, 0.25)', pt: '#ec4899', border: '#f472b6' }
+      { bg: 'rgba(36, 97, 192, 0.25)', pt: '#2461c0', border: '#6f9be0' },
+      { bg: 'rgba(46, 139, 71, 0.25)', pt: '#2e8b47', border: '#5cae3c' },
+      { bg: 'rgba(212, 145, 26, 0.25)', pt: '#d4911a', border: '#e0a83a' },
+      { bg: 'rgba(192, 57, 43, 0.25)', pt: '#c0392b', border: '#e07468' },
+      { bg: 'rgba(124, 58, 237, 0.25)', pt: '#7c3aed', border: '#a37bf0' },
+      { bg: 'rgba(124, 58, 237, 0.25)', pt: '#a37bf0', border: '#f472b6' }
     ];
 
     let points = [];
@@ -175,7 +175,7 @@
       // 2. Draw Data Points
       points.forEach((pt, i) => {
         const cluster = kmeans.labels && kmeans.labels[i] !== undefined ? kmeans.labels[i] : -1;
-        const colorObj = cluster >= 0 ? CLUSTER_COLORS[cluster % CLUSTER_COLORS.length] : { pt: '#94a3b8', border: '#cbd5e1' };
+        const colorObj = cluster >= 0 ? CLUSTER_COLORS[cluster % CLUSTER_COLORS.length] : { pt: '#8a94a3', border: '#c3cdda' };
 
         ctx.fillStyle = colorObj.pt;
         ctx.strokeStyle = colorObj.border;
@@ -203,7 +203,7 @@
           ctx.arc(c[0], c[1], 7, 0, Math.PI * 2);
           ctx.fill();
 
-          ctx.strokeStyle = '#0f172a';
+          ctx.strokeStyle = '#16202e';
           ctx.lineWidth = 2;
           ctx.beginPath();
           ctx.moveTo(c[0] - 4, c[1]);

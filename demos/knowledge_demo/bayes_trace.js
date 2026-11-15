@@ -165,7 +165,7 @@
       return `<g class="${cls.join(' ')}"><rect x="${x - hw}" y="${y - hh}" width="${hw * 2}" height="${hh * 2}" rx="12"/><text x="${x}" y="${y + 4}">${n.v}</text>${badge}</g>`;
     }).join('');
     return `<svg class="klt-dag" viewBox="0 0 360 ${netKey === 'burglary' ? 205 : 202}" role="img" aria-label="Bayesian network DAG">
-      <defs><marker id="klt-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker></defs>
+      <defs><marker id="klt-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a94a3"/></marker></defs>
       ${edges}${nodes}</svg>`;
   }
 

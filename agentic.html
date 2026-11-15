@@ -9,33 +9,25 @@
   <meta property="og:description" content="From a model that predicts the next token to an agent that plans, calls tools, observes and replans.">
   <meta property="og:type" content="website">
 
-  <link rel="stylesheet" href="style.css?v=27">
-  <link rel="stylesheet" href="demos/agentic_demo/agentic_page.css?v=1">
+  <link rel="stylesheet" href="demos/agentic_demo/agentic_page.css?v=3">
 </head>
 <body class="ag-body">
 
-  <!-- Navigation Header (same as every MLAI401 page) -->
-  <header class="navbar" id="navbar-header">
-    <div class="container nav-container">
-      <a href="index.html" class="logo" id="logo-link">
-        <span class="logo-icon">M</span>
-        MLAI401
+
+  <!-- Site header: same structure and look as CPP201's <site-header> -->
+  <header class="ag-site-header-wrap">
+    <div class="ag-site-header">
+      <a class="ag-brand" href="index.html" aria-label="MLAI401 home">
+        <span class="ag-brand-mark" aria-hidden="true">M</span>
+        <span class="ag-brand-title">MLAI401</span>
       </a>
-
-      <button class="menu-toggle" id="menu-toggle-btn" aria-label="Toggle Navigation Menu">
-        <i data-lucide="menu"></i>
-      </button>
-
-      <ul class="nav-links" id="nav-menu">
-        <li><a href="index.html" class="nav-link" id="nav-home">Home</a></li>
-        <li><a href="curriculum.html" class="nav-link active" id="nav-curr">Curriculum</a></li>
-        <li><a href="playground.html" class="nav-link" id="nav-play">Playground</a></li>
-        <li><a href="index.html#resources" class="nav-link" id="nav-res">Resources</a></li>
-      </ul>
-
-      <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="nav-btn" id="nav-github-btn">
-        <i data-lucide="github"></i> GitHub Profile
-      </a>
+      <nav class="ag-site-nav" aria-label="Primary">
+        <a href="index.html">Home</a>
+        <a href="curriculum.html" aria-current="page">Curriculum</a>
+        <a href="playground.html">Playground</a>
+        <a href="index.html#resources">Resources</a>
+      </nav>
+      <a class="ag-nav-btn" href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer">GitHub Profile</a>
     </div>
   </header>
 
@@ -98,14 +90,12 @@
     </section>
   </main>
 
-  <footer class="ag-footer ag-container">
-    MLAI401 &middot; Topic 07 &middot; Python reference: <code>python_sandbox/12_Generative_RAG.py</code>, <code>13_Agentic_AI.py</code>
+  <footer class="ag-site-footer">
+    MLAI401 &middot; Topic 07: Generative &amp; Agentic AI &middot; Python reference: <code>python_sandbox/12_Generative_RAG.py</code>, <code>13_Agentic_AI.py</code>
   </footer>
 
-  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
-  <script src="demos/agentic_demo/agentic_page.js?v=1"></script>
-  <script src="demos/agentic_demo/agentic_topics_a.js?v=1"></script>
-  <script src="demos/agentic_demo/agentic_topics_b.js?v=1"></script>
-  <script src="main.js?v=3"></script>
+  <script src="demos/agentic_demo/agentic_page.js?v=2"></script>
+  <script src="demos/agentic_demo/agentic_topics_a.js?v=2"></script>
+  <script src="demos/agentic_demo/agentic_topics_b.js?v=2"></script>
 </body>
 </html>

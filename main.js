@@ -150,12 +150,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Palette for clusters
     const clusterColors = [
-      { fill: '#8b5cf6', rgb: '139, 92, 246' }, // Neon Purple
-      { fill: '#22d3ee', rgb: '34, 211, 238' }, // Cyan
-      { fill: '#ec4899', rgb: '236, 72, 153' }, // Neon Pink
-      { fill: '#10b981', rgb: '16, 185, 129' }, // Emerald Green
-      { fill: '#f59e0b', rgb: '245, 158, 11' }, // Amber Yellow
-      { fill: '#ef4444', rgb: '239, 68, 68' }   // Red
+      { fill: '#7c3aed', rgb: '139, 92, 246' }, // Neon Purple
+      { fill: '#6f9be0', rgb: '34, 211, 238' }, // Cyan
+      { fill: '#a37bf0', rgb: '236, 72, 153' }, // Neon Pink
+      { fill: '#2e8b47', rgb: '16, 185, 129' }, // Emerald Green
+      { fill: '#d4911a', rgb: '245, 158, 11' }, // Amber Yellow
+      { fill: '#c0392b', rgb: '239, 68, 68' }   // Red
     ];
 
     let state = {
@@ -527,7 +527,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ctx.clearRect(0, 0, w, h);
 
     // Draw Grid lines
-    ctx.strokeStyle = 'rgba(15, 23, 42, 0.05)';
+    ctx.strokeStyle = 'rgba(16, 32, 64, 0.05)';
     ctx.lineWidth = 1;
     const gridStep = 40;
     
@@ -571,7 +571,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ctx.shadowColor = color;
         ctx.shadowBlur = 6;
       } else {
-        ctx.fillStyle = '#64748b'; // Muted gray for unassigned
+        ctx.fillStyle = '#55606f'; // Muted gray for unassigned
         ctx.shadowBlur = 0;
       }
       

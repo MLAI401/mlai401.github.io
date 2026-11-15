@@ -284,24 +284,24 @@
 
       <div class="sl-concept-chips" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.2rem;">
         ${concepts.map((c, idx) => `
-          <button class="sl-concept-chip ${idx === cIdx ? 'active' : ''}" data-cidx="${idx}" style="padding: 0.4rem 0.8rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: 1px solid ${idx === cIdx ? '#8b5cf6' : 'rgba(15,23,42,0.1)'}; background: ${idx === cIdx ? 'rgba(139,92,246,0.2)' : 'rgba(15,23,42,0.05)'}; color: ${idx === cIdx ? '#6d28d9' : '#64748b'}; transition: all 0.2s;">
+          <button class="sl-concept-chip ${idx === cIdx ? 'active' : ''}" data-cidx="${idx}" style="padding: 0.4rem 0.8rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: 1px solid ${idx === cIdx ? '#7c3aed' : 'rgba(16, 32, 64,0.1)'}; background: ${idx === cIdx ? 'rgba(124, 58, 237,0.2)' : 'rgba(16, 32, 64,0.05)'}; color: ${idx === cIdx ? '#6d28d9' : '#55606f'}; transition: all 0.2s;">
             ${c.name}
           </button>
         `).join('')}
       </div>
 
-      ${currentC.codeInConcept ? '<div class="kl-concept-code" id="kl-concept-code"></div>' : currentC.labInConcept ? '<div class="kl-concept-lab" id="kl-concept-lab"></div>' : `      <div class="sl-concept-card glass-panel" style="padding: 1.2rem; border-radius: 12px; background: #ffffff; border: 1px solid rgba(15,23,42,0.08); margin-bottom: 1rem;">
-        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #4f46e5; font-weight: 700; margin-bottom: 0.4rem;">Formal Definition</div>
+      ${currentC.codeInConcept ? '<div class="kl-concept-code" id="kl-concept-code"></div>' : currentC.labInConcept ? '<div class="kl-concept-lab" id="kl-concept-lab"></div>' : `      <div class="sl-concept-card glass-panel" style="padding: 1.2rem; border-radius: 12px; background: #ffffff; border: 1px solid rgba(16, 32, 64,0.08); margin-bottom: 1rem;">
+        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #1b4f9c; font-weight: 700; margin-bottom: 0.4rem;">Formal Definition</div>
         <p style="font-size: 0.92rem; color: var(--text-primary); line-height: 1.55; margin-bottom: 1rem;">
           ${currentC.def}
         </p>
 
-        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #0284c7; font-weight: 700; margin-bottom: 0.4rem;">AIMA Mathematical Notation</div>
-        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; padding: 0.75rem 1rem; background: rgba(15,23,42,0.06); border-radius: 8px; border-left: 3px solid #0284c7; color: #334155; margin-bottom: 1rem; word-break: break-word;">
+        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #2461c0; font-weight: 700; margin-bottom: 0.4rem;">AIMA Mathematical Notation</div>
+        <div style="font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace; font-size: 0.85rem; padding: 0.75rem 1rem; background: rgba(16, 32, 64,0.06); border-radius: 8px; border-left: 3px solid #2461c0; color: #2c3644; margin-bottom: 1rem; word-break: break-word;">
           ${currentC.notation}
         </div>
 
-        <div class="teaching-tip" style="display: flex; gap: 0.75rem; background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.25); padding: 0.85rem 1rem; border-radius: 8px;">
+        <div class="teaching-tip" style="display: flex; gap: 0.75rem; background: rgba(124, 58, 237,0.1); border: 1px solid rgba(124, 58, 237,0.25); padding: 0.85rem 1rem; border-radius: 8px;">
           <i data-lucide="sparkles" style="color: #6d28d9; width: 1.25rem; height: 1.25rem; flex-shrink: 0; margin-top: 2px;"></i>
           <span style="font-size: 0.84rem; color: #5b21b6; line-height: 1.5;">${currentC.tip}</span>
         </div>
@@ -337,24 +337,24 @@
           State Representation Progression
         </h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; flex: 1;">
-          <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(15,23,42,0.03); border: 1px solid rgba(15,23,42,0.08);">
-            <div style="font-weight: 700; color: #4f46e5; font-size: 0.8rem; margin-bottom: 0.3rem;">1. Atomic (Topics 1-3)</div>
-            <p style="font-size: 0.76rem; color: #64748b; line-height: 1.4;">State is an indivisible black-box token <code>s ∈ S</code>. No internal structure.</p>
+          <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(16, 32, 64,0.03); border: 1px solid rgba(16, 32, 64,0.08);">
+            <div style="font-weight: 700; color: #1b4f9c; font-size: 0.8rem; margin-bottom: 0.3rem;">1. Atomic (Topics 1-3)</div>
+            <p style="font-size: 0.76rem; color: #55606f; line-height: 1.4;">State is an indivisible black-box token <code>s ∈ S</code>. No internal structure.</p>
           </div>
-          <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(15,23,42,0.03); border: 1px solid rgba(15,23,42,0.08);">
-            <div style="font-weight: 700; color: #0284c7; font-size: 0.8rem; margin-bottom: 0.3rem;">2. Factored (Topic 4 CSP)</div>
-            <p style="font-size: 0.76rem; color: #64748b; line-height: 1.4;">State decomposed into variables <code>X₁…Xₙ</code> with domains and constraints.</p>
+          <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(16, 32, 64,0.03); border: 1px solid rgba(16, 32, 64,0.08);">
+            <div style="font-weight: 700; color: #2461c0; font-size: 0.8rem; margin-bottom: 0.3rem;">2. Factored (Topic 4 CSP)</div>
+            <p style="font-size: 0.76rem; color: #55606f; line-height: 1.4;">State decomposed into variables <code>X₁…Xₙ</code> with domains and constraints.</p>
           </div>
-          <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3);">
-            <div style="font-weight: 700; color: #10b981; font-size: 0.8rem; margin-bottom: 0.3rem;">3. Structured Logic (Topic 5.1)</div>
-            <p style="font-size: 0.76rem; color: #065f46; line-height: 1.4;">Declarative sentences, facts, rules, and mathematical entailment <code>KB ⊨ α</code>.</p>
+          <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(46, 139, 71,0.1); border: 1px solid rgba(46, 139, 71,0.3);">
+            <div style="font-weight: 700; color: #2e8b47; font-size: 0.8rem; margin-bottom: 0.3rem;">3. Structured Logic (Topic 5.1)</div>
+            <p style="font-size: 0.76rem; color: #1f5e30; line-height: 1.4;">Declarative sentences, facts, rules, and mathematical entailment <code>KB ⊨ α</code>.</p>
           </div>
-          <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3);">
-            <div style="font-weight: 700; color: #d97706; font-size: 0.8rem; margin-bottom: 0.3rem;">4. Probabilistic & Temporal (Topic 5.2 & 5.3)</div>
-            <p style="font-size: 0.76rem; color: #92400e; line-height: 1.4;">Degrees of belief, Bayesian Networks, and dynamic state tracking with HMMs.</p>
+          <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(212, 145, 26,0.1); border: 1px solid rgba(212, 145, 26,0.3);">
+            <div style="font-weight: 700; color: #b9770e; font-size: 0.8rem; margin-bottom: 0.3rem;">4. Probabilistic & Temporal (Topic 5.2 & 5.3)</div>
+            <p style="font-size: 0.76rem; color: #8a5a0b; line-height: 1.4;">Degrees of belief, Bayesian Networks, and dynamic state tracking with HMMs.</p>
           </div>
         </div>
-        <div style="font-size: 0.75rem; color: #64748b; text-align: center; margin-top: 0.5rem;">
+        <div style="font-size: 0.75rem; color: #55606f; text-align: center; margin-top: 0.5rem;">
           From searching paths → resolving constraints → reasoning over truths, uncertainty & time.
         </div>
       </div>
@@ -367,19 +367,19 @@
         <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-primary);">Certainty vs. Uncertainty vs. Temporal Belief</h3>
         <div style="display: flex; gap: 0.75rem;">
           <div class="glass-panel" style="flex: 1; padding: 1rem; border-radius: 10px; text-align: center; background: #ffffff;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: #4f46e5; margin-bottom: 0.4rem;">Deterministic Logic</div>
-            <div style="font-size: 1.5rem; font-weight: 800; color: #10b981;">{0, 1}</div>
-            <div style="font-size: 0.72rem; color: #64748b; margin-top: 0.3rem;">Crisp Boolean truth values</div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: #1b4f9c; margin-bottom: 0.4rem;">Deterministic Logic</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #2e8b47;">{0, 1}</div>
+            <div style="font-size: 0.72rem; color: #55606f; margin-top: 0.3rem;">Crisp Boolean truth values</div>
           </div>
           <div class="glass-panel" style="flex: 1; padding: 1rem; border-radius: 10px; text-align: center; background: #ffffff;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: #0284c7; margin-bottom: 0.4rem;">Bayes Probability</div>
-            <div style="font-size: 1.5rem; font-weight: 800; color: #0284c7;">[0.0, 1.0]</div>
-            <div style="font-size: 0.72rem; color: #64748b; margin-top: 0.3rem;">Continuous degrees of belief</div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: #2461c0; margin-bottom: 0.4rem;">Bayes Probability</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #2461c0;">[0.0, 1.0]</div>
+            <div style="font-size: 0.72rem; color: #55606f; margin-top: 0.3rem;">Continuous degrees of belief</div>
           </div>
           <div class="glass-panel" style="flex: 1; padding: 1rem; border-radius: 10px; text-align: center; background: #ffffff;">
-            <div style="font-size: 0.75rem; font-weight: 700; color: #d97706; margin-bottom: 0.4rem;">Temporal HMM</div>
-            <div style="font-size: 1.5rem; font-weight: 800; color: #d97706;">P(Xₜ | e₁:ₜ)</div>
-            <div style="font-size: 0.72rem; color: #64748b; margin-top: 0.3rem;">Belief distribution over time</div>
+            <div style="font-size: 0.75rem; font-weight: 700; color: #b9770e; margin-bottom: 0.4rem;">Temporal HMM</div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: #b9770e;">P(Xₜ | e₁:ₜ)</div>
+            <div style="font-size: 0.72rem; color: #55606f; margin-top: 0.3rem;">Belief distribution over time</div>
           </div>
         </div>
       </div>
@@ -393,14 +393,14 @@
           The Knowledge & Inference Architecture
         </h3>
         <div style="display: flex; gap: 1rem; align-items: center; width: 100%; max-width: 480px;">
-          <div class="glass-panel" style="flex: 1; padding: 1rem; border-radius: 10px; background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3); text-align: center;">
-            <div style="font-weight: 700; color: #4f46e5; font-size: 0.85rem;">Knowledge Base (KB)</div>
-            <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.4rem;">Facts, Rules, CPTs, Transition Matrices</div>
+          <div class="glass-panel" style="flex: 1; padding: 1rem; border-radius: 10px; background: rgba(36, 97, 192,0.1); border: 1px solid rgba(36, 97, 192,0.3); text-align: center;">
+            <div style="font-weight: 700; color: #1b4f9c; font-size: 0.85rem;">Knowledge Base (KB)</div>
+            <div style="font-size: 0.75rem; color: #55606f; margin-top: 0.4rem;">Facts, Rules, CPTs, Transition Matrices</div>
           </div>
-          <div style="font-size: 1.2rem; color: #94a3b8;">⇄</div>
-          <div class="glass-panel" style="flex: 1; padding: 1rem; border-radius: 10px; background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); text-align: center;">
-            <div style="font-weight: 700; color: #10b981; font-size: 0.85rem;">Inference Engine</div>
-            <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.4rem;">Forward Chaining, Variable Elimination, Forward HMM</div>
+          <div style="font-size: 1.2rem; color: #8a94a3;">⇄</div>
+          <div class="glass-panel" style="flex: 1; padding: 1rem; border-radius: 10px; background: rgba(46, 139, 71,0.1); border: 1px solid rgba(46, 139, 71,0.3); text-align: center;">
+            <div style="font-weight: 700; color: #2e8b47; font-size: 0.85rem;">Inference Engine</div>
+            <div style="font-size: 0.75rem; color: #55606f; margin-top: 0.4rem;">Forward Chaining, Variable Elimination, Forward HMM</div>
           </div>
         </div>
       </div>
@@ -413,9 +413,9 @@
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
           <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Wumpus World Logic Explorer</h3>
-          <span style="font-size: 0.75rem; color: #10b981; font-weight: 600;">[1,1] Explored & Safe</span>
+          <span style="font-size: 0.75rem; color: #2e8b47; font-weight: 600;">[1,1] Explored & Safe</span>
         </div>
-        <div style="flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: rgba(15,23,42,0.06); padding: 6px; border-radius: 8px;">
+        <div style="flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; background: rgba(16, 32, 64,0.06); padding: 6px; border-radius: 8px;">
           ${[
             '[1,4]', '[2,4]', '[3,4]', '[4,4]',
             '[1,3]', '[2,3]', '[3,3]', '[4,3]',
@@ -425,16 +425,16 @@
             const isStart = cell === '[1,1]';
             const isSafe = cell === '[1,2]' || cell === '[2,1]';
             return `
-              <div style="background: ${isStart ? '#10b981' : isSafe ? 'rgba(16,185,129,0.2)' : '#ffffff'}; border: 1px solid rgba(15,23,42,0.1); border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; color: ${isStart ? '#ffffff' : '#334155'};">
+              <div style="background: ${isStart ? '#2e8b47' : isSafe ? 'rgba(46, 139, 71,0.2)' : '#ffffff'}; border: 1px solid rgba(16, 32, 64,0.1); border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; color: ${isStart ? '#ffffff' : '#2c3644'};">
                 <span>${cell}</span>
-                <span style="font-size: 0.65rem; color: ${isStart ? '#ecfdf5' : isSafe ? '#059669' : '#94a3b8'};">
+                <span style="font-size: 0.65rem; color: ${isStart ? '#e9f7ee' : isSafe ? '#2e8b47' : '#8a94a3'};">
                   ${isStart ? 'Agent (No Breeze)' : isSafe ? 'Provably Safe' : '?'}
                 </span>
               </div>
             `;
           }).join('')}
         </div>
-        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: #64748b; background: rgba(15,23,42,0.03); padding: 0.5rem; border-radius: 6px;">
+        <div style="margin-top: 0.5rem; font-size: 0.75rem; color: #55606f; background: rgba(16, 32, 64,0.03); padding: 0.5rem; border-radius: 6px;">
           <strong>Deduction:</strong> <code>¬Breeze(1,1) ⇒ ¬Pit(1,2) ∧ ¬Pit(2,1)</code>. Rooms [1,2] and [2,1] are provably safe.
         </div>
       </div>
@@ -446,17 +446,17 @@
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-around;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Interactive Connective Truth Table</h3>
         <table style="width: 100%; font-size: 0.75rem; text-align: center; border-collapse: collapse; background: #ffffff; border-radius: 8px; overflow: hidden;">
-          <thead style="background: rgba(99,102,241,0.1); color: #4f46e5;">
+          <thead style="background: rgba(36, 97, 192,0.1); color: #1b4f9c;">
             <tr><th style="padding: 4px;">P</th><th>Q</th><th>¬P</th><th>P ∧ Q</th><th>P ∨ Q</th><th>P ⇒ Q</th><th>P ⇔ Q</th></tr>
           </thead>
           <tbody>
-            <tr style="border-bottom: 1px solid rgba(15,23,42,0.05);"><td style="padding: 4px;">T</td><td>T</td><td>F</td><td>T</td><td>T</td><td style="color:#10b981; font-weight:700;">T</td><td>T</td></tr>
-            <tr style="border-bottom: 1px solid rgba(15,23,42,0.05);"><td style="padding: 4px;">T</td><td>F</td><td>F</td><td>F</td><td>T</td><td style="color:#f43f5e; font-weight:700;">F</td><td>F</td></tr>
-            <tr style="border-bottom: 1px solid rgba(15,23,42,0.05);"><td style="padding: 4px;">F</td><td>T</td><td>T</td><td>F</td><td>T</td><td style="color:#10b981; font-weight:700;">T</td><td>F</td></tr>
-            <tr><td style="padding: 4px;">F</td><td>F</td><td>T</td><td>F</td><td>F</td><td style="color:#10b981; font-weight:700;">T</td><td>T</td></tr>
+            <tr style="border-bottom: 1px solid rgba(16, 32, 64,0.05);"><td style="padding: 4px;">T</td><td>T</td><td>F</td><td>T</td><td>T</td><td style="color:#2e8b47; font-weight:700;">T</td><td>T</td></tr>
+            <tr style="border-bottom: 1px solid rgba(16, 32, 64,0.05);"><td style="padding: 4px;">T</td><td>F</td><td>F</td><td>F</td><td>T</td><td style="color:#c0392b; font-weight:700;">F</td><td>F</td></tr>
+            <tr style="border-bottom: 1px solid rgba(16, 32, 64,0.05);"><td style="padding: 4px;">F</td><td>T</td><td>T</td><td>F</td><td>T</td><td style="color:#2e8b47; font-weight:700;">T</td><td>F</td></tr>
+            <tr><td style="padding: 4px;">F</td><td>F</td><td>T</td><td>F</td><td>F</td><td style="color:#2e8b47; font-weight:700;">T</td><td>T</td></tr>
           </tbody>
         </table>
-        <div style="font-size: 0.74rem; color: #64748b; margin-top: 0.4rem;">
+        <div style="font-size: 0.74rem; color: #55606f; margin-top: 0.4rem;">
           <em>Notice:</em> <code>P ⇒ Q</code> is only False when <code>P=True</code> and <code>Q=False</code>.
         </div>
       </div>
@@ -469,13 +469,13 @@
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
           Model Entailment: M(KB) ⊆ M(α)
         </h3>
-        <div style="width: 240px; height: 160px; border-radius: 12px; background: rgba(99,102,241,0.1); border: 2px dashed #6366f1; display: flex; align-items: center; justify-content: center; position: relative;">
-          <span style="position: absolute; top: 6px; left: 10px; font-size: 0.72rem; font-weight: 700; color: #4f46e5;">M(α) Models</span>
-          <div style="width: 120px; height: 80px; border-radius: 8px; background: #10b981; display: flex; align-items: center; justify-content: center; color: #ffffff; font-weight: 700; font-size: 0.8rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <div style="width: 240px; height: 160px; border-radius: 12px; background: rgba(36, 97, 192,0.1); border: 2px dashed #2461c0; display: flex; align-items: center; justify-content: center; position: relative;">
+          <span style="position: absolute; top: 6px; left: 10px; font-size: 0.72rem; font-weight: 700; color: #1b4f9c;">M(α) Models</span>
+          <div style="width: 120px; height: 80px; border-radius: 8px; background: #2e8b47; display: flex; align-items: center; justify-content: center; color: #ffffff; font-weight: 700; font-size: 0.8rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
             M(KB)
           </div>
         </div>
-        <p style="font-size: 0.76rem; color: #64748b; margin-top: 0.75rem; text-align: center;">
+        <p style="font-size: 0.76rem; color: #55606f; margin-top: 0.75rem; text-align: center;">
           Every world where the KB is true is completely enclosed within worlds where α is true.
         </p>
       </div>
@@ -487,15 +487,15 @@
     container.innerHTML = `
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-around;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Horn Clause Structure</h3>
-        <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(16,185,129,0.1); border-left: 4px solid #10b981;">
-          <div style="font-size: 0.8rem; font-weight: 700; color: #065f46;">Definite Clause (Exactly 1 positive literal)</div>
-          <div style="font-family: monospace; font-size: 0.8rem; color: #047857; margin-top: 2px;">
+        <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(46, 139, 71,0.1); border-left: 4px solid #2e8b47;">
+          <div style="font-size: 0.8rem; font-weight: 700; color: #1f5e30;">Definite Clause (Exactly 1 positive literal)</div>
+          <div style="font-family: monospace; font-size: 0.8rem; color: #2a7a3f; margin-top: 2px;">
             P₁ ∧ P₂ ∧ P₃ ⇒ Q &emsp; (¬P₁ ∨ ¬P₂ ∨ ¬P₃ ∨ Q)
           </div>
         </div>
-        <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(245,158,11,0.1); border-left: 4px solid #f59e0b;">
-          <div style="font-size: 0.8rem; font-weight: 700; color: #92400e;">Goal Clause (0 positive literals)</div>
-          <div style="font-family: monospace; font-size: 0.8rem; color: #b45309; margin-top: 2px;">
+        <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(212, 145, 26,0.1); border-left: 4px solid #d4911a;">
+          <div style="font-size: 0.8rem; font-weight: 700; color: #8a5a0b;">Goal Clause (0 positive literals)</div>
+          <div style="font-family: monospace; font-size: 0.8rem; color: #b9770e; margin-top: 2px;">
             ¬P₁ ∨ ¬P₂ &emsp; (Used for refutation queries)
           </div>
         </div>
@@ -510,17 +510,17 @@
           PL-FC-Entails Execution Trace
         </h3>
         <div style="display: flex; gap: 0.5rem; margin-bottom: 0.5rem;">
-          <span style="padding: 2px 6px; background: #ecfdf5; color: #059669; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">Facts: A, B</span>
-          <span style="padding: 2px 6px; background: #eff6ff; color: #2563eb; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">Rules: A∧B⇒C, C∧D⇒E, B⇒D</span>
+          <span style="padding: 2px 6px; background: #e9f7ee; color: #2e8b47; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">Facts: A, B</span>
+          <span style="padding: 2px 6px; background: #e8f0fc; color: #2461c0; border-radius: 4px; font-size: 0.72rem; font-weight: 600;">Rules: A∧B⇒C, C∧D⇒E, B⇒D</span>
         </div>
-        <div style="flex: 1; background: #ffffff; border-radius: 8px; padding: 0.75rem; border: 1px solid rgba(15,23,42,0.08); font-family: monospace; font-size: 0.75rem; line-height: 1.6; color: #334155; overflow-y: auto;">
+        <div style="flex: 1; background: #ffffff; border-radius: 8px; padding: 0.75rem; border: 1px solid rgba(16, 32, 64,0.08); font-family: monospace; font-size: 0.75rem; line-height: 1.6; color: #2c3644; overflow-y: auto;">
           <div>1. Agenda: [A, B] | Inferred: {A, B}</div>
           <div>2. Pop A &rarr; decrement count[A∧B⇒C] = 1</div>
-          <div>3. Pop B &rarr; count[A∧B⇒C] = 0 <span style="color:#059669; font-weight:700;">(FIRES &rarr; push C)</span></div>
-          <div>&emsp; &emsp; &emsp;count[B⇒D] = 0 <span style="color:#059669; font-weight:700;">(FIRES &rarr; push D)</span></div>
+          <div>3. Pop B &rarr; count[A∧B⇒C] = 0 <span style="color:#2e8b47; font-weight:700;">(FIRES &rarr; push C)</span></div>
+          <div>&emsp; &emsp; &emsp;count[B⇒D] = 0 <span style="color:#2e8b47; font-weight:700;">(FIRES &rarr; push D)</span></div>
           <div>4. Pop C &rarr; count[C∧D⇒E] = 1</div>
-          <div>5. Pop D &rarr; count[C∧D⇒E] = 0 <span style="color:#059669; font-weight:700;">(FIRES &rarr; push E)</span></div>
-          <div style="color: #4f46e5; font-weight: 700; margin-top: 4px;">6. Goal E Reached! Time: O(N) Linear.</div>
+          <div>5. Pop D &rarr; count[C∧D⇒E] = 0 <span style="color:#2e8b47; font-weight:700;">(FIRES &rarr; push E)</span></div>
+          <div style="color: #1b4f9c; font-weight: 700; margin-top: 4px;">6. Goal E Reached! Time: O(N) Linear.</div>
         </div>
       </div>
     `;
@@ -534,13 +534,13 @@
         <div class="glass-panel" style="padding: 1rem; border-radius: 10px; background: #ffffff;">
           <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-weight: 600; margin-bottom: 0.4rem;">
             <span>Degree of Belief P(Cavity | Toothache)</span>
-            <span style="color: #4f46e5;">60.0%</span>
+            <span style="color: #1b4f9c;">60.0%</span>
           </div>
-          <div style="height: 12px; background: rgba(15,23,42,0.08); border-radius: 999px; overflow: hidden;">
-            <div style="width: 60%; height: 100%; background: linear-gradient(90deg, #6366f1, #06b6d4);"></div>
+          <div style="height: 12px; background: rgba(16, 32, 64,0.08); border-radius: 999px; overflow: hidden;">
+            <div style="width: 60%; height: 100%; background: linear-gradient(90deg, #2461c0, #3a78d4);"></div>
           </div>
         </div>
-        <p style="font-size: 0.76rem; color: #64748b; line-height: 1.4;">
+        <p style="font-size: 0.76rem; color: #55606f; line-height: 1.4;">
           Unlike binary logic, probability smoothly models degrees of belief given incomplete and noisy percepts.
         </p>
       </div>
@@ -552,12 +552,12 @@
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-between;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Bayes' Rule Medical Test</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.75rem;">
-          <div style="padding: 0.5rem; background: rgba(15,23,42,0.03); border-radius: 6px;">Prior P(Disease): <strong>1.0%</strong></div>
-          <div style="padding: 0.5rem; background: rgba(15,23,42,0.03); border-radius: 6px;">Sensitivity: <strong>95.0%</strong></div>
-          <div style="padding: 0.5rem; background: rgba(15,23,42,0.03); border-radius: 6px;">False Alarm: <strong>5.0%</strong></div>
-          <div style="padding: 0.5rem; background: #ecfdf5; color: #059669; border-radius: 6px; font-weight: 700;">Posterior P(D|+): <strong>16.1%</strong></div>
+          <div style="padding: 0.5rem; background: rgba(16, 32, 64,0.03); border-radius: 6px;">Prior P(Disease): <strong>1.0%</strong></div>
+          <div style="padding: 0.5rem; background: rgba(16, 32, 64,0.03); border-radius: 6px;">Sensitivity: <strong>95.0%</strong></div>
+          <div style="padding: 0.5rem; background: rgba(16, 32, 64,0.03); border-radius: 6px;">False Alarm: <strong>5.0%</strong></div>
+          <div style="padding: 0.5rem; background: #e9f7ee; color: #2e8b47; border-radius: 6px; font-weight: 700;">Posterior P(D|+): <strong>16.1%</strong></div>
         </div>
-        <div style="font-size: 0.74rem; color: #64748b; background: rgba(99,102,241,0.08); padding: 0.5rem; border-radius: 6px;">
+        <div style="font-size: 0.74rem; color: #55606f; background: rgba(36, 97, 192,0.08); padding: 0.5rem; border-radius: 6px;">
           <strong>Teaching Reveal:</strong> Despite a 95% accurate test, true positives (0.95%) are outnumbered by false alarms from the 99% healthy population (4.95%).
         </div>
       </div>
@@ -569,13 +569,13 @@
     container.innerHTML = `
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">Markov Blanket Shield</h3>
-        <div class="glass-panel" style="padding: 1rem; border-radius: 12px; border: 2px dashed #d97706; background: rgba(245,158,11,0.08); text-align: center; max-width: 320px;">
-          <div style="font-size: 0.75rem; font-weight: 700; color: #b45309; margin-bottom: 0.3rem;">Markov Blanket of Node X:</div>
-          <div style="font-size: 0.8rem; color: #78350f; line-height: 1.4;">
+        <div class="glass-panel" style="padding: 1rem; border-radius: 12px; border: 2px dashed #b9770e; background: rgba(212, 145, 26,0.08); text-align: center; max-width: 320px;">
+          <div style="font-size: 0.75rem; font-weight: 700; color: #b9770e; margin-bottom: 0.3rem;">Markov Blanket of Node X:</div>
+          <div style="font-size: 0.8rem; color: #6e4709; line-height: 1.4;">
             Parents(X) ∪ Children(X) ∪ Coparents(X)
           </div>
         </div>
-        <p style="font-size: 0.75rem; color: #64748b; margin-top: 0.75rem; text-align: center;">
+        <p style="font-size: 0.75rem; color: #55606f; margin-top: 0.75rem; text-align: center;">
           Conditioned on its Markov Blanket, X is conditionally independent of all other nodes in the entire network.
         </p>
       </div>
@@ -586,13 +586,13 @@
     container.innerHTML = `
       <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column; justify-content: space-around;">
         <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-primary);">Likelihood Weighting vs. Rejection Sampling</h3>
-        <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(244,63,94,0.08); border-left: 4px solid #f43f5e;">
-          <div style="font-size: 0.78rem; font-weight: 700; color: #9f1239;">Rejection Sampling</div>
-          <div style="font-size: 0.72rem; color: #881337; margin-top: 2px;">Wastes up to 99% of samples rejecting non-matching evidence.</div>
+        <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(192, 57, 43,0.08); border-left: 4px solid #c0392b;">
+          <div style="font-size: 0.78rem; font-weight: 700; color: #922b21;">Rejection Sampling</div>
+          <div style="font-size: 0.72rem; color: #7b241c; margin-top: 2px;">Wastes up to 99% of samples rejecting non-matching evidence.</div>
         </div>
-        <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(16,185,129,0.1); border-left: 4px solid #10b981;">
-          <div style="font-size: 0.78rem; font-weight: 700; color: #065f46;">Likelihood Weighting</div>
-          <div style="font-size: 0.72rem; color: #047857; margin-top: 2px;">Clamps evidence variables and weights every sample by w = ∏ P(eⱼ | parents). 100% efficient!</div>
+        <div class="glass-panel" style="padding: 0.8rem; border-radius: 8px; background: rgba(46, 139, 71,0.1); border-left: 4px solid #2e8b47;">
+          <div style="font-size: 0.78rem; font-weight: 700; color: #1f5e30;">Likelihood Weighting</div>
+          <div style="font-size: 0.72rem; color: #2a7a3f; margin-top: 2px;">Clamps evidence variables and weights every sample by w = ∏ P(eⱼ | parents). 100% efficient!</div>
         </div>
       </div>
     `;
@@ -609,7 +609,7 @@
         <div style="flex: 1; overflow-x: auto; background: #ffffff; border-radius: 8px;">
           <table style="width: 100%; font-size: 0.75rem; text-align: left; border-collapse: collapse;">
             <thead>
-              <tr style="color: #64748b; border-bottom: 1px solid rgba(15,23,42,0.1);">
+              <tr style="color: #55606f; border-bottom: 1px solid rgba(16, 32, 64,0.1);">
                 <th style="padding: 0.5rem;">Dimension</th>
                 <th>1. Horn Logic Agents</th>
                 <th>2. Bayesian Networks</th>
@@ -617,23 +617,23 @@
               </tr>
             </thead>
             <tbody>
-              <tr style="border-bottom: 1px solid rgba(15,23,42,0.05);">
+              <tr style="border-bottom: 1px solid rgba(16, 32, 64,0.05);">
                 <td style="padding: 0.5rem; font-weight: 700; color: var(--text-primary);">Representation</td>
                 <td>Horn Clauses (P₁∧…⇒Q)</td>
                 <td>Directed Acyclic Graph</td>
                 <td>2-Layer Temporal Chain</td>
               </tr>
-              <tr style="border-bottom: 1px solid rgba(15,23,42,0.05);">
+              <tr style="border-bottom: 1px solid rgba(16, 32, 64,0.05);">
                 <td style="padding: 0.5rem; font-weight: 700; color: var(--text-primary);">Certainty Model</td>
                 <td>Boolean {0, 1}</td>
                 <td>Probabilities [0, 1]</td>
                 <td>Dynamic Belief Vector</td>
               </tr>
-              <tr style="border-bottom: 1px solid rgba(15,23,42,0.05); background: rgba(16,185,129,0.08);">
-                <td style="padding: 0.5rem; font-weight: 700; color: #10b981;">Time Complexity</td>
-                <td style="font-family: monospace; font-weight: 700; color: #10b981;">O(N) Linear!</td>
+              <tr style="border-bottom: 1px solid rgba(16, 32, 64,0.05); background: rgba(46, 139, 71,0.08);">
+                <td style="padding: 0.5rem; font-weight: 700; color: #2e8b47;">Time Complexity</td>
+                <td style="font-family: monospace; font-weight: 700; color: #2e8b47;">O(N) Linear!</td>
                 <td style="font-family: monospace;">Exact: O(2ⁿ)</td>
-                <td style="font-family: monospace; color: #0284c7;">O(|S|²) per time step</td>
+                <td style="font-family: monospace; color: #2461c0;">O(|S|²) per time step</td>
               </tr>
               <tr>
                 <td style="padding: 0.5rem; font-weight: 700; color: var(--text-primary);">Primary Engine</td>
@@ -665,19 +665,19 @@
         <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column;">
           <div style="display: flex; gap: 0.4rem; overflow-x: auto; margin-bottom: 0.75rem;">
             ${presets.map(p => `
-              <button class="trace-preset-btn ${p.id === selectedPreset ? 'active' : ''}" data-pid="${p.id}" style="padding: 0.35rem 0.65rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: 1px solid ${p.id === selectedPreset ? '#4f46e5' : 'rgba(15,23,42,0.1)'}; background: ${p.id === selectedPreset ? 'rgba(99,102,241,0.2)' : 'rgba(15,23,42,0.05)'}; color: ${p.id === selectedPreset ? '#6d28d9' : '#64748b'};">
+              <button class="trace-preset-btn ${p.id === selectedPreset ? 'active' : ''}" data-pid="${p.id}" style="padding: 0.35rem 0.65rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; border: 1px solid ${p.id === selectedPreset ? '#1b4f9c' : 'rgba(16, 32, 64,0.1)'}; background: ${p.id === selectedPreset ? 'rgba(36, 97, 192,0.2)' : 'rgba(16, 32, 64,0.05)'}; color: ${p.id === selectedPreset ? '#6d28d9' : '#55606f'};">
                 ${p.name}
               </button>
             `).join('')}
           </div>
 
           <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; overflow: hidden;">
-            <div class="glass-panel" style="padding: 0.75rem; border-radius: 8px; background: #f8fafc; overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #334155; line-height: 1.5; overflow-x: auto;">
-              <div style="color: #64748b; margin-bottom: 0.4rem;"># Python Reference Source</div>
+            <div class="glass-panel" style="padding: 0.75rem; border-radius: 8px; background: #f7f9fc; overflow-y: auto; font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace; font-size: 0.72rem; color: #2c3644; line-height: 1.5; overflow-x: auto;">
+              <div style="color: #55606f; margin-bottom: 0.4rem;"># Python Reference Source</div>
               <div style="white-space: pre;">${getCodeSnippet(selectedPreset).trim()}</div>
             </div>
-            <div class="glass-panel" style="padding: 0.75rem; border-radius: 8px; background: rgba(15,23,42,0.03); overflow-y: auto; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #6d28d9; line-height: 1.6;">
-              <div style="color: #0284c7; font-weight: 700; margin-bottom: 0.4rem;">Runtime Variable Watch</div>
+            <div class="glass-panel" style="padding: 0.75rem; border-radius: 8px; background: rgba(16, 32, 64,0.03); overflow-y: auto; font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace; font-size: 0.72rem; color: #6d28d9; line-height: 1.6;">
+              <div style="color: #2461c0; font-weight: 700; margin-bottom: 0.4rem;">Runtime Variable Watch</div>
               <div style="white-space: pre-wrap;">${getRuntimeState(selectedPreset).trim()}</div>
             </div>
           </div>

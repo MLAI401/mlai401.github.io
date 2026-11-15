@@ -68,21 +68,21 @@
 
   const ACT = {
     relu: {
-      name: 'ReLU', color: '#8b5cf6', dmax: 1,
+      name: 'ReLU', color: '#7c3aed', dmax: 1,
       f: z => (z > 0 ? z : 0),
       d: z => (z > 0 ? 1 : 0),           // ReLU′(0) = 0 convention
       fTex: 'max(0, z)', dTex: '1 if z > 0, else 0  (ReLU′(0) = 0)',
       dFrom: (z, h) => `z ${z > 0 ? '>' : '≤'} 0 ⇒ ${z > 0 ? 1 : 0}`
     },
     sigmoid: {
-      name: 'Sigmoid', color: '#f59e0b', dmax: 0.25,
+      name: 'Sigmoid', color: '#d4911a', dmax: 0.25,
       f: sigmoid,
       d: z => { const s = sigmoid(z); return s * (1 - s); },
       fTex: '1 / (1 + e^(−z))', dTex: 'σ(z)·(1 − σ(z)) = h(1 − h), max 0.25',
       dFrom: (z, h) => `h(1−h) = ${fmt(h)}·${fmt(1 - h)}`
     },
     tanh: {
-      name: 'Tanh', color: '#0891b2', dmax: 1,
+      name: 'Tanh', color: '#2461c0', dmax: 1,
       f: Math.tanh,
       d: z => { const t = Math.tanh(z); return 1 - t * t; },
       fTex: '(e^z − e^(−z)) / (e^z + e^(−z))', dTex: '1 − tanh²(z) = 1 − h², max 1',
@@ -375,9 +375,9 @@
     const mx = Math.max(1e-9, ...vals.W.flat().map(Math.abs), ...vals.v.map(Math.abs));
     const showLbl = H <= 4;
     const edge = (x1, y1, x2, y2, w, t) => {
-      if (K < 1) return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#94a3b8" stroke-opacity="0.5" stroke-width="1.4"/>`;   // neutral: weights not revealed yet
+      if (K < 1) return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#8a94a3" stroke-opacity="0.5" stroke-width="1.4"/>`;   // neutral: weights not revealed yet
       const wd = 0.8 + 4.2 * Math.min(1, Math.abs(w) / mx);
-      const col = w > 0 ? '#2563eb' : w < 0 ? '#e11d48' : '#94a3b8';
+      const col = w > 0 ? '#2461c0' : w < 0 ? '#c0392b' : '#8a94a3';
       const lx = x1 + (x2 - x1) * t, ly = y1 + (y2 - y1) * t;
       return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-opacity="0.55" stroke-width="${wd.toFixed(2)}"><title>${fmt(w)}</title></line>` +
         (showLbl ? `<text x="${lx}" y="${ly - 3}" class="snn-elbl" fill="${col}">${fmt(w, opt.edge === 'g' ? 4 : 2)}</text>` : '');
@@ -530,7 +530,7 @@
     octx.putImageData(img, 0, 0);
     ctx.imageSmoothingEnabled = true; ctx.clearRect(0, 0, S, S); ctx.drawImage(off, 0, 0, S, S);
     // marching squares for p = 0.5
-    ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2; ctx.beginPath();
+    ctx.strokeStyle = '#16202e'; ctx.lineWidth = 2; ctx.beginPath();
     const interp = (a, b) => (0.5 - a) / ((b - a) || 1e-12);
     for (let gy = 0; gy < N; gy++) for (let gx = 0; gx < N; gx++) {
       const v0 = grid[gy][gx], v1 = grid[gy][gx + 1], v2 = grid[gy + 1][gx + 1], v3 = grid[gy + 1][gx];
@@ -546,8 +546,8 @@
     ctx.stroke();
     // hidden-unit hyperplanes z_j = 0
     if (!opt.small) {
-      ctx.setLineDash([5, 4]); ctx.lineWidth = 1.2; ctx.strokeStyle = 'rgba(71,85,105,0.85)';
-      ctx.font = '600 11px "JetBrains Mono", monospace'; ctx.fillStyle = '#334155';
+      ctx.setLineDash([5, 4]); ctx.lineWidth = 1.2; ctx.strokeStyle = 'rgba(85, 96, 111,0.85)';
+      ctx.font = '600 11px ui-monospace, SFMono-Regular, Consolas, Menlo, monospace'; ctx.fillStyle = '#2c3644';
       for (let j = 0; j < p.b.length; j++) {
         const [w1, w2] = p.W[j], b = p.b[j];
         const seg = clipLine(w1, w2, b, lo, hi);
@@ -559,7 +559,7 @@
       ctx.setLineDash([]);
     }
     // grid ticks
-    ctx.strokeStyle = 'rgba(15,23,42,0.15)'; ctx.lineWidth = 1;
+    ctx.strokeStyle = 'rgba(16, 32, 64,0.15)'; ctx.lineWidth = 1;
     [0, 1].forEach(v => {
       ctx.beginPath(); ctx.moveTo(toPx(v), 0); ctx.lineTo(toPx(v), S); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(0, toPy(v)); ctx.lineTo(S, toPy(v)); ctx.stroke();
@@ -571,10 +571,10 @@
       const ok = (sigmoid(zo) >= 0.5 ? 1 : 0) === Y[i];
       const cx = toPx(x[0]), cy = toPy(x[1]), rr = opt.small ? 5 : 8;
       ctx.beginPath(); ctx.arc(cx, cy, rr, 0, Math.PI * 2);
-      ctx.fillStyle = Y[i] ? '#10b981' : '#6366f1'; ctx.fill();
-      ctx.lineWidth = 2; ctx.strokeStyle = ok ? '#ffffff' : '#e11d48'; ctx.stroke();
-      if (!ok) { ctx.beginPath(); ctx.arc(cx, cy, rr + 3.5, 0, Math.PI * 2); ctx.strokeStyle = '#e11d48'; ctx.lineWidth = 1.6; ctx.stroke(); }
-      if (!opt.small && i === state.sel && opt.sel) { ctx.beginPath(); ctx.arc(cx, cy, rr + 7, 0, Math.PI * 2); ctx.strokeStyle = '#f59e0b'; ctx.lineWidth = 2; ctx.stroke(); }
+      ctx.fillStyle = Y[i] ? '#2e8b47' : '#2461c0'; ctx.fill();
+      ctx.lineWidth = 2; ctx.strokeStyle = ok ? '#ffffff' : '#c0392b'; ctx.stroke();
+      if (!ok) { ctx.beginPath(); ctx.arc(cx, cy, rr + 3.5, 0, Math.PI * 2); ctx.strokeStyle = '#c0392b'; ctx.lineWidth = 1.6; ctx.stroke(); }
+      if (!opt.small && i === state.sel && opt.sel) { ctx.beginPath(); ctx.arc(cx, cy, rr + 7, 0, Math.PI * 2); ctx.strokeStyle = '#d4911a'; ctx.lineWidth = 2; ctx.stroke(); }
     });
   }
   function clipLine(w1, w2, b, lo, hi) {
@@ -861,13 +861,13 @@
         <div class="snn-kpi"><span>first t with L̄ &lt; 0.1</span><b>${tHit >= 0 ? tHit : '—'}</b></div>
       </div>
       <div class="snn-two">
-        <div class="tfp-card"><div class="tfp-card-head"><h4>Decision boundary</h4><span class="tfp-card-sub">P(y=1|x): <span class="nb-dot" style="background:#10b981"></span> ≥ 0.5 · <span class="nb-dot" style="background:#6366f1"></span> &lt; 0.5</span></div>
+        <div class="tfp-card"><div class="tfp-card-head"><h4>Decision boundary</h4><span class="tfp-card-sub">P(y=1|x): <span class="nb-dot" style="background:#2e8b47"></span> ≥ 0.5 · <span class="nb-dot" style="background:#2461c0"></span> &lt; 0.5</span></div>
           <canvas class="snn-canvas" id="snn-bd"></canvas>
           <div class="tfp-hint">Black: ŷ = 0.5 contour. Dashed: z<sub>j</sub> = 0 for each hidden unit. Red ring: misclassified.</div></div>
         <div class="tfp-card"><div class="tfp-card-head"><h4>Loss history (log scale)</h4><span class="tfp-card-sub">mean BCE over all four</span></div>
           ${lineChart([{ data: state.hist, color: ACT[state.act].color }], { refLine: { v: Math.LN2, lbl: 'ln 2 (ŷ = 0.5 everywhere)' }, yLabel: 'L̄' })}
           <div class="tfp-card-head" style="margin-top:.4rem"><h4>Gradient magnitude per update</h4><span class="tfp-card-sub">‖ḡ‖ hidden (solid) · output (dashed)</span></div>
-          ${state.gnHist.length ? lineChart([{ data: gnh, color: ACT[state.act].color }, { data: gno, color: '#64748b', dash: true }], { h: 140, t0: 0 }) : '<div class="tfp-empty">Take a step to record gradient norms.</div>'}</div>
+          ${state.gnHist.length ? lineChart([{ data: gnh, color: ACT[state.act].color }, { data: gno, color: '#55606f', dash: true }], { h: 140, t0: 0 }) : '<div class="tfp-empty">Take a step to record gradient norms.</div>'}</div>
       </div>
       <div class="snn-two">
         <div class="tfp-card"><div class="tfp-card-head"><h4>Predictions</h4><span class="tfp-card-sub">${a.acc}/4 correct</span></div>${predTable(a)}</div>

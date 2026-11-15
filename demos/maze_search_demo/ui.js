@@ -409,7 +409,7 @@ class MazeSearchDemoUI {
       this.ctx.restore();
 
       // Divider line
-      this.ctx.strokeStyle = 'rgba(15, 23, 42, 0.15)';
+      this.ctx.strokeStyle = 'rgba(16, 32, 64, 0.15)';
       this.ctx.lineWidth = 1;
       this.ctx.beginPath();
       this.ctx.moveTo(halfW, 0);
@@ -434,8 +434,8 @@ class MazeSearchDemoUI {
     const offsetY = vy + (vh - cellSize * rows) / 2 + 10;
 
     // Viewport Title
-    this.ctx.fillStyle = '#64748b';
-    this.ctx.font = 'bold 12px Outfit, sans-serif';
+    this.ctx.fillStyle = '#55606f';
+    this.ctx.font = 'bold 12px system-ui, sans-serif';
     this.ctx.textAlign = 'center';
     this.ctx.fillText(title, vx + vw / 2, vy + 16);
 
@@ -458,30 +458,30 @@ class MazeSearchDemoUI {
 
         if (char === '#') {
           // Wall cell
-          this.ctx.fillStyle = '#1e293b';
+          this.ctx.fillStyle = '#16202e';
           this.ctx.fillRect(cx, cy, cellSize, cellSize);
           this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
           this.ctx.lineWidth = 0.5;
           this.ctx.strokeRect(cx, cy, cellSize, cellSize);
         } else {
           // Traversable cell base
-          this.ctx.fillStyle = '#f8fafc';
+          this.ctx.fillStyle = '#f7f9fc';
           this.ctx.fillRect(cx, cy, cellSize, cellSize);
 
           // Explored / Reached glow
           if (reachedSet.has(key)) {
-            this.ctx.fillStyle = 'rgba(79, 70, 229, 0.12)';
+            this.ctx.fillStyle = 'rgba(27, 79, 156, 0.12)';
             this.ctx.fillRect(cx, cy, cellSize, cellSize);
           }
 
           // Frontier cell halo
           if (frontierSet.has(key)) {
-            this.ctx.fillStyle = 'rgba(245, 158, 11, 0.25)';
+            this.ctx.fillStyle = 'rgba(212, 145, 26, 0.25)';
             this.ctx.fillRect(cx, cy, cellSize, cellSize);
           }
 
           // Grid line
-          this.ctx.strokeStyle = 'rgba(15, 23, 42, 0.05)';
+          this.ctx.strokeStyle = 'rgba(16, 32, 64, 0.05)';
           this.ctx.lineWidth = 0.5;
           this.ctx.strokeRect(cx, cy, cellSize, cellSize);
         }
@@ -495,7 +495,7 @@ class MazeSearchDemoUI {
       this.engine.decisionPoints.forEach(dp => {
         const edges = this.engine.abstractGraph[dp.label] || [];
         edges.forEach(edge => {
-          this.ctx.strokeStyle = 'rgba(79, 70, 229, 0.35)';
+          this.ctx.strokeStyle = 'rgba(27, 79, 156, 0.35)';
           this.ctx.lineWidth = 2.5;
           this.ctx.beginPath();
           edge.path.forEach((p, idx) => {
@@ -513,11 +513,11 @@ class MazeSearchDemoUI {
     // 3. Draw Solution Path
     if (solution) {
       this.ctx.save();
-      this.ctx.strokeStyle = '#10b981'; // Emerald Green
+      this.ctx.strokeStyle = '#2e8b47'; // Emerald Green
       this.ctx.lineWidth = Math.max(3, cellSize * 0.2);
       this.ctx.lineCap = 'round';
       this.ctx.lineJoin = 'round';
-      this.ctx.shadowColor = '#10b981';
+      this.ctx.shadowColor = '#2e8b47';
       this.ctx.shadowBlur = 6;
 
       this.ctx.beginPath();
@@ -555,10 +555,10 @@ class MazeSearchDemoUI {
 
         this.ctx.beginPath();
         this.ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
-        if (dp.type === 'start') this.ctx.fillStyle = '#10b981';
-        else if (dp.type === 'goal') this.ctx.fillStyle = '#ef4444';
-        else if (reachedSet.has(dp.label)) this.ctx.fillStyle = '#6366f1';
-        else this.ctx.fillStyle = '#0891b2';
+        if (dp.type === 'start') this.ctx.fillStyle = '#2e8b47';
+        else if (dp.type === 'goal') this.ctx.fillStyle = '#c0392b';
+        else if (reachedSet.has(dp.label)) this.ctx.fillStyle = '#2461c0';
+        else this.ctx.fillStyle = '#2461c0';
         this.ctx.fill();
         this.ctx.strokeStyle = '#ffffff';
         this.ctx.lineWidth = 1.5;
@@ -602,8 +602,8 @@ class MazeSearchDemoUI {
 
   drawStartGoal(cellSize) {
     const markers = [
-      { pt: this.engine.start, text: 'S', color: '#10b981' },
-      { pt: this.engine.goal, text: 'G', color: '#ef4444' }
+      { pt: this.engine.start, text: 'S', color: '#2e8b47' },
+      { pt: this.engine.goal, text: 'G', color: '#c0392b' }
     ];
 
     markers.forEach(m => {

@@ -18,8 +18,8 @@
   'use strict';
 
   // ------------------------------------------------------------ shared
-  const COL = { tp: '#059669', fn: '#e11d48', fp: '#d97706', tn: '#2563eb' };
-  const OP = '#4f46e5';
+  const COL = { tp: '#2e8b47', fn: '#c0392b', fp: '#b9770e', tn: '#2461c0' };
+  const OP = '#1b4f9c';
   const hexA = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${(n >> 8) & 255},${n & 255},${a})`; };
   const pct = v => (v * 100).toFixed(1) + '%';
   const f2 = v => v.toFixed(2);
@@ -334,16 +334,16 @@
     pb.forEach((b, i) => b.forEach((s, j) => { dots += dot(dx(2 * i + 1), DMID - 3 - step * (j + 0.5), s >= T ? 'tp' : 'fn'); }));
     nb.forEach((b, i) => b.forEach((s, j) => { dots += dot(dx(2 * i + 1), DMID + 3 + step * (j + 0.5), s >= T ? 'fp' : 'tn'); }));
 
-    const ticks = [0, 0.2, 0.4, 0.6, 0.8, 1].map(v => `<line x1="${dx(v * 100)}" x2="${dx(v * 100)}" y1="${DBOT}" y2="${DBOT + 4}" stroke="#94a3b8"/>
+    const ticks = [0, 0.2, 0.4, 0.6, 0.8, 1].map(v => `<line x1="${dx(v * 100)}" x2="${dx(v * 100)}" y1="${DBOT}" y2="${DBOT + 4}" stroke="#8a94a3"/>
       <text class="evl-tick" x="${dx(v * 100)}" y="${DBOT + 15}" text-anchor="middle">${v.toFixed(1)}</text>`).join('');
     const lblX = Math.max(DL + 26, Math.min(DW - DR - 26, xT));
     const rightW = DW - DR - xT, leftW = xT - DL;
     return `<svg class="evl-plot evl-dots" viewBox="0 0 ${DW} ${DH}" role="img" aria-label="Score distribution: ${NP} spam emails above the line, ${NN} ham emails below. Threshold t = ${f2(T / 100)}.">
-      <rect x="${DL}" y="${DTOP - 6}" width="${DW - DL - DR}" height="${DBOT - DTOP + 6}" fill="#fff" stroke="#e2e8f0"/>
+      <rect x="${DL}" y="${DTOP - 6}" width="${DW - DL - DR}" height="${DBOT - DTOP + 6}" fill="#fff" stroke="#dbe2ec"/>
       <rect x="${xT}" y="${DTOP - 6}" width="${Math.max(0, rightW)}" height="${DBOT - DTOP + 6}" fill="${hexA(OP, 0.06)}"/>
       ${leftW > 92 ? `<text class="evl-reg muted" x="${DL + 6}" y="${DTOP + 6}">◂ predict ham</text>` : ''}
       ${rightW > 96 ? `<text class="evl-reg" x="${DW - DR - 6}" y="${DTOP + 6}" text-anchor="end">predict spam ▸</text>` : ''}
-      <line x1="${DL}" x2="${DW - DR}" y1="${DMID}" y2="${DMID}" stroke="#cbd5e1"/>
+      <line x1="${DL}" x2="${DW - DR}" y1="${DMID}" y2="${DMID}" stroke="#c3cdda"/>
       <text class="evl-tick" x="${DL - 5}" y="${DTOP + 2}" text-anchor="end">actual</text>
       <text class="evl-axt" x="${DL - 5}" y="${DMID - 5}" text-anchor="end">spam</text>
       <text class="evl-axt" x="${DL - 5}" y="${DMID + 14}" text-anchor="end">ham</text>
@@ -381,7 +381,7 @@
     const cur = at(pr.T);
     let op = '';
     if (cur.prec === null) {
-      op = `<rect x="${px(0.1)}" y="${py(0.62)}" width="${px(0.9) - px(0.1)}" height="40" rx="8" fill="#fffbeb" stroke="#f59e0b"/>
+      op = `<rect x="${px(0.1)}" y="${py(0.62)}" width="${px(0.9) - px(0.1)}" height="40" rx="8" fill="#fdf3e2" stroke="#d4911a"/>
         <text class="evl-undef-t" x="${px(0.5)}" y="${py(0.62) + 17}" text-anchor="middle">Operating point undefined</text>
         <text class="evl-undef-s" x="${px(0.5)}" y="${py(0.62) + 31}" text-anchor="middle">no email scores ≥ t, so TP + FP = 0</text>`;
     } else {
@@ -396,15 +396,15 @@
     if (h && h.prec !== null && h.T !== pr.T) {
       const cx = px(h.rec), cy = py(h.prec);
       const bx = Math.min(px(1) - 150, Math.max(px(0) + 2, cx - 75)), by = cy > py(0.5) ? cy - 40 : cy + 12;
-      hov = `<circle cx="${cx}" cy="${cy}" r="5" fill="none" stroke="#0f172a" stroke-width="1.5"/>
-        <rect x="${bx}" y="${by}" width="150" height="28" rx="6" fill="#0f172a" fill-opacity="0.9"/>
+      hov = `<circle cx="${cx}" cy="${cy}" r="5" fill="none" stroke="#16202e" stroke-width="1.5"/>
+        <rect x="${bx}" y="${by}" width="150" height="28" rx="6" fill="#16202e" fill-opacity="0.9"/>
         <text class="evl-tip" x="${bx + 75}" y="${by + 12}" text-anchor="middle">t ${f2(h.T / 100)} · P ${f2(h.prec)} · R ${f2(h.rec)}</text>
         <text class="evl-tip s" x="${bx + 75}" y="${by + 23}" text-anchor="middle">click to use this threshold</text>`;
     }
     return `<svg class="evl-plot evl-pr" viewBox="0 0 ${PW} ${PH}" role="img" aria-label="Precision-recall curve. Average precision ${f2(pr.ap)}. ${cur.prec === null ? 'Current operating point undefined.' : `Current point: precision ${f2(cur.prec)}, recall ${f2(cur.rec)}.`}">
-      <rect x="${px(0)}" y="${py(1)}" width="${px(1) - px(0)}" height="${py(0) - py(1)}" fill="#fff" stroke="#e2e8f0"/>
+      <rect x="${px(0)}" y="${py(1)}" width="${px(1) - px(0)}" height="${py(0) - py(1)}" fill="#fff" stroke="#dbe2ec"/>
       ${grid}${iso}
-      <line x1="${px(0)}" x2="${px(1)}" y1="${py(prev)}" y2="${py(prev)}" stroke="#94a3b8" stroke-dasharray="6 4"/>
+      <line x1="${px(0)}" x2="${px(1)}" y1="${py(prev)}" y2="${py(prev)}" stroke="#8a94a3" stroke-dasharray="6 4"/>
       <text class="evl-iso-t" x="${px(0) + 4}" y="${py(prev) - 4}">no-skill = prevalence ${f2(prev)}</text>
       <path d="${line}" fill="none" stroke="${OP}" stroke-width="2.2" stroke-linejoin="round"/>
       ${marks}${op}${hov}

@@ -34,15 +34,15 @@
   function flowSvg(nodes, idx) {
     const w = 250, h = 70, bw = 66;
     const loop = idx >= 2;
-    let s = '<svg class="ag-svg" viewBox="0 0 ' + w + " " + h + '" role="img" aria-label="' + esc(nodes.join(" to ")) + '"><defs><marker id="bpa' + idx + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#7c3aed"/></marker></defs>';
+    let s = '<svg class="ag-svg" viewBox="0 0 ' + w + " " + h + '" role="img" aria-label="' + esc(nodes.join(" to ")) + '"><defs><marker id="bpa' + idx + '" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#2461c0"/></marker></defs>';
     nodes.forEach(function (n, i) {
       const x = 10 + i * 84;
       const hl = (idx === 0 && i === 1) || (idx === 1 && i === 1) || (idx === 2 && i === 1) || idx === 3;
-      s += '<rect x="' + x + '" y="' + (loop ? 8 : 20) + '" width="' + bw + '" height="28" rx="6" fill="' + (hl ? "#f1ebfe" : "#fff") + '" stroke="' + (hl ? "#6d28d9" : "#cbd2e0") + '" stroke-width="2"/>' +
-        '<text x="' + (x + bw / 2) + '" y="' + ((loop ? 8 : 20) + 18) + '" text-anchor="middle" font-size="11" font-weight="700" fill="#1e1b4b">' + esc(n) + "</text>";
-      if (i < nodes.length - 1) s += '<line x1="' + (x + bw) + '" y1="' + ((loop ? 8 : 20) + 14) + '" x2="' + (x + 84 - 2) + '" y2="' + ((loop ? 8 : 20) + 14) + '" stroke="#7c3aed" stroke-width="2" marker-end="url(#bpa' + idx + ')"/>';
+      s += '<rect x="' + x + '" y="' + (loop ? 8 : 20) + '" width="' + bw + '" height="28" rx="6" fill="' + (hl ? "#e8f0fc" : "#fff") + '" stroke="' + (hl ? "#1b4f9c" : "#c3cdda") + '" stroke-width="2"/>' +
+        '<text x="' + (x + bw / 2) + '" y="' + ((loop ? 8 : 20) + 18) + '" text-anchor="middle" font-size="11" font-weight="700" fill="#0e2f5c">' + esc(n) + "</text>";
+      if (i < nodes.length - 1) s += '<line x1="' + (x + bw) + '" y1="' + ((loop ? 8 : 20) + 14) + '" x2="' + (x + 84 - 2) + '" y2="' + ((loop ? 8 : 20) + 14) + '" stroke="#2461c0" stroke-width="2" marker-end="url(#bpa' + idx + ')"/>';
     });
-    if (loop) s += '<path d="M 211 36 Q 211 62 125 62 Q 43 62 43 38" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#bpa' + idx + ')"/><text x="125" y="58" text-anchor="middle" font-size="9" fill="#6d28d9" font-weight="700">' + (idx === 2 ? "replan" : "feedback") + "</text>";
+    if (loop) s += '<path d="M 211 36 Q 211 62 125 62 Q 43 62 43 38" fill="none" stroke="#2461c0" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#bpa' + idx + ')"/><text x="125" y="58" text-anchor="middle" font-size="9" fill="#1b4f9c" font-weight="700">' + (idx === 2 ? "replan" : "feedback") + "</text>";
     return s + "</svg>";
   }
 
@@ -440,16 +440,16 @@
       }).sort(function (a, b) { return b.cos - a.cos; });
       const top = {}; rows.slice(0, S.k).forEach(function (r) { top[r.d.id] = 1; });
       let svg = '<svg class="ag-svg ag-emb" viewBox="0 0 ' + (2 * C) + " " + (2 * C) + '" data-emb-svg style="touch-action:none;cursor:crosshair" role="img" aria-label="2D projection of document embeddings and the query vector">' +
-        '<defs><marker id="emq" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#6d28d9"/></marker><marker id="emd" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#0891b2"/></marker><marker id="emg" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#b9c0d0"/></marker></defs>' +
-        '<circle cx="' + C + '" cy="' + C + '" r="' + R + '" fill="none" stroke="#eef0f6" stroke-width="2"/>' +
-        '<line x1="' + (C - R - 10) + '" y1="' + C + '" x2="' + (C + R + 10) + '" y2="' + C + '" stroke="#e3e6ef"/><line x1="' + C + '" y1="' + (C - R - 10) + '" x2="' + C + '" y2="' + (C + R + 10) + '" stroke="#e3e6ef"/>';
+        '<defs><marker id="emq" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#1b4f9c"/></marker><marker id="emd" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#3f8f2f"/></marker><marker id="emg" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0L10,5L0,10z" fill="#c3cdda"/></marker></defs>' +
+        '<circle cx="' + C + '" cy="' + C + '" r="' + R + '" fill="none" stroke="#e6ebf2" stroke-width="2"/>' +
+        '<line x1="' + (C - R - 10) + '" y1="' + C + '" x2="' + (C + R + 10) + '" y2="' + C + '" stroke="#e6ebf2"/><line x1="' + C + '" y1="' + (C - R - 10) + '" x2="' + C + '" y2="' + (C + R + 10) + '" stroke="#e6ebf2"/>';
       EMB_DOCS.forEach(function (d) {
         const v = vec(d.ang, 1), x = C + R * v[0], y = C - R * v[1], on = top[d.id];
-        svg += '<line x1="' + C + '" y1="' + C + '" x2="' + x + '" y2="' + y + '" stroke="' + (on ? "#0891b2" : "#b9c0d0") + '" stroke-width="' + (on ? 3 : 2) + '" marker-end="url(#' + (on ? "emd" : "emg") + ')"/>' +
-          '<text x="' + (C + (R + 6) * v[0]) + '" y="' + (C - (R + 6) * v[1] + 4) + '" font-size="10.5" font-weight="' + (on ? 800 : 600) + '" fill="' + (on ? "#0e7490" : "#6b7280") + '" text-anchor="' + (v[0] > 0.2 ? "start" : v[0] < -0.2 ? "end" : "middle") + '">' + d.id + "</text>";
+        svg += '<line x1="' + C + '" y1="' + C + '" x2="' + x + '" y2="' + y + '" stroke="' + (on ? "#3f8f2f" : "#c3cdda") + '" stroke-width="' + (on ? 3 : 2) + '" marker-end="url(#' + (on ? "emd" : "emg") + ')"/>' +
+          '<text x="' + (C + (R + 6) * v[0]) + '" y="' + (C - (R + 6) * v[1] + 4) + '" font-size="10.5" font-weight="' + (on ? 800 : 600) + '" fill="' + (on ? "#3f8f2f" : "#55606f") + '" text-anchor="' + (v[0] > 0.2 ? "start" : v[0] < -0.2 ? "end" : "middle") + '">' + d.id + "</text>";
       });
       const qx = C + R * S.len * Math.cos(S.ang * Math.PI / 180), qy = C - R * S.len * Math.sin(S.ang * Math.PI / 180);
-      svg += '<line x1="' + C + '" y1="' + C + '" x2="' + qx + '" y2="' + qy + '" stroke="#6d28d9" stroke-width="4" marker-end="url(#emq)"/><circle cx="' + qx + '" cy="' + qy + '" r="9" fill="#6d28d9" fill-opacity="0.18" stroke="#6d28d9"/><text x="' + (qx + 10) + '" y="' + (qy - 10) + '" font-size="13" font-weight="800" fill="#6d28d9">q</text></svg>';
+      svg += '<line x1="' + C + '" y1="' + C + '" x2="' + qx + '" y2="' + qy + '" stroke="#1b4f9c" stroke-width="4" marker-end="url(#emq)"/><circle cx="' + qx + '" cy="' + qy + '" r="9" fill="#1b4f9c" fill-opacity="0.18" stroke="#1b4f9c"/><text x="' + (qx + 10) + '" y="' + (qy - 10) + '" font-size="13" font-weight="800" fill="#1b4f9c">q</text></svg>';
       const best = rows[0];
       el.innerHTML =
         '<div class="ag-ops">' + EMB_Q.map(function (q, i) { return '<button type="button" class="ag-op is-ui' + (S.q === i ? " is-selected" : "") + '" data-emb-q="' + i + '">' + esc(q.label) + "</button>"; }).join("") +
@@ -486,7 +486,7 @@
   P.register("chunking", function () {
     const el = K.single("Documents are split into chunks before embedding. The chunk is what gets retrieved, so a fact cut in half is a fact the model never sees whole.");
     const S = { L: 10, ov: 0 };
-    const COLS = ["#e0f2fe", "#ede9fe", "#dcfce7", "#fef3c7", "#ffe4e6", "#e0e7ff", "#ccfbf1", "#fae8ff"];
+    const COLS = ["#e8f0fc", "#f1e9fd", "#e9f7ee", "#fdf3e2", "#fdecea", "#e8f0fc", "#eaf6e4", "#fae8ff"];
     function chunks() {
       const N = CHUNK_TEXT.length, step = S.L - S.ov, out = [];
       for (let s = 0; ; s += step) { out.push([s, Math.min(N, s + S.L)]); if (s + S.L >= N) break; }
@@ -502,7 +502,7 @@
           '<label class="ag-slider" style="flex:1">overlap <input type="range" min="0" max="' + Math.floor(S.L / 2) + '" value="' + S.ov + '" data-ch-o><output>' + S.ov + " words</output></label></div>" +
         '<div class="ag-ribbon">' + CHUNK_TEXT.map(function (w, i) {
           const o = owner[i], k = o[0], both = o.length > 1, key = i >= KEY_FACT[0] && i <= KEY_FACT[1];
-          return '<span class="w" title="chunk ' + o.map(function (x) { return x + 1; }).join(" & ") + '" style="background:' + (both ? "repeating-linear-gradient(45deg," + COLS[k % 8] + " 0 4px," + COLS[o[1] % 8] + " 4px 8px)" : COLS[k % 8]) + ";" + (key ? "outline:2px solid #b45309;" : "") + (cs.some(function (c) { return c[0] === i; }) ? "border-left:3px solid #6d28d9;margin-left:2px;" : "") + '">' + esc(w) + "</span>";
+          return '<span class="w" title="chunk ' + o.map(function (x) { return x + 1; }).join(" & ") + '" style="background:' + (both ? "repeating-linear-gradient(45deg," + COLS[k % 8] + " 0 4px," + COLS[o[1] % 8] + " 4px 8px)" : COLS[k % 8]) + ";" + (key ? "outline:2px solid #b9770e;" : "") + (cs.some(function (c) { return c[0] === i; }) ? "border-left:3px solid #1b4f9c;margin-left:2px;" : "") + '">' + esc(w) + "</span>";
         }).join(" ") + "</div>" +
         '<div class="ag-meter"><span class="ag-prop">words <strong>' + N + '</strong></span><span class="ag-prop">chunks <strong>' + cs.length + '</strong></span><span class="ag-prop">step L &minus; overlap <strong>' + (S.L - S.ov) + "</strong></span>" +
           '<span class="ag-prop ' + (covers >= 0 ? "is-yes" : "is-no") + '">key fact (orange) whole in one chunk <strong>' + (covers >= 0 ? "yes: chunk " + (covers + 1) : "no, split") + "</strong></span></div>" +
@@ -593,7 +593,7 @@
         '<div class="ag-mem" aria-label="context window usage">' +
           '<span class="m-sys" style="width:' + pct(S.sys) + '">system</span><span class="m-user" style="width:' + pct(S.q) + '">q</span>' +
           Array.from({ length: k }).map(function (_, i) { return '<span class="m-tool" style="width:' + pct(S.ch) + '">chunk ' + (i + 1) + "</span>"; }).join("") +
-          '<span style="width:' + pct(Math.max(0, S.C - used)) + ';background:#eef0f6;color:#6b7280">free</span><span class="m-sum" style="width:' + pct(S.res) + '">answer</span></div>' +
+          '<span style="width:' + pct(Math.max(0, S.C - used)) + ';background:#e6ebf2;color:#55606f">free</span><span class="m-sum" style="width:' + pct(S.res) + '">answer</span></div>' +
         (free < 0 ? K.status("is-wrong", "Over budget before any context: the prompt does not fit.") :
           '<div class="ag-meter"><span class="ag-prop">free for context <strong>' + free + '</strong></span><span class="ag-prop is-yes">chunks K <strong>' + k + '</strong></span><span class="ag-prop">unused <strong>' + (free - k * S.ch) + "</strong></span></div>") +
         K.formula("K = &lfloor;(C &minus; system &minus; question &minus; reserved) / chunk&rfloor;") +

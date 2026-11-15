@@ -264,7 +264,7 @@ class MazeDemoUI {
       if (this.absLog) {
         const logDiv = document.createElement('div');
         logDiv.className = 'log-entry error';
-        logDiv.innerHTML = `<span style="color: #ef4444;">Blocked: Cannot go North/East/South/West from node ${fromNode}</span>`;
+        logDiv.innerHTML = `<span style="color: #c0392b;">Blocked: Cannot go North/East/South/West from node ${fromNode}</span>`;
         this.absLog.appendChild(logDiv);
         this.absLog.scrollTop = this.absLog.scrollHeight;
       }
@@ -282,7 +282,7 @@ class MazeDemoUI {
 
         if (char === '#') {
           // Wall cells - Dark Glass style
-          this.ctx.fillStyle = '#1e293b'; // Slate 800
+          this.ctx.fillStyle = '#16202e'; // Slate 800
           this.ctx.fillRect(cx, cy, cellSize, cellSize);
           
           // Outer border on wall block
@@ -291,11 +291,11 @@ class MazeDemoUI {
           this.ctx.strokeRect(cx, cy, cellSize, cellSize);
         } else {
           // Traversable cells - Off white
-          this.ctx.fillStyle = '#f8fafc'; // Slate 50
+          this.ctx.fillStyle = '#f7f9fc'; // Slate 50
           this.ctx.fillRect(cx, cy, cellSize, cellSize);
 
           // Grid lines
-          this.ctx.strokeStyle = 'rgba(15, 23, 42, 0.04)';
+          this.ctx.strokeStyle = 'rgba(16, 32, 64, 0.04)';
           this.ctx.lineWidth = 0.5;
           this.ctx.strokeRect(cx, cy, cellSize, cellSize);
         }
@@ -332,7 +332,7 @@ class MazeDemoUI {
       this.drawSubMaze(cellSize);
       
       // Highlight all traversable grid cells
-      this.ctx.fillStyle = 'rgba(79, 70, 229, 0.08)'; // Indigo glow
+      this.ctx.fillStyle = 'rgba(27, 79, 156, 0.08)'; // Indigo glow
       const traversable = this.maze.getTraversableCells();
       traversable.forEach(cell => {
         this.ctx.fillRect(cell.x * cellSize, cell.y * cellSize, cellSize, cellSize);
@@ -344,8 +344,8 @@ class MazeDemoUI {
       this.ctx.restore();
 
       // Label Left Side
-      this.ctx.fillStyle = '#64748b'; // Slate 500
-      this.ctx.font = 'bold 11px Outfit, sans-serif';
+      this.ctx.fillStyle = '#55606f'; // Slate 500
+      this.ctx.font = 'bold 11px system-ui, sans-serif';
       this.ctx.textAlign = 'center';
       this.ctx.fillText("Initial Space (4K / 4T states)", halfW / 2, h - 10);
 
@@ -365,13 +365,13 @@ class MazeDemoUI {
       this.ctx.restore();
 
       // Label Right Side
-      this.ctx.fillStyle = '#64748b'; // Slate 500
-      this.ctx.font = 'bold 11px Outfit, sans-serif';
+      this.ctx.fillStyle = '#55606f'; // Slate 500
+      this.ctx.font = 'bold 11px system-ui, sans-serif';
       this.ctx.textAlign = 'center';
       this.ctx.fillText("Abstract Space (T / J states)", halfW + halfW / 2, h - 10);
 
       // Draw Divider Line
-      this.ctx.strokeStyle = 'rgba(15, 23, 42, 0.1)';
+      this.ctx.strokeStyle = 'rgba(16, 32, 64, 0.1)';
       this.ctx.lineWidth = 1;
       this.ctx.beginPath();
       this.ctx.moveTo(halfW, 0);
@@ -404,10 +404,10 @@ class MazeDemoUI {
           const cx = x * cellSize;
           const cy = y * cellSize;
           if (char === 'S') {
-            this.ctx.fillStyle = 'rgba(16, 185, 129, 0.15)'; // Green glow
+            this.ctx.fillStyle = 'rgba(46, 139, 71, 0.15)'; // Green glow
             this.ctx.fillRect(cx, cy, cellSize, cellSize);
           } else if (char === 'G') {
-            this.ctx.fillStyle = 'rgba(239, 68, 68, 0.15)'; // Red glow
+            this.ctx.fillStyle = 'rgba(192, 57, 43, 0.15)'; // Red glow
             this.ctx.fillRect(cx, cy, cellSize, cellSize);
           }
         }
@@ -417,7 +417,7 @@ class MazeDemoUI {
     // 2. Step Specific Drawings
     if (this.currentTeachingStep === 0) {
       // Step 1: Highlight all traversable grid cells
-      this.ctx.fillStyle = 'rgba(79, 70, 229, 0.04)';
+      this.ctx.fillStyle = 'rgba(27, 79, 156, 0.04)';
       const traversable = this.maze.getTraversableCells();
       traversable.forEach(cell => {
         this.ctx.fillRect(cell.x * cellSize, cell.y * cellSize, cellSize, cellSize);
@@ -425,7 +425,7 @@ class MazeDemoUI {
     }
     else if (this.currentTeachingStep === 1) {
       // Step 2: Highlight T state space (all traversable cells glow slightly)
-      this.ctx.fillStyle = 'rgba(79, 70, 229, 0.08)'; // Indigo glow
+      this.ctx.fillStyle = 'rgba(27, 79, 156, 0.08)'; // Indigo glow
       const traversable = this.maze.getTraversableCells();
       traversable.forEach(cell => {
         this.ctx.fillRect(cell.x * cellSize, cell.y * cellSize, cellSize, cellSize);
@@ -450,8 +450,8 @@ class MazeDemoUI {
         this.ctx.lineWidth = 4;
         this.ctx.lineCap = 'round';
         this.ctx.lineJoin = 'round';
-        this.ctx.strokeStyle = '#10b981'; // Emerald Green
-        this.ctx.shadowColor = '#10b981';
+        this.ctx.strokeStyle = '#2e8b47'; // Emerald Green
+        this.ctx.shadowColor = '#2e8b47';
         this.ctx.shadowBlur = 6;
 
         this.ctx.beginPath();
@@ -491,13 +491,13 @@ class MazeDemoUI {
     // Body glow
     this.ctx.beginPath();
     this.ctx.arc(rx, ry, radius + 2, 0, 2 * Math.PI);
-    this.ctx.fillStyle = 'rgba(79, 70, 229, 0.25)';
+    this.ctx.fillStyle = 'rgba(27, 79, 156, 0.25)';
     this.ctx.fill();
 
     // Body
     this.ctx.beginPath();
     this.ctx.arc(rx, ry, radius, 0, 2 * Math.PI);
-    this.ctx.fillStyle = '#4f46e5'; // Indigo
+    this.ctx.fillStyle = '#1b4f9c'; // Indigo
     this.ctx.fill();
     this.ctx.strokeStyle = '#ffffff';
     this.ctx.lineWidth = 2;
@@ -541,11 +541,11 @@ class MazeDemoUI {
       this.ctx.beginPath();
       this.ctx.arc(cx, cy, radius + 4, 0, 2 * Math.PI);
       if (isOnPath) {
-        this.ctx.fillStyle = 'rgba(16, 185, 129, 0.3)';
+        this.ctx.fillStyle = 'rgba(46, 139, 71, 0.3)';
       } else {
         this.ctx.fillStyle = dp.type === 'start' 
-          ? 'rgba(16, 185, 129, 0.2)' 
-          : (dp.type === 'goal' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(8, 145, 178, 0.2)');
+          ? 'rgba(46, 139, 71, 0.2)' 
+          : (dp.type === 'goal' ? 'rgba(192, 57, 43, 0.2)' : 'rgba(36, 97, 192, 0.2)');
       }
       this.ctx.fill();
 
@@ -553,11 +553,11 @@ class MazeDemoUI {
       this.ctx.beginPath();
       this.ctx.arc(cx, cy, radius, 0, 2 * Math.PI);
       if (isOnPath) {
-        this.ctx.fillStyle = '#10b981';
+        this.ctx.fillStyle = '#2e8b47';
       } else {
         this.ctx.fillStyle = dp.type === 'start' 
-          ? '#10b981' // Green
-          : (dp.type === 'goal' ? '#ef4444' : '#0891b2'); // Cyan
+          ? '#2e8b47' // Green
+          : (dp.type === 'goal' ? '#c0392b' : '#2461c0'); // Cyan
       }
       this.ctx.fill();
       this.ctx.strokeStyle = '#ffffff';
@@ -566,7 +566,7 @@ class MazeDemoUI {
 
       // Label text
       this.ctx.fillStyle = '#ffffff';
-      this.ctx.font = `bold ${Math.round(cellSize * 0.4)}px Outfit, sans-serif`;
+      this.ctx.font = `bold ${Math.round(cellSize * 0.4)}px system-ui, sans-serif`;
       this.ctx.textAlign = 'center';
       this.ctx.textBaseline = 'middle';
       this.ctx.fillText(dp.label, cx, cy);
@@ -584,7 +584,7 @@ class MazeDemoUI {
       const cx = (l.cell.x + 0.5) * cellSize;
       const cy = (l.cell.y + 0.5) * cellSize;
       
-      this.ctx.fillStyle = 'rgba(15, 23, 42, 0.6)';
+      this.ctx.fillStyle = 'rgba(16, 32, 64, 0.6)';
       this.ctx.font = `${Math.round(cellSize * 0.2)}px sans-serif`;
       this.ctx.textAlign = 'center';
       
@@ -620,12 +620,12 @@ class MazeDemoUI {
         }
 
         if (isHighlighted) {
-          this.ctx.strokeStyle = '#10b981';
+          this.ctx.strokeStyle = '#2e8b47';
           this.ctx.lineWidth = 4.5;
-          this.ctx.shadowColor = '#10b981';
+          this.ctx.shadowColor = '#2e8b47';
           this.ctx.shadowBlur = 4;
         } else {
-          this.ctx.strokeStyle = faint ? 'rgba(79, 70, 229, 0.15)' : 'rgba(79, 70, 229, 0.5)';
+          this.ctx.strokeStyle = faint ? 'rgba(27, 79, 156, 0.15)' : 'rgba(27, 79, 156, 0.5)';
           this.ctx.lineWidth = faint ? 1.5 : 3;
           this.ctx.shadowBlur = 0;
         }
@@ -654,7 +654,7 @@ class MazeDemoUI {
           // Cost circle badge
           this.ctx.beginPath();
           this.ctx.arc(mx, my, cellSize * 0.22, 0, 2 * Math.PI);
-          this.ctx.fillStyle = isHighlighted ? '#10b981' : '#4338ca'; // Green if path
+          this.ctx.fillStyle = isHighlighted ? '#2e8b47' : '#0e2f5c'; // Green if path
           this.ctx.fill();
           this.ctx.strokeStyle = '#ffffff';
           this.ctx.lineWidth = 1;

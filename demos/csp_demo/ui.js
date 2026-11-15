@@ -22,7 +22,7 @@
   const E = window.CSPEngine;
   const AUS = E.AUSTRALIA;
   const HEX = E.COLOR_HEX;
-  const ACCENT = '#0d9488';
+  const ACCENT = '#3f8f2f';
 
   // Topic 02 route graph — same edges/costs/layout as demos/search_planning_demo/city_engine.js
   const CITY_GRAPH = {
@@ -325,7 +325,7 @@
 
   const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
-  const colorDot = (c, extra) => `<span class="csp-dot ${extra || ''}" style="background:${HEX[c] || '#cbd5e1'}" title="${c}"></span>`;
+  const colorDot = (c, extra) => `<span class="csp-dot ${extra || ''}" style="background:${HEX[c] || '#c3cdda'}" title="${c}"></span>`;
   const domainDots = (vals, full) => (full || ['red', 'green', 'blue']).map(c => colorDot(c, vals.includes(c) ? '' : 'csp-dot-off')).join('');
 
   const { mapSVG, graphSVG } = window.CSPRender;
@@ -480,7 +480,7 @@
     return new E.CSP(TT.vars.slice(), copyDomainsTT(TT.domains), nb, (A, a, B, b) => !ttReason(A, a, B, b), { kind: 'timetable' });
   }
   function copyDomainsTT(d) { const o = {}; for (const k in d) o[k] = d[k].slice(); return o; }
-  const TT_COHORT = { Y1: '#4f46e5', Y2: '#0d9488' };
+  const TT_COHORT = { Y1: '#1b4f9c', Y2: '#3f8f2f' };
 
   /** Timetable grid: rooms × slots, courses as chips; optional tried value / clash. */
   function ttGridHTML(asg, o) {
@@ -1489,7 +1489,7 @@
         if (!D[Xi].includes(x)) return;
         MAP_COLORS.forEach((y, k) => { if (D[Xj].includes(y) && y !== x) lines += `<line x1="${cx(i)}" y1="52" x2="${cx(k)}" y2="118" class="csp-support"></line>`; });
       });
-      const chip = (v, x, y, alive, lonely) => `<g><circle cx="${x}" cy="${y}" r="15" fill="${alive ? HEX[v] : '#ffffff'}" stroke="${lonely ? '#dc2626' : alive ? 'rgba(15,23,42,0.35)' : '#cbd5e1'}" stroke-width="${lonely ? 3 : 1.4}" ${alive ? '' : 'stroke-dasharray="3 3"'}></circle>${alive ? '' : `<line x1="${x - 9}" y1="${y + 9}" x2="${x + 9}" y2="${y - 9}" stroke="#94a3b8" stroke-width="1.4"></line>`}</g>`;
+      const chip = (v, x, y, alive, lonely) => `<g><circle cx="${x}" cy="${y}" r="15" fill="${alive ? HEX[v] : '#ffffff'}" stroke="${lonely ? '#c0392b' : alive ? 'rgba(16, 32, 64,0.35)' : '#c3cdda'}" stroke-width="${lonely ? 3 : 1.4}" ${alive ? '' : 'stroke-dasharray="3 3"'}></circle>${alive ? '' : `<line x1="${x - 9}" y1="${y + 9}" x2="${x + 9}" y2="${y - 9}" stroke="#8a94a3" stroke-width="1.4"></line>`}</g>`;
       MAP_COLORS.forEach((c, i) => {
         const alive = D[Xi].includes(c);
         chips += chip(c, cx(i), 36, alive, alive && !supported(Xi, Xj, c));
@@ -1497,7 +1497,7 @@
       });
       const svg = `<svg viewBox="0 0 ${W} 170" class="csp-graph-svg">
         <text x="8" y="40" class="csp-row-label">${Xi}</text><text x="8" y="138" class="csp-row-label">${Xj}</text>
-        <text x="${W / 2}" y="89" text-anchor="middle" style="font:600 10px 'Outfit',sans-serif;fill:#64748b">${Xi} ≠ ${Xj}</text>
+        <text x="${W / 2}" y="89" text-anchor="middle" style="font:600 10px system-ui,sans-serif;fill:#55606f">${Xi} ≠ ${Xj}</text>
         ${lines}${chips}
       </svg>`;
       // How many directed arcs are still not arc-consistent?
@@ -1626,7 +1626,7 @@
       const m = this.st.allM, n = this.st.allN;
       const fail = m > n;
       const vals = ['red', 'green', 'blue', 'yellow', 'purple'].slice(0, n);
-      const vHex = c => HEX[c] || '#8b5cf6';
+      const vHex = c => HEX[c] || '#7c3aed';
       const pig = [];
       for (let i = 0; i < m; i++) pig.push(`<div class="csp-pig ${i >= n ? 'over' : ''}"><span>X<sub>${i + 1}</sub></span>${i < n ? `<i style="background:${vHex(vals[i])}"></i>` : '<i class="none">?</i>'}</div>`);
       this.graphColEl.innerHTML = shell(
@@ -2269,7 +2269,7 @@
           <text x="${x(i)}" y="60" class="csp-bj-var ${c ? 'on' : ''}">${v}</text><text x="${x(i)}" y="76" class="csp-bj-val ${c ? 'on' : ''}">${c || 'no value'}</text>
 </g>`;
       });
-      svg += `<defs><marker id="csp-bj-a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#94a3b8"></path></marker><marker id="csp-bj-a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="${ACCENT}"></path></marker></defs>`;
+      svg += `<defs><marker id="csp-bj-a1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="#8a94a3"></path></marker><marker id="csp-bj-a2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10z" fill="${ACCENT}"></path></marker></defs>`;
       svg += `<path d="M ${x(4)} 88 C ${x(4)} 120, ${x(3)} 120, ${x(3)} 90" class="csp-bj-chrono" marker-end="url(#csp-bj-a1)"></path><text x="${(x(4) + x(3)) / 2}" y="132" class="csp-bj-lbl chrono">chronological → T</text>`;
       svg += `<path d="M ${x(4)} 36 C ${x(4)} -4, ${x(2)} -4, ${x(2)} 34" class="csp-bj-jump" marker-end="url(#csp-bj-a2)"></path><text x="${(x(4) + x(2)) / 2}" y="-4" class="csp-bj-lbl jump">backjump → V</text>`;
       const rows = [['red', 'Q'], ['green', 'NSW'], ['blue', 'V']].map(([c, u]) => `<tr><td>${colorDot(c)} SA = ${c}</td><td>conflicts with <b>${u}</b> = ${c}</td></tr>`).join('');
