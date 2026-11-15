@@ -6,7 +6,7 @@
   <title>Learning &amp; Decision Making - MLAI401 Foundational AI &amp; ML</title>
 
   <!-- SEO Meta Tags -->
-  <meta name="description" content="An illustrated single-screen lecture on Learning &amp; Decision Making: Supervised Learning (Bag-of-Words, TF-IDF, Naive Bayes Classification, Confusion Matrix, Precision, Recall, F1), Neural Networks (Perceptron, Multi-Layer Perceptrons, Loss &amp; Gradient Descent), Unsupervised Learning (K-Means Clustering), and Reinforcement Learning (Markov Decision Processes, Value Iteration, Tabular Q-Learning).">
+  <meta name="description" content="An interactive lecture on Learning &amp; Decision Making: Supervised Learning (Bag-of-Words, TF-IDF, Naive Bayes Classification, Confusion Matrix, Precision, Recall, F1), Neural Networks (Perceptron, Multi-Layer Perceptrons, Loss &amp; Gradient Descent), Unsupervised Learning (K-Means Clustering), and Reinforcement Learning (Markov Decision Processes, Value Iteration, Tabular Q-Learning).">
   <meta name="keywords" content="Machine Learning, Supervised Learning, Text Features, Bag of Words, TF-IDF, Naive Bayes, Laplace Smoothing, Confusion Matrix, Precision, Recall, F1 Score, Neural Networks, Perceptron, Gradient Descent, Deep Learning, K-Means Clustering, Reinforcement Learning, MDP, Bellman Equations, Value Iteration, Q-Learning, SARSA, AIMA">
 
   <!-- Open Graph -->
@@ -17,15 +17,16 @@
   <!-- Style Sheet -->
   <!-- Burmese (Myanmar) font for the Text Features playground's language switch -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Myanmar:wght@400;600;700&display=swap">
-  <link rel="stylesheet" href="style.css?v=27">
+  <link rel="stylesheet" href="style.css?v=28">
   <link rel="stylesheet" href="demos/learning_demo/perceptron_lab.css?v=1">
   <link rel="stylesheet" href="demos/learning_demo/kmeans_lab.css?v=1">
   <link rel="stylesheet" href="demos/learning_demo/voronoi_elbow_lab.css?v=1">
   <link rel="stylesheet" href="demos/learning_demo/evaluation_lab.css?v=1">
   <link rel="stylesheet" href="demos/learning_demo/mdp_lab.css?v=2">
   <link rel="stylesheet" href="demos/learning_demo/rl_lab.css?v=1">
+  <link rel="stylesheet" href="demos/learning_demo/learning_page.css?v=1">
 </head>
-<body class="sl-page learning-page">
+<body class="learning-page lp-body">
 
   <!-- Navigation Header -->
   <header class="navbar" id="navbar-header">
@@ -52,40 +53,75 @@
     </div>
   </header>
 
-  <!-- Single-screen lecture shell: fixed height, no body scroll on desktop -->
-  <main class="sl-shell learning-shell">
-
-    <div class="sl-topbar">
-      <a href="curriculum.html" class="sl-breadcrumb"><i data-lucide="arrow-left"></i> Curriculum</a>
-      <div class="sl-title-block">
-        <span class="sl-topic-badge learning-badge-accent"><i data-lucide="line-chart"></i> Topic 06</span>
-        <h1>Learning &amp; Decision Making</h1>
+  <!-- Lecture page: same structure as the CPP201 concept pages
+       (hero → big picture → topic buttons → subtopic tabs → one demo panel).
+       Rendered by demos/learning_demo/ui.js. -->
+  <main id="learning-page-main">
+    <section class="lp-hero lp-container">
+      <a href="curriculum.html" class="lp-crumb">&larr; Curriculum</a>
+      <span class="lp-eyebrow">Topic 06 &bull; Learning &amp; Decision Making</span>
+      <h1>Learning &amp; Decision Making</h1>
+      <p class="lp-lead">
+        Stop writing the rules by hand. Let the agent <strong>learn them from data</strong>:
+        classify with labels, find structure without them, and learn
+        <strong>what to do</strong> from reward.
+      </p>
+      <div class="lp-actions">
+        <a class="lp-btn lp-btn-primary" href="topic06_reading.html">Reading Notes</a>
+        <a class="lp-btn lp-btn-ghost" href="playground.html#view-kmeans">Playground</a>
       </div>
-      <div class="learning-topbar-actions">
-        <a href="topic06_reading.html" class="sl-reading-btn"><i data-lucide="book-open"></i> Reading Notes</a>
-        <a href="playground.html#view-kmeans" class="sl-reading-btn learning-demo-btn"><i data-lucide="play-circle"></i> Interactive Demo</a>
-      </div>
-    </div>
+    </section>
 
-    <!-- Topic selector bar -->
-    <div class="sl-topic-bar-wrap">
-      <div class="sl-topic-tabs" id="learning-topic-tabs"></div>
-    </div>
+    <section class="lp-section lp-container">
+      <h2 class="lp-section-title">The big picture</h2>
+      <p class="lp-section-sub">Topic 05 reasoned with knowledge that people wrote down. Topic 06 gets that knowledge from data.</p>
 
-    <!-- Main two-column concept + illustration viewport -->
-    <div class="sl-main-grid" id="learning-main-grid">
-
-      <div class="sl-concept-col glass-panel" id="learning-concept-col">
-        <!-- Rendered by demos/learning_demo/ui.js -->
-      </div>
-
-      <div class="sl-graph-col glass-panel" id="learning-graph-col">
-        <!-- Rendered by demos/learning_demo/ui.js -->
+      <div class="lp-bridge">
+        <p class="lp-bridge-context">
+          <span>Topic 05: KB rules and CPTs written by an expert</span>
+          <span class="lp-bridge-arrow" aria-hidden="true">&rarr;</span>
+          <span>Topic 06: weights, clusters and policies learned from experience</span>
+        </p>
+        <div class="lp-bridge-terms">
+          <span class="lp-bridge-term lp-bridge-term-old">KB &#8872; &alpha;</span>
+          <span class="lp-bridge-arrow" aria-hidden="true">&rarr;</span>
+          <span class="lp-bridge-term lp-bridge-term-new">h &larr; LEARN(data)</span>
+        </div>
       </div>
 
-    </div>
+      <div class="lp-bp-cards" id="learning-bp-cards"></div>
 
+      <p class="lp-caption">
+        <strong>Key connection:</strong> all four learn parameters from experience. They differ in the
+        <strong>feedback</strong>: a correct label, an error gradient, no label at all, or a delayed <strong>reward</strong>.
+      </p>
+    </section>
+
+    <section class="lp-section lp-container lp-wide">
+      <h2 class="lp-section-title">Pick a topic</h2>
+      <p class="lp-section-sub">Selecting a topic updates the subtopic tabs below it.</p>
+
+      <div class="lp-topic-buttons" id="learning-topic-buttons"></div>
+      <div class="lp-subtopic-tabs" id="learning-subtopic-tabs"></div>
+
+      <div class="lp-demo" id="learning-topic-demo">
+        <div class="lp-demo-header">
+          <h3 class="lp-demo-title" data-role="title"></h3>
+          <p class="lp-demo-subtitle" data-role="subtitle"></p>
+        </div>
+        <div data-role="concept"></div>
+        <div class="lp-lab-grid" data-role="lab">
+          <div class="sl-concept-col lp-col" id="learning-concept-col"></div>
+          <div class="sl-graph-col lp-col" id="learning-graph-col"></div>
+        </div>
+        <div data-role="remember"></div>
+      </div>
+    </section>
   </main>
+
+  <footer class="lp-site-footer">
+    MLAI401 &middot; Topic 06: Learning &amp; Decision Making &middot; Python reference: <code>python_sandbox/10_Machine_Learning.py</code>, <code>11_Reinforcement_Learning.py</code>
+  </footer>
 
   <!-- Lucide Icons CDN -->
   <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
@@ -119,7 +155,7 @@
   <script src="demos/learning_demo/rl_lab.js?v=1"></script>
 
   <!-- Page controller — renders topic tabs, concepts and illustrations -->
-  <script src="demos/learning_demo/ui.js?v=13"></script>
+  <script src="demos/learning_demo/ui.js?v=14"></script>
 
   <!-- Application JS -->
   <script src="main.js?v=3"></script>

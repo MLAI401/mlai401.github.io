@@ -1,8 +1,9 @@
 /**
  * ui.js — Topic 06: Learning & Decision Making Lecture Page Controller (learning.html)
  *
- * Implements single-viewport interactive lecture controller:
- *   - 11 Topic Tabs:
+ * CPP201-style page (hero → big picture → topic buttons → subtopic tabs →
+ * demo panel). The 11 topics below are grouped into 6 topic buttons (GROUPS);
+ * their concepts are the subtopic tabs:
  *     0. Evolution: Knowledge & Logic → Learning & Decisions
  *     1. Text Features: Bag-of-Words & TF-IDF
  *     2. Naive Bayes Classification
@@ -48,7 +49,7 @@
     'Model-based dynamic programming: solving known MDPs with Value Iteration (Bellman Optimality contraction) and greedy policy extraction.',
     'Model-free reinforcement learning: learning optimal behavior from environment rollouts via Temporal Difference learning TD(0), Tabular Q-Learning, and SARSA under ε-greedy exploration.',
     'Multi-dimensional comparison matrix across Naive Bayes, Neural Networks, K-Means Clustering, Value Iteration, and Model-Free Q-Learning.',
-    'Interactive line-by-line stepping through clean Python sandbox implementations: TF-IDF, Naive Bayes, Perceptron, K-Means, Value Iteration, and Q-Learning.'
+    'The core of each algorithm in clean Python from python_sandbox/, next to the variable values of one worked example: TF-IDF, Naive Bayes, Perceptron, K-Means, Value Iteration, and Q-Learning.'
   ];
 
   // --- Concept Data per Topic ---
@@ -244,132 +245,191 @@
     code: [
       {
         key: 'code_trace', name: 'Interactive Code Trace',
-        def: 'Line-by-line execution stepping through clean Python implementations of text features, Naive Bayes, Perceptron, K-Means, Value Iteration, and Q-Learning.',
+        def: 'Short Python implementations of text features, Naive Bayes, Perceptron, K-Means, Value Iteration, and Q-Learning, each paired with the values one worked example produces.',
         notation: 'python_sandbox/10_Machine_Learning.py & 11_Reinforcement_Learning.py',
-        tip: 'Select any algorithm preset to inspect variables and execution flow step-by-step.',
+        tip: 'Read the code with the worked values beside it: every formula from the earlier tabs appears here as one or two lines of Python.',
         render: renderCodeTraceView
       }
     ]
   };
 
-  // --- Current State ---
-  let currentTopicIndex = 0;
-  let currentConceptIndex = 0;
+  // =========================================================================
+  // Page controller — CPP201 concept-page pattern (see CPP201 graphs.js):
+  // Topic Buttons (GROUPS) -> Subtopic Tabs (the concepts of the topics in
+  // that group) -> one demo panel. ?t=<group>&s=<concept key> deep links;
+  // the old #<topic id> hash links still work.
+  // =========================================================================
+  const GROUPS = [
+    { id: 'intro', label: 'From Rules to Learning', topics: ['progression'] },
+    { id: 'supervised', label: 'Supervised Learning', topics: ['features', 'naive_bayes', 'evaluation'] },
+    { id: 'neural', label: 'Neural Networks', topics: ['neural_nets'] },
+    { id: 'unsupervised', label: 'Unsupervised Learning', topics: ['kmeans'] },
+    { id: 'rl', label: 'Reinforcement Learning', topics: ['mdp', 'value_iteration', 'q_learning'] },
+    { id: 'wrap', label: 'Compare & Trace', topics: ['comparison', 'code'] }
+  ];
 
-  // --- Initialization ---
+  function esc(v) {
+    return String(v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  }
+  function topicIndex(id) { return TOPICS.findIndex(t => t.id === id); }
+  function topicShort(id) { return TOPICS[topicIndex(id)].short.replace(/^\d+\s*·\s*/, ''); }
+  // Subtopics of a group: every concept of every topic in it, in order.
+  function subtopics(g) {
+    const out = [];
+    g.topics.forEach(tid => (CONCEPTS[tid] || []).forEach(c => out.push({ topic: tid, concept: c })));
+    return out;
+  }
+  function getGroup(id) { return GROUPS.find(g => g.id === id) || GROUPS[0]; }
+
+  let currentGroup = GROUPS[0].id;
+  let currentKey = CONCEPTS.progression[0].key;
+
   function init() {
-    renderTopicTabs();
-    loadTopic(0, 0);
-
-    window.addEventListener('hashchange', handleHash);
-    handleHash();
-  }
-
-  function handleHash() {
-    const hash = window.location.hash.replace('#', '');
-    if (!hash) return;
-    const tIdx = TOPICS.findIndex(t => t.id === hash);
-    if (tIdx !== -1) {
-      loadTopic(tIdx, 0);
+    if (!document.getElementById('learning-topic-buttons')) return;
+    renderBigPicture();
+    const params = new URLSearchParams(window.location.search);
+    const t = params.get('t'), k = params.get('s');
+    if (t && GROUPS.some(g => g.id === t)) {
+      currentGroup = t;
+      const subs = subtopics(getGroup(t));
+      currentKey = (subs.find(x => x.concept.key === k) || subs[0]).concept.key;
     }
+    if (!handleHash()) select(currentGroup, currentKey);
+    window.addEventListener('hashchange', handleHash);
   }
 
-  function renderTopicTabs() {
-    const container = document.getElementById('learning-topic-tabs');
-    if (!container) return;
-    container.innerHTML = TOPICS.map((t, idx) => `
-      <button class="sl-topic-tab ${idx === currentTopicIndex ? 'active' : ''}" data-idx="${idx}">
-        ${t.short}
-      </button>
-    `).join('');
-
-    container.querySelectorAll('.sl-topic-tab').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const idx = parseInt(btn.dataset.idx, 10);
-        loadTopic(idx, 0);
-      });
-    });
+  // Old links such as learning.html#mdp open that topic's first concept.
+  function handleHash() {
+    const id = window.location.hash.replace('#', '');
+    if (!id || topicIndex(id) < 0) return false;
+    const g = GROUPS.find(x => x.topics.indexOf(id) >= 0);
+    select(g.id, CONCEPTS[id][0].key);
+    return true;
   }
 
-  function loadTopic(topicIdx, conceptIdx) {
-    currentTopicIndex = topicIdx;
-    currentConceptIndex = conceptIdx;
+  function select(gid, key, scroll) {
+    const g = getGroup(gid), subs = subtopics(g);
+    currentGroup = g.id;
+    currentKey = (subs.find(x => x.concept.key === key) || subs[0]).concept.key;
+    renderTopicButtons();
+    renderSubtopicTabs();
+    renderDemo();
+    const url = new URL(window.location.href);
+    url.searchParams.set('t', currentGroup);
+    url.searchParams.set('s', currentKey);
+    url.hash = '';
+    history.replaceState(null, '', url.toString());
+    if (scroll) document.getElementById('learning-topic-buttons').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
 
-    document.querySelectorAll('#learning-topic-tabs .sl-topic-tab').forEach((b, i) => {
-      b.classList.toggle('active', i === topicIdx);
-    });
+  function renderTopicButtons() {
+    const el = document.getElementById('learning-topic-buttons');
+    el.innerHTML = GROUPS.map((g, i) =>
+      `<button type="button" class="lp-topic-btn${g.id === currentGroup ? ' is-selected' : ''}" data-group="${g.id}"><span class="lp-num">${i}</span>${esc(g.label)}</button>`
+    ).join('');
+    el.querySelectorAll('[data-group]').forEach(b => b.addEventListener('click', () => select(b.dataset.group)));
+  }
 
-    const topic = TOPICS[topicIdx];
-    const concepts = CONCEPTS[topic.id] || [];
+  function renderSubtopicTabs() {
+    const el = document.getElementById('learning-subtopic-tabs');
+    const g = getGroup(currentGroup), multi = g.topics.length > 1;
+    el.innerHTML = subtopics(g).map(x =>
+      `<button type="button" class="lp-subtopic-tab${x.concept.key === currentKey ? ' is-selected' : ''}" data-key="${x.concept.key}">` +
+      (multi ? `<span class="lp-tab-topic">${esc(topicShort(x.topic))}</span>` : '') + `${esc(x.concept.name)}</button>`
+    ).join('');
+    el.querySelectorAll('[data-key]').forEach(b => b.addEventListener('click', () => select(currentGroup, b.dataset.key)));
+  }
 
-    renderConceptColumn(topic, concepts, currentConceptIndex);
-    renderIllustrationColumn(concepts[currentConceptIndex]);
+  function renderDemo() {
+    const demo = document.getElementById('learning-topic-demo');
+    const g = getGroup(currentGroup);
+    const sub = subtopics(g).find(x => x.concept.key === currentKey);
+    const c = sub.concept, tIdx = topicIndex(sub.topic), topic = TOPICS[tIdx];
+    demo.querySelector('[data-role="title"]').textContent = c.name;
+    demo.querySelector('[data-role="subtitle"]').textContent = g.label + ' · ' + topic.title;
 
+    // Concept strip (lead, definition, formula) above the lab; "Remember" below it (CPP201).
+    demo.querySelector('[data-role="concept"]').innerHTML = `
+      <div class="lp-concept">
+        <p class="lp-intro">${TOPIC_INTROS[tIdx]}</p>
+        <div class="lp-explain"><span class="lp-explain-title">Definition</span>${c.def}</div>
+        <div class="lp-formula">${c.notation}</div>
+      </div>`;
+    demo.querySelector('[data-role="remember"]').innerHTML =
+      `<div class="lp-remember"><div class="lp-remember-title">Remember</div><ul><li>${c.tip}</li></ul></div>`;
+
+    // Lab: labs that put controls in the concept column get two columns.
+    const grid = demo.querySelector('[data-role="lab"]');
+    const ccol = document.getElementById('learning-concept-col');
+    const gcol = document.getElementById('learning-graph-col');
+    grid.classList.toggle('is-single', !c.labInConcept);
+    ccol.innerHTML = c.labInConcept ? '<div class="lr-concept-lab" id="lr-concept-lab"></div>' : '';
+    gcol.innerHTML = '';
+    if (typeof c.render === 'function') c.render(gcol);
     if (window.lucide) window.lucide.createIcons();
   }
 
-  function renderConceptColumn(topic, concepts, cIdx) {
-    const col = document.getElementById('learning-concept-col');
-    if (!col) return;
-
-    const currentC = concepts[cIdx] || concepts[0];
-
-    col.innerHTML = `
-      <div class="sl-concept-header">
-        <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">${topic.title}</h2>
-        <p style="font-size: 0.88rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 1rem;">
-          ${TOPIC_INTROS[currentTopicIndex]}
-        </p>
-      </div>
-
-      <div class="sl-concept-chips" style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.2rem;">
-        ${concepts.map((c, idx) => `
-          <button class="sl-concept-chip ${idx === cIdx ? 'active' : ''}" data-cidx="${idx}" style="padding: 0.4rem 0.8rem; border-radius: 9999px; font-size: 0.8rem; font-weight: 600; cursor: pointer; border: 1px solid ${idx === cIdx ? '#2e8b47' : 'rgba(16, 32, 64,0.1)'}; background: ${idx === cIdx ? 'rgba(46, 139, 71,0.15)' : 'rgba(16, 32, 64,0.05)'}; color: ${idx === cIdx ? '#2a7a3f' : '#55606f'}; transition: all 0.2s;">
-            ${c.name}
-          </button>
-        `).join('')}
-      </div>
-
-      ${currentC.labInConcept ? `
-      <div class="lr-lab-concept">
-        <p class="lr-lab-def">${currentC.def}</p>
-        <div class="lr-lab-notation">${currentC.notation}</div>
-        <div class="lr-lab-tip"><i data-lucide="sparkles"></i><span>${currentC.tip}</span></div>
-      </div>
-      <div class="lr-concept-lab" id="lr-concept-lab"></div>` : `
-      <div class="sl-concept-card glass-panel" style="padding: 1.2rem; border-radius: 12px; background: #ffffff; border: 1px solid rgba(16, 32, 64,0.08); margin-bottom: 1rem;">
-        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #2e8b47; font-weight: 700; margin-bottom: 0.4rem;">Formal Definition</div>
-        <p style="font-size: 0.92rem; color: var(--text-primary); line-height: 1.55; margin-bottom: 1rem;">
-          ${currentC.def}
-        </p>
-
-        <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #2461c0; font-weight: 700; margin-bottom: 0.4rem;">Mathematical Notation</div>
-        <div style="font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace; font-size: 0.85rem; padding: 0.75rem 1rem; background: rgba(16, 32, 64,0.06); border-radius: 8px; border-left: 3px solid #2461c0; color: #2c3644; margin-bottom: 1rem; word-break: break-word;">
-          ${currentC.notation}
-        </div>
-
-        <div class="teaching-tip" style="display: flex; gap: 0.75rem; background: rgba(46, 139, 71,0.08); border: 1px solid rgba(46, 139, 71,0.25); padding: 0.85rem 1rem; border-radius: 8px;">
-          <i data-lucide="sparkles" style="color: #2e8b47; width: 1.25rem; height: 1.25rem; flex-shrink: 0; margin-top: 2px;"></i>
-          <span style="font-size: 0.84rem; color: #1f5e30; line-height: 1.5;">${currentC.tip}</span>
-        </div>
-      </div>`}
-    `;
-
-    col.querySelectorAll('.sl-concept-chip').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const cidx = parseInt(btn.dataset.cidx, 10);
-        loadTopic(currentTopicIndex, cidx);
-      });
+  // Big picture: one card per learning paradigm (CPP201 .tre-bp-card).
+  function renderBigPicture() {
+    const el = document.getElementById('learning-bp-cards');
+    if (!el) return;
+    const B = '#1b4f9c', G = '#3f8f2f', A = '#b9770e', R = '#c0392b', L = '#c3cdda';
+    const svg = (body) => `<svg viewBox="0 0 240 110" aria-hidden="true">${body}</svg>`;
+    const dot = (x, y, f) => `<circle cx="${x}" cy="${y}" r="5" fill="${f}"/>`;
+    const cards = [
+      { g: 'supervised', title: 'Supervised', rule: 'labelled (x, y) → h(x) ≈ y',
+        pic: svg([[40,30,R],[60,48,R],[35,62,R],[70,25,R],[150,70,B],[175,52,B],[190,85,B],[165,90,B]].map(p => dot(p[0],p[1],p[2])).join('') +
+          `<line x1="60" y1="100" x2="175" y2="10" stroke="${G}" stroke-width="3" stroke-dasharray="6 4"/><text x="18" y="100" font-size="11" font-weight="700" fill="${R}">spam</text><text x="190" y="105" font-size="11" font-weight="700" fill="${B}">ham</text>`),
+        foot: 'A teacher gives the answer for every example.' },
+      { g: 'neural', title: 'Neural Networks', rule: 'ŷ = σ(W₂ g(W₁x + b₁) + b₂)',
+        pic: svg((() => { const I = [[40,35],[40,75]], H = [[120,20],[120,55],[120,90]], O = [[200,55]]; let s = '';
+          I.forEach(i => H.forEach(h => { s += `<line x1="${i[0]}" y1="${i[1]}" x2="${h[0]}" y2="${h[1]}" stroke="${L}" stroke-width="2"/>`; }));
+          H.forEach(h => O.forEach(o => { s += `<line x1="${h[0]}" y1="${h[1]}" x2="${o[0]}" y2="${o[1]}" stroke="${L}" stroke-width="2"/>`; }));
+          I.concat(H, O).forEach((n, k) => { s += `<circle cx="${n[0]}" cy="${n[1]}" r="11" fill="#fff" stroke="${k < 2 ? B : k < 5 ? G : A}" stroke-width="3"/>`; });
+          return s; })()),
+        foot: 'Gradients flow back through hidden layers to fix the error.' },
+      { g: 'unsupervised', title: 'Unsupervised', rule: 'no labels → clusters C₁ … C_K',
+        pic: svg([[[45,40],[60,55],[40,65],[58,30]],[[120,75],[135,90],[110,92],[130,70]],[[185,30],[200,45],[178,50],[205,25]]].map((cl, k) => {
+          const col = [B, G, A][k], cx = cl.reduce((a, p) => a + p[0], 0) / 4, cy = cl.reduce((a, p) => a + p[1], 0) / 4;
+          return cl.map(p => dot(p[0], p[1], col)).join('') + `<path d="M${cx - 7} ${cy - 7}L${cx + 7} ${cy + 7}M${cx + 7} ${cy - 7}L${cx - 7} ${cy + 7}" stroke="#0e2f5c" stroke-width="3"/>`;
+        }).join('')),
+        foot: 'The algorithm finds the groups on its own.' },
+      { g: 'rl', title: 'Reinforcement Learning', rule: 's —a→ r, s′ · maximise Σ γᵗ r',
+        pic: svg((() => { let s = ''; for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) {
+            const x = 30 + c * 46, y = 8 + r * 32, goal = r === 0 && c === 3, pit = r === 1 && c === 3, wall = r === 1 && c === 1;
+            s += `<rect x="${x}" y="${y}" width="44" height="30" rx="3" fill="${goal ? '#e9f7ee' : pit ? '#fdecea' : wall ? '#c3cdda' : '#fff'}" stroke="${L}" stroke-width="1.5"/>`;
+            if (goal) s += `<text x="${x + 22}" y="${y + 20}" text-anchor="middle" font-size="12" font-weight="800" fill="${G}">+1</text>`;
+            if (pit) s += `<text x="${x + 22}" y="${y + 20}" text-anchor="middle" font-size="12" font-weight="800" fill="${R}">−1</text>`;
+          }
+          return s + `<circle cx="52" cy="87" r="9" fill="${B}"/><path d="M64 87 H108 M108 87 V30 M108 24 H156" fill="none" stroke="${B}" stroke-width="2.5" stroke-dasharray="5 3"/>`; })()),
+        foot: 'Trial, error and a delayed reward teach a policy π(s).' }
+    ];
+    el.innerHTML = cards.map((c, i) =>
+      `<div class="lp-card" tabindex="0" role="button" data-bp="${i}"><h3 class="lp-card-title">${c.title}</h3><p class="lp-card-rule"><code>${esc(c.rule)}</code></p>${c.pic}<p class="lp-card-foot">${c.foot} <strong>Open &rarr;</strong></p></div>`
+    ).join('');
+    el.querySelectorAll('[data-bp]').forEach(n => {
+      const go = () => select(cards[+n.dataset.bp].g, null, true);
+      n.addEventListener('click', go);
+      n.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
     });
   }
 
-  function renderIllustrationColumn(concept) {
-    const col = document.getElementById('learning-graph-col');
-    if (!col) return;
-    col.innerHTML = '';
-    if (concept && typeof concept.render === 'function') {
-      concept.render(col);
+  // Quick check (CPP201 pattern): [{q, options, answer, why}] into el.
+  function quickCheck(el, qs, cols) {
+    const picks = {};
+    function paint() {
+      el.innerHTML = `<div class="lp-quiz" style="grid-template-columns:repeat(${cols || 3},minmax(0,1fr))">` + qs.map((q, i) => {
+        const p = picks[i];
+        return `<div class="lp-q"><div class="lp-q-text">${i + 1}. ${esc(q.q)}</div><div class="lp-opts">` +
+          q.options.map(o => {
+            const cls = p === undefined ? '' : o === q.answer ? ' is-answer' : o === p ? ' is-wrong-pick' : '';
+            return `<button type="button" class="lp-opt${cls}" data-q="${i}" data-v="${esc(o)}"${p === undefined ? '' : ' disabled'}>${esc(o)}</button>`;
+          }).join('') + '</div>' +
+          (p === undefined ? '' : `<div class="lp-status ${p === q.answer ? 'is-right' : 'is-wrong'}"><strong>${p === q.answer ? 'Correct.' : 'Not quite.'}</strong> ${p === q.answer ? '' : 'Answer: <strong>' + esc(q.answer) + '</strong>. '}${q.why}</div>`) + '</div>';
+      }).join('') + '</div>';
+      el.querySelectorAll('[data-q]').forEach(b => b.addEventListener('click', () => { picks[b.dataset.q] = b.dataset.v; paint(); }));
     }
+    paint();
   }
 
   // =========================================================================
@@ -783,80 +843,67 @@
 
   // --- Topic 9: Evaluation Matrix ---
   function renderEvaluationMatrix(container) {
-    container.innerHTML = `
-      <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column;">
-        <h3 style="font-size: 1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
-          Learning Systems Multi-Dimensional Evaluation
-        </h3>
-        <div style="flex: 1; overflow-x: auto; background: #ffffff; border-radius: 8px;">
-          <table style="width: 100%; font-size: 0.74rem; text-align: left; border-collapse: collapse;">
-            <thead>
-              <tr style="color: #55606f; border-bottom: 1px solid rgba(16, 32, 64,0.1);">
-                <th style="padding: 4px;">System</th>
-                <th>Paradigm</th>
-                <th>Optimization</th>
-                <th>Time Complexity</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr style="border-bottom: 1px solid rgba(16, 32, 64,0.05);"><td style="padding: 4px; font-weight: 700;">Naive Bayes</td><td>Supervised</td><td>MLE + Laplace</td><td style="color:#2e8b47; font-weight:700;">O(N · d) Linear</td></tr>
-              <tr style="border-bottom: 1px solid rgba(16, 32, 64,0.05);"><td style="padding: 4px; font-weight: 700;">Neural Net</td><td>Supervised</td><td>Gradient Descent</td><td>O(N · Epochs · |W|)</td></tr>
-              <tr style="border-bottom: 1px solid rgba(16, 32, 64,0.05);"><td style="padding: 4px; font-weight: 700;">K-Means</td><td>Unsupervised</td><td>Lloyd's Algorithm</td><td>O(N · K · d · iters)</td></tr>
-              <tr style="border-bottom: 1px solid rgba(16, 32, 64,0.05);"><td style="padding: 4px; font-weight: 700;">Value Iteration</td><td>Model-Based RL</td><td>Bellman Dynamic Prog</td><td>O(|A| · |S|²)</td></tr>
-              <tr><td style="padding: 4px; font-weight: 700;">Q-Learning</td><td>Model-Free RL</td><td>TD Bootstrapping</td><td>O(1) per step</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    `;
+    const ROWS = [
+      ['Naive Bayes', 'Supervised', 'labels', 'MLE counts + Laplace', 'O(N · d)', 'fast text baselines'],
+      ['Neural Network', 'Supervised', 'labels', 'Gradient descent', 'O(N · epochs · |W|)', 'non-linear patterns (XOR, images)'],
+      ['K-Means', 'Unsupervised', 'none', "Lloyd's algorithm", 'O(N · K · d · iters)', 'finding groups without labels'],
+      ['Value Iteration', 'Model-based RL', 'known P, R', 'Bellman dynamic programming', 'O(|A| · |S|²) per sweep', 'planning when the model is known'],
+      ['Q-Learning', 'Model-free RL', 'reward only', 'TD bootstrapping', 'O(1) per step', 'learning by trial and error']
+    ];
+    let hl = 0;
+    function paint() {
+      container.innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <table class="lp-table"><thead><tr><th>System</th><th>Paradigm</th><th>Feedback</th><th>How it learns</th><th>Cost</th><th>Use it for</th></tr></thead><tbody>
+          ${ROWS.map((r, i) => `<tr data-row="${i}"${i === hl ? ' class="is-hl"' : ''}>${r.map((c, j) => j === 0 ? `<td><strong>${c}</strong></td>` : `<td${j === 4 ? ' style="font-family:var(--font-mono);font-size:0.8rem"' : ''}>${c}</td>`).join('')}</tr>`).join('')}
+          </tbody></table>
+          <div data-qc></div>
+        </div>`;
+      container.querySelectorAll('[data-row]').forEach(tr => tr.addEventListener('click', () => { hl = +tr.dataset.row; paint(); }));
+      const opts = ['Naive Bayes', 'Neural Network', 'K-Means', 'Value Iteration', 'Q-Learning'];
+      quickCheck(container.querySelector('[data-qc]'), [
+        { q: '10,000 emails labelled spam / ham. You need a fast, strong baseline today.', options: opts, answer: 'Naive Bayes', why: 'Counting words per class is one pass over the data and works well on text.' },
+        { q: 'Group 50,000 customers by behaviour. Nobody has labelled them.', options: opts, answer: 'K-Means', why: 'No labels means unsupervised learning: let the data form the groups.' },
+        { q: 'A robot vacuum learns a route from bumps and rewards; nobody gives it a map.', options: opts, answer: 'Q-Learning', why: 'Model-free: it learns Q(s, a) from experienced transitions, without knowing P.' },
+        { q: 'The grid world, its slip probabilities and rewards are fully known. Find π*.', options: opts, answer: 'Value Iteration', why: 'With P and R known you can plan directly with Bellman backups; no trial and error needed.' }
+      ], 2);
+    }
+    paint();
   }
 
   // --- Topic 10: Code Trace ---
   function renderCodeTraceView(container) {
     const presets = [
-      { id: 'tfidf', name: '1. TF-IDF Extraction', file: 'python_sandbox/10_Machine_Learning.py' },
-      { id: 'nb', name: '2. Naive Bayes Predict', file: 'python_sandbox/10_Machine_Learning.py' },
-      { id: 'perceptron', name: '3. Perceptron Update', file: 'python_sandbox/10_Machine_Learning.py' },
-      { id: 'kmeans', name: '4. K-Means Step', file: 'python_sandbox/10_Machine_Learning.py' },
-      { id: 'vi', name: '5. Value Iteration Step', file: 'python_sandbox/11_Reinforcement_Learning.py' },
-      { id: 'ql', name: '6. Q-Learning TD Update', file: 'python_sandbox/11_Reinforcement_Learning.py' }
+      { id: 'tfidf', name: 'TF-IDF', file: 'python_sandbox/10_Machine_Learning.py' },
+      { id: 'nb', name: 'Naive Bayes predict', file: 'python_sandbox/10_Machine_Learning.py' },
+      { id: 'perceptron', name: 'Perceptron update', file: 'python_sandbox/10_Machine_Learning.py' },
+      { id: 'kmeans', name: 'K-Means step', file: 'python_sandbox/10_Machine_Learning.py' },
+      { id: 'vi', name: 'Value Iteration step', file: 'python_sandbox/11_Reinforcement_Learning.py' },
+      { id: 'ql', name: 'Q-Learning TD update', file: 'python_sandbox/11_Reinforcement_Learning.py' }
     ];
-
-    let selectedPreset = 'tfidf';
-
-    function update() {
-      container.innerHTML = `
-        <div style="padding: 1rem; height: 100%; display: flex; flex-direction: column;">
-          <div style="display: flex; gap: 0.35rem; overflow-x: auto; margin-bottom: 0.6rem;">
-            ${presets.map(p => `
-              <button class="trace-preset-btn ${p.id === selectedPreset ? 'active' : ''}" data-pid="${p.id}" style="padding: 0.3rem 0.55rem; border-radius: 6px; font-size: 0.72rem; font-weight: 600; cursor: pointer; border: 1px solid ${p.id === selectedPreset ? '#2e8b47' : 'rgba(16, 32, 64,0.1)'}; background: ${p.id === selectedPreset ? 'rgba(46, 139, 71,0.2)' : 'rgba(16, 32, 64,0.05)'}; color: ${p.id === selectedPreset ? '#2a7a3f' : '#55606f'};">
-                ${p.name}
-              </button>
-            `).join('')}
-          </div>
-
-          <div style="flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; overflow: hidden;">
-            <div class="glass-panel" style="padding: 0.7rem; border-radius: 8px; background: #f7f9fc; overflow-y: auto; font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace; font-size: 0.7rem; color: #2c3644; line-height: 1.5; overflow-x: auto;">
-              <div style="color: #55606f; margin-bottom: 0.3rem;"># Python Reference Source</div>
-              <div style="white-space: pre;">${getCodeSnippet(selectedPreset).trim()}</div>
-            </div>
-            <div class="glass-panel" style="padding: 0.7rem; border-radius: 8px; background: rgba(16, 32, 64,0.03); overflow-y: auto; font-family: ui-monospace, SFMono-Regular, Consolas, Menlo, monospace; font-size: 0.7rem; color: #2a7a3f; line-height: 1.5;">
-              <div style="color: #2461c0; font-weight: 700; margin-bottom: 0.3rem;">Runtime Variable Watch</div>
-              <div style="white-space: pre-wrap;">${getRuntimeState(selectedPreset).trim()}</div>
-            </div>
-          </div>
-        </div>
-      `;
-
-      container.querySelectorAll('.trace-preset-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          selectedPreset = btn.dataset.pid;
-          update();
-        });
-      });
+    let selected = 'tfidf', active = 0;
+    function py(line) {
+      let t = esc(line), tail = '';
+      const cm = t.indexOf('#');
+      if (cm >= 0) { tail = `<span style="color:#8a94a3;font-style:italic">${t.slice(cm)}</span>`; t = t.slice(0, cm); }
+      t = t.replace(/\b(def|return|for|in|if|else|elif|while|import|from|not|and|or|None|True|False|max|min|sum|range|len)\b/g, '<strong style="color:var(--color-blue-700)">$1</strong>');
+      return t + tail;
     }
-
-    update();
+    function paint() {
+      const p = presets.find(x => x.id === selected);
+      const lines = getCodeSnippet(selected).replace(/^\n+|\s+$/g, '').split('\n');
+      container.innerHTML = `
+        <div class="lp-pills">${presets.map(x => `<button type="button" class="lp-pill${x.id === selected ? ' is-active' : ''}" data-pid="${x.id}">${x.name}</button>`).join('')}</div>
+        <div class="lp-trace">
+          <div class="lp-code-panel"><div class="lp-code-file">${p.file}</div><pre class="lp-code">${lines.map((l, i) =>
+            `<div class="lp-line${i === active ? ' is-active' : ''}" data-ln="${i}"><span class="lp-line-arrow">${i === active ? '&#9654;' : ''}</span><span class="lp-line-no">${i + 1}</span><span class="lp-line-code">${py(l)}</span></div>`).join('')}</pre></div>
+          <div class="lp-vars-panel"><div class="lp-vars-title">Worked example: variable values</div><pre class="lp-vars-body">${esc(getRuntimeState(selected).trim())}</pre></div>
+        </div>
+        <p style="margin:10px 0 0;font-size:0.82rem;color:var(--color-text-muted)">Click a line to point at it while you explain; the right panel shows the values for one worked example.</p>`;
+      container.querySelectorAll('[data-pid]').forEach(b => b.addEventListener('click', () => { selected = b.dataset.pid; active = 0; paint(); }));
+      container.querySelectorAll('[data-ln]').forEach(l => l.addEventListener('click', () => { active = +l.dataset.ln; paint(); }));
+    }
+    paint();
   }
 
   function getCodeSnippet(pid) {
