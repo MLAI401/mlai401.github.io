@@ -20,7 +20,7 @@
   }
 
   // ---------------------------------------------------------------
-  // Content. Notes: { id, label, lead, points[], formula, example,
+  // Content. Notes: { id, label, lead, points[], formula, example, figure (full width),
   // checks[{q, options, answer, why}], remember[] }.
   // Exercises: { id, label, problem, tasks[], steps[] } where a task is
   // {type:'num', label, answer, tol, unit?, hint} or {type:'mcq', q, options, answer, why}.
@@ -117,6 +117,7 @@
         '<div class="ag-wrap">' + (ss.example ? '<div class="ag-panel"><div class="ag-panel-title">Example</div>' + ss.example + "</div>" : "") +
           '<div class="ag-explain"><span class="ag-explain-title">Check yourself</span>Answer the questions below before moving on. Each answer shows why.</div></div>' +
       "</div>" +
+      (ss.figure ? '<div class="ag-panel rn-figure"><div class="ag-panel-title">Figure</div>' + ss.figure + "</div>" : "") +
       '<div class="rn-checks">' + checksHtml(tt, ss) + "</div>" +
       '<div class="ag-remember"><div class="ag-remember-title">Remember</div><ul>' + ss.remember.map(function (r) { return "<li>" + r + "</li>"; }).join("") + "</ul></div>";
     body.querySelectorAll("[data-rn-q]").forEach(function (b) {
@@ -159,6 +160,7 @@
       : '<button type="button" class="ag-tbtn ag-tbtn-primary" data-rn-step="show">Show the worked solution step by step</button>';
     body.innerHTML =
       '<div class="ag-explain"><span class="ag-explain-title">Problem</span>' + ss.problem + "</div>" +
+      (ss.figure ? '<div class="ag-panel rn-figure">' + ss.figure + "</div>" : "") +
       '<div class="rn-checks">' + tasks + "</div>" +
       '<div class="ag-panel rn-solution"><div class="ag-panel-title">Worked solution</div>' + sol + "</div>";
     body.querySelectorAll("[data-rn-in]").forEach(function (inp) {

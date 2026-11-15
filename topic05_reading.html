@@ -3,579 +3,75 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Knowledge &amp; Reasoning — Reading Notes - MLAI401 Foundational AI &amp; ML</title>
-
-  <!-- SEO Meta Tags -->
-  <meta name="description" content="Textbook-style reading notes for Topic 05, Knowledge & Reasoning: Knowledge-Based Agents (Facts & Rules, Propositional Logic, Entailment, Horn Forward Chaining), Probabilistic Reasoning (Conditional Probability, Bayes' Rule, Bayesian Networks), and Temporal Reasoning (Hidden Markov Models, Forward Filtering, Viterbi). Adapted from Artificial Intelligence: A Modern Approach.">
-  <meta name="keywords" content="Knowledge Representation, Knowledge-Based Agents, Propositional Logic, Entailment, Horn Clauses, Forward Chaining, Conditional Probability, Bayes' Rule, Bayesian Networks, Exact Enumeration, Likelihood Weighting, Hidden Markov Models, Forward Filtering, Viterbi Algorithm, Umbrella World, AIMA">
-
-  <!-- Open Graph -->
-  <meta property="og:title" content="MLAI401 - Knowledge &amp; Reasoning: Reading Notes">
-  <meta property="og:description" content="A comprehensive textbook companion to Knowledge & Reasoning: Knowledge-Based Agents, Propositional Logic, Forward Chaining, Bayesian Networks, and Hidden Markov Models.">
-  <meta property="og:type" content="article">
-
-  <!-- Style Sheet -->
-  <link rel="stylesheet" href="style.css?v=18">
+  <title>Knowledge &amp; Reasoning — Reading Notes · MLAI401</title>
+  <meta name="description" content="Topic 05 reading notes in short tabs with self-check questions and step-by-step worked exercises: knowledge bases, propositional logic, entailment, forward chaining, Bayes' rule, Bayesian networks, conditional independence, hidden Markov models, filtering and Viterbi decoding.">
+  <meta property="og:title" content="MLAI401 - Knowledge &amp; Reasoning Reading Notes">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="demos/agentic_demo/agentic_page.css?v=4">
+  <link rel="stylesheet" href="demos/reading_figures.css?v=1">
 </head>
-<body class="knowledge-reading">
+<body class="ag-body">
 
-  <!-- Navigation Header -->
-  <header class="navbar" id="navbar-header">
-    <div class="container nav-container">
-      <a href="index.html" class="logo" id="logo-link">
-        <span class="logo-icon">M</span>
-        MLAI401
+  <!-- Site header: same bar as every MLAI401 page -->
+  <header class="ag-site-header-wrap">
+    <div class="ag-site-header">
+      <a class="ag-brand" href="index.html" aria-label="MLAI401 home">
+        <span class="ag-brand-mark" aria-hidden="true">M</span>
+        <span class="ag-brand-title">MLAI401</span>
       </a>
-
-      <button class="menu-toggle" id="menu-toggle-btn" aria-label="Toggle Navigation Menu">
-        <i data-lucide="menu"></i>
-      </button>
-
-      <ul class="nav-links" id="nav-menu">
-        <li><a href="index.html" class="nav-link" id="nav-home">Home</a></li>
-        <li><a href="curriculum.html" class="nav-link active" id="nav-curr">Curriculum</a></li>
-        <li><a href="playground.html" class="nav-link" id="nav-play">Playground</a></li>
-        <li><a href="index.html#resources" class="nav-link" id="nav-res">Resources</a></li>
-      </ul>
-
-      <a href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer" class="nav-btn" id="nav-github-btn">
-        <i data-lucide="github"></i> GitHub Profile
-      </a>
+      <nav class="ag-site-nav" aria-label="Primary">
+        <a href="index.html">Home</a>
+        <a href="curriculum.html" aria-current="page">Curriculum</a>
+        <a href="playground.html">Playground</a>
+        <a href="index.html#resources">Resources</a>
+      </nav>
+      <a class="ag-nav-btn" href="https://github.com/MLAI401" target="_blank" rel="noopener noreferrer">GitHub Profile</a>
     </div>
   </header>
 
-  <main>
-
-    <!-- Masthead -->
-    <section class="rp-masthead">
-      <div class="container rp-masthead-inner">
-        <a href="knowledge.html" class="sl-breadcrumb"><i data-lucide="arrow-left"></i> Knowledge &amp; Reasoning</a>
-
-        <div class="rp-title-row">
-          <span class="sl-topic-badge knowledge-badge-accent"><i data-lucide="book-open"></i> Topic 05 &middot; Reading</span>
-        </div>
-        <h1>Knowledge &amp; Reasoning — Reading Notes</h1>
-
-        <p class="rp-lede">These notes follow the structured 3-pillar curriculum of the interactive <a href="knowledge.html">Knowledge &amp; Reasoning</a> lecture: <strong>Knowledge-Based Agents</strong> (Facts, Rules, Propositional Logic, and Forward Chaining), <strong>Probabilistic Reasoning</strong> (Conditional Probability, Bayes' Rule, and Bayesian Networks), and <strong>Temporal Reasoning</strong> (Hidden Markov Models, Filtering, and Viterbi Decoding).</p>
-
-        <div class="rp-citation">
-          <i data-lucide="quote"></i>
-          <span>Adapted from <em>Artificial Intelligence: A Modern Approach</em> (AIMA, 4th ed.), by Stuart Russell and Peter Norvig — Part III (Knowledge, Reasoning, and Planning, Chapter 7) and Part IV (Uncertain Knowledge and Reasoning, Chapters 12, 13, 14).</span>
-        </div>
+  <!-- Reading notes: CPP201 page pattern (hero → tabs → subtabs → panel).
+       Rendered by demos/reading_notes.js (content in reading_topic05.js). -->
+  <main id="agentic-page">
+    <section class="ag-hero ag-container">
+      <a href="knowledge.html" class="ag-crumb">&larr; Topic 05 lecture</a>
+      <span class="ag-eyebrow">Topic 05 &bull; Reading Notes</span>
+      <h1>Knowledge &amp; Reasoning</h1>
+      <p class="ag-lead">
+        Short notes in five tabs. Each subtab ends with <strong>questions</strong> that tell you right away
+        whether you understood it; the <strong>Practice</strong> tab walks through five worked exercises one step at a time.
+      </p>
+      <div class="ag-actions">
+        <a class="ag-btn ag-btn-primary" href="knowledge.html">Open the interactive lecture</a>
       </div>
     </section>
 
-    <!-- TOC + Article Layout -->
-    <div class="container rp-layout">
-
-      <aside class="rp-toc" id="rp-toc">
-        <div class="rp-toc-label">On This Page</div>
-        <nav aria-label="Table of contents">
-          <a class="rp-toc-h2" href="#sec-kb-agents">1. Knowledge-Based Agents</a>
-          <a class="rp-toc-h3" href="#kb-agent-arch">1.1 Knowledge Base (Facts &amp; Rules)</a>
-          <a class="rp-toc-h3" href="#prop-logic">1.2 Propositional Logic</a>
-          <a class="rp-toc-h3" href="#entailment-models">1.3 Models &amp; Logical Entailment</a>
-          <a class="rp-toc-h3" href="#forward-chaining">1.4 Forward Chaining Inference</a>
-
-          <a class="rp-toc-h2" href="#sec-prob-reasoning">2. Probabilistic Reasoning</a>
-          <a class="rp-toc-h3" href="#quantifying-uncertainty">2.1 Uncertainty &amp; Degrees of Belief</a>
-          <a class="rp-toc-h3" href="#bayes-rule">2.2 Conditional Probability &amp; Bayes' Rule</a>
-          <a class="rp-toc-h3" href="#bayesian-networks">2.3 Bayesian Networks &amp; Factorization</a>
-          <a class="rp-toc-h3" href="#markov-blanket">2.4 Conditional Independence &amp; Markov Blanket</a>
-          <a class="rp-toc-h3" href="#prob-inference">2.5 Probabilistic Inference (Exact &amp; Sampling)</a>
-
-          <a class="rp-toc-h2" href="#sec-temporal-reasoning">3. Temporal Reasoning</a>
-          <a class="rp-toc-h3" href="#markov-process">3.1 States Over Time &amp; Markov Property</a>
-          <a class="rp-toc-h3" href="#hmm-formulation">3.2 Hidden Markov Model Formulation</a>
-          <a class="rp-toc-h3" href="#hmm-filtering">3.3 Filtering &amp; The Forward Algorithm</a>
-          <a class="rp-toc-h3" href="#hmm-tasks">3.4 Prediction, Smoothing &amp; Viterbi Decoding</a>
-
-          <a class="rp-toc-h2" href="#sec-comparison">4. Paradigm Comparison</a>
-          <a class="rp-toc-h3" href="#comparison-table">4.1 Logic vs. Bayes Nets vs. HMMs</a>
-
-          <a class="rp-toc-h2" href="#exercises">5. Practice Exercises &amp; Worked Solutions</a>
-          <a class="rp-toc-h3" href="#ex1">5.1 Horn Forward Chaining Trace</a>
-          <a class="rp-toc-h3" href="#ex2">5.2 Medical Diagnostic Bayes' Rule</a>
-          <a class="rp-toc-h3" href="#ex3">5.3 Bayesian Network Factorization &amp; Enumeration</a>
-          <a class="rp-toc-h3" href="#ex4">5.4 HMM Online Forward Filtering</a>
-          <a class="rp-toc-h3" href="#ex5">5.5 HMM Viterbi Trellis Path Decoding</a>
-        </nav>
-      </aside>
-
-      <article class="rp-article">
-
-        <!-- ================= 1. KNOWLEDGE-BASED AGENTS ================= -->
-        <section id="sec-kb-agents">
-          <h2><span class="rp-num">1.</span>Knowledge-Based Agents</h2>
-
-          <p>In Topics 01&ndash;04, agents navigated explicit search spaces or solved constraint satisfaction graphs where states were atomic or factored variables. A <strong>Knowledge-Based Agent</strong> maintains an explicit, declarative representation of the world as a set of logical sentences, incorporates new percepts, and derives new truths through deductive inference.</p>
-
-          <h3 id="kb-agent-arch"><span class="rp-num">1.1</span>Knowledge Base (Facts &amp; Rules)</h3>
-          <p>The core principle of knowledge engineering is decoupling <strong>Domain Knowledge</strong> from the <strong>Inference Engine</strong>. The Knowledge Base (KB) is a set of sentences in a formal knowledge representation language.</p>
-
-          <div class="formula-box">
-            TELL(KB, sentence) &mdash; adds new knowledge or percepts to the KB<br>
-            ASK(KB, query) &mdash; asks what is entailed by the KB
-          </div>
-
-          <p>An agent's decision loop follows a declarative cycle: it senses a percept, constructs a logical sentence asserting the observation (<code>TELL</code>), queries the KB for the next best action (<code>ASK</code>), and records its chosen action in the KB before acting in the environment.</p>
-
-          <h3 id="prop-logic"><span class="rp-num">1.2</span>Propositional Logic</h3>
-          <p>Propositional logic is the foundational formal language for declarative knowledge representation. Its syntax consists of <strong>proposition symbols</strong> (e.g., <code>P</code>, <code>Q</code>, <code>B<sub>1,1</sub></code>) and five standard <strong>logical connectives</strong>:</p>
-
-          <ul>
-            <li><strong>Negation (<code>&not;</code>):</strong> <code>&not;P</code> is True iff <code>P</code> is False.</li>
-            <li><strong>Conjunction (<code>&and;</code>):</strong> <code>P &and; Q</code> is True iff both <code>P</code> and <code>Q</code> are True.</li>
-            <li><strong>Disjunction (<code>&or;</code>):</strong> <code>P &or; Q</code> is True iff at least one of <code>P</code> or <code>Q</code> is True.</li>
-            <li><strong>Implication (<code>&rArr;</code>):</strong> <code>P &rArr; Q</code> is False <em>only</em> when <code>P</code> is True and <code>Q</code> is False (vacuously True when <code>P</code> is False). Note that <code>P &rArr; Q &equiv; &not;P &or; Q</code>.</li>
-            <li><strong>Biconditional (<code>&hArr;</code>):</strong> <code>P &hArr; Q</code> is True iff <code>P</code> and <code>Q</code> have identical truth values.</li>
-          </ul>
-
-          <h3 id="entailment-models"><span class="rp-num">1.3</span>Models &amp; Logical Entailment (KB ⊨ α)</h3>
-          <p>A <strong>model</strong> <code>m</code> is a formal assignment of truth values (<code>True</code>/<code>False</code>) to all proposition symbols. If a vocabulary contains <code>n</code> symbols, there are exactly <code>2<sup>n</sup></code> possible models (possible worlds). A sentence <code>&alpha;</code> is true in model <code>m</code> if <code>m</code> satisfies <code>&alpha;</code> (written <code>m &models; &alpha;</code>). We denote the set of all satisfying models by <code>M(&alpha;)</code>.</p>
-
-          <div class="formula-box">
-            KB &models; &alpha; &hArr; M(KB) &sube; M(&alpha;)
-          </div>
-
-          <p><strong>Entailment</strong> means that whenever the Knowledge Base is true, the conclusion <code>&alpha;</code> is mathematically guaranteed to be true. No counterexample world exists where <code>KB</code> holds and <code>&alpha;</code> fails.</p>
-
-          <h3 id="forward-chaining"><span class="rp-num">1.4</span>Logical Inference: Forward Chaining</h3>
-          <p>While general propositional inference can be exponential, restricting the Knowledge Base to <strong>Horn Clauses</strong> enables high-speed, linear-time inference.</p>
-
-          <ul>
-            <li>A <strong>Definite Clause</strong> is a disjunction of literals with <em>exactly one positive literal</em>: <code>(P<sub>1</sub> &and; &hellip; &and; P<sub>k</sub>) &rArr; Q &equiv; &not;P<sub>1</sub> &or; &hellip; &or; &not;P<sub>k</sub> &or; Q</code>.</li>
-            <li>A <strong>Horn Clause</strong> has at most one positive literal.</li>
-          </ul>
-
-          <p>The <strong>Forward Chaining Algorithm</strong> (<code>PL-FC-Entails</code>) operates in a data-driven, eager manner:</p>
-          <ol>
-            <li>Initialize an agenda with all known atomic base facts.</li>
-            <li>Maintain a <code>count[c]</code> table recording how many unsatisfied premises remain for each rule <code>c</code>.</li>
-            <li>While the agenda is non-empty, pop a fact <code>p</code>. For each rule containing <code>p</code> in its premise, decrement its <code>count</code>.</li>
-            <li>When <code>count[c] == 0</code>, all premises are satisfied: the rule fires and its conclusion is pushed onto the agenda.</li>
-            <li>If the target query <code>q</code> is generated, return <code>True</code>; if the agenda empties without reaching <code>q</code>, return <code>False</code>.</li>
-          </ol>
-
-          <div class="formula-box">
-            PL-FC-Entails Time Complexity: O(N) linear in the size of the Knowledge Base &middot; Sound &amp; Complete for Horn KBs
-          </div>
-        </section>
-
-        <!-- ================= 2. PROBABILISTIC REASONING ================= -->
-        <section id="sec-prob-reasoning">
-          <h2><span class="rp-num">2.</span>Probabilistic Reasoning</h2>
-
-          <p>In the real world, strict logic often fails due to three fundamental challenges: <strong>laziness</strong> (too many exhaustive rules required), <strong>theoretical ignorance</strong> (lack of complete causal knowledge), and <strong>practical ignorance</strong> (noisy sensors and partial observability). Probabilistic reasoning quantifies continuous degrees of belief under uncertainty.</p>
-
-          <h3 id="quantifying-uncertainty"><span class="rp-num">2.1</span>Uncertainty &amp; Degrees of Belief</h3>
-          <p>Probabilities express an agent's numerical degree of belief given available evidence. A proposition <code>A</code> has a prior probability <code>P(A) &isin; [0, 1]</code>. The <strong>Full Joint Probability Distribution</strong> assigns a probability to every possible assignment across all random variables <code>X<sub>1</sub>, &hellip;, X<sub>n</sub></code> such that:</p>
-
-          <div class="formula-box">
-            &sum;<sub>x<sub>1</sub>, &hellip;, x<sub>n</sub></sub> P(X<sub>1</sub>=x<sub>1</sub>, &hellip;, X<sub>n</sub>=x<sub>n</sub>) = 1.0
-          </div>
-
-          <p>Any query probability is computed by <strong>marginalization</strong> (summing out all unobserved hidden variables <code>Z</code>):</p>
-          <div class="formula-box">
-            P(Y) = &sum;<sub>z</sub> P(Y, Z=z)
-          </div>
-
-          <h3 id="bayes-rule"><span class="rp-num">2.2</span>Conditional Probability &amp; Bayes' Rule</h3>
-          <p>Conditional probability defines belief in event <code>A</code> given that evidence <code>B</code> has definitely occurred:</p>
-
-          <div class="formula-box">
-            P(A | B) = P(A &and; B) / P(B) &emsp; (where P(B) &gt; 0)<br>
-            Product Rule: P(A &and; B) = P(A | B) P(B) = P(B | A) P(A)
-          </div>
-
-          <p>Equating the two expressions for <code>P(A &and; B)</code> yields <strong>Bayes' Rule</strong>:</p>
-
-          <div class="formula-box">
-            P(Cause | Effect) = [P(Effect | Cause) &middot; P(Cause)] / P(Effect) = &alpha; &middot; P(Effect | Cause) &middot; P(Cause)
-          </div>
-
-          <p>where <code>&alpha; = 1 / P(Effect)</code> is the normalization factor ensuring that <code>P(Cause | Effect) + P(&not;Cause | Effect) = 1.0</code>.</p>
-
-          <h3 id="bayesian-networks"><span class="rp-num">2.3</span>Bayesian Networks &amp; Compact Joint Factorization</h3>
-          <p>A full joint distribution over <code>n</code> boolean variables requires <code>2<sup>n</sup> - 1</code> parameters, which is computationally intractable. A <strong>Bayesian Network</strong> is a Directed Acyclic Graph (DAG) that exploits conditional independence to represent joint distributions compactly.</p>
-
-          <ul>
-            <li><strong>Nodes:</strong> Random variables (discrete or continuous).</li>
-            <li><strong>Directed Edges:</strong> Direct causal or probabilistic influence.</li>
-            <li><strong>Conditional Probability Tables (CPTs):</strong> Each node <code>X<sub>i</sub></code> has a conditional distribution <code>P(X<sub>i</sub> | Parents(X<sub>i</sub>))</code>.</li>
-          </ul>
-
-          <div class="formula-box">
-            Compact Joint Factorization: P(x<sub>1</sub>, &hellip;, x<sub>n</sub>) = &prod;<sub>i=1</sub><sup>n</sup> P(x<sub>i</sub> | Parents(X<sub>i</sub>))
-          </div>
-
-          <p>If each node has at most <code>k</code> parents, a Bayesian network requires only <code>O(n &middot; 2<sup>k</sup>)</code> parameters instead of <code>O(2<sup>n</sup>)</code>.</p>
-
-          <h3 id="markov-blanket"><span class="rp-num">2.4</span>Conditional Independence &amp; Markov Blanket</h3>
-          <p>Two variables <code>X</code> and <code>Y</code> are conditionally independent given <code>Z</code> (denoted <code>(X &perp;&perp; Y | Z)</code>) if <code>P(X | Y, Z) = P(X | Z)</code>. A variable <code>X</code> in a Bayesian network is conditionally independent of all other nodes in the entire network given its <strong>Markov Blanket</strong>:</p>
-
-          <div class="formula-box">
-            MB(X) = Parents(X) &cup; Children(X) &cup; Coparents(X) &emsp; (Coparents are parents of X's children)
-          </div>
-
-          <h3 id="prob-inference"><span class="rp-num">2.5</span>Probabilistic Inference (Exact &amp; Sampling)</h3>
-          <p>Probabilistic inference computes the posterior distribution <code>P(Query | Evidence)</code>:</p>
-          <ul>
-            <li><strong>Exact Inference by Enumeration:</strong> Sums terms from the factored joint distribution over all hidden unobserved variables: <code>P(X | e) = &alpha; &sum;<sub>y</sub> P(X, e, y)</code>.</li>
-            <li><strong>Approximate Likelihood Weighting:</strong> A Monte Carlo sampling algorithm that clamps evidence variables to their observed values and weights each generated sample by the probability of the evidence given parents: <code>w = &prod; P(e<sub>j</sub> | parents(E<sub>j</sub>))</code>. Never rejects samples!</li>
-          </ul>
-        </section>
-
-        <!-- ================= 3. TEMPORAL REASONING ================= -->
-        <section id="sec-temporal-reasoning">
-          <h2><span class="rp-num">3.</span>Temporal Reasoning &amp; Hidden Markov Models</h2>
-
-          <p>Standard Bayesian networks model static worlds. In dynamic domains (robot navigation, patient monitoring, financial tracking, speech recognition), the environment state evolves across discrete time slices <code>t = 0, 1, 2, &hellip;</code>.</p>
-
-          <h3 id="markov-process"><span class="rp-num">3.1</span>States Over Time &amp; The Markov Property</h3>
-          <p>Let <code>X<sub>t</sub></code> denote the set of unobservable (hidden) state variables at time <code>t</code>, and <code>E<sub>t</sub></code> denote the observable sensor evidence variables at time <code>t</code>. The <strong>First-Order Markov Property</strong> states that the current state depends only on the immediately preceding state:</p>
-
-          <div class="formula-box">
-            Transition Model: P(X<sub>t</sub> | X<sub>0:t-1</sub>) = P(X<sub>t</sub> | X<sub>t-1</sub>)<br>
-            Sensor / Emission Model: P(E<sub>t</sub> | X<sub>0:t</sub>, E<sub>1:t-1</sub>) = P(E<sub>t</sub> | X<sub>t</sub>)
-          </div>
-
-          <p>A temporal process is <strong>stationary</strong> if transition probabilities <code>P(X<sub>t</sub> | X<sub>t-1</sub>)</code> and sensor probabilities <code>P(E<sub>t</sub> | X<sub>t</sub>)</code> do not change over time.</p>
-
-          <h3 id="hmm-formulation"><span class="rp-num">3.2</span>Hidden Markov Model (HMM) Formulation</h3>
-          <p>A <strong>Hidden Markov Model</strong> is a temporal probabilistic model with a single discrete hidden state variable <code>X<sub>t</sub> &isin; S</code> and evidence variable <code>E<sub>t</sub> &isin; O</code>. An HMM is completely specified by the 5-tuple <code>&lang;S, O, T, M, f<sub>0</sub>&rang;</code>:</p>
-
-          <ul>
-            <li><strong>State Space (<code>S</code>):</strong> Set of discrete states <code>{s<sub>1</sub>, &hellip;, s<sub>K</sub>}</code>.</li>
-            <li><strong>Observation Space (<code>O</code>):</strong> Set of discrete observations <code>{o<sub>1</sub>, &hellip;, o<sub>M</sub>}</code>.</li>
-            <li><strong>Transition Matrix (<code>T</code>):</strong> <code>T<sub>i,j</sub> = P(X<sub>t</sub>=s<sub>j</sub> | X<sub>t-1</sub>=s<sub>i</sub>)</code>.</li>
-            <li><strong>Emission Matrix (<code>M</code>):</strong> <code>M<sub>j,k</sub> = P(E<sub>t</sub>=o<sub>k</sub> | X<sub>t</sub>=s<sub>j</sub>)</code>.</li>
-            <li><strong>Initial Prior Distribution (<code>f<sub>0</sub></code>):</strong> <code>f<sub>0</sub>(s<sub>i</sub>) = P(X<sub>0</sub>=s<sub>i</sub>)</code>.</li>
-          </ul>
-
-          <h3 id="hmm-filtering"><span class="rp-num">3.3</span>Filtering &amp; The Forward Algorithm</h3>
-          <p><strong>Filtering (State Estimation)</strong> is the task of computing the belief state over current state <code>X<sub>t</sub></code> given all observations up to time <code>t</code>: <code>f<sub>1:t</sub> = P(X<sub>t</sub> | e<sub>1:t</sub>)</code>. The <strong>Forward Algorithm</strong> computes this recursively in a two-step Predict-Update cycle:</p>
-
-          <div class="formula-box">
-            1. Predict: P(X<sub>t</sub> | e<sub>1:t-1</sub>) = &sum;<sub>x<sub>t-1</sub></sub> P(X<sub>t</sub> | x<sub>t-1</sub>) &middot; P(x<sub>t-1</sub> | e<sub>1:t-1</sub>)<br>
-            2. Update: P(X<sub>t</sub> | e<sub>1:t</sub>) = &alpha; &middot; P(e<sub>t</sub> | X<sub>t</sub>) &middot; P(X<sub>t</sub> | e<sub>1:t-1</sub>)
-          </div>
-
-          <p>In matrix notation, let <code>f<sub>1:t</sub></code> be the belief column vector and <code>O<sub>t</sub></code> be the diagonal emission matrix where <code>(O<sub>t</sub>)<sub>j,j</sub> = P(e<sub>t</sub> | X<sub>t</sub>=s<sub>j</sub>)</code>. The forward update is:</p>
-          <div class="formula-box">
-            f<sub>1:t</sub> = &alpha; &middot; O<sub>t</sub> &middot; T<sup>T</sup> &middot; f<sub>1:t-1</sub>
-          </div>
-
-          <h3 id="hmm-tasks"><span class="rp-num">3.4</span>Prediction, Smoothing, and Viterbi Decoding</h3>
-          <p>An HMM supports four fundamental temporal inference queries:</p>
-
-          <ul>
-            <li><strong>1. Filtering (<code>P(X<sub>t</sub> | e<sub>1:t</sub>)</code>):</strong> Tracks current state online as new data arrives. Time per step: <code>O(|S|<sup>2</sup>)</code>.</li>
-            <li><strong>2. Prediction (<code>P(X<sub>t+k</sub> | e<sub>1:t</sub>)</code>):</strong> Projects belief <code>k</code> steps into the future using <code>f<sub>1:t+k</sub> = (T<sup>T</sup>)<sup>k</sup> f<sub>1:t</sub></code>. The belief distribution eventually converges to the stationary distribution of <code>T</code>.</li>
-            <li><strong>3. Smoothing (<code>P(X<sub>k</sub> | e<sub>1:t</sub>)</code> for <code>k &lt; t</code>):</strong> Computes historical state estimates in hindsight by combining forward messages from the past with backward messages from the future (Forward-Backward algorithm).</li>
-            <li><strong>4. Most Likely Sequence (Viterbi Algorithm):</strong> Finds the single sequence of hidden states <code>x<sub>1:t</sub><sup>*</sup></code> that maximizes the posterior probability <code>P(x<sub>1:t</sub> | e<sub>1:t</sub>)</code> (equivalently, the joint <code>P(x<sub>1:t</sub>, e<sub>1:t</sub>)</code>) using dynamic programming across the trellis:
-              <div class="formula-box">
-                m<sub>t</sub>[j] = max<sub>i</sub> (m<sub>t-1</sub>[i] &middot; T<sub>i,j</sub>) &middot; P(e<sub>t</sub> | s<sub>j</sub>)
-              </div>
-            </li>
-          </ul>
-        </section>
-
-        <!-- ================= 4. PARADIGM COMPARISON ================= -->
-        <section id="sec-comparison">
-          <h2><span class="rp-num">4.</span>Paradigm Comparison</h2>
-
-          <h3 id="comparison-table"><span class="rp-num">4.1</span>Logic vs. Bayesian Networks vs. Hidden Markov Models</h3>
-          <p>Comparing the three core reasoning paradigms across representation, uncertainty handling, temporal dynamics, and computational complexity:</p>
-
-          <div style="overflow-x: auto;">
-            <table class="comparison-table" style="width: 100%; border-collapse: collapse; margin-top: 1rem;">
-              <thead>
-                <tr style="background: rgba(36, 97, 192, 0.15); border-bottom: 2px solid rgba(36, 97, 192, 0.3);">
-                  <th style="padding: 0.75rem; text-align: left;">Dimension</th>
-                  <th style="padding: 0.75rem; text-align: left;">1. Knowledge-Based Agents (Horn Logic)</th>
-                  <th style="padding: 0.75rem; text-align: left;">2. Probabilistic Reasoning (Bayes Nets)</th>
-                  <th style="padding: 0.75rem; text-align: left;">3. Temporal Reasoning (HMMs)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
-                  <td style="padding: 0.75rem; font-weight: 600;">Representation</td>
-                  <td style="padding: 0.75rem;">Definite Horn clauses &amp; atomic facts</td>
-                  <td style="padding: 0.75rem;">Directed Acyclic Graph (DAG) + CPTs</td>
-                  <td style="padding: 0.75rem;">Two-layer temporal chain (States &amp; Emissions)</td>
-                </tr>
-                <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
-                  <td style="padding: 0.75rem; font-weight: 600;">World Model</td>
-                  <td style="padding: 0.75rem;">Static, deterministic rules</td>
-                  <td style="padding: 0.75rem;">Static, uncertain &amp; noisy variables</td>
-                  <td style="padding: 0.75rem;">Dynamic (evolves across time slices <code>t</code>)</td>
-                </tr>
-                <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
-                  <td style="padding: 0.75rem; font-weight: 600;">Certainty Model</td>
-                  <td style="padding: 0.75rem;">Strict Boolean truth (0 or 1)</td>
-                  <td style="padding: 0.75rem;">Continuous distributions <code>[0, 1]</code></td>
-                  <td style="padding: 0.75rem;">Continuous dynamic belief state <code>P(X<sub>t</sub> | e<sub>1:t</sub>)</code></td>
-                </tr>
-                <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
-                  <td style="padding: 0.75rem; font-weight: 600;">Primary Inference Algorithm</td>
-                  <td style="padding: 0.75rem;">Forward Chaining (<code>PL-FC-Entails</code>)</td>
-                  <td style="padding: 0.75rem;">Exact Enumeration / Likelihood Weighting</td>
-                  <td style="padding: 0.75rem;">Forward Algorithm (Filtering) &amp; Viterbi</td>
-                </tr>
-                <tr style="border-bottom: 1px solid rgba(255,255,255,0.08);">
-                  <td style="padding: 0.75rem; font-weight: 600;">Time Complexity</td>
-                  <td style="padding: 0.75rem;"><strong>O(N) Linear</strong> in KB size</td>
-                  <td style="padding: 0.75rem;">Exact: <code>O(2<sup>n</sup>)</code>; Sampling: <code>O(N &middot; n)</code></td>
-                  <td style="padding: 0.75rem;">Filtering: <code>O(|S|<sup>2</sup>)</code> per step; Viterbi: <code>O(T &middot; |S|<sup>2</sup>)</code></td>
-                </tr>
-                <tr>
-                  <td style="padding: 0.75rem; font-weight: 600;">Best Use Case</td>
-                  <td style="padding: 0.75rem;">Rule-based expert systems, verification</td>
-                  <td style="padding: 0.75rem;">Medical diagnosis, fault localization</td>
-                  <td style="padding: 0.75rem;">Robot localization, speech recognition, tracking</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <!-- ================= 5. PRACTICE EXERCISES ================= -->
-        <section id="exercises">
-          <h2><span class="rp-num">5.</span>Practice Exercises &amp; Worked Solutions</h2>
-
-          <!-- Exercise 1 -->
-          <div class="rp-exercise" id="ex1">
-            <div class="rp-exercise-head">
-              <span class="rp-exercise-num">Exercise 1</span>
-              <h3 class="rp-exercise-title">Horn Clause Forward Chaining Trace</h3>
-            </div>
-            <div class="rp-exercise-body">
-              <p>Consider a medical diagnosis Knowledge Base with initial base facts <code>{SymptomA, SymptomB}</code> and the following Horn rules:</p>
-              <div class="formula-box">
-                R1: SymptomA &and; SymptomB &rArr; ConditionC<br>
-                R2: ConditionC &and; SymptomD &rArr; DiseaseE<br>
-                R3: SymptomB &rArr; SymptomD<br>
-                R4: DiseaseE &rArr; PrescribeMedicationF
-              </div>
-              <p>Trace the step-by-step execution of <code>PL-FC-Entails</code> to determine if <code>PrescribeMedicationF</code> is logically entailed.</p>
-            </div>
-            <details class="rp-answer">
-              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
-              <div class="rp-answer-body">
-                <div class="rp-answer-part">
-                  <span class="rp-answer-part-label">Step-by-step Execution Trace</span>
-                  <div class="rp-pseudocode"><pre>Initial Setup:
-  Agenda = [SymptomA, SymptomB]
-  Inferred = {SymptomA: True, SymptomB: True}
-  count table: R1 = 2, R2 = 2, R3 = 1, R4 = 1
-
-Step 1: Pop SymptomA
-  - Decrement R1 count: count[R1] = 1 (remains un-fired).
-
-Step 2: Pop SymptomB
-  - Decrement R1 count: count[R1] = 0 &rarr; FIRES R1! Add ConditionC to Agenda.
-  - Decrement R3 count: count[R3] = 0 &rarr; FIRES R3! Add SymptomD to Agenda.
-  - Agenda = [ConditionC, SymptomD].
-
-Step 3: Pop ConditionC
-  - Decrement R2 count: count[R2] = 1.
-
-Step 4: Pop SymptomD
-  - Decrement R2 count: count[R2] = 0 &rarr; FIRES R2! Add DiseaseE to Agenda.
-  - Agenda = [DiseaseE].
-
-Step 5: Pop DiseaseE
-  - Decrement R4 count: count[R4] = 0 &rarr; FIRES R4! Add PrescribeMedicationF to Agenda.
-  - Agenda = [PrescribeMedicationF].
-
-Step 6: Pop PrescribeMedicationF
-  - Query goal reached! Return True.</pre></div>
-                  <p><strong>Conclusion:</strong> <code>KB &models; PrescribeMedicationF</code> is proved in <code>O(N)</code> linear time.</p>
-                </div>
-              </div>
-            </details>
-          </div>
-
-          <!-- Exercise 2 -->
-          <div class="rp-exercise" id="ex2">
-            <div class="rp-exercise-head">
-              <span class="rp-exercise-num">Exercise 2</span>
-              <h3 class="rp-exercise-title">Medical Diagnostic Screening with Bayes' Rule</h3>
-            </div>
-            <div class="rp-exercise-body">
-              <p>A clinic tests for a rare disease. The prior prevalence is <code>P(Disease) = 0.001</code> (0.1% of population). The diagnostic test has a sensitivity (true positive rate) of <code>P(+ | Disease) = 0.99</code> and a false positive rate of <code>P(+ | &not;Disease) = 0.02</code> (98% specificity).</p>
-              <p>If a random patient tests positive (<code>+</code>), what is the exact posterior probability <code>P(Disease | +)</code>?</p>
-            </div>
-            <details class="rp-answer">
-              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
-              <div class="rp-answer-body">
-                <div class="rp-answer-part">
-                  <span class="rp-answer-part-label">Bayes' Rule Calculation</span>
-                  <div class="rp-pseudocode"><pre>1. Compute joint probability for Disease = True:
-   P(+ &and; Disease) = P(+ | Disease) &middot; P(Disease)
-                     = 0.99 &times; 0.001 = 0.000990
-
-2. Compute joint probability for Disease = False:
-   P(+ &and; &not;Disease) = P(+ | &not;Disease) &middot; P(&not;Disease)
-                      = 0.02 &times; (1 - 0.001) = 0.02 &times; 0.999 = 0.019980
-
-3. Compute total marginal evidence P(+):
-   P(+) = P(+ &and; Disease) + P(+ &and; &not;Disease)
-        = 0.000990 + 0.019980 = 0.020970
-
-4. Compute posterior P(Disease | +):
-   P(Disease | +) = P(+ &and; Disease) / P(+)
-                  = 0.000990 / 0.020970 &approx; 0.04721 (4.72%)</pre></div>
-                  <p><strong>Clinical Insight:</strong> Even with a 99% sensitive test, a positive patient has only a <strong>4.72% chance</strong> of having the disease, because false positives from the 99.9% healthy majority outnumber true positives by over 20 to 1.</p>
-                </div>
-              </div>
-            </details>
-          </div>
-
-          <!-- Exercise 3 -->
-          <div class="rp-exercise" id="ex3">
-            <div class="rp-exercise-head">
-              <span class="rp-exercise-num">Exercise 3</span>
-              <h3 class="rp-exercise-title">Bayesian Network Factorization &amp; Exact Enumeration</h3>
-            </div>
-            <div class="rp-exercise-body">
-              <p>Consider the classic AIMA Burglar Alarm network with variables <code>Burglary (B)</code>, <code>Earthquake (E)</code>, <code>Alarm (A)</code>, <code>JohnCalls (J)</code>, and <code>MaryCalls (M)</code>.</p>
-              <ol>
-                <li>Write the factored expression for the full joint distribution <code>P(B, E, A, J, M)</code>.</li>
-                <li>Calculate the exact numerical value of the atomic world event <code>P(B=True, E=False, A=True, J=True, M=False)</code> given:
-                  <code>P(B)=0.001</code>, <code>P(E)=0.002</code>, <code>P(A|B,&not;E)=0.94</code>, <code>P(J|A)=0.90</code>, <code>P(M|A)=0.70</code>.
-                </li>
-              </ol>
-            </div>
-            <details class="rp-answer">
-              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
-              <div class="rp-answer-body">
-                <div class="rp-answer-part">
-                  <span class="rp-answer-part-label">Factorization &amp; Calculation</span>
-                  <div class="rp-pseudocode"><pre>1. Compact Joint Factorization:
-   P(B, E, A, J, M) = P(B) &middot; P(E) &middot; P(A | B, E) &middot; P(J | A) &middot; P(M | A)
-
-2. Numerical Evaluation for (b, &not;e, a, j, &not;m):
-   P(b)    = 0.001
-   P(&not;e)   = 1 - 0.002 = 0.998
-   P(a | b, &not;e) = 0.94
-   P(j | a)     = 0.90
-   P(&not;m | a)    = 1 - 0.70 = 0.30
-
-   P(b, &not;e, a, j, &not;m) = 0.001 &times; 0.998 &times; 0.94 &times; 0.90 &times; 0.30
-                       = 0.00093812 &times; 0.27
-                       = 0.0002532924 (0.0253%)</pre></div>
-                </div>
-              </div>
-            </details>
-          </div>
-
-          <!-- Exercise 4 -->
-          <div class="rp-exercise" id="ex4">
-            <div class="rp-exercise-head">
-              <span class="rp-exercise-num">Exercise 4</span>
-              <h3 class="rp-exercise-title">Hidden Markov Model Online Forward Filtering</h3>
-            </div>
-            <div class="rp-exercise-body">
-              <p>In the Umbrella World HMM, the state space is <code>{Rain, &not;Rain}</code> with prior <code>P(Rain<sub>0</sub>) = 0.50</code>. The transition and sensor models are:</p>
-              <div class="formula-box">
-                Transition T = [[0.70, 0.30], [0.30, 0.70]] &emsp; (P(R<sub>t</sub> | R<sub>t-1</sub>))<br>
-                Sensor O = [[0.90, 0.10], [0.20, 0.80]] &emsp; (P(U<sub>t</sub> | R<sub>t</sub>) for Umbrella, NoUmbrella)
-              </div>
-              <p>If the guard observes an umbrella on Day 1 (<code>U<sub>1</sub> = true</code>) and Day 2 (<code>U<sub>2</sub> = true</code>), calculate the exact filtered belief distribution <code>P(Rain<sub>1</sub> | u<sub>1</sub>)</code> and <code>P(Rain<sub>2</sub> | u<sub>1</sub>, u<sub>2</sub>)</code>.</p>
-            </div>
-            <details class="rp-answer">
-              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
-              <div class="rp-answer-body">
-                <div class="rp-answer-part">
-                  <span class="rp-answer-part-label">Forward Algorithm Step-by-Step</span>
-                  <div class="rp-pseudocode"><pre>--- DAY 1 (Observation U1 = true) ---
-1. Predict: P(R1) = T^T &middot; f0
-   P(R1=True)  = 0.70 &times; 0.50 + 0.30 &times; 0.50 = 0.50
-   P(R1=False) = 0.30 &times; 0.50 + 0.70 &times; 0.50 = 0.50
-
-2. Update with U1 = true (P(u|R)=0.90, P(u|&not;R)=0.20):
-   Unnormalized R1=True:  0.90 &times; 0.50 = 0.450
-   Unnormalized R1=False: 0.20 &times; 0.50 = 0.100
-   Sum = 0.450 + 0.100 = 0.550 &rarr; &alpha; = 1 / 0.550
-
-   f1 = &lang; 0.450/0.550, 0.100/0.550 &rang; = &lang; 0.8182, 0.1818 &rang;
-   P(Rain1 | u1) &approx; 81.82%
-
---- DAY 2 (Observation U2 = true) ---
-1. Predict: P(R2 | u1) = T^T &middot; f1
-   P(R2=True)  = 0.70 &times; 0.8182 + 0.30 &times; 0.1818 = 0.5727 + 0.0545 = 0.6273
-   P(R2=False) = 0.30 &times; 0.8182 + 0.70 &times; 0.1818 = 0.2455 + 0.1273 = 0.3727
-
-2. Update with U2 = true:
-   Unnormalized R2=True:  0.90 &times; 0.6273 = 0.5645
-   Unnormalized R2=False: 0.20 &times; 0.3727 = 0.0745
-   Sum = 0.5645 + 0.0745 = 0.6391 &rarr; &alpha; = 1 / 0.6391
-
-   f2 = &lang; 0.5645/0.6391, 0.0745/0.6391 &rang; = &lang; 0.8833, 0.1167 &rang;
-   P(Rain2 | u1, u2) &approx; 88.33%</pre></div>
-                  <p><strong>Conclusion:</strong> Two consecutive umbrella sightings increase the rain belief from an initial 50% to <strong>88.33%</strong>.</p>
-                </div>
-              </div>
-            </details>
-          </div>
-
-          <!-- Exercise 5 -->
-          <div class="rp-exercise" id="ex5">
-            <div class="rp-exercise-head">
-              <span class="rp-exercise-num">Exercise 5</span>
-              <h3 class="rp-exercise-title">HMM Viterbi Trellis Path Decoding</h3>
-            </div>
-            <div class="rp-exercise-body">
-              <p>Using the Umbrella World model from Exercise 4, the guard observes the 2-day sequence <code>[U<sub>1</sub> = true, U<sub>2</sub> = false]</code>. Use the Viterbi algorithm to compute the most likely weather path <code>[R<sub>1</sub>, R<sub>2</sub>]</code>.</p>
-            </div>
-            <details class="rp-answer">
-              <summary class="rp-answer-toggle" aria-label="Show or hide the answer"></summary>
-              <div class="rp-answer-body">
-                <div class="rp-answer-part">
-                  <span class="rp-answer-part-label">Viterbi Trellis Calculation</span>
-                  <div class="rp-pseudocode"><pre>--- Time t = 1 (Observation U1 = true) ---
-P(R1=Rain) = 0.70 &times; 0.50 + 0.30 &times; 0.50 = 0.50   (prior pushed one step through T)
-m1[Rain]   = P(R1=Rain) &middot; P(u|Rain)   = 0.50 &times; 0.90 = 0.450
-m1[&not;Rain]  = P(R1=&not;Rain) &middot; P(u|&not;Rain) = 0.50 &times; 0.20 = 0.100
-
---- Time t = 2 (Observation U2 = false: P(&not;u|Rain)=0.10, P(&not;u|&not;Rain)=0.80) ---
-For State Rain at t=2:
-  From Rain:   m1[Rain] &times; T[Rain&rarr;Rain]   = 0.450 &times; 0.70 = 0.3150
-  From &not;Rain:  m1[&not;Rain] &times; T[&not;Rain&rarr;Rain] = 0.100 &times; 0.30 = 0.0300
-  Max = 0.3150 (from Rain); Backpointer = Rain
-  m2[Rain] = 0.3150 &times; P(&not;u|Rain) = 0.3150 &times; 0.10 = 0.03150
-
-For State &not;Rain at t=2:
-  From Rain:   m1[Rain] &times; T[Rain&rarr;&not;Rain]   = 0.450 &times; 0.30 = 0.1350
-  From &not;Rain:  m1[&not;Rain] &times; T[&not;Rain&rarr;&not;Rain] = 0.100 &times; 0.70 = 0.0700
-  Max = 0.1350 (from Rain); Backpointer = Rain
-  m2[&not;Rain] = 0.1350 &times; P(&not;u|&not;Rain) = 0.1350 &times; 0.80 = 0.10800
-
---- Termination &amp; Backtracking ---
-At t=2, max(m2[Rain]=0.03150, m2[&not;Rain]=0.10800) is m2[&not;Rain] (0.10800).
-- State at t=2: &not;Rain
-- Backpointer from &not;Rain at t=2 points to: Rain at t=1.
-
-Optimal Most Likely Sequence: [Rain, &not;Rain]</pre></div>
-                  <p><strong>Result:</strong> The single most probable underlying weather history is <code>[Rain, &not;Rain]</code> with joint probability <code>P(x<sub>1:2</sub>, e<sub>1:2</sub>) = 0.1080</code>. Dividing by the evidence probability <code>P(u<sub>1</sub>, &not;u<sub>2</sub>) = 0.1985</code> gives the posterior <code>P(x<sub>1:2</sub> | e<sub>1:2</sub>) &asymp; 0.544</code> (54.4%).</p>
-                </div>
-              </div>
-            </details>
-          </div>
-
-        </section>
-
-      </article>
-    </div>
-
+    <section class="ag-section ag-container">
+      <h2 class="ag-section-title">Pick a tab</h2>
+      <p class="ag-section-sub">Selecting a tab updates the subtabs below it.</p>
+
+      <div class="ag-topic-buttons" id="rn-topic-buttons"></div>
+      <div class="rn-score" id="rn-score" aria-live="polite"></div>
+      <div class="ag-subtopic-tabs" id="rn-subtopic-tabs"></div>
+
+      <div class="ag-demo">
+        <div class="ag-demo-header">
+          <h3 class="ag-demo-title" id="rn-title"></h3>
+          <p class="ag-demo-subtitle" id="rn-subtitle"></p>
+        </div>
+        <div class="ag-wrap" id="rn-body"></div>
+      </div>
+
+      <p class="ag-caption" style="margin-top:22px!important">
+        <strong>Sources:</strong> <em>Artificial Intelligence: A Modern Approach</em> (4th ed.), Ch. 7 (Logical Agents), Ch. 12–14 (Uncertainty, Probabilistic Reasoning, Reasoning over Time).
+      </p>
+    </section>
   </main>
 
-  <!-- Lucide Icons CDN -->
-  <script src="https://unpkg.com/lucide@0.344.0/dist/umd/lucide.min.js"></script>
+  <footer class="ag-site-footer">
+    MLAI401 &middot; Topic 05 Reading Notes &middot; Python reference: <code>python_sandbox/08_Logic_Reasoning.py</code>, <code>09_Bayesian_Reasoning.py</code>
+  </footer>
 
-  <!-- Application JS -->
-  <script src="main.js?v=3"></script>
+  <script src="demos/knowledge_demo/reading_topic05.js?v=1"></script>
+  <script src="demos/reading_notes.js?v=1"></script>
 </body>
 </html>
