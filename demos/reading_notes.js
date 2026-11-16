@@ -117,7 +117,7 @@
         '<div class="ag-wrap">' + (ss.example ? '<div class="ag-panel"><div class="ag-panel-title">Example</div>' + ss.example + "</div>" : "") +
           '<div class="ag-explain"><span class="ag-explain-title">Check yourself</span>Answer the questions below before moving on. Each answer shows why.</div></div>' +
       "</div>" +
-      (ss.figure ? '<div class="ag-panel rn-figure"><div class="ag-panel-title">Figure</div>' + ss.figure + "</div>" : "") +
+      (ss.figure ? '<div class="ag-panel rn-figure"><div class="ag-panel-title">' + (ss.figureTitle || "Figure") + "</div>" + ss.figure + "</div>" : "") +
       '<div class="rn-checks">' + checksHtml(tt, ss) + "</div>" +
       '<div class="ag-remember"><div class="ag-remember-title">Remember</div><ul>' + ss.remember.map(function (r) { return "<li>" + r + "</li>"; }).join("") + "</ul></div>";
     body.querySelectorAll("[data-rn-q]").forEach(function (b) {

@@ -220,7 +220,8 @@
     { id: "compare", label: "Compare Paradigms", source: "Topic 06 lecture · Compare & Trace", subs: [
       { id: "matrix", label: "Paradigm Comparison",
         lead: "All five learn from experience; they differ in the <strong>feedback</strong> they get and how they optimise.",
-        example: '<table class="ag-table ui"><thead><tr><th></th><th>Naive Bayes</th><th>Neural network</th><th>K-Means</th><th>Value Iteration</th><th>Q-Learning</th></tr></thead><tbody>' +
+        figureTitle: "Comparison table",
+        figure: '<table class="ag-table ui"><thead><tr><th></th><th>Naive Bayes</th><th>Neural network</th><th>K-Means</th><th>Value Iteration</th><th>Q-Learning</th></tr></thead><tbody>' +
           "<tr><th class=\"l\">Task</th><td>classify text x → y</td><td>non-linear x → y</td><td>cluster unlabelled x</td><td>optimal policy, known MDP</td><td>policy by interaction</td></tr>" +
           "<tr><th class=\"l\">Feedback</th><td>labels y</td><td>labels y</td><td>none</td><td>known P and R</td><td>delayed reward r</td></tr>" +
           "<tr><th class=\"l\">Optimisation</th><td>counts + Laplace</td><td>gradient descent</td><td>Lloyd's algorithm</td><td>Bellman dynamic programming</td><td>TD(0) updates</td></tr>" +
@@ -230,6 +231,17 @@
           { q: "Which learns from a delayed reward by trial and error?", options: ["Q-Learning", "Value Iteration", "Naive Bayes"], answer: "Q-Learning", why: "Value Iteration plans with a known model instead." },
           { q: "Which needs a known transition model?", options: ["Value Iteration", "Q-Learning", "K-Means"], answer: "Value Iteration", why: "Its backup sums over P(s′ | s, a)." },
           { q: "Fastest to train on text (one counting pass)?", options: ["Naive Bayes", "Neural network", "Q-Learning"], answer: "Naive Bayes", why: "Training is just counting words per class." },
+          { q: "What is the main goal of reinforcement learning?", options: ["Learn a policy that maximises the expected cumulative (discounted) reward", "Predict a label for each input from labelled examples", "Group similar unlabelled points together"], answer: "Learn a policy that maximises the expected cumulative (discounted) reward", why: "The agent learns which action to take in each state so that total long-run reward is as large as possible, not just the next reward." },
+          { q: "Match the method: predict house prices from size, rooms and location.", options: ["Naive Bayes", "K-Means", "Reinforcement learning", "Neural network (regression)"], answer: "Neural network (regression)", why: "Labelled examples with a numeric target → supervised regression. Naive Bayes outputs classes, K-Means has no target, RL has no reward loop here." },
+          { q: "Match the method: a robot learns to navigate a maze by trial and error.", options: ["Naive Bayes", "K-Means", "Reinforcement learning", "Neural network (regression)"], answer: "Reinforcement learning", why: "No labels, only a (delayed) reward for reaching the goal → reinforcement learning (e.g. Q-learning)." },
+          { q: "Match the method: group customers by purchasing behaviour (no labels).", options: ["Naive Bayes", "K-Means", "Reinforcement learning", "Neural network (regression)"], answer: "K-Means", why: "Unlabelled data to be split into groups → unsupervised clustering." },
+          { q: "Match the method: classify emails as spam or ham.", options: ["Naive Bayes", "K-Means", "Reinforcement learning", "Neural network (regression)"], answer: "Naive Bayes", why: "Labelled text and a discrete class → supervised classification; Naive Bayes is the classic text baseline." },
+          { q: "In RL, what is the role of the reward?", options: ["A scalar signal from the environment saying how good the last step was; the agent maximises its long-run sum", "The correct action the agent should have taken", "The agent's estimate of a state's value"], answer: "A scalar signal from the environment saying how good the last step was; the agent maximises its long-run sum", why: "The reward only scores outcomes; it never tells the agent the right action. Value estimates (V, Q) are learned from rewards." },
+          { q: "In RL, which component chooses the actions?", options: ["Agent", "Environment", "State", "Reward"], answer: "Agent", why: "The agent observes the state and picks an action using its policy." },
+          { q: "In RL, which component receives the action and returns the next state and reward?", options: ["Environment", "Agent", "Policy", "Action"], answer: "Environment", why: "Everything outside the agent is the environment: it reacts to the action with s′ and r." },
+          { q: "Match the RL component: “the robot's current cell (row, col) in the grid”.", options: ["State", "Action", "Reward", "Environment"], answer: "State", why: "The state describes the situation the agent is in right now." },
+          { q: "Match the RL component: “move North, South, East or West”.", options: ["Action", "State", "Reward", "Agent"], answer: "Action", why: "Actions are the choices available to the agent in a state." },
+          { q: "Match the RL component: “+1 for reaching the goal, −0.04 per step”.", options: ["Reward", "Action", "State", "Policy"], answer: "Reward", why: "The reward is the numeric feedback for each transition." },
         ],
         remember: ["Labels → supervised. No labels → unsupervised. Reward → reinforcement."] },
     ] },
