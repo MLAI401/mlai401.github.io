@@ -247,7 +247,8 @@
     { id: "compare", label: "Compare Systems", source: "Topic 07 lecture · Compare Systems", subs: [
       { id: "matrix", label: "Evaluation Matrix",
         lead: "Each step up (LLM → RAG → agent → team) adds capability, cost and new failure modes.",
-        example: '<table class="ag-table ui"><thead><tr><th></th><th>Direct LLM</th><th>RAG</th><th>ReAct agent</th><th>Multi-agent</th></tr></thead><tbody>' +
+        figureTitle: "Example",
+        figure: '<table class="ag-table ui"><thead><tr><th></th><th>Direct LLM</th><th>RAG</th><th>ReAct agent</th><th>Multi-agent</th></tr></thead><tbody>' +
           "<tr><th class=\"l\">Best at</th><td>Open-ended writing</td><td>Q&amp;A over private documents</td><td>Multi-step tasks with tools</td><td>Large tasks with roles</td></tr>" +
           "<tr><th class=\"l\">Grounding</th><td>Low</td><td>High (retrieved context)</td><td>Very high (tool observations)</td><td>Highest (critic review)</td></tr>" +
           "<tr><th class=\"l\">Latency &amp; cost</th><td>1 forward pass</td><td>embed + search + 1 call</td><td>3–10 sequential calls</td><td>many cooperating calls</td></tr>" +
@@ -259,6 +260,8 @@
           { q: "Best error recovery among single-model systems?", options: ["Direct LLM", "RAG", "ReAct agent"], answer: "ReAct agent", why: "It observes tool errors and replans." },
           { q: "Typical safety risk of a RAG system?", options: ["Leaking data from the vector store", "Message deadlocks", "Tool side-effects"], answer: "Leaking data from the vector store", why: "Whatever is indexed can be retrieved and quoted." },
           { q: "Which metric fits a ReAct agent?", options: ["Task success rate and tool accuracy", "BLEU", "Perplexity"], answer: "Task success rate and tool accuracy", why: "Judge whether the goal was reached and the tools were used correctly." },
+          { q: "A help desk must answer from 500 internal PDFs and cite the page. Simplest system that fits?", options: ["Direct LLM", "RAG", "ReAct agent", "Multi-agent"], answer: "RAG", why: "Q&amp;A over private documents with citations is exactly what retrieval adds; no tools or loop are needed." },
+          { q: "Typical safety risk of a multi-agent system?", options: ["Cascading errors and deadlocks", "Leaking indexed data", "Only misinformation"], answer: "Cascading errors and deadlocks", why: "One agent's mistake is passed on to the others, and agents can wait on each other forever." },
         ],
         remember: ["Choose the simplest architecture that meets the need.", "Measure cost and latency next to accuracy."] },
     ] },
