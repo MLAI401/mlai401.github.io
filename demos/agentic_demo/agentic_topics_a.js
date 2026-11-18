@@ -414,6 +414,61 @@
   // =================================================================
   // Topic 2: Retrieval (RAG)
   // =================================================================
+  // ---- LLM vs. RAG ----
+  // Same question, two systems. The plain LLM answers from its training
+  // data only; RAG first retrieves from the course documents, then answers.
+  const RAG_STEPS = [
+    { k: "action", tag: "Embed", txt: 'q = embed("When is the MLAI401 final project due? Can I submit late?")' },
+    { k: "action", tag: "Search", txt: "vector_db.search(q, top_k=2)" },
+    { k: "obs", tag: "Chunk 1", txt: "[syllabus.pdf, p.3] cos = 0.91 · Final project due Friday, Dec 11 at 11:59 PM." },
+    { k: "obs", tag: "Chunk 2", txt: "[syllabus.pdf, p.4] cos = 0.84 · Late work: −10% per day, accepted up to 2 days late." },
+    { k: "thought", tag: "Augment", txt: "Prompt = instructions + Chunk 1 + Chunk 2 + question. “Answer only from the context and cite it.”" },
+    { k: "final", tag: "Answer", txt: "Due Friday, Dec 11 at 11:59 PM [syllabus p.3]. Late work loses 10% per day, up to 2 days [syllabus p.4]." },
+  ];
+  function ragItem(s, isNew) {
+    const cls = { action: "action", obs: "obs", thought: "thought", final: "final" }[s.k];
+    return '<div class="ag-log-item ' + s.k + (isNew ? " is-new" : "") + '"><span class="ag-tag ' + cls + '">' + esc(s.tag) + "</span>" + esc(s.txt) + "</div>";
+  }
+  P.register("llm-vs-rag", function () {
+    const el = K.single("Same question, two systems. The LLM answers from what it memorised in training. RAG first <strong>retrieves</strong> the relevant documents, then answers from them.");
+    const st = K.stepper(paint, 1100);
+    st.n = RAG_STEPS.length + 1;
+    const qz = K.quiz([
+      { q: "Answers “What is gradient descent?” from what it learned in training", options: ["LLM", "RAG"], answer: "LLM", why: "General knowledge is already in the weights; no lookup needed." },
+      { q: "Searches the company handbook, then quotes page 12", options: ["LLM", "RAG"], answer: "RAG", why: "It retrieves private documents and cites the source." },
+      { q: "Yesterday's policy update is used without retraining the model", options: ["LLM", "RAG"], answer: "RAG", why: "Update the document index, not the weights: the next query sees the new text." },
+    ], "lvr");
+    function paint() {
+      const shown = RAG_STEPS.slice(0, st.idx);
+      const nChunks = shown.filter(function (s) { return s.k === "obs"; }).length;
+      const answered = st.idx >= st.n - 1;
+      el.innerHTML = st.toolbar() +
+        '<div class="ag-split even">' +
+          '<div class="ag-panel"><div class="ag-panel-title">LLM: question &rarr; answer</div>' +
+            '<div class="ag-log"><div class="ag-log-item user"><span class="ag-tag token">user</span>When is the MLAI401 final project due? Can I submit late?</div>' +
+            (st.idx > 0 ? '<div class="ag-log-item thought"><span class="ag-tag thought">Weights</span>Nothing about this course syllabus was in the training data.</div>' +
+              '<div class="ag-log-item err"><span class="ag-tag guard">Answer</span>Final projects are usually due in the last week of the semester, and most instructors accept late work with a penalty. Check with your instructor.</div>' : "") + "</div>" +
+            '<div class="ag-meter" style="margin-top:8px"><span class="ag-prop">LLM calls <strong>' + (st.idx > 0 ? 1 : 0) + '</strong></span><span class="ag-prop is-no">docs retrieved <strong>0</strong></span><span class="ag-prop is-no">cites a source <strong>no</strong></span></div></div>' +
+          '<div class="ag-panel"><div class="ag-panel-title">RAG: question &rarr; &lang;retrieve, augment, generate&rang; &rarr; answer</div>' +
+            '<div class="ag-log"><div class="ag-log-item user"><span class="ag-tag token">user</span>When is the MLAI401 final project due? Can I submit late?</div>' +
+            shown.map(function (s, i) { return ragItem(s, i === shown.length - 1); }).join("") + "</div>" +
+            '<div class="ag-meter" style="margin-top:8px"><span class="ag-prop">LLM calls <strong>' + (answered ? 1 : 0) + '</strong></span><span class="ag-prop ' + (nChunks ? "is-yes" : "") + '">docs retrieved <strong>' + nChunks + '</strong></span><span class="ag-prop ' + (answered ? "is-yes" : "") + '">cites a source <strong>' + (answered ? "yes" : "no") + "</strong></span></div></div>" +
+        "</div>" +
+        '<div style="margin-top:10px">' + K.formula("LLM: answer = LLM(question) &nbsp;&nbsp;vs.&nbsp;&nbsp; RAG: answer = LLM(question + top-K chunks retrieved for the question)") + "</div>" +
+        K.explain(st.idx === 0 ? "Press <strong>Next Step</strong>. Both receive the same question about <strong>our</strong> syllabus, a document the model never saw in training." :
+          answered ? "The LLM gave a <strong>fluent but generic guess</strong> (it could even invent a date). RAG gave the <strong>exact date and late policy, with page citations</strong>. Same model inside; retrieval supplied the facts." :
+          RAG_STEPS[st.idx - 1].tag === "Embed" ? "<strong>Retrieve, step 1:</strong> the question is turned into a vector with the same embedding model used for the documents (next tab: Embeddings &amp; Cosine)." :
+          RAG_STEPS[st.idx - 1].tag === "Search" ? "<strong>Retrieve, step 2:</strong> the vector database returns the K chunks whose vectors are most similar to q." :
+          RAG_STEPS[st.idx - 1].k === "obs" ? "A retrieved <strong>chunk</strong> with its cosine score and its source. This is evidence the LLM did not have before." :
+          "<strong>Augment:</strong> the chunks are pasted into the prompt. The model's weights never change; only its context does.") +
+        '<div class="ag-grid3">' + qz.html() + "</div>" +
+        (qz.done() ? K.remember(["LLM: knowledge is frozen in the weights at training time; it cannot see private or recent documents and may hallucinate.", "RAG: retrieve relevant chunks &rarr; augment the prompt &rarr; generate a grounded answer with citations.", "Same model inside; retrieval gives it an open book. Update the documents, not the weights."]) : "");
+      st.bind(el);
+      qz.bind(el, paint);
+    }
+    paint();
+  });
+
   const EMB_DOCS = [
     { id: "d1", label: "Q-learning update rule", ang: 18, words: ["q-learning", "update", "rule"] },
     { id: "d2", label: "Bellman equation for state values", ang: 40, words: ["bellman", "equation", "state", "values"] },

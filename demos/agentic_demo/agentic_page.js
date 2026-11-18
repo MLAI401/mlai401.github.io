@@ -73,6 +73,7 @@
       { id: "prompting", label: "Prompting: Few-shot, CoT, JSON", kind: "prompting" },
     ] },
     rag: { label: "Retrieval (RAG)", subtopics: [
+      { id: "llm-vs-rag", label: "LLM vs. RAG", kind: "llm-vs-rag" },
       { id: "embeddings", label: "Embeddings & Cosine", kind: "embeddings" },
       { id: "chunking", label: "Chunking", kind: "chunking" },
       { id: "rag-pipeline", label: "RAG Pipeline", kind: "rag-pipeline" },
